@@ -1,0 +1,402 @@
+---
+sidebar_title: Bill Structure
+page_title: BBPS - Bill Structure
+order: 5
+visible_in_sidebar: true
+---
+
+## Constructing a bill on Collect
+
+##### How to customise the Setu bill object for any business use case
+
+At the very core of Collect, is the Setu bill object. It facilitates a vast number of business scenarios—such as recurring payments for insurance premiums or school fee collections with multiple line items. It does this by having a generic, modular information structure that can be constructed to your needs.
+
+Explore the full object on the <a href="/payments/bbps/api-reference" target="_blank">API reference ↗</a>.
+
+<hr class="primary" />
+
+### Basic bill structure
+
+The `data` object houses 2 types of data—
+
+-   `billDetails`—the components are explained in the following sections.
+-   `customer`—these are the customer details required by NPCI, as per biller category. Read about <a href="bill-structure/special-cases" target="_blank">special cases ↗</a>.
+
+<CodeBlockWithCopy language="json">
+    {`"data" : {
+    "customer": {
+        "name": "Shailesh"
+    },
+    "billDetails" : {
+        "billFetchStatus" : "AVAILABLE",
+        "bills" : [
+            {
+                "generatedOn"       : "2020-06-04T06:59:04Z" // bill generation / fee start date, 
+                "dueDate"           : "2020-06-04T06:59:04Z" // last date for fee payment,  
+                "recurrence"        : "ONE_TIME",  
+                "amountExactness"   : "EXACT", 
+                "billerBillID"      : "string",  // bill identifier, sent with each payment
+                "customerAccount"   : {},
+                "amount"            : {}, //amount against the bill
+                "items"             : [], // array of line items
+                "aggregates"        : {} // details on final amount that the customer needs to pay
+            }
+        ]
+    }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+### Bill components
+
+In the bill object, the details are broken down into simple logical units, that follow the same pattern and structure where ever they appear.
+
+<hr class="tertiary" />
+
+##### Amount
+
+<CodeBlockWithCopy language="json">
+    {`"amount" : {
+    "currencyCode" : "INR", // ISO 4217
+    "value"        : 10000  // in paise, so this means 100 rupees
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+`amount` is made of two attributes—
+
+-   `currencyCode` The currency used in the bill its three-letter ISO 4217 format.
+-   `value` The money value of the bill, in paise.
+
+This same object structure is re-used whenever there is a need to denote amounts against any item such as `fees`, `taxes`, `discounts` etc.
+
+<hr class="tertiary" />
+
+##### Items
+
+<CodeBlockWithCopy language="json">
+    {`"items" : [
+    {
+        "code"            : "string",
+        "displayName"     : "string",
+        "description"     : "string",
+        "measurementUnit" : "ENUM",
+        "quantity"        : 0,
+        "unitPrice"       : {},
+        "discounts"       : [],
+        "fees"            : [],
+        "taxes"           : [],
+        "aggregates"      : 
+        {
+            "discount" : {},
+            "subTotal" : {},
+            "tax"      : {},
+            "total"    : {}
+        },
+    }
+]`}
+</CodeBlockWithCopy>
+
+<br />
+
+This array is where the individual prices against services or products (for which the bill has been raised) are listed out.
+
+<hr class="tertiary" />
+
+##### Fees
+
+<CodeBlockWithCopy language="json">
+    {`"fees" : [
+    {
+        "quantity"    : 0,
+        "displayName" : "string",
+        "description" : "string",
+        "unitCost"    : {},
+        "discounts"   : [],
+        "taxes"       : [],
+        "aggregates"  : {
+            "discount" : {},
+            "subTotal" : {},
+            "tax"      : {},
+            "total"    : {}
+        }
+    }
+]`}
+</CodeBlockWithCopy>
+
+The `fees` array is used to bundle information on any additional charges in the Setu bill object—for example, processing fees. It has a `taxes` child array component, which can be used to provide a breakdown of the individual tax elements on each of the fees elements.
+
+The amounts against any item such as `taxes`, `discounts` replicate the same object structure as described in the `amount` object.
+
+<hr class="tertiary" />
+
+##### Taxes
+
+<CodeBlockWithCopy language="json">
+    {`"taxes" : [
+    {
+        "type"        : "string"
+        "displayName" : "string",
+        "amount"      : {},
+        "computation" : {},
+        "components"  : [
+            {
+                "type"        : "string",
+                "displayName" : "string",
+                "amount"      : {},
+                "computation" : {},
+            }
+        ],
+    }
+]`}
+</CodeBlockWithCopy>
+
+<br />
+
+The `taxes` array is used to bundle all the tax-related information in the Setu bill object. It has a `components` child, which can be used to provide a breakdown of the individual tax elements of the bill. This, in turn, contains a similar structure as the parent object, to be consistent.
+
+The amounts against any item such as `taxes`, `discounts` replicate the same object structure as described in the `amount` object.
+The `amount` and the `computation` objects displayed are replicated in the same way as within other objects.
+
+<hr class="tertiary" />
+
+##### Taxes
+
+<CodeBlockWithCopy language="json">
+    {`"taxes" : [
+    {
+        "type"        : "string"
+        "displayName" : "string",
+        "amount"      : {},
+        "computation" : {},
+        "components"  : [
+            {
+                "type"        : "string",
+                "displayName" : "string",
+                "amount"      : {},
+                "computation" : {},
+            }
+        ],
+    }
+]`}
+</CodeBlockWithCopy>
+
+The `taxes` array is used to bundle all the tax-related information in the Setu bill object. It has a `components` child, which can be used to provide a breakdown of the individual tax elements of the bill. This, in turn, contains a similar structure as the parent object, to be consistent.
+
+The amounts against any item such as `taxes`, `discounts` replicate the same object structure as described in the `amount` object.
+The `amount` and the `computation` objects displayed are replicated in the same way as within other objects.
+
+<hr class="tertiary" />
+
+##### Computation
+
+<CodeBlockWithCopy language="json">
+    {`"computation" : {
+    "currencyCode" : "string",
+    "value"        : int,
+    "method"       : "PERCENTAGE" | "VALUE",
+}`}
+</CodeBlockWithCopy>
+
+Sometimes, values are calculated dynamically, and is dependant on the rest of the elements in the bill. This is where the `computation` object comes into the picture. It is very similar to the [`amount`](#amount) object, but with an additional `method` attribute which describes how that value was arrived at.
+
+<hr class="tertiary" />
+
+##### Aggregates
+
+<CodeBlockWithCopy language="json">
+    {`"aggregates" : {
+    "itemQuantity" : {},
+    "discount"     : {
+        "displayName" : "string",
+        "amount"      : {
+            "currencyCode" : "string",
+            "value"        : 0
+        },
+    },
+    "fee"      : {},
+    "tax"      : {},
+    "subTotal" : {},
+    "total"    : {}
+}`}
+</CodeBlockWithCopy>
+
+The `aggregates` object is used to display the cumulative total value from all of the above components. Each of these attributes have the same structure—containing the [`amount`→](/collect/biller/bbps/bill-object#amount) object inside of them, along with the `displayName` string.
+
+<hr class="tertiary" />
+
+### Sample bill
+
+Using all these components, we can now create a bill for a real-world use case. Let’s say you want to create for an EMI payment with the below details—
+
+<table>
+    <thead>
+        <tr>
+            <th>
+                <h6>Line item</h6>
+            </th>
+            <th>
+                <h6>Amount</h6>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>EMI — June</td>
+            <td>₹ 6000</td>
+        </tr>
+        <tr>
+            <td>EMI — July</td>
+            <td>₹ 6000</td>
+        </tr>
+        <tr>
+            <td>
+                <h6>Total EMI</h6>
+            </td>
+            <td>
+                <h6>₹ 12,000</h6>
+            </td>
+        </tr>
+        <tr>
+            <td>Convenience fees</td>
+            <td>₹ 15</td>
+        </tr>
+        <tr>
+            <td>Late fees</td>
+            <td>₹ 200</td>
+        </tr>
+        <tr>
+            <td>
+                <h5>Total payable</h5>
+            </td>
+            <td>
+                <h5>₹ 12,215</h5>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<br />
+
+Here, we need to process two line items for the EMIs, and two types of fees, and one total amount for the entire bill. The EMIs can be constructed using the `items` object, like so—
+
+<CodeBlockWithCopy language="json">
+    {`"items" : [
+    {
+        "displayName" : "EMI — June",
+        "description" : "Missed installment payment for June",
+        "aggregates"  : {
+            "total"   : {
+                "currencyCode" : "INR",
+                "value"        : 600000  // INR6000 in paise
+            }
+        }
+    },
+    {
+        "displayName" : "EMI — July",
+        "description" : "Installment for July",
+        "aggregates"  : {
+            "total"   : {
+                "currencyCode" : "INR",
+                "value"        : 600000  // INR6000 in paise
+            }
+        }
+    }
+]`}
+</CodeBlockWithCopy>
+
+<br />
+
+And for the fees included, we can use the `fees` object, like so—
+
+<CodeBlockWithCopy language="json">
+    {`"fees" : [
+    {
+        "displayName" : "Late fees",
+        "description" : "Extra charge for missing the June payment",
+        "aggregates"  : {
+            "total"   : {
+                "currencyCode" : "INR",
+                "value"        : 20000  // in paise
+            }
+        }
+    },
+    {
+        "displayName" : "Convenience fees",
+        "description" : "Online processing charges",
+        "aggregates"  : {
+            "total"   : {
+                "currencyCode" : "INR",
+                "value"        : 1500  // in paise
+            }
+        }
+    }
+]`}
+</CodeBlockWithCopy>
+
+<br />
+
+Filling the other attributes and putting it all together, the bill object now looks something like this—
+
+<CodeBlockWithCopy language="json">
+    {`//  ENTIRE BILL OBJECT
+{
+    "billerBillID"    : "CXR5JEQO8K",
+    "recurrence"      : "ONE_TIME",
+    "generatedOn"     : "2019-07-27T12:56:39Z",
+    "dueDate"         : "2019-08-26T12:56:39Z",
+    "amountExactness" : "EXACT",
+    "fees" : [
+        <late fees object>,
+        <convenience fees object>
+    ],
+    "items" : [
+        <june fee object>,
+        <july fee object>
+    ],
+    "customerAccount" : {
+        "id" : "asha.dev@gmail.com"
+    },
+    "aggregates"      : {
+        "subtotal" : {
+            "amount" : {
+                "displayName" : "EMI amount",
+                "value"       : 1200000  // in paise
+            }
+        },
+        "total": {
+            "amount" : {
+                "displayName" : "Total payable amount",
+                "value"       : 1221500  // in paise
+            }
+        }
+    }
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+Finally, wrap the bill object in the following pattern, and send it across to us as the <a href="api-reference#/category~APIs_to_Implement/operation~fetchCustomerBills" target="_blank"><code>fetchCustomerBills</code>↗</a> response to Setu—
+
+<CodeBlockWithCopy language="json">
+    {`//  FETCH CUSTOMER BILLS API RESPONSE
+{
+    "status"  : 200,
+    "success" : true,
+    "data"    : {
+        "customer" : {
+            "name" : "Asha Dev"
+        },
+        "billDetails" : {
+            "billFetchStatus" : "AVAILABLE",
+            "bills" : [
+                <bill object>
+            ]
+        }
+    }
+}`}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />

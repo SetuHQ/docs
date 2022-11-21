@@ -1,0 +1,95 @@
+---
+sidebar_title: Website
+page_title: BBPS Billpay website
+order: 1
+visible_in_sidebar: true
+---
+
+## Website integration
+
+Setu provides ready to use screens for the website integration. Contact Setu to update your logo, colours, fonts as per your branding. You can reach out to <a href="">billpay.support@setu.co</a> for any further clarifications.
+
+<Callout type="tip">
+    This quickstart provides the integration guidelines for website integration
+    with Setu’s default UPI payment option. If you’d like to use your own
+    payment gateway, please refer to{" "}
+    <a href="/payments/billpay/custom-payment/website" target="_blank">
+        this guide
+    </a>{" "}
+    too.
+</Callout>
+
+<br />
+
+There are 2 options for website integration, depending on how you interact with your users—
+
+-   If you do not verify your users with mobile based OTP login, use **Option 1 — Get static URL**. In this scenario, Setu will share a static link with you, which can be added/embedded in your website. Setu will handle mobile OTP verification for your customer’s number.
+-   If you already verify your customers through login, you can use **Option 2 — Get dynamic URL**. In this scenario, it is assumed that you have already verified the mobile number of your user. Use the <a href="/payments/billpay/api-reference/white-label#/category~Link/operation~getLink" target="_blank">**Create link API**</a> to get this URL and bypass Setu’s OTP verification.
+
+<hr class="primary" />
+
+### Option 1 — Get static URL
+
+##### Step 1 — Get link for bill payment
+
+Get a ready-to-use Setu URL, with your branding. You can simply embed this link on your website, without any further integration. This option comes with a pre-built mobile-OTP module that can verify your customers, to prevent malicious mass bill fetch / pay requests.
+
+<hr class="secondary" />
+
+##### Step 2 — Optionally configure webhook
+
+You may optionally want to listen to user events—like successful or failed bill fetch, bill payment status and more—through webhooks. Refer to <a href="/payments/billpay/user-events" target="_blank">this guide</a> for more information.
+
+<hr class="secondary" />
+
+##### Step 3 — Get Production credentials and go live
+
+Once you are done testing your integration, ensure that all KYC and legal agreements are submitted. Contact Setu
+for getting enabled on production.
+
+<hr class="primary" />
+
+### Option 2 — Get dynamic URL
+
+##### Step 1 — Get link for bill payment
+
+This step gives a one time Setu URL to be used by your customer for the bill fetch or payment flow. Generate this link uniquely for each of your customers and make sure you get a new link each time your customer wants to get back to the bill payment journey.
+
+The <a href="/payments/billpay/api-reference/white-label#/category~Link/operation~getLink" target="_blank">Create link API</a> needs to be called when you want to obtain a one time link to load Setu’s bill payment screens.
+
+<CodeBlockWithCopy language="bash">
+    {`POST https://bills-sandbox.setu.co/direct-link`}
+</CodeBlockWithCopy>
+
+<Callout type="tip">
+    None of the parameters in this request, aside from mobile number, are
+    mandatory. However, depending on what is passed the returned link will
+    display different UI.
+</Callout>
+
+<br />
+
+You can have the following scenarios, depending on what you choose to send along with the customer’s mobile number—
+
+-   If no other input is passed, it will take the user to the home page with all BBPS categories.
+-   If category code is passed, it will show user a list of billers in that category.
+-   If category code and biller ID is passed, it will show the bill fetch form where a customer can enter their identifers (biller specified parameters)
+-   If the category code, biller ID and parameters are passed, it will show the bill directly.
+
+<Callout type="warning">
+    All query parameters should be url-encoded to escape special characters
+</Callout>
+
+<hr class="secondary" />
+
+##### Step 2 — Optionally configure webhook
+
+You may optionally want to listen to user events—like successful or failed bill fetch, bill payment status and more—through webhooks. Refer to <a href="/payments/billpay/user-events" target="_blank">this guide</a> for more information.
+
+<hr class="secondary" />
+
+##### Step 3 — Get Production credentials and go live
+
+Once you are done testing your integration, ensure that all KYC and legal agreements are submitted. Contact Setu for getting enabled on production.
+
+<WasPageHelpful />

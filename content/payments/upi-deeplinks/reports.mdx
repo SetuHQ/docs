@@ -1,0 +1,292 @@
+---
+sidebar_title: Reports API
+page_title: UPI Deeplinks Reports API
+order: 5
+visible_in_sidebar: true
+---
+
+## Reports API
+
+Setu Reports API provides you access to transaction and settlement data. This can be consumed to automate your reconcilliation process.
+
+The request format is detailed below—
+
+<table>
+  <tbody>
+    <tr>
+      <th>URL</th>
+      <td>
+        {" "}
+        Production: <code>https://bifrost.setu.co/bifrost/collect/reports</code>
+        <br /> Sandbox:{" "}
+        <code>https://uat-bifrost.setu.co/bifrost/collect/reports</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>POST</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Headers</th>
+      <td>
+        <code>Content-Type</code>: <code>application/json</code>
+        <br />
+        <br />
+        <code>x-setu-partner-id</code>: Can be found under Organization settings
+        on The Bridge.
+        <br />
+        <br />
+        <code>x-setu-env</code>: <code>Test</code>/ <code>Live</code>. This
+        corresponds to the Sandbox and Production environment on The Bridge.
+        <br />
+        <br />
+        <code>Authorization</code>: Bearer (<b>insert_token_here</b>). Generate this
+        token using <a
+          href="/payments/upi-deeplinks/resources/oauth"
+          target="_blank"
+        >
+          OAuth
+        </a> or <a href="/payments/upi-deeplinks/resources/jwt" target="_blank">
+          JWT
+        </a>.
+        <br />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<br />
+
+### Transaction Report
+
+##### Request
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "filters" : {
+        "paymentStartDate"    : "2019-12-31T18:30:00.000Z",  // ISO-8601 timestamp in UTC
+        "paymentEndDate"      : "2020-12-10T18:29:59.999Z",  // ISO-8601 timestamp in UTC
+        "settlementStartDate" : "2019-12-31T18:30:00.000Z",  // ISO-8601 timestamp in UTC
+        "settlementEndDate"   : "2020-12-10T18:29:59.999Z",  // ISO-8601 timestamp in UTC
+        // payment modes you want to filter, we recommend skipping this parameter
+        "paymentMode"         : [
+            "UPI",
+            "CASH",
+            "NEFT",
+            "RTGS",
+            "IMPS",
+            "IFT",
+            "CC",
+            "DC",
+            "Prepaid",
+            "Internet Banking",
+            "Debit Card",
+            "Credit Card",
+            "Cash",
+            "Wallet",
+            "Prepaid Card",
+            "AEPS",
+            "Account Transfer",
+            "Bharat QR",
+            "USSD"
+        ],
+        "platformBillStatus" : [  // bill statuses you want to filter, we recommend using only "SETTLEMENT_SUCCESSFUL" for exact reconciliation
+            "PAYMENT_SUCCESSFUL",
+            "PAYMENT_FAILED",
+            "CREDIT_RECEIVED",
+            "SETTLEMENT_SUCCESSFUL",
+            "SETTLEMENT_FAILED",
+            "BILL_EXPIRED"
+        ]
+    },
+    "pagination": {  // set your pagination limit for large number of records
+        "cursor": "",  // use "nextCursor" value as returned by API response, as an input to subsequent API call to move the cursor ahead
+        "limit": 100  // min 100 max 500
+    },
+    "productIds": [  // list of all product IDs for which you want to fetch the records for
+        "374024227163997852"
+    ],
+    "reportType": "transaction"
+}`}
+</CodeBlockWithCopy>
+
+##### Response
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": 200,  // http status
+    "success": true,  // success status of API request
+    "data": {  // data in case of success
+        "metadata": {  // metadata about records that match the request
+            "totalRecords": 2,  // total number of matching records
+            "filters": {},  // filters applied
+            "previousCursor": "",  // updated cursor position after this call
+            "nextCursor": ""  // next cursor position for use with next iteration of pagination
+        },
+        "records": [  // array of records
+            {
+                "platformBillID": "517002663317996567",  // Setu's unique ID for every bill
+                "billerBillID": "fb0e9146-466a-40f1-9bd6-e8d01d4940e2",  // biller's ID associated with this bill
+                "billerMCC": "Loans",  // category of business
+                "platformBillStatus": "CREDIT_RECEIVED",  // status of the transaction, read here to know more: https://support.setu.co/support/solutions/articles/81000385479
+                "amountTotal": 1992,  // bill amount
+                "deemedStatus": "NOT_DEEMED",  // whether this bill was deemed success (upcoming feature)
+                "currencyCode": "INR",
+                "amountPaid": 200000,  // amount paid by the customer
+                "paymentInstrument": "UPI",  // payment method used by the customer
+                "paymentDate": "2020-12-10T05:43:30+05:30",  // ISO-8601 timestamp for payment
+                "paymentReferenceID": "517002663317996567",  // unique payment ID as shared by customer app
+                "paymentReceipt": "dceeb285-c4ab-49e4-a7f0-d37bdef3b906",  // receipt generated against the payment
+                "settlementDate": "2020-12-12T10:54:30+05:30",  // ISO-8601 timestamp for settlement
+                "settlementUtr": "CMS201022000BLO",  // bank Unique Transaction Reference number for the settlement
+                "primaryAccountNumber": "XXXXXXXX060510",  // primary bank account associated with the biller
+                "primaryAccountIfsc": "KKBK0000431",  // primary bank IFSC associated with the biller
+                "primaryAccountName": "John Wick",  // primary bank account holder name associated with the biller
+                "primaryAccountSettlementAmount": 198384,  // settlement amount sent to primary bank account
+                "split": "YES",  // indicates if settlement has been split into parts
+                "splitSettlements": [  // array with objects describing each part of the split in settlement
+                    {
+                        "date": "2020-10-22T10:54:30+05:30",
+                        "utr": "CMS201023000BLO",
+                        "name": "The Manager",
+                        "id": "XXXXXXXX060511",
+                        "ifsc": "KKBK0000431",
+                        "amount": 1144
+                    }
+                ],
+                "bpcTotal": 400,  // bill payment charge deducted by Setu
+                "bpcPercentage": 0,  // percentage on the basis of which the bill payment charge is calculated
+                "bpcFlat": 400,  // flat fee as part of bill payment charge
+                "gstTotal": 72,  // GST charged on bill payment charge
+                "gstPercentage": 18,  // percentage fee on the basis of which the GST is calculated
+                "gstFlat": 0  // flat fee as part of GST
+            },
+            {
+                ...
+            }
+        ]
+    }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+### Refund Report
+
+##### Request
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "filters": {
+        "createdAtEndDate": "2022-08-10T11:15:41.631Z",  // ISO-8601 timestamp in UTC
+        "createdAtStartDate": "2022-08-06T18:30:00.000Z"  // ISO-8601 timestamp in UTC
+        "payeeVPA": "anothersample@okbank",
+        "payerVPA": "sample@okbank",
+        "paymentReferenceID": "1234567890",
+        "refundReason": [
+            "Order ID invalid in credit alert",
+            "Duplicate payment made against bill",
+            "Payment amount validation failure",
+            "Credit alert received after bill expiry",
+            "Credit alert not received from bank",
+            "Initiated by merchant",
+            "Source account info missing from credit alert",
+            "TPV check failure"
+        ],
+        "refundStatus": [
+            "Created",
+            "MarkedForRefund",
+            "QueuedForRefund",
+            "Rejected",
+            "Initiated"
+        ]
+    },
+    "pagination": {  // set your pagination limit for large number of records
+        "cursor": "",  // use "nextCursor" value as returned by API response, as an input to subsequent API call to move the cursor ahead
+        "limit": 100  // min 100 max 500
+    },
+    "productIds": [  // list of all product IDs for which you want to fetch the records for
+        "374024227163997852"
+    ],
+    "reportType": "refund"
+}`}
+</CodeBlockWithCopy>
+
+##### Response
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": 200,
+    "success": true,
+    "data": {
+        "metadata": {
+            "totalRecords": 39,
+            "filters": {
+                "createdAtEndDate": "2022-08-10T11:15:41.631Z",  // ISO-8601 timestamp in UTC
+                "createdAtStartDate": "2022-08-06T18:30:00.000Z",  // ISO-8601 timestamp in UTC
+                "paymentMode": null,
+                "platformBillStatus": null,
+                "productTypes": null,
+                "refundReason": [
+                    "Order ID invalid in credit alert",
+                    "Duplicate payment made against bill",
+                    "Payment amount validation failure",
+                    "Credit alert received after bill expiry",
+                    "Credit alert not received from bank",
+                    "Initiated by merchant",
+                    "Source account info missing from credit alert",
+                    "TPV check failure"
+                ],
+                "refundStatus": [
+                    "Created",
+                    "MarkedForRefund",
+                    "QueuedForRefund",
+                    "Rejected",
+                    "Initiated"
+                ]
+            },
+            "previousCursor": "",
+            "nextCursor": ""
+        },
+        "records": [
+            {
+                "actorID": "1234567890",
+                "amount": 1234,
+                "batchID": "cbpobt817cjflqbfl5r0",
+                "createdAt": "2022-08-10T15:48:29+05:30",
+                "initiatedAt": "",
+                "payerVPA": "sample@okbank",
+                "payeeVPA": "anothersample@okbank",
+                "paymentReferenceID": "222234971910",
+                "paymentTransactionID": "PTMDCWAAD8A02F7412B90DE8C32236D0494",
+                "platformBillID": "958135084945245239",
+                "refundReason": "Initiated by merchant",
+                "refundID": "958136906271525795",
+                "refundStatus": "Created",
+                "type": "MerchantInitiated",
+                "deductions": [
+                    {
+                        "account": {
+                            "name": "",
+                            "id": "0566102000016463",
+                            "ifsc": "IBKL0002536"
+                        },
+                        "split": {
+                            "value": 1234,
+                            "unit": "INR"
+                        },
+                        "UTR": ""
+                    }
+                ]
+            },
+            {
+              ...
+            }
+        ]
+    }
+}`}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />

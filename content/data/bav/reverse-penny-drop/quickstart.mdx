@@ -1,0 +1,239 @@
+---
+sidebar_title: Quickstart
+page_title: Quickstart for reverse penny drop
+order: 1
+visible_in_sidebar: true
+---
+
+## Reverse penny drop
+
+Reverse penny drop for bank account verification on UPI is an industry-first product from Setu for customer bank account validation. This involves the customer making a &#8377;1 payment to a specific VPA registered for your organisation.
+
+Setu extracts the customer’s bank account information from the transaction and passes it on in a webhook to you. After the credit response, the &#8377;1 is refunded to the customer’s account within 48 hours.
+
+<hr class="primary" />
+
+### Step 1 — Start KYC and business documentation
+
+This is started once Setu’s sales team has interacted with you and confirmed integration. You will need to provide a few KYC details and review some agreements. Please reach out to <a href="">onboarding@setu.co</a> to get started.
+
+<hr class="primary" />
+
+### Step 2 — Get API credentials
+
+Contact Setu on <a href="">onboarding@setu.co</a> to get `x-client-id` and `x-client-secret` details. These credentials are required to make API calls on sandbox or production.
+
+<hr class="primary" />
+
+### Step 3 — Test on sandbox
+
+Please use this <a href="https://documenter.getpostman.com/view/8675983/TzefBjTM#4f6b41e5-57d6-4981-8672-588424827bb3" target="_blank">postman collection</a> to test <strong>Reverse Penny Drop</strong>.
+
+#### List of APIs
+
+Setu’s API solution can be used to verify a user’s bank account real-time, with your own screens on your app or website. With this, you will get a shareable UPI deep link and a link to a QR code. Once invoked, it allows your customer to make a &#8377;1 payment, and provides you with a response in a webhook or when you poll our `GET` API. The following section describes the APIs required for enabling this flow.
+
+##### Create reverse penny drop request
+
+Send a `POST` request to the `/api/verify/ban/reverse/` endpoint to create a reverse penny drop request. This API allows two modes—
+
+-   Without body, that lets you initiate a request and generate a UPI link for your customer to pay &#8377;1 and verify their account.
+-   With body, that accepts a request with header `Content-Type` as `application/json` and expect you to send us key-value pairs in `additionalData` field like so—
+
+<CodeBlockWithCopy language="json">
+    {`
+    "additionalData": {
+        "key1": "value1",
+        "key2": "value2"
+    }
+  `}
+</CodeBlockWithCopy>
+
+<Callout type="warning">
+    We will not return the <code>additionalData</code> in the API’s response.
+    Instead, you can expect this data as part of a JSON when you are notified
+    over webhook, or when you use the <code>GET</code> API.
+</Callout>
+<br />
+
+If successful you will get a JSON response. Two of the fields in the response would be
+
+-   `upiLink`, a UPI intent link starting with `upi://`
+-   `shortUrl`, a link starting with `https://` and an image with a QR code
+
+We recommend showing the QR code on desktop devices so that a user can use their phone to scan QR and pay. For mobile phones, it's recommended to use the UPI intent link to pay on the same device.
+
+<Callout type="tip">
+    Notify your user, that they should pay from the account they want to use on
+    your platform (if their primary account has to be verified for such usage).
+</Callout>
+<br />
+
+<Callout type="warning">
+    Once payment is done, the payment link expires, and cannot be reused again.
+    The link can also expire if your customer hasn't paid in 24hrs—in this case
+    you will be notified of the status of the request, which will be{" "}
+    <b>BAV_REVERSE_PENNY_DROP_EXPIRED</b>.
+</Callout>
+<br />
+
+<b>Types of statuses</b>
+
+-   `BAV_REVERSE_PENNY_DROP_CREATED`, if request was created successfully.
+-   `BAV_REVERSE_PENNY_DROP_FAILED`, something went wrong. A payment should not be attempted with this request id.
+-   `BAV_REVERSE_PENNY_DROP_EXPIRED`, upon expiry of payment link for customer. No payments can be done with expired links. The expiry is triggered as per the specified `validUpto` field or within 24 hours, whichever comes first.
+-   `BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL`, when your user has successfully paid, and Setu’s banking partner has sent a credit alert with bank account details.
+-   `BAV_REVERSE_PENNY_DROP_PAYMENT_FAILED`, when an issue occurs during payment by your user or at Setu’s banking partner’s end. The payment, if made, will be auto-refunded.
+
+<b>Types of bank accounts</b>
+
+-   `PPI`, if the payment happened from a PPI (Pre Paid Instrument) account and not a valid bank account
+-   `BANK_ACCOUNT`, if the payment happened from a valid bank account and the IFSC is in the RBI database
+-   `UNKNOWN`, if the payment happened from a bank account who's IFSC is not in the RBI database
+
+<Callout type="tip">
+    If the bank account is classified as PPI, then it is for sure a PPI
+    instrument and for majority of the use cases consider it an invalid bank
+    account since money movement doesn't happen when trying to deposit an amount
+    through IMPS/NEFT/RTGS. There can be PPI instruments which come up as
+    `UNKNOWN`, please notify us at support@setu.co.
+</Callout>
+
+<br />
+
+<Callout type="warning">
+    In some cases when our banking partner doesn't send us credit alerts the
+    status still may show as <code>BAV_REVERSE_PENNY_DROP_CREATED</code>.
+</Callout>
+
+<hr class="tertiary" />
+
+##### Mock payment
+
+This API lets you test the end to end flow without an actual payment. This will send a webhook to the callback URL you have configured with us.
+
+<Callout type="warning">
+    Use this API only on sandbox/UAT. This endpoint is disabled on{" "}
+    <b>production</b> environment.
+</Callout>
+<br />
+
+<hr class="tertiary" />
+
+##### Get details of reverse penny drop request
+
+While Setu provides required data to the configured webhook, we also have an API that you can poll to get the latest status. This allows developer to do a fetch using <b>GET</b> API and get transaction specific information at any point of time.
+
+<Callout type="tip">
+    Use this API only as a backup option, in case you encounter issues in
+    receiving webhooks. Continuous polling is not recommended, as it puts extra
+    load on your servers as well as Setu’s.
+</Callout>
+<br />
+
+<hr class="tertiary" />
+
+##### Notifications
+
+Below is a summary of the API endpoints you need to implement on your server and expose to receive notifications from Setu. These notifications are webhooks from Setu, based on the events that occur during the consent and data flow.
+
+The `base_url` is the server URL you share with us to receive notifications.
+To get started quickly, you can setup a mock API endpoint using <a href="https://beeceptor.com/" target="_blank">Beeceptor</a>. Once configured, Setu will send notifications to that URL. This will help you understand the notification flow before you start to implement it on your server.
+
+Here’s a sample of a successful verification, with the corresponding reverse penny drop request `id` as well as bank account details pulled from the UPI payment (indicated by `upiBillId`) done by your customer—
+
+<CodeBlockWithCopy language="json">
+    {`
+    {
+        "event"     : "RPD_VERIFICATION_UPDATE", 	
+        "traceId"   : "7097e53a-baq9-4122-9d3d-8s8433b4f33e",
+        "timeStamp" : "2021-11-12T00:12:29+05:30",
+        "data"        : {
+              "rpd" : {
+                  "success"   : true,
+                  "id"        : "7097e53a-ba29-48a2-983d-878433b4f33e",
+                  "upiBillId" : "907442106379798024",
+                  "data"      : {
+                      "bankAccountName"   : "Eve",
+                      "bankAccountIfsc"   : "SBIN0000001",
+                      "bankAccountNumber" : "48097036412",
+                      "payerVpa"          : "test@upi"
+                      "accountType"       : "BANK_ACCOUNT",
+                      "ifscCrossCheck"    : true,
+                      "ifscDetails"       : {
+                          "address": "EXPRESS TOWERS,GROUND FLOOR,NARIMAN POINT,MUMBAI 400021",
+                          "branch": "Development Bank of Singapore IMPS",
+                          "center": "MUMBAI",
+                          "city": "MUMBAI",
+                          "contact": "+912266388888",
+                          "district": "MUMBAI",
+                          "imps": "true",
+                          "iso3166": "IN-MH",
+                          "micr": "400641002",
+                          "name": "Development Bank of Singapore",
+                          "neft": "true",
+                          "rtgs": "true",
+                          "state": "MAHARASHTRA",
+                          "swift": "",
+                          "upi": "true"
+                      }
+                  }
+              }
+        }
+    }
+  `}
+</CodeBlockWithCopy>
+
+Here’s a sample of a failed verification request, with the corresponding reverse penny drop request `id` and details on the error—
+
+<CodeBlockWithCopy language="json">
+    {`
+    {
+        "event"     : "RPD_VERIFICATION_UPDATE", 	
+        "traceId"   : "7097e53a-baq9-4122-9d3d-8s8433b4f33e",
+        "timeStamp" : "2021-11-12T00:12:29+05:30",
+        "data"      : {
+            "rpd" : {
+                "success"   : false,
+                "id"        : "7097e53a-ba29-48a2-983d-878433b4f33e",
+                "upiBillId" : "907442106379798024",
+                "data"      : null,
+                "error"     : {
+                    "code"   : "BAV_REVERSE_PENNY_DROP_EXPIRED | BAV_REVERSE_PENNY_DROP_FAILED", 
+                    "detail" : "Expired or failed"
+                },
+            }
+        }
+    }
+  `}
+</CodeBlockWithCopy>
+
+##### Refunds
+
+Setu will refund any successful payment done by a user, after we receive a credit response from our bank partner. This takes between 24 to 48 hours and refunds are handled in batches.
+
+Setu will store account details of the user to handle failed auto-refunds. For failure, the refund will be processed manually. When the refund is settled, a default UPI SMS notification will be sent to the user.
+
+In case an issue arises and you need to contact our support team, please provide the corresponding `upi_bill_id` so that we can quickly resolve it.
+
+<Callout type="tip">
+    Notify the user that the amount will be refunded back to their account
+    within 24-48 hours.
+</Callout>
+
+<br />
+
+##### FAQs
+
+**Are `CNRB0000000` and `CNRB0000033` valid IFSCs?**
+
+All Canara bank accounts seems to have only two IFSC codes configured with NPCI. Some interesting observations:
+
+1. The name returned is correct
+2. The account number returned is also correct
+3. Penny Drop to account number with `CNRB0000000` is successful
+4. Penny Drop to account number with `CNRB0000033` is successful
+
+Since the money movement happens correctly, these are valid bank accounts.
+
+<WasPageHelpful />

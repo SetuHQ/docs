@@ -1,0 +1,137 @@
+---
+sidebar_title: iOS
+page_title: BBPS Billpay iOS integration
+order: 3
+visible_in_sidebar: true
+---
+
+## iOS integration
+
+Setu provides ready to use URLs for iOS integration. Contact Setu to update your logo, colours, fonts as per your branding. You can reach out to <a href="">billpay.support@setu.co</a> for any further clarifications. This quickstart page provides the sample code for the following specs—
+
+-   **Programming language** — Swift 5.\* (Latest version 5.3)
+-   **Interface** — Storyboard
+-   **Life Cycle delegation** — UI Kit
+-   **iOS versions supported** — 12+ (Latest version 14.4)
+
+<Callout type="tip">
+    This quickstart provides the integration guidelines for iOS integration with
+    Setu’s default UPI payment option. If you’d like to use your own payment
+    gateway, please refer to{" "}
+    <a href="/payments/billpay/custom-payment/iOS" target="_blank">
+        this guide
+    </a>{" "}
+    instead.
+</Callout>
+
+<hr class="primary" />
+
+### Step 1 — Implement web view in your app
+
+The following steps need to be taken for webview integration—
+
+1. Get link from the backend
+2. Open a webview and attach the iOS interface
+
+<hr class="tertiary" />
+
+##### Get link from the backend
+
+This step gives a one time Setu URL to be used by your customer for the bill fetch or payment flow. The <a href="/payments/billpay/api-reference/white-label#/category~Link/operation~getLink" target="_blank">Create link API</a> needs to be called when the iOS app wants to obtain a one time link to load Setu’s screen flow inside a webview.
+
+<Callout type="tip">
+    None of the parameters aside from mobile number are mandatory, but depending
+    on what is passed the returned link will display different UI.
+</Callout>
+
+You can have the following scenarios, depending on what you choose to send along with the customer’s mobile number—
+
+-   If no other input is passed, it will take the user to the home page with all BBPS categories.
+-   If category code is passed, it will show user a list of billers in that category.
+-   If category code and biller ID is passed, it will show the bill fetch form where a customer can enter their identifers (biller specified parameters)
+-   If the category code, biller ID and parameters are passed, it will show the bill directly.
+
+<Callout type="warning">
+    All query parameters should be url-encoded to escape special characters
+</Callout>
+
+<br />
+
+The above request will return URL based on the input params. Here’s a sample—
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "link": "https://cou-whitelabelled-dev.setu.co/cou/categories/5f1fb0db-b2ed-4222-bb2f-53d238df370a"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Switch control from your app to Setu
+
+The link returned by the API should be loaded within `WKWebView` in a `ViewController` which implements `UIViewController`, and `WKScriptMessageHandler`. The controller must also extend and use a custom `WKNavigationDelegate` class to intercept and download PDF files.
+
+If you’re using a cross platform solution—like Flutter, React Native, Ionic—look at the code snippets provided <a href="/payments/billpay/quickstart/cross-platform" target="_blank">here</a>.
+
+The `userContentController` will need to implement one function—
+
+-   `unload` — Used by the parent app to dismiss the webview
+
+<CodeBlockWithCopy language="bash">
+{`// The iOS observer function
+func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    guard let dict = message.body as ? [String: AnyObject]
+    else {
+        return
+    }
+    let functionToPerform: String = dict["function"] as ? String ?? ""
+    
+    switch functionToPerform {
+        case "unload": closeView()
+        default: break
+    }
+}`}
+
+</CodeBlockWithCopy>
+
+The `WKWebviewDownloadHelper` which downloads our PDF file is used as below
+
+<CodeBlockWithCopy language="bash">
+    {`override func viewDidLoad() {
+  super.viewDidLoad()
+  let mimeTypes = [MimeType(type: "pdf", fileExtension: "pdf")]
+  helper = WKWebviewDownloadHelper(webView: webView, mimeTypes: mimeTypes, delegate: self)
+  webView.configuration.userContentController.add(self, name: "ios_observer")
+}`}
+</CodeBlockWithCopy>
+
+`WKWebviewDownloadHelper` is dependent on the custom `WKNavigationDelegate` class
+
+<CodeBlockWithCopy language="bash">
+    {`extension WebViewController: WKWebViewDownloadHelperDelegate {
+  func fileDownloadedAtURL(url: URL) {
+    DispatchQueue.main.async {
+      let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+      activityVC.popoverPresentationController?.sourceView = self.view
+      activityVC.popoverPresentationController?.sourceRect = self.view.frame
+      activityVC.popoverPresentationController?.barButtonItem = self.navigationItem.rightBarButtonItem
+      self.present(activityVC, animated: true, completion: nil)
+    }
+  }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+### Step 2 — Optionally configure webhook
+
+You may optionally want to listen to user events—like successful or failed bill fetch, bill payment status and more—through webhooks. Refer to <a href="/payments/billpay/user-events" target="_blank">this guide</a> for more information.
+
+<hr class="primary" />
+
+### Step 3 — Get Production credentials and go live Once you are done testing your
+
+integration, ensure that all KYC and legal agreements are submitted. Contact Setu
+for getting enabled on production.
+
+<WasPageHelpful />

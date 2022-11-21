@@ -1,0 +1,224 @@
+---
+sidebar_title: Notifications
+page_title: UPI Deeplinks Notifications
+order: 6
+visible_in_sidebar: true
+---
+
+## Notifications
+
+#### Outgoing event alerts sent by Setu to partners.
+
+Currently, there are two types of events — `BILL_FULFILMENT_STATUS` and `BILL_SETTLEMENT_STATUS`, which triggers a notification for the following events.
+
+<hr class="primary" />
+
+### Bill fulfilment status
+
+After Setu receives a callback from the bank for a particular payment, we send a `PAYMENT_SUCCESSFUL` or `PAYMENT_FAILED` notification to the merchant.
+
+<br />
+
+#### Payment successful notification
+
+<CodeBlockWithCopy language="json">
+    {`
+{
+  "partnerDetails": {
+    "appID": "861023031961584801",
+    "productInstanceID": "861023031961584801"
+  },
+  "events": [
+    {
+      "data": {
+        "Reason": "",
+        "amountPaid": {
+          "currencyCode": "INR",
+          "value": 100
+        },
+        "billerBillID": "918147077472",
+        "payerVpa": "saainithil97@icici",
+        "platformBillID": "896444053527201086",
+        "receiptId": "292cdeff-f4c6-4684-b266-43586f5234d0",
+        "sourceAccount": {            // this is the account from which the payment was made and will only be sent for TPV-enabled merchants
+          "ifsc": "SETU0000012",      
+          "name": "Noresh",           
+          "number": "9009120939129"   
+        },
+        "status": "PAYMENT_SUCCESSFUL",
+        "transactionId": "260843001102590",
+        "transactionNote": "Payment for 918147077472"
+      },
+      "timeStamp": 1652772351636,
+      "type": "BILL_FULFILMENT_STATUS",
+      "id": "edead767-1584-4177-bd45-7ac9cd201c28"
+    }
+  ]
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+#### Payment failed notification
+
+A payment can fail for multiple reasons as explained below:
+
+| Reason                     | When does this happen?                                                                                                                                                                                                                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Amount validation failed` | If the payment amount does not satisfy the `amountExactness` condition specified during payment link creation.                                                                                                                                                                                    |
+| `Payment link has expired` | If the payment was made after the `expiryDate` set during payment link creation.                                                                                                                                                                                                                  |
+| `Missed credit alert`      | In rare scenarios, the bank system does not send us a credit alert in real time. But when we process all transactions in the following settlement cycle, and if `delayed processing` configuration is disabled for the merchant, the bill is marked as `PAYMENT_FAILED` and notification is sent. |
+| `Payment address inactive` | When a customer makes multiple payments using the same payment link, only the first one is honoured. For all others, a failure notification is sent.                                                                                                                                              |
+| `TPV check failed`         | If TPV check by Setu is enabled and account validation fails. Read more about TPV <a href="/payments/upi-deeplinks/refunds#third-party-verification--tpv--refunds" target="_blank">here</a>.                                                                                                      |
+
+<br />
+<CodeBlockWithCopy language="json">
+    {`
+{
+  "partnerDetails": {
+    "appID": "861023031961584801",
+    "productInstanceID": "861023031961584801"
+  },
+  "events": [
+    {
+      "data": {
+        "Reason": "Amount validation failed",
+        "amountPaid": {
+          "currencyCode": "INR",
+          "value": 200
+        },
+        "billerBillID": "918147077472",
+        "payerVpa": "saainithil97@icici",
+        "platformBillID": "896445757228320073",
+        "receiptId": "774cbd68-0106-4635-b861-986d4a5c9792",
+        "status": "PAYMENT_FAILED",
+        "transactionId": "6917454577784936",
+        "transactionNote": "Payment for 918147077472"
+      },
+      "timeStamp": 1652772555905,
+      "type": "BILL_FULFILMENT_STATUS",
+      "id": "e41d9f2a-eb66-4be0-8dec-f04806656274"
+    }
+  ]
+}`}
+</CodeBlockWithCopy>
+
+<hr class="secondary" />
+
+### Bill settlement status
+
+<br />
+
+#### Bill settled notification
+
+A `SETTLEMENT_SUCCESSFUL` notification is sent to the merchant after successful payments from Setu to the merchant. This depends on the settlement frequency agreed upon between Setu and the merchant.
+
+<CodeBlockWithCopy language="json">
+    {`{
+     "partnerDetails": {
+        "appID": "string",  // your unique app ID in Setu system, this is constant
+        "productInstanceID": "string"  // your unique product instance ID in Setu system, this is constant
+    },
+    "events": [
+        {
+            "data": {
+                "amountSettled": {  
+                    // amount settled by Setu, in paisa
+                    "currencyCode": "INR",
+                    "value": 1084
+                },
+                "platformBillIds": [  
+                    // list of platform bill IDs that are processed in this settlement
+                    405884202257482938,
+                    ...
+                ],
+                "status": "SETTLEMENT_SUCCESSFUL",
+                "transactionId": "string"  // bank utr number
+            },
+            "id": "f3b41c8f-72fc-485d-b39a-cf497787a039",  // unique callback ID for every request, used for logging, debugging and tracking
+            "timeStamp": 1594293083984,  // epoch timestamp
+            "type": "BILL_SETTLEMENT_STATUS"
+        }
+    ]
+}`}
+</CodeBlockWithCopy>
+
+<hr class="secondary" />
+
+### Refund status
+
+<br />
+
+#### Refund initiated notification
+
+Refunds are initiated in batch, along with settlements. A batch notification is sent for all processed refunds, once our partner bank initiates refund of the amount, which can be determined by `"type" : "REFUND_STATUS"`.
+
+The refunds array in the notification provides the details of all transactions for which refund is initiated.
+
+<CodeBlockWithCopy language="json">
+    {`{
+   "partnerDetails":{
+      "appID":"867480814940587229",
+      "productInstanceID":"867480814940587229"
+   },
+   "events":[
+      {
+         "data":{
+            "amountRefunded":{
+               "currencyCode":"INR",
+               "value":31000
+            },
+            "refunds":[
+               {
+                  "amount":{
+                     "currencyCode":"INR",
+                     "value":10000
+                  },
+                  "batchID":"",
+                  "billID":873352654237992447,
+                  "reason":"Payment amount validation failure",
+                  "transactionID":"5568091057939410",
+                  "type":"SetuInitiated"
+               },
+               {
+                  "amount":{
+                     "currencyCode":"INR",
+                     "value":20000
+                  },
+                  "batchID":"",
+                  "billID":873352932060300804,
+                  "reason":"TPV check failure",
+                  "transactionID":"9785339996312599",
+                  "type":"ThirdPartyVerification"
+               },
+               {
+                  "amount":{
+                     "currencyCode":"INR",
+                     "value":1000
+                  },
+                  "batchID":"c9ckrdk7ke4q5jfbdaag",
+                  "billID":873351677686580711,
+                  "reason":"Initiated by merchant",
+                  "transactionID":"1208286219397147",
+                  "type":"MerchantInitiated"
+               }
+            ]
+         },
+         "timeStamp":1650020190462,
+         "type":"REFUND_STATUS",
+         "id":"a2e41d61-fbef-42d5-a380-7e15713a15ab"
+      }
+   ]
+}`}
+</CodeBlockWithCopy>
+<br />
+
+#### Refund successful notification
+
+Setu does not have a refund successful notification yet, since this information is not available over APIs.
+
+<hr class="secondary" />
+
+As next steps, you can start your internal reconciliation process or consume our <a href="/payments/upi-deeplinks/reports" target="_blank">Report APIs ↗</a> to get detailed settlement reports.
+
+<WasPageHelpful />

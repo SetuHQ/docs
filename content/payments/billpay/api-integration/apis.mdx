@@ -1,0 +1,360 @@
+---
+sidebar_title: List of APIs
+page_title: BBPS COU — List of APIs
+order: 2
+visible_in_sidebar: true
+---
+
+# Quickstart—API integration
+
+Below is a quick summary of the APIs you need to start integrating with for testing out the BBPS COU product.
+
+The primary actions you will take as an agent of the BBPS system, is to let your customers fetch bills from any business listed on BBPS, and let them pay said business.
+
+For this, the core `fetch`, `pay` and `dispute` APIs are asynchronous. Each API has a `request` endpoint and a `response` endpoint. The `request` endpoint registers the call and the `response` endpoint is used to retrieve the status of the registered call.
+
+<hr class="primary" />
+
+### Fetch bill
+
+The <a href="/payments/billpay/api-integration/api-reference#/category~Fetch_bill/operation~FetchRequest">Fetch bill API</a> with endpoint `/bbps/bills/fetch/request` is used to get bill details for a customer. You need to pass the details of the customer and also the business they want to fetch their bill from.
+
+For e.g., if your customer wants to pay their phone bill for Vodafone Postpaid, you will need to provide—
+
+<ul>
+    <li>
+        <p>the customer’s identifier (mobile number in this case)</p>
+    </li>
+    <li>
+        <p>the business’s identifier (BBPS ID for Vodafone, in this case)</p>
+    </li>
+</ul>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Detailed sample request body
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+		{
+		"customer": {
+			"mobile": "9505987798",
+			"billParameters": [
+				{
+					"name": "Parameter 1",
+					"value": "Value 1"
+				},
+				{
+					"name": "Parameter 2",
+					"value": "Value 2"
+				},
+				{
+					"name": "Parameter 3",
+					"value": "Value 3"
+				}
+			]
+		},
+		"agent": {
+			"app": "SmartPay",
+			"channel": "INT",
+			"geocode": "19.0139,72.8254",
+			"id": "AX01AI06512391457204",
+			"ifsc": "ICIC0000152",
+			"imei": "123456789012345",
+			"ip": "124.170.23.24",
+			"mac": "48-4D-7E-CB-DB-6F",
+			"mobile": "9481773011",
+			"os": "iOS",
+			"postalCode": "600001",
+			"terminalId": "6000011234"
+		},
+		"biller": {
+			"id": "VODA00000MUM03"
+		}
+		}
+		`}</CodeBlockWithCopy>
+    </details>
+</Card>
+
+<br />
+
+You get a `refId` in the response, a unique identifier that can be further used to check the status of the bill fetch.
+
+<CodeBlockWithCopy language="json">{`
+{
+    "data": {
+        "refId": "LNMSQQR4RKT7X1UGPY7JGUV454PL9T2C689",
+    },
+    "success": true,
+    "error": null
+}
+`}</CodeBlockWithCopy>
+
+You may also use the `/bbps/bills/fetch/response` endpoint with above `refId` to check status of the bill fetch—
+
+<CodeBlockWithCopy language="json">{`
+{
+    "refId": "LNMSQQR4RKT7X1UGPY7JGUV454PL9T2C689"
+}
+`}</CodeBlockWithCopy>
+
+In the response you either get the bill details, or “Processing” status if the bill fetch is still in progress.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+		{
+			"data": {
+				"additionalInfo": [
+					{
+						"name": "Distributor Contact",
+						"value": "Cockatoojelly"
+					},
+					{
+						"name": "Distributor Name",
+						"value": "Frightstripe"
+					},
+					{
+						"name": "Consumer Number",
+						"value": "105"
+					},
+					{
+						"name": "Consumer Address",
+						"value": "Samuraipsychadelic"
+					}
+				],
+				"bill": { // optional - not present if biller does not support it
+					"amount": 301500,
+					"billDate": "2021-09-13",
+					"billNumber": "8394852342371080869",
+					"billPeriod": "Monthly",
+					"customerName": "William Miller",
+					"dueDate": "2021-09-26"
+				},
+				"billerRefId": "4047076513",
+				"exactness": "ANY",
+				"paymentLimits": [
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "Internet Banking",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "Debit Card",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "Credit Card",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "Prepaid Card",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "IMPS",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 4999900,
+						"minLimit": 100,
+						"paymentMode": "Cash",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "UPI",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "Wallet",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "NEFT",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "AEPS",
+						"supportsPendingStatus": false
+					},
+					{
+						"maxLimit": 20000000,
+						"minLimit": 100,
+						"paymentMode": "Account Transfer",
+						"supportsPendingStatus": false
+					}
+				],
+				"refId": "C51JQ9ED608P36RN28GGM9L63RN12591837",
+				"status": "Success"
+			},
+			"success": true,
+			"traceId": "C51JQCUD608P36RN28H0"
+		}
+		`}</CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="tertiary" />
+
+##### Auto-fetch bills
+
+You may also choose to enable automatic fetches for customer bills. Once you have provided the customer identifier and the business’s BBPS identifier, Setu has the information needed to fetch bill details automatically for every subsequent payment cycle. Once a bill is fetched automatically, the response is posted to the callback URL provided by you.
+
+To enable auto-fetch for a bill, simply set the `autoFetch` field to `true`, while making Fetch bill API request to `/bbps/bills/fetch/request`. This flag value will be honoured once a bill fetch is done successfully.
+
+<CodeBlockWithCopy language="diff">{`
+{
++   "autoFetch": true,
+    "customer": { ... },
+    "agent": { ... },
+    "biller": { ... }
+}
+`}</CodeBlockWithCopy>
+
+<Callout type="tip">
+    Note that you would also need to tell Setu that you would like to auto fetch
+    bills for customers, when you are setting up your agent, so that Setu can
+    enable this feature for you.
+</Callout>
+
+<br />
+
+The response stays the same, with an additional field `autoFetchHash`. This hash is used as an identifier for the bill fetch. It can be used to check the last auto-fetched date, whether the auto-fetch is still active or disable auto-fetch for the bill in <a href="payments/billpay/api-integration/api-reference">Manage auto-fetch for bills</a> section.
+
+<CodeBlockWithCopy language="diff">{`
+{
++   "autofetchHash": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a",
+    "data": { ... },
+    "success": true,
+    "traceId": "C51JQCUD608P36RN28H0"
+}
+`}</CodeBlockWithCopy>
+
+<br />
+
+When you set `autoFetch` flag to `true`, the response for Fetch bill will contain a `autofetchHash`. You can use this to—
+
+-   Hit the `/list` endpoint to check if the bill autofetch is active, along with last date for bill fetch
+-   Disable auto fetch by hitting the `/delete` endpoint
+    <br />
+
+<Callout type="highlight">
+    Note that you can also create an auto-fetch request for multiple bills at a
+    time, using the <code>/bbps/autofetches</code> endpoint>.
+</Callout>
+
+<br />
+
+**Specify auto-fetch for multiple bills**—A `POST` request to `/bbps/autofetches` lets you register multiple bills to be fetched automatically, at their respective payment cycles.
+
+<br />
+
+**List auto-fetch details for multiple bills**—A `GET` request to `/bbps/autofetches` returns list of bills registered for autofetch. Each entry has
+
+-   `lastFetchDate` which is the date of the last bill fetch
+-   `isActive` which specifies if bill has auto fetch enabled
+
+<br />
+
+**Disable auto-fetch**—A `DELETE` request to `/bbps/autofetches/{autofetchHash}` disable auto fetch for a bill on your app/website
+
+<hr class="primary" />
+
+### Pay bill
+
+The <a href="/payments/billpay/api-integration/api-reference#/category~Pay_bill/operation~PaymentRequest" target="_blank">Pay bill API</a> is used to send details of a payment done by a user on your app/website to Setu. Setu uses this information to confirm payment with the biller.
+
+<hr class="primary" />
+
+### Raise dispute
+
+The <a href="/payments/billpay/api-integration/api-reference#/category~Manage_Dispute/operation~DisputeRequest" target="_blank">Raise Dispute API</a> is used to Raise a compliant for a payment done by a user on your app/website to Setu. Setu uses this information and raises a compliant on the BBPS Platform.
+
+<hr class="primary" />
+
+### List data in bulk
+
+For your convenience, Setu also provides actions to list data in bulk, that can come in handy for keeping your systems up to date with the latest data. The following APIs are available—
+
+-   <a
+        target="_blank"
+        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getCategories"
+    >
+        List categories
+    </a>
+    —lists all categories on BBPS.
+-   <a
+        target="_blank"
+        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getBillers"
+    >
+        List billers
+    </a>
+    —lists all billers on BBPS.
+-   <a
+        target="_blank"
+        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getDisputes"
+    >
+        List disputes
+    </a>
+    —lists all the raised disputes using the <a
+        target="_blank"
+        href="/payments/billpay/api-integration/api-reference#/category~Manage_Dispute/operation~DisputeRequest"
+    >
+        Dispute API
+    </a>.
+-   <a
+        target="_blank"
+        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getFetchedBills"
+    >
+        List fetched Bills
+    </a>
+    —lists all the fetched bills that were fetched using <a
+        target="_blank"
+        href="/payments/billpay/api-integration/api-reference#/category~Fetch_bill/operation~FetchRequest"
+    >
+        Fetch API
+    </a>.
+-   <a
+        target="_blank"
+        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getTxns"
+    >
+        List paid bills
+    </a>
+    —lists all the bill pay transactions paid using <a
+        target="_blank"
+        href="/payments/billpay/api-integration/api-reference#/category~Pay_bill/operation~PaymentRequest"
+    >
+        Pay API
+    </a>.
+
+<hr class="primary" />
+
+### Check server health
+
+The <a href="/payments/billpay/api-integration/api-reference#/category~Health/operation~getHealth">health check API</a> tells you the health of the Setu BillPay server.
+
+Aside from the above, there are other APIs which are also vital for a complete customer payment experience. See the <a href="/payments/billpay/api-integration/api-reference" target="_blank">full API reference</a> for more details.

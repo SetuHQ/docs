@@ -1,0 +1,213 @@
+---
+sidebar_title: OAuth
+page_title: OAuth
+order: 2
+visible_in_sidebar: true
+---
+
+## Generate and manage OAuth Keys
+
+Setu uses OAuth as one of the supported methods to authenticate API requests. You can create and manage these keys on The Bridge.
+
+This mechanism is quite flexible—you can setup a single master key for authenticating requests to all your product configurations, or access a single configuration using multiple keys.
+
+For specified product configurations, the OAuth keys are used with the <a href="/dev-tools/bridge/org-settings/api-keys/oauth#generate-token-api">generate token API</a> as explained below, and tokens are used to authenticate API requests made to Setu.
+
+<hr className="primary" />
+
+### Generate an OAuth key
+
+##### Step 1—Login to the Bridge and head to Org settings
+
+OAuth keys are created and managed at the organisation level. Currently only the Admin can create keys.
+
+Click on the “Org settings” icon on the left navbar. Here, if you are an Admin, you should see the API keys card. Click on OAuth, which is our recommended protocol.
+
+<br />
+
+##### Step 2—Configure key details
+
+You should be greeted by an empty page, nudging you to generate your first key. Click on the “Generate your first key” button. Now you should see a simple form like the one in the image below.
+
+<MainImage
+  src="https://storage.googleapis.com/strapi-assets/latest/Generate_new_key_fe2edcede6/Generate_new_key_fe2edcede6.png"
+  alt="Generate your first key"
+/>
+
+**Select environment**—A key can exist only in one environment. Sandbox keys access only sandbox configs, and production keys access only production configs.
+
+Keep in mind that once a key is generated, it cannot change environments later.
+
+**Key name**—This is just for you to easily identify a key and tell what a particular key can access.
+
+For example, a name like “Bangalore Schools—Setu BBPS” would indicate that the key has access to the school billers configured on the BBPS product, specifically in the Bangalore region.
+
+**Add products**—This is where you can select the individual product configurations that this key can access.
+
+<MainImage
+  src="https://storage.googleapis.com/strapi-assets/latest/Screen_Recording_2021_03_18_at_5_44_21_PM_bfb13b8eae/Screen_Recording_2021_03_18_at_5_44_21_PM_bfb13b8eae.gif"
+  alt="Add products"
+/>
+
+Click the “Add products” button. The info panel opens on the right, with all your configured products in the selected environment grouped by type. You can also search for a particular product by name or ID.
+Clicking on a product tile adds it to the list, which you can see reflected on the main UI. Add and remove products as you wish, and close the info panel when satisfied.
+
+##### Step 3 — Generate the key
+
+Now the “Generate key” button should become enabled, after all the fields are filled. Click it, and you should see the `clientID` and `secret` for this key.
+
+And done! You are now all set to use this key to make API requests to Setu. The key should also now be listed on the API keys main page, at the very top.
+
+<hr className="primary" />
+
+### Enable or disable a key
+
+You can also enable or disable a key as required. API requests made with a key that is disabled would fail, until it is re-enabled.
+
+Select a key from the main page, and you should now be in the Edit key page. In the “Key details” section, click on the switch to toggle between the enabled and disabled states.
+
+<MainImage
+  src="https://storage.googleapis.com/strapi-assets/latest/enable_disable_api_key_2c1782f383/enable_disable_api_key_2c1782f383.gif"
+  alt="Enable or disable a key"
+/>
+
+Be sure to hit the “Save changes” button on the top to commit the edits.
+
+The list page also indicates which keys are active, and which aren’t.
+
+<MainImage
+  src="https://storage.googleapis.com/strapi-assets/latest/api_keys_list_bb62bc7158/api_keys_list_bb62bc7158.png"
+  alt="List of API keys"
+/>
+
+<hr className="primary" />
+
+### Regenerate a key
+
+In case a key is compromised at any point, you can regenerate the `clientID` and the `secret` for that key easily on the Bridge.
+
+Click on the key to go to the Edit key page, and scroll down to the Credentials section. Click on the “Regenerate key” button. You will be asked for confirmation twice, as key regeneration cannot be undone.
+
+<MainImage
+  src="https://storage.googleapis.com/strapi-assets/latest/api_key_regen_cb359bcdb8/api_key_regen_cb359bcdb8.gif"
+  alt="Regenerate a key"
+/>
+
+Once you confirm, the old credentials would stop working, and be deleted, and a fresh `clientID` and `secret` would be generated for you to use. The name of the key and the products it can access are not affected.
+
+This process is independent and instant, and does not need the “Save changes” button to be clicked.
+
+<hr class="primary" />
+
+### Delete a key
+
+If for some reason you want to completely erase a key from our systems, you can delete the entire key configuration from the same Edit page. All API requests made with that key instantly stop working.
+
+Just like regenerating a key, this process is irreversible, and Setu too cannot retreive a deleted key. So think twice, maybe even thrice before deleting a key.
+
+Select a key from the list page, and in the Edit page at the top, click on the red “Delete key“ button. Confirm twice, and the key is deleted, and removed from the list page.
+
+<MainImage
+  src="https://storage.googleapis.com/strapi-assets/latest/api_key_delete_9db4ba0e03/api_key_delete_9db4ba0e03.gif"
+  alt="Delete a key"
+/>
+
+<hr class="primary" />
+
+### Generate Token API
+
+An API to generate tokens, which are used to authorise any other API requests made to Setu. This API works with OAuth keys only.
+
+##### Request
+
+<table>
+  <tbody>
+    <tr>
+      <th>URL</th>
+      <td>
+        Sandbox: <code>https://uat.setu.co/api/v2/auth/token</code>
+        <br />
+        Production: <code>https://prod.setu.so/api/v2/auth/token</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>POST</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Header</th>
+      <td>
+        <code>Content-Type</code>: <code>application/json</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<br />
+
+##### Request body
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "clientID" : "c0a411d5-b6f9-4bfd-a342-7cb01935ed43",    
+    "secret"   : "b2b3e650-a31b-47a3-acf6-c96c9c5c282d",
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Response
+
+**Success**
+
+A new token is provided by Setu in the success response, along with an `expiresIn` param, which states the validity of the token in seconds (the present default value is 1800 seconds or 30 minutes). You may store and keep reusing the same token till it expires.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status" : 200,
+    "success" : true,
+    "data" : {
+        "expiresIn" : 1800, //seconds
+        "token"     : "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJsaWJ6NGFNaE4yUk5xMlpyVk9QaFhaMXpoMjA0V2gtdTdhT21LX2huRVQ4In0.eyJleHAiOjE2MTM5OTQzMTIsImlhdCI6MTYxMzk5NDAxMiwianRpIjoiZmZhZjM2ZTUtZmI3Mi00NTY2LTljOGYtY2U5N2I5MjY2Y2E4IiwiaXNzIjoiaHR0cHM6Ly9hdXRoLWRldi5zZXR1LmNvL2F1dGgvcmVhbG1zL2NvbGxlY3QiLCJzdWIiOiJhZGE1MTNhMS0xYjVhLTQ1NGQtYTk2Ny05OGI3YTYwNjY3MTAiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJjZDRlYTM5OC03YWIzLTQ3ZGUtYWE1MC03YzNiOWIzZjBhMjYiLCJzZXNzaW9uX3N0YXRlIjoiYmYxYjJjZjgtNTgzZC00Y2MwLWIwN2QtNmI5YWQyNmZiNGI0IiwiYWNyIjoiMSIsInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiY2xpZW50SWQiOiJjZDRlYTM5OC03YWIzLTQ3ZGUtYWE1MC03YzNiOWIzZjBhMjYiLCJjbGllbnRIb3N0IjoiMTA2LjUxLjE1LjI1MCIsIlgtU2V0dS1Qcm9kdWN0LUluc3RhbmNlLUlEIjoiNTYyNDMzODMwNDMwOTY2OTk4IiwicHJlZmVycmVkX3VzZXJuYW1lIjoic2VydmljZS1hY2NvdW50LWNkNGVhMzk4LTdhYjMtNDdkZS1hYTUwLTdjM2I5YjNmMGEyNiIsImNsaWVudEFkZHJlc3MiOiIxMDYuNTEuMTUuMjUwIn0.QfEzImuN1P9jwTBJTcJ6ozP_gC3J-FOJp0D0va2AfXUUw8d5HLA5zqojCd6BnE6ApqKWnVU1aB0YWFwDbgHaVA3Netr-hmGadElLMhGiHah2UaLO0Bk86pZpyxNxtdx9u6YjfVYT6TSvUsqO4lISegFTJRTqFZxuBFv4WoKJPPD0JwEMYGH71LyOiCJA2sAq4YbOMKOvRrj2X_ipkSqvsrgEZicJ3lTY4vWyoGJ8wps0VW6k4vFSdX1qRKrAz_7XVKr8MKz_H1ng91h5XlZqsUh6BPz3WW0atWjt0RbAtXR32iB0zaB204IECxwriNmka1FxA9PZq94NvPwANDznhQ"
+    }
+}`}
+</CodeBlockWithCopy>
+
+**Failure**
+
+If incorrect `clientID` and `secret` details are provided, Setu could respond with the following error—
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status"  : 400,
+    "success" : false,
+    "error" : {
+        "code"    : "invalid-api-key",
+        "detail"  : "API key invalid [cd4ea398-7ab3-47de-aa50-7c3b9b3f0a21], please recheck your credentials.",
+        "docURL"  : "",
+        "title"   : "AUTHENTICATION_ERROR"
+        "traceID" : "8b7bd233-5231-4bdd-8d48-aa4c0dae07b9"
+        "errors"  : [],
+    }
+}`}
+</CodeBlockWithCopy>
+
+- The `traceID` in the above response is dynamic and can be shared with Setu support team, if further debugging is required.
+
+<hr class="primary" />
+
+### How to use the token
+
+Once you have a valid token available against product configuration(s), you can store it and use it to authorise an API call made to Setu, by setting the `authorization` request header as `Bearer <token-value>`.
+
+**On expiry**
+
+Implement a workflow to generate new token when the old one expires. The general setup might look something like this—
+
+- Store `clientID` and `secret`.
+- Generate new token with stored `clientID` and `secret` when token has expired. If the API you call returns `401 unauthorized`, it could be an indication that the token has expired.
+- Store the newly generated token and use for subsequent API calls.
+
+<WasPageHelpful />

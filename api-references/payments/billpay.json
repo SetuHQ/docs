@@ -1,0 +1,1978 @@
+{
+  "info": {
+    "title": "Axis COU",
+    "x-logo": {
+      "url": "https://setu-customer-success.s3.ap-south-1.amazonaws.com/icons/setu-logo-dp-on-tp.svg",
+      "altText": "Axis setu logo"
+    },
+    "version": "1.0.0",
+    "description": "\nAxis BBPS COU docs\n\nProcess flow:\n\n![](https://setu-customer-success.s3.ap-south-1.amazonaws.com/cou/cou-swimane.png)\n\n"
+  },
+  "paths": {
+    "/api/bills/{env}/bill-fetch-request": {
+      "post": {
+        "tags": ["Fetch"],
+        "summary": "API to register for a bill fetch",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": ["context"],
+                  "properties": {
+                    "context": {
+                      "type": "string",
+                      "example": "eyJjdXN0b21lclBhcmFtcyI6IFt7Im5hbWUiOiAiTG9hbiBOdW1iZXIiLCAidmFsdWUiOiAiMTg5NTE1OSJ9XSwgImJpbGxGZXRjaElkIjogIkMyUzFFUkxBU0ozR1g0TyIsICJtb2JpbGVOdW1iZXIiOiAiOTE5Mjk5MDAxMyIsICJiaWxsZXJJZCI6ICJNQUhJMDAwMDBOQVRJQyJ9",
+                      "description": "The context that is required in the `Get fetched bill` API"
+                    }
+                  },
+                  "description": "Base64 encoded details, *no need to decode*"
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Error codes:\n * \"DEV100\": \"Mandatory device details for channel INT not specified\",\n * \"DEV101\": \"Mandatory device details for channel MOB not specified\",\n * \"DEV102\": \"Mandatory device details for channel POS not specified\",\n * \"DEV103\": \"Mandatory device details for channel MPOS not specified\",\n * \"DEV104\": \"Mandatory device details for channel KIOSK not specified\",\n * \"DEV105\": \"Mandatory device details for channel ATM not specified\",\n * \"DEV106\": \"Mandatory device details for channel BANK BRANCH not specified\",\n * \"DEV108\": \"Mandatory device details for channel BUSINESS CORRESPONDENT not specified\",\n * \"DEV109\": \"Mandatory device details for channel INTERNET BANKING not specified\",\n * \"DEV110\": \"Mandatory device details for channel MOBILE BANKING not specified\",\n * \"ERR_CONN\": \"Exception Occured While Creating Connection With BBPS\",\n * \"ERR_TECHNICAL\": \"Registartion failed - Unable to fetch record due to technical Issue ! please contact the bank for further details\",\n * \"ERR_TIMEOUT\": \"Registration was unsuccessful due to technical reasons, please contact the bank for further info\",\n * \"ERR_URL\": \"Exception Occured While Creating Connection With BBPS!\",\n * \"ERR000\": \"No data Found\",\n * \"ERR100\": \"billerId is not Specified\",\n * \"ERR104\": \"Mobile Number is not Specified\",\n * \"ERR112\": \"Mobile Number Not Valid\",\n * \"ERR113\": \"Mobile Number Mandatory for SMS Alert\"\n * \"ERR130\": \"Duplicate: Biller already exists\",\n * \"ERR131\": \"Biller is not Active\",\n * \"ERR166\": \"Biller Successfully Modified.\",\n * \"ERR999\": \"Biller is Deregistered and pending for Authorization\",\n * \"ERRAGT\": \"Mandatory Input(AGENT ID) does not exist\",\n * \"ERRSSLCER\": \"Exception Occured after getting Key from Certificate\",\n * \"ERR175\": \"param1 length should be of 16 digit!\",\n * \"ERR176\": \"The A/c number length should be of 16 digit\",\n * \"ERR177\": \"The Account number encrypted value is incorrect!\",\n * \"ERR179\": \"Card Expiry Date length should be of 4 digit\",\n * \"ERR180\": \"Invalid Year or Month\",\n * \"ERR184\": \"Card Expiry Date is not specified\",\n * \"ERR190\": \"Auto Bill Fetch not allowed for Walk-In Customer\",\n * \"ERR191\": \"Auto Payment not allowed for Walk-In Customer\",\n * \"ERR192\": \"Only Active Biller can refresh bill\",\n * \"ERR193\": \"Only Non Adhoc Biller can refresh bill\",\n * \"ERR222\": \"Auot bill payment functionality not available for this biller\"\n"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "billerId",
+                "mobileNumber",
+                "customerParams",
+                "categoryCode",
+                "agent"
+              ],
+              "properties": {
+                "agent": {
+                  "required": ["id", "channel"],
+                  "properties": {
+                    "app": {
+                      "type": "string",
+                      "example": "SmartPay",
+                      "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others."
+                    },
+                    "mobile": {
+                      "type": "string",
+                      "example": "9481773011",
+                      "description": "Mandatory if channel is `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n"
+                    },
+                    "channel": {
+                      "enum": [
+                        "INT",
+                        "INTB",
+                        "MOB",
+                        "BNKBRNCH",
+                        "BSC",
+                        "AGT",
+                        "KIOSK",
+                        "ATM"
+                      ],
+                      "type": "string",
+                      "example": "INT",
+                      "description": "This is the initiating channel.\n1. `AGT`: Offline agent.\n2. `BNKBRNCH`: Bank branch.\n3. `BSC`: Business correspondent\n4. `MOB`: Mobile application\n5. `INT`: Internet portal\n6. `INTB`: Internet banking\n7. `MOBB`: Mobile banking\n8. `ATM`: ATM\n9. `KIOSK`: KIOSK\n"
+                    },
+                    "os": {
+                      "enum": ["iOS", "Android"],
+                      "type": "string",
+                      "example": "iOS",
+                      "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others."
+                    },
+                    "ip": {
+                      "type": "string",
+                      "example": "124.170.23.24",
+                      "description": "Mandatory if channel is `INT`, `INTB`. Not required for others."
+                    },
+                    "imei": {
+                      "type": "string",
+                      "example": "123456789012345",
+                      "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others."
+                    },
+                    "ifsc": {
+                      "type": "string",
+                      "example": "ICIC0000152",
+                      "description": "Mandatory if channel is `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n"
+                    },
+                    "mac": {
+                      "type": "string",
+                      "example": "48-4D-7E-CB-DB-6F",
+                      "description": "Mandatory if channel is `INT`, `INTB`. Not required for others."
+                    },
+                    "terminalId": {
+                      "type": "string",
+                      "example": "6000011234",
+                      "description": "Mandatory if channel is `ATM`, `AGT`, `KIOSK` and `BSC` . Not required for others. This has to match the data submitted to NPCI for this agent ID\n"
+                    },
+                    "postalCode": {
+                      "type": "string",
+                      "example": "600001",
+                      "description": "Mandatory if channel is  `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n"
+                    },
+                    "id": {
+                      "type": "string",
+                      "example": "AX01AI06512391457204",
+                      "description": "The ID of the agent initiating the BBPS transaction."
+                    },
+                    "geocode": {
+                      "type": "string",
+                      "example": "19.0139,72.8254",
+                      "description": "Mandatory if channel is `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n"
+                    }
+                  }
+                },
+                "billerId": {
+                  "type": "string",
+                  "example": "MAHI00000NATIC",
+                  "description": "The biller ID on BBPS"
+                },
+                "categoryCode": {
+                  "type": "string",
+                  "example": "12",
+                  "description": "Category code of the biller"
+                },
+                "mobileNumber": {
+                  "type": "string",
+                  "example": "9192990013",
+                  "description": "The mobile number of the customer"
+                },
+                "customerParams": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "example": "Loan Number",
+                        "description": "The display name of the parameter. This has to match what is sent in fields."
+                      },
+                      "value": {
+                        "type": "string",
+                        "example": "1895159",
+                        "description": "The value of the customer parameter"
+                      }
+                    }
+                  },
+                  "description": "The customer params for fetching the bill"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "billFetchRequest"
+      }
+    },
+    "/api/bills/{env}/biller-fields": {
+      "post": {
+        "tags": ["List"],
+        "summary": "API to list the inputs needed for bill fetch for a biller",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "example": "Loan Number",
+                        "description": "The human readable name for this parameter"
+                      },
+                      "regex": {
+                        "type": "string",
+                        "example": "^[a-zA-Z0-9]{7,21}$",
+                        "description": "The regular expression as to how the input must be"
+                      },
+                      "values": {
+                        "type": "string",
+                        "description": "The possible values for this input"
+                      },
+                      "dataType": {
+                        "enum": ["Numeric", "Alphanumeric", "Alpha"],
+                        "type": "string",
+                        "example": "Alphanumeric"
+                      },
+                      "maxLength": {
+                        "type": "string",
+                        "example": "30",
+                        "description": "The max length for the parameter"
+                      },
+                      "minLength": {
+                        "type": "string",
+                        "example": "1",
+                        "description": "The min length for the parameter"
+                      },
+                      "isMandatory": {
+                        "type": "boolean",
+                        "example": true,
+                        "description": "Is this input mandatory for fetching bills"
+                      },
+                      "internalName": {
+                        "type": "string",
+                        "example": "param1",
+                        "description": "the internal ID for the field"
+                      }
+                    }
+                  },
+                  "description": "The fields needed to fetch bills for a customer. This should be sent in the `Register for bill fetch` API."
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Error codes:\n * \"ERR154\": \"categoryCode is not specified\",\n * \"ERR155\": \"billerId not found\",\n * \"ERR999\": \"Success\"\n"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": ["categoryCode", "billerId"],
+              "properties": {
+                "billerId": {
+                  "type": "string",
+                  "example": "BILLER0028218",
+                  "description": "The ID of the biller"
+                },
+                "categoryCode": {
+                  "type": "string",
+                  "example": "38",
+                  "description": "Category code of the biller"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "BillerFields"
+      }
+    },
+    "/api/bills/{env}/biller-categories": {
+      "get": {
+        "tags": ["List"],
+        "summary": "API to list categories",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "categoryCode": {
+                        "type": "string",
+                        "example": "38",
+                        "description": "The code for the category"
+                      },
+                      "categoryName": {
+                        "type": "string",
+                        "example": "Loan Repayment",
+                        "description": "The common name for the category"
+                      }
+                    },
+                    "description": "Data about different biller categories"
+                  }
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": { "type": "string", "example": "success" },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          }
+        ],
+        "operationId": "BillerCategories"
+      },
+      "post": {
+        "tags": ["List"],
+        "summary": "API to list categories",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "categoryCode": {
+                        "type": "string",
+                        "example": "38",
+                        "description": "The code for the category"
+                      },
+                      "categoryName": {
+                        "type": "string",
+                        "example": "Loan Repayment",
+                        "description": "The common name for the category"
+                      }
+                    },
+                    "description": "Data about different biller categories"
+                  }
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": { "type": "string", "example": "success" },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          }
+        ],
+        "operationId": "BillerCategories"
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Server version and other info",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["server", "environment", "version"],
+              "properties": {
+                "server": {
+                  "type": "string",
+                  "example": "mistborn",
+                  "description": "The name of the server"
+                },
+                "version": {
+                  "type": "string",
+                  "example": "0.9.2",
+                  "description": "The server version"
+                },
+                "environment": {
+                  "type": "string",
+                  "example": "DEV",
+                  "description": "The environment of the server running the API"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        }
+      }
+    },
+    "/api/bills/{env}/biller-list": {
+      "post": {
+        "tags": ["List"],
+        "summary": "API to list billers in category",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "example": "DEMO BILLER",
+                        "description": "Name of the biller"
+                      },
+                      "type": {
+                        "enum": ["BBPS", "EBPP"],
+                        "type": "string",
+                        "example": "BBPS",
+                        "description": "Is the biller of BBPS or the internal bill payment network of Axis (EBPP)"
+                      },
+                      "billerId": {
+                        "type": "string",
+                        "example": "BILLER0028218",
+                        "description": "The BBPS Biller ID"
+                      },
+                      "exactness": {
+                        "enum": [
+                          "ADHOC",
+                          "BOTH",
+                          "EXACT",
+                          "EXACT_DOWN",
+                          "EXACT_UP",
+                          "ANY"
+                        ],
+                        "type": "string",
+                        "example": "EXACT_UP",
+                        "description": "The amount configuration of the biller.\n- `ANY` = editable\n- `EXACT` = non editable\n- `EXACT_DOWN` = editable, max is bill amount. Users can pay equal to or less than bill amount\n- `EXACT_UP` = editable, min is bill amount. Users can pay equal to or  more than bill amount.\n- `ADHOC, BOTH` = editable. Biller might not return amount.\n"
+                      }
+                    }
+                  },
+                  "description": "List of billers"
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Error codes:\n * \"ERR000\": \"No data Found\"\n * \"ERR100\": \"categoryCode is not Specified\"\n * \"ERR999\": \"Success\"\n"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": ["categoryCode"],
+              "properties": {
+                "limit": {
+                  "type": "number",
+                  "example": 100,
+                  "description": "limit to number of results.  Useful for paginating the results"
+                },
+                "offset": {
+                  "type": "number",
+                  "example": 101,
+                  "description": "Skip these while getting results"
+                },
+                "search": {
+                  "type": "string",
+                  "example": "south Bihar",
+                  "description": "Search term(s)"
+                },
+                "categoryCode": {
+                  "type": "string",
+                  "example": "1",
+                  "description": "The code for the category"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "BillerList"
+      }
+    },
+    "/api/bills/{env}/make-payment": {
+      "post": {
+        "tags": ["Pay"],
+        "summary": "API to make payment",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": ["context", "sourceRefNum"],
+                  "properties": {
+                    "context": {
+                      "type": "string",
+                      "example": "eyJjdXN0b21lclBhcmFtcyI6IFt7Im5hbWUiOiAiTG9hbiBOdW1iZXIiLCAidmFsdWUiOiAiMTg5NTE1OSJ9XSwgImJpbGxGZXRjaElkIjogIkMyUzFFUkxBU0ozR1g0TyIsICJtb2JpbGVOdW1iZXIiOiAiOTE5Mjk5MDAxMyIsICJiaWxsZXJJZCI6ICJNQUhJMDAwMDBOQVRJQyIsICJiaWxsIjogeyJhbW91bnQiOiAiMTcxNSIsICJhZGRpdGlvbmFsSW5mbyI6IFtdLCAiY3VzdG9tZXJOYW1lIjogIkV2ZWx5biBKQURIViIsICJiaWxsTnVtYmVyIjogIjRHRk5GQkQ4UjMiLCAiYmlsbERhdGUiOiAiMjAyMC0wOC0yMiIsICJiaWxsUGVyaW9kIjogIk9ORVRJTUUiLCAiY3VzdG9tZXJSZWZJZCI6ICIxODk1MTU5IiwgImR1ZURhdGUiOiAiMjAyMC0wOC0yMiJ9fQ==",
+                      "description": "The context to be passed in `Get Payment Status` API"
+                    },
+                    "sourceRefNum": {
+                      "type": "string",
+                      "example": "BD28OX1U1L5U5",
+                      "description": "The source reference number"
+                    }
+                  }
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Error codes:\n * \"AM05\": \"Duplication\",\n * \"ERR_CONN\": \"Exception Occured While Creating Connection With BBPS\",\n * \"ERR_PYMT_DUPLICATE\": \"Payment Reversal done Successfully\",\n * \"ERR_TIMEOUT\": \"Exception Occured While Creating Connection With BBPS!\",\n * \"ERR_URL\": \"Only Https request Accepted! Exception Occured While Creating Connection With BBPS!\",\n * \"ERR125\": \"Prebook Flag Mismatch\",\n * \"ERR159\": \"Debtor a/c validation failure\",\n * \"ERR177\": \"Debtor a/c encrypted value is incorrect\",\n * \"ERR178\": \"The Debtor A/c No length should be of 16 digit\",\n * \"ERR179\": \"Card Expiry Date length should be of 4 digit\",\n * \"ERR180\": \"Invalid Year or Month\",\n * \"ERR181\": \"No Active registration present for reference id\",\n * \"ERR182\": \"Inactive Registration for reference id \",\n * \"ERR183\": \"Registration is Inactive\",\n * \"ERR184\": \"Card Expiry Date is not specified\",\n * \"ERR999\": \"Success\",\n * \"ERROR\": \"System is down,Please try again.\",\n"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "amount",
+                "txnMode",
+                "remittanceDetails",
+                "referenceId",
+                "context"
+              ],
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "example": "69108",
+                  "description": "Amout paid by the customer"
+                },
+                "context": {
+                  "type": "string",
+                  "example": "eyJjdXN0b21lclBhcmFtcyI6IFt7Im5hbWUiOiAiTG9hbiBOdW1iZXIiLCAidmFsdWUiOiAiMTg5NTE1OSJ9XSwgImJpbGxGZXRjaElkIjogIkMyUzFFUkxBU0ozR1g0TyIsICJtb2JpbGVOdW1iZXIiOiAiOTE5Mjk5MDAxMyIsICJiaWxsZXJJZCI6ICJNQUhJMDAwMDBOQVRJQyIsICJiaWxsIjogeyJhbW91bnQiOiAiMTcxNSIsICJhZGRpdGlvbmFsSW5mbyI6IFtdLCAiY3VzdG9tZXJOYW1lIjogIkV2ZWx5biBKQURIViIsICJiaWxsTnVtYmVyIjogIjRHRk5GQkQ4UjMiLCAiYmlsbERhdGUiOiAiMjAyMC0wOC0yMiIsICJiaWxsUGVyaW9kIjogIk9ORVRJTUUiLCAiY3VzdG9tZXJSZWZJZCI6ICIxODk1MTU5IiwgImR1ZURhdGUiOiAiMjAyMC0wOC0yMiJ9fQ==",
+                  "description": "the context from `Get fetched bill` API."
+                },
+                "txnMode": {
+                  "enum": [
+                    "IMPS",
+                    "DEBIT CARD",
+                    "PREPAID CARD",
+                    "NEFT",
+                    "CREDIT CARD",
+                    "INTERNET BANKING",
+                    "ACCOUNT TRANSFER",
+                    "WALLET",
+                    "CASH",
+                    "UPI"
+                  ],
+                  "type": "string",
+                  "example": "INTERNET BANKING"
+                },
+                "referenceId": {
+                  "type": "string",
+                  "example": "BD01XU124",
+                  "description": "Reference ID on App's system for this payment request"
+                },
+                "remittanceDetails": {
+                  "type": "object",
+                  "required": ["accountNumber", "accountHolderName"],
+                  "properties": {
+                    "accountNumber": {
+                      "type": "string",
+                      "example": "163010100183622",
+                      "description": "Account Number of the Account Holder"
+                    },
+                    "accountHolderName": {
+                      "type": "string",
+                      "example": "App Current Account Holder Name",
+                      "description": "Name of the Account Holder"
+                    }
+                  },
+                  "description": "The current account details of the App."
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "MakePayment"
+      }
+    },
+    "/api/bills/{env}/biller-details": {
+      "post": {
+        "tags": ["List"],
+        "summary": "API to get details about the biller",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage"],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "blrAcceptsAdhoc",
+                    "blrAdditionalInfo",
+                    "blrAliasName",
+                    "blrCategoryName",
+                    "blrCoverage",
+                    "blrCustParamGroup",
+                    "blrCustomerParams",
+                    "blrDescription",
+                    "blrEffctvFrom",
+                    "blrEffctvTo",
+                    "blrId",
+                    "blrMode",
+                    "blrName",
+                    "blrOwnership",
+                    "blrPaymentChannels",
+                    "blrPaymentChannels_402",
+                    "blrPaymentModes",
+                    "blrPaymentModes_402",
+                    "blrPmtAmtExactness",
+                    "blrResponseParams",
+                    "blrTimeout",
+                    "enableReversalElimination",
+                    "entityStatus",
+                    "fetchRequirement",
+                    "supportValidationApi",
+                    "support_402ApiFlag",
+                    "traceId"
+                  ],
+                  "properties": {
+                    "support_402ApiFlag": { "type": "string", "example": "t" },
+                    "blrEffctvTo": {
+                      "type": "number",
+                      "example": 20290520,
+                      "description": "Biller End date"
+                    },
+                    "blrId": {
+                      "type": "string",
+                      "example": "CAPR00000NATUB",
+                      "description": "Biller Id"
+                    },
+                    "blrPaymentChannels_402": {
+                      "type": "object",
+                      "required": [
+                        "applicableChannels",
+                        "applicableForAllPaymentChannels"
+                      ],
+                      "properties": {
+                        "applicableChannels": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "example": [
+                            "Internet",
+                            "Internet_Banking",
+                            "Mobile",
+                            "Mobile_Banking",
+                            "POS",
+                            "MPOS",
+                            "ATM",
+                            "Kiosk",
+                            "Agent"
+                          ]
+                        },
+                        "applicableForAllPaymentChannels": {
+                          "type": "boolean",
+                          "example": false
+                        }
+                      }
+                    },
+                    "blrOwnership": {
+                      "type": "string",
+                      "example": "Private",
+                      "description": "Biller ownership status"
+                    },
+                    "fetchRequirement": {
+                      "type": "string",
+                      "example": "MANDATORY",
+                      "description": "Is fetching bill mandatory"
+                    },
+                    "blrPaymentModes_402": {
+                      "type": "object",
+                      "required": [
+                        "applicableForAllPaymentModes",
+                        "applicableModes"
+                      ],
+                      "properties": {
+                        "applicableModes": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "example": [
+                            "Internet_Banking",
+                            "Debit_Card",
+                            "Prepaid_Card",
+                            "IMPS",
+                            "UPI",
+                            "Wallet",
+                            "NEFT",
+                            "AEPS",
+                            "Account_Transfer"
+                          ]
+                        },
+                        "applicableForAllPaymentModes": {
+                          "type": "boolean",
+                          "example": false
+                        }
+                      }
+                    },
+                    "blrMode": {
+                      "type": "string",
+                      "example": "ONLINE",
+                      "description": "Payment modes accepted by biller"
+                    },
+                    "blrCustomerParams": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "regex": {
+                            "type": "string",
+                            "example": "^[0-9A-Za-z]{10,20}$"
+                          },
+                          "dataType": {
+                            "type": "string",
+                            "example": "ALPHANUMERIC",
+                            "description": "Data Type of value"
+                          },
+                          "optional": {
+                            "type": "boolean",
+                            "example": false,
+                            "description": "Is field mandatory"
+                          },
+                          "maxLength": {
+                            "type": "number",
+                            "example": 20,
+                            "description": "Maximum length of value"
+                          },
+                          "minLength": {
+                            "type": "number",
+                            "example": 10,
+                            "description": "Minimum length of value"
+                          },
+                          "paramName": {
+                            "type": "string",
+                            "example": "Loan Account Number",
+                            "description": "Parameter Name"
+                          }
+                        },
+                        "description": "Customer parameter object"
+                      }
+                    },
+                    "blrCustParamGroup": {
+                      "type": "object",
+                      "required": ["groups"],
+                      "properties": {
+                        "groups": {
+                          "type": "array",
+                          "items": { "type": "object" },
+                          "example": []
+                        }
+                      }
+                    },
+                    "blrPaymentChannels": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "maxLimit": {
+                            "type": "number",
+                            "example": 99999900,
+                            "description": "Maximum amount accepted"
+                          },
+                          "minLimit": {
+                            "type": "number",
+                            "example": 100,
+                            "description": "Minimum amount accepted"
+                          },
+                          "paymentChannel": {
+                            "type": "string",
+                            "example": "Internet",
+                            "description": "Type of payment"
+                          }
+                        },
+                        "description": "Biller payement channels"
+                      }
+                    },
+                    "blrResponseParams": {
+                      "type": "object",
+                      "required": ["amountOptions", "params"],
+                      "properties": {
+                        "params": {
+                          "type": "array",
+                          "items": { "type": "object" },
+                          "example": []
+                        },
+                        "amountOptions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "amountBreakupSet": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "example": ["BASE_BILL_AMOUNT"]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "blrCoverage": {
+                      "type": "string",
+                      "example": "IND"
+                    },
+                    "blrCategoryName": {
+                      "type": "string",
+                      "example": "Loan Repayment",
+                      "description": "The name of the category"
+                    },
+                    "blrPaymentModes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "minLimit": {
+                            "type": "number",
+                            "example": 1
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "Internet_Banking"
+                          }
+                        }
+                      }
+                    },
+                    "supportValidationApi": {
+                      "type": "array",
+                      "items": { "type": "object" },
+                      "example": []
+                    },
+                    "blrEffctvFrom": {
+                      "type": "number",
+                      "example": 20200520,
+                      "description": "Biller Start date"
+                    },
+                    "blrName": {
+                      "type": "string",
+                      "example": "Capri Global Housing Finance",
+                      "description": "Biller Name"
+                    },
+                    "blrAliasName": {
+                      "type": "string",
+                      "example": "Capri Global Housing",
+                      "description": "Alias name of the biller"
+                    },
+                    "blrDescription": {
+                      "type": "array",
+                      "items": { "type": "object" },
+                      "example": [],
+                      "description": "Additional description about biller"
+                    },
+                    "enableReversalElimination": {
+                      "type": "string",
+                      "example": "t"
+                    },
+                    "entityStatus": {
+                      "type": "string",
+                      "example": "ACTIVE"
+                    },
+                    "blrAcceptsAdhoc": {
+                      "type": "string",
+                      "example": "F",
+                      "description": "Information about whether the biller is ADHOC possible values are `T` or `F`"
+                    },
+                    "blrTimeout": {
+                      "type": "number",
+                      "example": 480,
+                      "description": "Response timeout for biller"
+                    },
+                    "blrAdditionalInfo": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "dataType": {
+                            "type": "string",
+                            "example": "ALPHANUMERIC",
+                            "description": "Data Type of parameter"
+                          },
+                          "optional": {
+                            "type": "boolean",
+                            "example": false,
+                            "description": "Is parameter mandatory"
+                          },
+                          "paramName": {
+                            "type": "string",
+                            "example": "Loan Amount",
+                            "description": "Paramter Name"
+                          }
+                        },
+                        "description": "Information on additional fields needed"
+                      }
+                    },
+                    "blrPmtAmtExactness": {
+                      "type": "string",
+                      "example": "EXACT_DOWN",
+                      "description": "Payment exactness applicable to biller"
+                    }
+                  }
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Status/error code of response"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "Success",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": ["categoryCode", "billerId"],
+              "properties": {
+                "billerId": {
+                  "type": "string",
+                  "example": "BILLER0028218",
+                  "description": "The ID of the biller"
+                },
+                "categoryCode": {
+                  "type": "string",
+                  "example": "38",
+                  "description": "Category code of the biller"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "BillerDetails"
+      }
+    },
+    "/api/bills/{env}/get-payment-status": {
+      "post": {
+        "tags": ["Pay"],
+        "summary": "API to get payment status",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "amount",
+                    "billerId",
+                    "status",
+                    "txnId",
+                    "txnMode"
+                  ],
+                  "properties": {
+                    "txnId": {
+                      "type": "string",
+                      "example": "694181327",
+                      "description": "The transaction ID"
+                    },
+                    "amount": {
+                      "type": "string",
+                      "example": "69108",
+                      "description": "Amount paid"
+                    },
+                    "status": {
+                      "enum": [
+                        "Executed",
+                        "Settled",
+                        "Execution Awaited",
+                        "Authorization Awaited",
+                        "Cancelled"
+                      ],
+                      "type": "string",
+                      "example": "Execution Awaited",
+                      "description": "Status of the payment"
+                    },
+                    "txnMode": {
+                      "type": "string",
+                      "example": "INTERNET BANKING",
+                      "description": "The transaction Mode"
+                    },
+                    "billerId": {
+                      "type": "string",
+                      "example": "MAHI00000NATIC",
+                      "description": "The biller ID"
+                    }
+                  },
+                  "description": "Details about the payment"
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Error codes:\n  * \"ERR000\":\"No data found\"\n"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": ["context"],
+              "properties": {
+                "context": {
+                  "type": "string",
+                  "example": "eyJjdXN0b21lclBhcmFtcyI6IFt7Im5hbWUiOiAiTG9hbiBOdW1iZXIiLCAidmFsdWUiOiAiMTg5NTE1OSJ9XSwgImJpbGxGZXRjaElkIjogIkMyUzFFUkxBU0ozR1g0TyIsICJtb2JpbGVOdW1iZXIiOiAiOTE5Mjk5MDAxMyIsICJiaWxsZXJJZCI6ICJNQUhJMDAwMDBOQVRJQyIsICJiaWxsIjogeyJhbW91bnQiOiAiMTcxNSIsICJhZGRpdGlvbmFsSW5mbyI6IFtdLCAiY3VzdG9tZXJOYW1lIjogIkV2ZWx5biBKQURIViIsICJiaWxsTnVtYmVyIjogIjRHRk5GQkQ4UjMiLCAiYmlsbERhdGUiOiAiMjAyMC0wOC0yMiIsICJiaWxsUGVyaW9kIjogIk9ORVRJTUUiLCAiY3VzdG9tZXJSZWZJZCI6ICIxODk1MTU5IiwgImR1ZURhdGUiOiAiMjAyMC0wOC0yMiJ9fQ==",
+                  "description": "The context from Make payment API response"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "GetPaymentStatus"
+      }
+    },
+    "/api/bills/{env}/get-fetched-bill": {
+      "post": {
+        "tags": ["Fetch"],
+        "summary": "API to get fetched bill",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": ["fetchAPIStatus"],
+                  "properties": {
+                    "bill": {
+                      "type": "object",
+                      "required": [
+                        "additionalInfo",
+                        "amount",
+                        "billDate",
+                        "billNumber",
+                        "billPeriod",
+                        "customerName",
+                        "dueDate"
+                      ],
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "example": "1715",
+                          "description": "The bill amount"
+                        },
+                        "dueDate": {
+                          "type": "string",
+                          "example": "2020-08-22",
+                          "description": "The due date for the bill"
+                        },
+                        "billDate": {
+                          "type": "string",
+                          "example": "2020-08-22",
+                          "description": "The bill generation date"
+                        },
+                        "billNumber": {
+                          "type": "string",
+                          "example": "4GFNFBD8R3",
+                          "description": "The bill number"
+                        },
+                        "billPeriod": {
+                          "enum": [
+                            "ONETIME",
+                            "DAILY",
+                            "WEEKLY",
+                            "BIMONTHLY",
+                            "MONTHLY",
+                            "QUARTERLY",
+                            "HALFYEARLY",
+                            "YEARLY",
+                            "ASPRESENTED"
+                          ],
+                          "type": "string",
+                          "example": "ONETIME",
+                          "description": "The bill period"
+                        },
+                        "customerName": {
+                          "type": "string",
+                          "example": "Evelyn JADHV",
+                          "description": "The name of the customer"
+                        },
+                        "additionalInfo": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "Penalty fees",
+                                "description": "The name of the Line item"
+                              },
+                              "value": {
+                                "type": "string",
+                                "example": "100.20",
+                                "description": "The value of the Line item"
+                              }
+                            }
+                          },
+                          "description": "Additional Line items for bill"
+                        }
+                      },
+                      "description": "The details of the bill"
+                    },
+                    "context": {
+                      "type": "string",
+                      "example": "eyJjdXN0b21lclBhcmFtcyI6IFt7Im5hbWUiOiAiTG9hbiBOdW1iZXIiLCAidmFsdWUiOiAiMTg5NTE1OSJ9XSwgImJpbGxGZXRjaElkIjogIkMyUzFFUkxBU0ozR1g0TyIsICJtb2JpbGVOdW1iZXIiOiAiOTE5Mjk5MDAxMyIsICJiaWxsZXJJZCI6ICJNQUhJMDAwMDBOQVRJQyIsICJiaWxsIjogeyJhbW91bnQiOiAiMTcxNSIsICJhZGRpdGlvbmFsSW5mbyI6IFtdLCAiY3VzdG9tZXJOYW1lIjogIkV2ZWx5biBKQURIViIsICJiaWxsTnVtYmVyIjogIjRHRk5GQkQ4UjMiLCAiYmlsbERhdGUiOiAiMjAyMC0wOC0yMiIsICJiaWxsUGVyaW9kIjogIk9ORVRJTUUiLCAiY3VzdG9tZXJSZWZJZCI6ICIxODk1MTU5IiwgImR1ZURhdGUiOiAiMjAyMC0wOC0yMiJ9fQ==",
+                      "description": "The context value that needs to be passed in the `Make Payment` API"
+                    },
+                    "paymentLimits": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "maxLimit": {
+                            "type": "number",
+                            "example": 50000,
+                            "description": "The maximum amount in rupees accepted by the biller for this payment mode"
+                          },
+                          "minLimit": {
+                            "type": "number",
+                            "example": 50,
+                            "description": "The minimum amount in rupees accepted by the biller for this payment mode"
+                          },
+                          "paymentMode": {
+                            "enum": [
+                              "CASH",
+                              "INTERNET BANKING",
+                              "DEBIT CARD",
+                              "PREPAID CARD",
+                              "CREDIT CARD",
+                              "UPI",
+                              "WALLET",
+                              "ACCOUNT TRANSFER",
+                              "NEFT",
+                              "IMPS",
+                              "AEPS"
+                            ],
+                            "type": "string",
+                            "example": "DEMO PAYMENT MODE",
+                            "description": "Name of the payment mode"
+                          }
+                        }
+                      },
+                      "description": "List of payments modes accepted with limits"
+                    },
+                    "fetchAPIStatus": {
+                      "enum": [
+                        "Active",
+                        "Cancelled",
+                        "Rejected",
+                        "DeRegistered",
+                        "Expired",
+                        "Acknowledged",
+                        "Retrying",
+                        "EphRejected",
+                        "Unknown"
+                      ],
+                      "description": "The status of the fetch API"
+                    }
+                  }
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Error codes:\n * \"ERR000\": \"No data Found\"\n * \"BFR001\": \"Invalid customer account\"\n * \"BFR004\": \"No due amount\"\n * \"BFR008\": \"Unable to get data from the biller\"\n"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": ["context"],
+              "properties": {
+                "context": {
+                  "type": "string",
+                  "example": "eyJjdXN0b21lclBhcmFtcyI6IFt7Im5hbWUiOiAiTG9hbiBOdW1iZXIiLCAidmFsdWUiOiAiMTg5NTE1OSJ9XSwgImJpbGxGZXRjaElkIjogIkMyUzFFUkxBU0ozR1g0TyIsICJtb2JpbGVOdW1iZXIiOiAiOTE5Mjk5MDAxMyIsICJiaWxsZXJJZCI6ICJNQUhJMDAwMDBOQVRJQyJ9",
+                  "description": "The context from the `Register for bill fetch` API."
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "GetFetchedBill"
+      }
+    },
+    "/api/bills/{env}/complaint-status": {
+      "post": {
+        "tags": ["Complaint Management"],
+        "summary": "API to check complaint status",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "assignedTo",
+                    "complaintID",
+                    "isComplaintOpen",
+                    "npciMessageId",
+                    "npciRefId",
+                    "sequenceNumber",
+                    "status",
+                    "transactionResponseCode",
+                    "transactionResponseReason",
+                    "txnId"
+                  ],
+                  "properties": {
+                    "transactionResponseReason": {
+                      "type": "string",
+                      "example": "SUCCESS",
+                      "description": "Details of transaction response - message"
+                    },
+                    "txnId": {
+                      "type": "string",
+                      "example": "AX0101961852",
+                      "description": "Transaction Id supplied while making payment"
+                    },
+                    "npciRefId": {
+                      "type": "string",
+                      "example": "AX011709202000000000000000004987662",
+                      "description": "NPCI identifiable reference id"
+                    },
+                    "complaintID": {
+                      "type": "string",
+                      "example": "AX0120261945097",
+                      "description": "Unique complaint id"
+                    },
+                    "assignedTo": {
+                      "type": "string",
+                      "example": "Axis Bank - 04",
+                      "description": "Information about to who is working on the complaint"
+                    },
+                    "sequenceNumber": {
+                      "type": "string",
+                      "example": "62238",
+                      "description": "Unique token number for complaint"
+                    },
+                    "isComplaintOpen": {
+                      "type": "string",
+                      "example": "Y",
+                      "description": "Is complaint open"
+                    },
+                    "transactionResponseCode": {
+                      "type": "string",
+                      "example": "000",
+                      "description": "Details of transaction response - code"
+                    },
+                    "status": {
+                      "enum": [
+                        "ASSIGNED",
+                        "ESCALATED",
+                        "RE ASSIGNED",
+                        "ASSIGNED TO COU/ ASSIGNED TO BOU/ ASSIGNED TO OU",
+                        "RESOLVED",
+                        "UNRESOLVED"
+                      ],
+                      "type": "string",
+                      "example": "ASSIGNED",
+                      "description": "Status of complaint.\n- `ASSIGNED` = A customer has raised a complaint at an agent outlet or on the BBPS website, and a Complaint ID has been assigned to It. By default, it is assigned to the Customer BBPOU. At this stage, the Customer BBPOU may assign the complaint to the Biller BBPOU depending on the details of the complaint\n- `ESCALATED` = If the BBPOU does not respond to the complaint within the specified TAT, the complaint gets escalated\n- `RE ASSIGNED` = When Customer BBPOU re assigned the complaint to the Biller BBPOU\n- `ASSIGNED TO COU/ ASSIGNED TO BOU/ ASSIGNED TO OU` = When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU.\n- `RESOLVED` = Once the BBPOU resolves the customer related complaint, the BBPOU updates the system\n"
+                    },
+                    "npciMessageId": {
+                      "type": "string",
+                      "example": "AX011709202000000000000000004116802",
+                      "description": "NPCI identifiable message id"
+                    }
+                  },
+                  "description": "Response Object"
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Information about the status, error codes are also shared here"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": ["referenceId"],
+              "properties": {
+                "referenceId": {
+                  "type": "string",
+                  "example": "b6TyXUu0Bi/AX011709202028273/2020-09-10",
+                  "description": "it is the `referenceId` obtained in Raise Complaint API"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "ComplaintStatus"
+      }
+    },
+    "/api/bills/{env}/raise-complaint": {
+      "post": {
+        "tags": ["Complaint Management"],
+        "summary": "API to raise complaint",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "statusCode", "statusMessage", "traceId"],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": ["referenceId"],
+                  "properties": {
+                    "referenceId": {
+                      "type": "string",
+                      "example": "uyZmcglSqu/AX012209202028325/2020-09-10",
+                      "description": "Unique reference Id for the complaint"
+                    }
+                  },
+                  "description": "Response data for raised complaint"
+                },
+                "traceId": {
+                  "type": "string",
+                  "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
+                  "description": "Identifier associated with this response for debug purposes"
+                },
+                "statusCode": {
+                  "type": "string",
+                  "example": "success",
+                  "description": "Success/error code about the API"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "API is successful",
+                  "description": "One line description about the status"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a partner in their system."
+          },
+          {
+            "in": "header",
+            "name": "AXIS-BODY-CHANNEL-ID",
+            "schema": { "type": "string" },
+            "description": "This value is provided by Axis and it represents a numeric equivalent of AXIS-CHANNEL-ID"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-ID",
+            "schema": { "type": "string" },
+            "description": "IBM Client ID of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CLIENT-SECRET",
+            "schema": { "type": "string" },
+            "description": "IBM Client Secret of Axis API gateway"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-ENCRYPTION-KEY",
+            "schema": { "type": "string" },
+            "description": "Encryption Key provisioned by Axis for calculating encryption token"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-SALT-KEY",
+            "schema": { "type": "string" },
+            "description": "Salt Key provisioned by Axis for calculating checksum"
+          },
+          {
+            "in": "header",
+            "name": "AXIS-CHANNEL-PASSWORD",
+            "schema": { "type": "string" },
+            "description": "Provisioned by Axis. Used to perfrom end to end encryption"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": ["txnId", "txnDate", "issueType", "description"],
+              "properties": {
+                "txnId": {
+                  "type": "string",
+                  "example": "AX0101961852",
+                  "description": "Transaction reference number printed on the slip of the customer."
+                },
+                "txnDate": {
+                  "type": "string",
+                  "example": "2020-09-10",
+                  "description": "Order Date"
+                },
+                "issueType": {
+                  "type": "string",
+                  "example": "1",
+                  "description": "It can be one of these values <br /> `1` - Transaction Successful, account not updated <br /> `2` - Amount deducted, biller account credited but transaction ID not received Transaction <br /> `3` - Amount deducted, biller account not credited & transaction ID not received Transaction <br /> `4` - Amount deducted multiple times Transaction <br /> `5` - Double payment updated Transaction <br /> `6` - Erroneously paid in wrong account Transaction"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Not updated",
+                  "description": "Description of the complaint for Transaction/service based complaints."
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "RaiseComplaint"
+      }
+    }
+  },
+  "swagger": "2.0",
+  "definitions": {}
+}

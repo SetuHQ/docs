@@ -1,0 +1,519 @@
+---
+sidebar_title: API integration
+page_title: BBPS - API integration
+order: 2
+visible_in_sidebar: true
+---
+
+## API Integration
+
+Start by signing up on <a href="https://bridge.setu.co/" target="_blank">The Bridge ↗</a>, if you haven’t already. This is Setu’s single portal for managing all your integrations with us.
+
+If you face any issues with integration, <a href="https://support.setu.co/support/tickets/new" target="_blank">raise a support ticket ↗</a> and our team will reach out.
+
+<hr class="primary" />
+
+### Setup on The Bridge
+
+##### Step 1 — Create a biller
+
+The primary entity on the BBPS network is called a “biller”. Go to the <a href="https://bridge.setu.co/products-list/payments" target="_blank">list of products</a> offered by Setu, and select one of the product cards under Payments > Collect BBPS.
+
+You will see multiple Collect BBPS cards, each by a different bank provider. While the underlying bank might differ, the product experience itself remains consistent across providers. Click on one of those cards, and you should see the full profile page with more details about the product. Click on the “Create a biller” button.
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/biller_create_def9d37373/biller_create_def9d37373.gif"
+    alt="Create a biller"
+/>
+
+Here, enter the name of the biller. This is what your customers will see and search for in the payment apps, so make sure it has no errors.
+
+Below that, select the category this biller belongs to. Right now Setu supports only two categories, but should begin adding more soon. Now click on the “Create biller” button.
+
+And done! The biller has been created, and you can proceed to the biller dashboard.
+
+<hr class="tertiary" />
+
+##### Step 2 — Add product configuration
+
+<Callout type="highlight">
+    The following explanation is done keeping in mind you’re in the Sandbox
+    environment.
+</Callout>
+
+<br />
+
+After the biller creation step, we should be on the biller profile. Here, you will see four tabs—**Dashboard**, which is an overview page, **Configuration** has all the integration details for this biller, **Transactions** where you can see test payments made to this biller, and **Copy to Production**, to copy the same config to Production later.
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/biller_dashboard_4da36b3b41/biller_dashboard_4da36b3b41.png"
+    alt="Biller dashboard"
+/>
+
+Click on the Configuration tab to begin setting up your biller. For a configuration to be complete, you need to—
+
+-   Add at least one customer identifier, which helps the payment app identify a specific customer, in order to pull their bills from the biller system. For example, a customer’s loan number might be used to retrieve their EMI payment.
+-   Setup URLs to tell Setu where to fetch the bills from the your system, and the auth mechanism. You can also optionally setup a callback URL to receive notifications.
+-   Add settlement accounts, for receiving funds from Setu once customers make a successful payment. In Sandbox, these would be only mock transactions.
+
+###### Add customer identifier(s)
+
+Begin by defining _at least_ one identifier. An app like PhonePe or GPay will ask your customer to fill in a value against this identifier—that would be unique to that customer and help them fetch their own bill.
+
+<Callout type="tip">
+    You can add up to 4 identifiers—mark them as mandatory or not mandatory,
+    depending on the customer experience you want to give and APIs you build to
+    support this. If you mark all identifiers as optional, the customer can
+    enter any one of them in order to be identified and see the relevant bill.
+</Callout>
+
+<br />
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/biller_config_8633de64a3/biller_config_8633de64a3.png"
+    alt="Biller configuration"
+/>
+
+**Attribute name** is what your system recognises as the identifier to uniquely identify a customer.
+
+**Displayed as** is what the user would see in an app like PhonePe or GPay.
+
+**Length** denotes the minimum and maximum characters the customer can enter for the identifier.
+
+**Regex / pattern** helps to check if the identifier entered by the customer is valid or not.
+
+Once you enter these values, you can save it, and add another if you wish.
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/bbps-sample-customer-identifier-1/bbps-sample-customer-identifier-1.png"
+    alt="Sample customer identifier"
+/>
+
+<Callout type="tip">
+    You can test customer identifiers that you configure, on Bridge. A sample
+    app is available at the bottom-right of the screen on your configuration
+    page, to test the integration.
+</Callout>
+<hr class="tertiary" />
+
+###### Add URL endpoints
+
+The `baseURL` is from where Setu can fetch bills and receipts from the biller system.
+
+<Callout type="warning">
+    Setu will add <code>/bills/fetch/</code> or <code>/bills/fetchReceipt</code>{" "}
+    at the end of this URL.{" "}
+</Callout>
+
+<br />
+
+The following web APIs need to be exposed by a Setu biller—
+
+-   <a
+        href="/payments/bbps/api-reference#/category~APIs_to_Implement/operation~fetchCustomerBills"
+        target="_blank"
+    >
+        <code>fetchCustomerBills</code> ↗
+    </a> used to share a customer's bill(s) with the BBPS system
+-   <a
+        href="/payments/bbps/api-reference#/category~APIs_to_Implement/operation~fetchBillReceipt"
+        target="_blank"
+    >
+        <code>fetchBillReceipt</code> ↗
+    </a> used to generate and access a receipt against a customer's payment
+
+These will be invoked by BBPS via the Setu platform. More details on implementing these APIs have been provided <a href="/payments/bbps/quickstart#apis-to-implement">below</a>.
+
+The `callbackURL` is for Setu to send notifications for `BILL_SETTLEMENT_STATUS` event only. If you want to implement this, read more <a href="/payments/bbps/notifications" target="_blank">here</a>.
+
+<Callout type="warning">
+    Please note, Setu will add <code>/notifications</code> at the end of this
+    URL.
+</Callout>
+
+<br />
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/biller_url_config_836bfdc83a/biller_url_config_836bfdc83a.png"
+    alt="Biller URL configuration"
+/>
+
+Setup the `baseURL` along with its auth scheme. Depending on the scheme you select, you would need to provide the corresponding credentials.
+
+If you require notifications along with every settlement event, then setup the `callbackURL` as well.
+
+<hr class="tertiary" />
+
+###### Add settlement account(s)
+
+Settlement accounts are where Setu will deposit money into after the customer has made the payment. Keep in mind that in Sandbox, these are mocked, and involve no money movement.
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/biller_settlement_account_5bd1fc37f5/biller_settlement_account_5bd1fc37f5.png"
+    alt="Biller settlement account"
+/>
+
+Add the account holder’s name, account number and IFSC. You can also add multiple accounts, and have funds split between them based on settlement instructions. Read more <a href="/payments/bbps/resources/settlement-object" target="_blank">here</a>.
+
+<hr class="primary" />
+
+### APIs to implement
+
+##### Fetch customer bill
+
+This is a multi-leg transaction between BBPS, Setu, and the biller system.
+
+BBPS calls Setu with customer identifier(s) details entered by a customer on a BBPS enabled app / offline collection point.
+
+Setu calls the biller with the same details with the API to <a href="/payments/bbps/api-reference#/category~APIs_to_call/operation~fetchBills" target="_blank"><code>fetch bill</code> ↗</a> for the customer, and then, shares it with BBPS.
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/BBPS_Bill_fetch_cycle_2x_7e9d96b929/BBPS_Bill_fetch_cycle_2x_7e9d96b929.png"
+    alt="BBPS bill fetch cycle"
+/>
+
+The biller’s API URL is expected to be in the following format—
+
+<CodeBlockWithCopy language="bash">
+    {`https://<partner-base-api-url>/bills/fetch`}
+</CodeBlockWithCopy>
+
+<br />
+
+<Callout type="tip">
+    Please note, Setu will add the <code>/bills/fetch</code> at the end of this
+    URL.
+</Callout>
+
+<br />
+
+The request body will specify the customer identifier—
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "customerIdentifiers": [
+        {
+          "attributeName": "customerId",
+          "attributeValue": "9117534711"
+        }
+      ]
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+**Note:**
+
+-   `customerId` is defined as per biller's use case, such as loanNumber, studentId, etc
+
+###### Response scenarios
+
+When BBPS sends a fetch bill request to Setu, Setu forwards the request to biller specified `baseURL`. Setu expects to receive a response from the biller system, with three possible scenarios—
+
+-   Success, with outstanding bill for customer
+-   Identifier matched, but no outstanding bill for customer
+-   Failure, no customer found
+
+<hr class="tertiary" />
+
+**Scenario 1: Success, with outstanding bill for customer**
+
+The is when the customer is present in the biller system, and has outstanding bills. In this case, the biller can return a `200` response—
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "data": {
+    "customer": {
+      "name": "Sharmaji Ka Beta",
+      "additionalInfo": [
+        {
+          "EMI Amount": "900"
+        },
+        {
+          "Charges": "100"
+        }
+      ]
+    },
+    "billDetails": {
+      "bills": [
+        {
+          "items": [],
+          "generatedOn": "2022-06-07T05:18:02.234Z",
+          "customerAccount": {
+            "id": "9117534711"
+          },
+          "recurrence": "ONE_TIME",
+          "aggregates": {
+            "total": {
+              "amount": {
+                "value": 100000, // in paise
+                "currencyCode": "INR"
+              },
+              "displayName": "Total Receivable"
+            }
+          },
+          "billerBillID": "891234567",
+          "amountExactness": "EXACT"
+        }
+      ],
+      "billFetchStatus": "AVAILABLE"
+    }
+  },
+  "status": 200,
+  "success": true
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+**Note**
+
+-   `additionalInfo` items will be displayed in the Payment App/site which can describe additional information about the bill.
+-   `items` are used to show details about the bill / itemized break up. Maximum of 4.
+-   `generatedOn` and `dueDate` must adhere to the following guidelines from NPCI
+    -   `generatedOn` should not be greater than `dueDate`
+    -   `generatedOn` should not be a future date
+    -   `dueDate` should not be equal to `generatedOn`
+
+<hr class="tertiary" />
+
+**Scenario 2: Identifier matched, but no outstanding bill for customer**
+
+When a customer is identified in the biller system but has paid all bills, and so, has no outstanding bill amount. In this case, the biller can return a `200` response—
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "data": {
+        "billDetails": {
+          "billFetchStatus": "NO_OUTSTANDING",
+          "bills": []
+        },
+        "customer": {
+          "name": "Sharmaji Ka Beta"
+        }
+      },
+      "success": true,
+      "status": 200
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+The `dueDate` can be the last payment date from the customer or the current timestamp.
+
+<hr class="tertiary" />
+
+**Scenario 3: Failure, no customer found**
+
+Either the biller does not recognise the parameter, or there are no customers with that particular parameter.
+Then, the biller can return a `400` response—
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "success": false,
+      "status": 400,
+      "error": {
+        "traceID": "XXXXXX",
+        "code": "customer-not-found",
+        "docURL": "",
+        "detail": "A customer with the provided credentials does not exist in the biller system.",
+        "title": "customer-not-found"
+      }
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+<hr class="secondary" />
+
+##### Fetch bill payment receipt
+
+This is a multi-leg transaction between BBPS, Setu, and the biller system. As described in the diagram below, BBPS calls Setu, and Setu in turn calls the biller with <a href="/payments/bbps/api-reference#/category~APIs_to_Implement/operation~fetchBillReceipt" target="_blank"><code>fetchBillReceipt</code> ↗</a>
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/BBPS_Payment_cycle_2x_3d58b5d3d3/BBPS_Payment_cycle_2x_3d58b5d3d3.png"
+    alt="BBPS payment cycle"
+/>
+
+Once a payment is received against a bill, Setu gets a notification and in turn makes the <a href="/payments/bbps/api-reference#/category~APIs_to_Implement/operation~fetchBillReceipt" target="_blank"><code>fetchBillReceipt</code> ↗</a> API call to the biller system. The biller’s API URL should be in the following format—
+
+<CodeBlockWithCopy language="json">
+    {`https://<partner-base-api-url>/bills/fetchReceipt`}
+</CodeBlockWithCopy>
+
+<br />
+
+<Callout type="tip">
+    Setu adds the <code>/bills/fetchReceipt</code> at the end of biller provided{" "}
+    <code>baseURL</code>.{" "}
+</Callout>
+
+<br />
+
+A typical request for a receipt would look something like—
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "platformBillID": "906910589572351478",
+      "billerBillID": "891234567",
+      "paymentDetails": {
+        "amountPaid": {
+          "value": 1000,
+          "currencyCode": ""
+        },
+        "billAmount": {
+          "value": 1000,
+          "currencyCode": ""
+        },
+        "platformTransactionRefID": "26602931-3b6a-4c87-a14d-5d7cf584008f",
+        "uniquePaymentRefID": "PP012151MYB616O9BSY1",
+        "instrument": "UPI",
+        "additionalInfo": null,
+        "transactionNote": "",
+        "campaignID": ""
+      }
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+Once you receive this call—
+
+1. Create a receipt against `uniquePaymentRefID`.
+2. Update your ledger to reflect this new balance.
+3. Return a `200` response with `id` and `date`.
+
+###### Success response
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "status": 200,
+      "success": true,
+      "data": {
+        "receipt": {
+          "id": "XYZ987-891234567",
+          "date": "2022-06-07T05:55:54.789Z"
+        }
+      }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Failure scenarios
+
+**Case 1**
+
+If your system cannot accept or process payment due to some use case or validation related error or business requirement or Technical error on biller server (such as server down, bad gateway, unavailable, etc), you respond with a `500` response -
+
+<CodeBlockWithCopy language="json">
+    {`{
+    "status": 500,
+    "success": false,
+    "error": {
+        "code": "unable-to-fulfill-request",
+        "detail": "An error occured while processing this request.",
+        "docURL": "",
+        "title": "API_ERROR",
+        "errors": [],
+        "traceID": "XXXXXX"
+    }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+**Note:**
+
+-   During Payment request, when your system fails to respond to Setu in 15 secs or responds with an error, the request to `/fetchReceipt`
+    will be reattempted with the same request body as the first attempt.
+-   You must implement a Duplicate check against `uniquePaymentRefID`
+    -   If the `uniquePaymentRefID` doesn't exist for that Transaction, you must update the same and return a `200` Success response
+    -   If the same `uniquePaymentRefID` exists in your system for that Transaction, you can return a `200` Success response
+
+<hr class="secondary" />
+
+##### Security considerations
+
+1. The API should work from only whitelisted IPs (on production)
+2. HTTPS is mandatory
+3. Authentication mechanism is required. Supported
+   methods—Basic auth, JWT, OAuth.
+
+<hr class="primary" />
+
+#### APIs to call
+
+##### Expire Bill (optional)
+
+This API immediately changes the status of an unpaid link to `BILL_EXPIRED`. The customer would not be able to pay using the link or the associated VPA, but even if they are somehow able to do that (due to app caching or similar issues) the amount would automatically be refunded.
+
+`platformBillID` is a unique identifier for a bill on Setu's system and has to be provided to expire the bill. This is made available in the Create Payment Link API's response.
+
+<table>
+    <tbody>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>POST </code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>
+                    /utilities/bills/&lt;<c>platformBillId</c>&gt;/expire
+                </code>
+            </td>
+        </tr>
+        <tr>
+            <th>Header</th>
+            <td>
+                <code>X-Setu-Product-Instance-ID</code>
+                <br />
+                <br />
+                <code>Authorization</code>: Bearer (<b>insert_token_here</b>). Read
+                about how to generate this token <a
+                    href="resources/generate-token"
+                    target="_blank"
+                >
+                    here
+                </a>.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+###### Success
+
+<CodeBlockWithCopy language="json">
+    {`{
+    "status"  : 200,
+    "success" : true
+}`}
+</CodeBlockWithCopy>
+
+###### Failure
+
+In case the `platformBillID` provided is incorrect, Setu will respond with `400` bill not found error—
+
+<CodeBlockWithCopy language="json">
+    {`{
+    "status": 400,
+    "success": false,
+    "error": {
+        "code": "bill-not-found",
+        "detail": "Bill with ID [<platformBillID>] not found.",
+        "docURL": "",
+        "title": "PLATFORM_ERROR",
+        "errors": [],
+        "traceID": "XXXXXX"
+    }
+}`}
+</CodeBlockWithCopy>
+
+If a bill has been expired, ideally, a payment by a customer would not be allowed, if verify VPA call returns an error on a payment app.
+
+But if the verify VPA call was not made and the customer makes a payment, payment will go through but will be refunded in the settlement flow.
+
+<WasPageHelpful />

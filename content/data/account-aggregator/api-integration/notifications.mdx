@@ -1,0 +1,138 @@
+---
+sidebar_title: Notifications
+page_title: Account Aggregator Notifications
+order: 3
+visible_in_sidebar: true
+---
+
+## Notifications
+
+Below is a summary of the API endpoints you need to implement on your server and expose to receive notifications from Setu AA. These notifications are webhooks from Setu based on the events that occur during the consent and data flow.
+
+The `base_url` is the server URL you share with us to receive notifications.
+
+To **get started quickly**, you can setup a mock API endpoint using <a href="https://beeceptor.com/" target="_blank">Beeceptor</a>. Once configured on Bridge, Setu will send notifications to that URL. This will help you understand the notification flow before you start to implement it on your server.
+
+###### Types of notifications
+
+- **Consent notification**—notification triggered for the events that occur in consent flow
+- **FI notification**—notification triggered for the events that occur in data flow
+
+Note: Webhooks retries will be added in future iterations.
+
+<hr class="primary" />
+
+#### Consent notification
+
+This notification is used to communicate the updated status of the consent.
+
+**Types of consent status**
+
+- `ACTIVE`-Customer has approved consent
+- `REJECTED`-Customer has rejected consent
+- `REVOKED`-Customer revoked consent for an existing approved consent
+- `PAUSED`-Customer paused consent for an existing approved consent
+- `EXPIRED`-Consent request has expired
+
+We do not send notification for consent status `PENDING`, this is when consent is just created.
+
+###### Consent Notification Payload
+
+Setu will post this payload to your notification endpoint whenever there is a change in consent status.
+
+<CodeBlockWithCopy language="json">
+  {`POST  {base_url}
+{
+  "type": "CONSENT_STATUS_UPDATE",
+  "timestamp": 2018-12-06T11:39:57.153Z,
+  "consentId": d4f40bd9-a22f-4408-a622-4e8a1e4fbda6,
+  "success": true,
+  "data": {
+    "status": "ACTIVE", 
+    "Detail": {                            
+                        // consent details object
+                   }
+  },
+  "error": error
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+#### FI notification
+
+The Financial Information (FI) notification is used to communicate the data session status you requested for, in Create Data Session API and the FI status of users’ linked FIPs. This is indicated using two status present in the FI notification payload.
+
+The FI notification payload contains two status
+
+**Data Session Status** – returns updated status of the data session; determines whether to initiate Fetch API Data API
+
+- `ACTIVE`- FI data session is active
+- `COMPLETED`- All requested FIP(s) have status as `READY`
+- `EXPIRED`- Data session had expired and no data fetch can happen for the dataSessionId
+- `FAILED`- Data Session request failed, retry creating a new session
+
+**FIStatus** - return status of the FIP(s) linked to the data session
+
+- `READY` - FIP is ready with requested data
+- `DENIED` - FIP has denied data sharing
+- `PENDING` - FIP received the data session request
+- `DELIVERED` - FIP has delivered the requested data
+- `TIMEOUT` - Request to FIP has timed out
+
+Fetch FI Data API should be called only when these conditions are satified:
+
+- Data Session status is `ACTIVE` or `COMPLETED` (all FIPs are ready)
+- FIStatus is `READY`.
+
+###### FI Notification Payload
+
+Setu will notify you whenever the FIP (Financial Information Provider) responds with updated status. The following payload will be posted on your configured webhook endpoint.
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "type": "SESSION_STATUS_UPDATE",
+  "timestamp": "2018-12-06T11:39:57.153Z",
+  "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6",
+  "dataSessionId": "378ec65c-f558-49fc-89ea-e880c2cf88b3",
+  "success": true,
+  "data": {
+    "status": "ACTIVE",
+    "format": "json", // json or xml
+    "DataRange": {
+      "from": "2018-12-06T11:39:57.153Z",
+      "to": "2021-12-31T14:25:33.440Z"
+    },
+    "fips": [
+      {
+        "fipID": "FIP-1",
+        "Accounts": [
+          {
+            "linkRefNumber": "XXXX-XXXX-XXXX",
+            "FIStatus": "READY",
+            "description": ""
+          }
+        ]
+      }
+    ],
+    "error": {
+      "code": "",
+      "message": ""
+    }
+  }`}
+</CodeBlockWithCopy>
+
+###### Response
+
+Send the response in the format shown below.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "ver"       : "1.0",
+    "timestamp" : "2018-12-06T11:39:57.153Z", // current timestamp
+    "txnid"     : "f35761ac-4a18-11e8-96ff-0277a9fbfedc", // UUId v4
+    "response"  : "OK"
+}`}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />

@@ -1,0 +1,553 @@
+{
+    "host": "prod.setu.co",
+    "info":
+      {
+        "title": "WhatsApp Bill APIs",
+        "version": "1.0.0",
+        "description": "<h2>We offer the following APIs for businesses to send bills to their customers directly on WhatsApp.</h2> <h3><ul> <li>Create Bill and Send</li> <li>Fetch Bill and Send</li> <li>Bulk send using CSV upload</li> </ul></h3>",
+      },
+    "paths":
+      {
+        "/bill/fetch":
+          {
+            "post":
+              {
+                "summary": "Fetch and send bill",
+                "consumes": ["application/json"],
+                "responses":
+                  {
+                    "200":
+                      {
+                        "schema":
+                          {
+                            "type": "object",
+                            "required": ["status", "success", "data"],
+                            "properties":
+                              {
+                                "data":
+                                  {
+                                    "type": "object",
+                                    "properties":
+                                      {
+                                        "messageID": { "type": "string" },
+                                        "paymentLink":
+                                          {
+                                            "type": "object",
+                                            "properties":
+                                              {
+                                                "upiID": { "type": "string" },
+                                                "upiLink": { "type": "string" },
+                                                "shortURL":
+                                                  { "type": "string" },
+                                              },
+                                          },
+                                        "platformBillID": { "type": "string" },
+                                      },
+                                  },
+                                "status": { "type": "integer", "default": 200 },
+                                "success": { "type": "boolean" },
+                              },
+                          },
+                        "description": "The request was succesfully processed",
+                      },
+                    "400":
+                      {
+                        "schema":
+                          {
+                            "type": "object",
+                            "required": ["error", "success"],
+                            "properties":
+                              {
+                                "error":
+                                  {
+                                    "type": "object",
+                                    "properties":
+                                      {
+                                        "code": { "type": "string" },
+                                        "message": { "type": "string" },
+                                      },
+                                  },
+                                "status": { "type": "integer", "default": 400 },
+                                "success": { "type": "boolean" },
+                              },
+                          },
+                        "description": "The request failed",
+                      },
+                  },
+                "parameters":
+                  [
+                    {
+                      "in": "header",
+                      "name": "X-Setu-Product-Instance-ID",
+                      "type": "string",
+                      "required": true,
+                      "description": "Identifier for product instance. Required for authorisation.",
+                    },
+                    {
+                      "in": "header",
+                      "name": "x-setu-client-id",
+                      "type": "string",
+                      "required": true,
+                      "description": "Identifier for client instance. Required for authorisation. It can be obtained by decoding the OAuth token returned and using the value for the key X-Setu-Client-ID",
+                    },
+                    {
+                      "in": "header",
+                      "name": "Authorization",
+                      "type": "string",
+                      "required": true,
+                      "description": "<a href='https://docs.setu.co/dev-tools/bridge/org-settings/api-keys/oauth'>The authorization header needs to be generated from Setu's OAuth server</a>",
+                    },
+                    {
+                      "in": "body",
+                      "name": "body",
+                      "schema":
+                        {
+                          "type": "object",
+                          "required": ["bill", "channels"],
+                          "properties":
+                            {
+                              "bill":
+                                {
+                                  "type": "object",
+                                  "required": ["customerIdentifiers"],
+                                  "properties":
+                                    {
+                                      "customerIdentifiers":
+                                        {
+                                          "type": "array",
+                                          "items":
+                                            {
+                                              "type": "object",
+                                              "required":
+                                                [
+                                                  "attributeValue",
+                                                  "attributeName",
+                                                ],
+                                              "properties":
+                                                {
+                                                  "attributeName":
+                                                    {
+                                                      "type": "string",
+                                                      "description": "Value of the above customer identifier of a biller. This is entered by the customer in the payer app.",
+                                                    },
+                                                  "attributeValue":
+                                                    {
+                                                      "type": "string",
+                                                      "description": "Attribute used to identify a customer of a biller. Could be phone number, PAN or email, depending on the biller.",
+                                                    },
+                                                },
+                                            },
+                                          "description": "Used to validate the customer account and fetch the bill details.",
+                                        },
+                                    },
+                                  "description": "The bill object will contain the information to fetch the bill from Setu Collect",
+                                },
+                              "channels":
+                                {
+                                  "type": "array",
+                                  "items":
+                                    {
+                                      "type": "object",
+                                      "required":
+                                        [
+                                          "destination",
+                                          "campaignID",
+                                          "channel",
+                                          "template",
+                                        ],
+                                      "properties":
+                                        {
+                                          "channel":
+                                            {
+                                              "enum": ["whatsapp"],
+                                              "type": "string",
+                                              "description": "We currently support only WhatsApp as a channel",
+                                            },
+                                          "template":
+                                            {
+                                              "type": "object",
+                                              "example":
+                                                {
+                                                  "name": "Alice",
+                                                  "biller": "Apna Finance",
+                                                },
+                                              "description": "Template object will be used to pick data that is required to send the template on WhatsApp. Please note that this object can vary based on template being used and needs to be configured during onboarding",
+                                            },
+                                          "campaignID":
+                                            {
+                                              "type": "string",
+                                              "example": "3d32a528-1f0b-4f50-a0e8-b51d8d6a54b7",
+                                              "description": "It is possible to create multiple campaigns under the same integration. `campaignID` will be given to you by Setu team during onboarding",
+                                            },
+                                          "destination":
+                                            {
+                                              "type": "string",
+                                              "example": "918921175485",
+                                              "description": "`destination` should contain the recipients phone number with country code.",
+                                            },
+                                        },
+                                    },
+                                  "description": "`channels` array will contain the details to send out the generated bil to the recipient",
+                                },
+                            },
+                        },
+                    },
+                  ],
+                "description": "We fetch a bill from Setu Collect Integration and send it across to the recipient",
+              },
+          },
+        "/bill/create":
+          {
+            "post":
+              {
+                "summary": "Create and send bill",
+                "consumes": ["application/json"],
+                "responses":
+                  {
+                    "200":
+                      {
+                        "schema":
+                          {
+                            "type": "object",
+                            "required": ["status", "success", "data"],
+                            "properties":
+                              {
+                                "data":
+                                  {
+                                    "type": "object",
+                                    "properties":
+                                      {
+                                        "messageID":
+                                          {
+                                            "type": "string",
+                                            "description": "Message ID will contain the message ID returned by your BSP",
+                                          },
+                                        "paymentLink":
+                                          {
+                                            "type": "object",
+                                            "properties":
+                                              {
+                                                "upiID":
+                                                  {
+                                                    "type": "string",
+                                                    "description": "UPI ID is the newly generated unique VPA",
+                                                  },
+                                                "upiLink":
+                                                  {
+                                                    "type": "string",
+                                                    "description": "UPI link is a deeplink that triggers the UPI intent when used on phone",
+                                                  },
+                                                "shortURL":
+                                                  {
+                                                    "type": "string",
+                                                    "description": "Short URL will contain the short URL that was sent as a part of the Pay now button",
+                                                  },
+                                              },
+                                          },
+                                        "platformBillID":
+                                          {
+                                            "type": "string",
+                                            "description": "PlatformBillID is unique identifier for every bill on Setu's system",
+                                          },
+                                      },
+                                  },
+                                "status": { "type": "integer", "default": 200 },
+                                "success": { "type": "boolean" },
+                              },
+                          },
+                        "description": "The request was succesfully processed",
+                      },
+                    "400":
+                      {
+                        "schema":
+                          {
+                            "type": "object",
+                            "required": ["error", "success"],
+                            "properties":
+                              {
+                                "error":
+                                  {
+                                    "type": "object",
+                                    "properties":
+                                      {
+                                        "code": { "type": "string" },
+                                        "message": { "type": "string" },
+                                      },
+                                  },
+                                "status": { "type": "integer", "default": 400 },
+                                "success": { "type": "boolean" },
+                              },
+                          },
+                        "description": "The request failed",
+                      },
+                  },
+                "parameters":
+                  [
+                    {
+                      "in": "header",
+                      "name": "X-Setu-Product-Instance-ID",
+                      "type": "string",
+                      "required": true,
+                      "description": "Identifier for product instance. Required for authorisation.",
+                    },
+                    {
+                      "in": "header",
+                      "name": "x-setu-client-id",
+                      "type": "string",
+                      "required": true,
+                      "description": "Identifier for client instance. Required for authorisation. It can be obtained by decoding the OAuth token returned and using the value for the key X-Setu-Client-ID",
+                    },
+                    {
+                      "in": "header",
+                      "name": "Authorization",
+                      "type": "string",
+                      "required": true,
+                      "description": "<a href='https://docs.setu.co/dev-tools/bridge/org-settings/api-keys/oauth'>The authorization header needs to be generated from Setu's OAuth server</a>",
+                    },
+                    {
+                      "in": "body",
+                      "name": "Request Body",
+                      "schema":
+                        {
+                          "type": "object",
+                          "required": ["bill", "channels"],
+                          "properties":
+                            {
+                              "bill":
+                                {
+                                  "type": "object",
+                                  "required":
+                                    [
+                                      "amount",
+                                      "billerBillID",
+                                      "amountExactness",
+                                    ],
+                                  "properties":
+                                    {
+                                      "amount":
+                                        {
+                                          "type": "object",
+                                          "required": ["value", "currencyCode"],
+                                          "properties":
+                                            {
+                                              "value":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 100,
+                                                  "description": "Amount to be collected (in paisas)",
+                                                },
+                                              "currencyCode":
+                                                {
+                                                  "enum": ["INR"],
+                                                  "type": "string",
+                                                  "default": "INR",
+                                                  "description": "We currently support only `INR`",
+                                                },
+                                            },
+                                          "description": "Details about the amount to be collected",
+                                        },
+                                      "expiryDate":
+                                        {
+                                          "type": "string",
+                                          "description": "Expiry date of the paymentLink in the `ISO 8601` format, upto seconds precision.",
+                                        },
+                                      "billerBillID":
+                                        {
+                                          "type": "string",
+                                          "description": "`billerBillID` is a field that can be used to uniquely identify payments and will be useful for reconciliation",
+                                        },
+                                      "additionalInfo":
+                                        {
+                                          "type": "object",
+                                          "example":
+                                            {
+                                              "userId": "234324-324234-234",
+                                              "identifier": "123232",
+                                            },
+                                          "description": "`additionalInfo` is an object where you can pass any key, value—Setu will send it back in the payment successful notification.",
+                                        },
+                                      "amountExactness":
+                                        {
+                                          "enum":
+                                            [
+                                              "ANY",
+                                              "EXACT",
+                                              "EXACT_UP",
+                                              "EXACT_DOWN",
+                                            ],
+                                          "type": "string",
+                                          "description": 'Exactness of the bill amount. "ANY" means customer can pay any amount. "EXACT" means customer can pay only the amount specified in the bill. "EXACT_UP" means customer must pay at least the specified amount or more, and "EXACT_DOWN" means customer can pay any amount upto the specified amount.',
+                                        },
+                                      "transactionNote": 
+                                        {
+                                          "type": "string",
+                                          "description": "`transactionNote` is a field that can be used to show a note on payer app",
+                                        },
+                                      "campaignID":
+                                        {
+                                          "type": "string",
+                                          "description": "`campaignID` is a field that can be used to group payment links.",
+                                        }
+                                    },
+                                  "description": "The bill object will contain the information to create a bill/UPI deeplink",
+                                },
+                              "channels":
+                                {
+                                  "type": "array",
+                                  "items":
+                                    {
+                                      "type": "object",
+                                      "required":
+                                        [
+                                          "destination",
+                                          "campaignID",
+                                          "channel",
+                                          "template",
+                                        ],
+                                      "properties":
+                                        {
+                                          "channel":
+                                            {
+                                              "enum": ["whatsapp"],
+                                              "type": "string",
+                                              "description": "We currently support only WhatsApp as a channel",
+                                            },
+                                          "template":
+                                            {
+                                              "type": "object",
+                                              "example":
+                                                {
+                                                  "name": "Alice",
+                                                  "biller": "Apna Finance",
+                                                },
+                                              "description": "Template object will be used to pick data that is required to send the template on WhatsApp. Please note that this object can vary based on template being used and needs to be configured during onboarding",
+                                            },
+                                          "campaignID":
+                                            {
+                                              "type": "string",
+                                              "example": "3d32a528-1f0b-4f50-a0e8-b51d8d6a54b7",
+                                              "description": "It is possible to create multiple campaigns under the same integration. `campaignID` will be given to you by Setu team during onboarding",
+                                            },
+                                          "destination":
+                                            {
+                                              "type": "string",
+                                              "example": "918921175485",
+                                              "description": "`destination` should contain the recipients phone number with country code.",
+                                            },
+                                        },
+                                    },
+                                  "description": "`channels` array will contain the details to send out the generated bil to the recipient",
+                                },
+                            },
+                        },
+                    },
+                  ],
+                "description": "We create a UPI deeplink on the go and send the bill across to the intended recipient",
+              },
+          },
+        "/bill/campaign":
+          {
+            "post":
+              {
+                "summary": "Create/fetch and send in bulk",
+                "consumes": ["multipart/form-data"],
+                "responses":
+                  {
+                    "200":
+                      {
+                        "schema":
+                          {
+                            "type": "object",
+                            "required": ["status", "success", "data"],
+                            "properties":
+                              {
+                                "data":
+                                  {
+                                    "type": "object",
+                                    "properties":
+                                      {
+                                        "messageID": { "type": "string" },
+                                        "paymentLink":
+                                          {
+                                            "type": "object",
+                                            "properties":
+                                              {
+                                                "upiID": { "type": "string" },
+                                                "upiLink": { "type": "string" },
+                                                "shortURL":
+                                                  { "type": "string" },
+                                              },
+                                          },
+                                        "platformBillID": { "type": "string" },
+                                      },
+                                  },
+                                "status": { "type": "integer", "default": 200 },
+                                "success": { "type": "boolean" },
+                              },
+                          },
+                        "description": "The request was succesfully processed",
+                      },
+                  },
+                "parameters":
+                  [
+                    {
+                      "in": "header",
+                      "name": "X-Setu-Product-Instance-ID",
+                      "type": "string",
+                      "required": true,
+                      "description": "Identifier for product instance. Required for authorisation.",
+                    },
+                    {
+                      "in": "header",
+                      "name": "x-setu-client-id",
+                      "type": "string",
+                      "required": true,
+                      "description": "Identifier for client instance. Required for authorisation. It can be generated by decoding the OAuth token returned and using the 
+  value for the key X-Setu-Client-ID",
+                    },
+                    {
+                      "in": "header",
+                      "name": "Authorization",
+                      "type": "string",
+                      "required": true,
+                      "description": "<a href='https://docs.setu.co/dev-tools/bridge/org-settings/api-keys/oauth'>The authorization header needs to be generated from Setu's OAuth server</a>",
+                    },
+                    {
+                      "in": "formData",
+                      "name": "name",
+                      "type": "string",
+                      "required": true,
+                      "description": "The name to be associated with the campaign",
+                      "allowEmptyValue": false,
+                    },
+                    {
+                      "in": "formData",
+                      "name": "channel",
+                      "type": "string",
+                      "required": true,
+                      "description": "The channel to be used for the campaign",
+                      "allowEmptyValue": false,
+                    },
+                    {
+                      "in": "formData",
+                      "name": "id",
+                      "type": "string",
+                      "required": true,
+                      "description": "It is possible to create multiple campaigns under the same integration. `campaignID` will be given to you by Setu team during onboarding",
+                      "allowEmptyValue": false,
+                    },
+                    {
+                      "in": "formData",
+                      "name": "file",
+                      "type": "file",
+                      "required": true,
+                      "description": "The CSV file containing the campaign recipients",
+                    },
+                  ],
+              },
+          },
+      },
+    "schemes": ["https"],
+    "swagger": "2.0",
+    "basePath": "/v1/message",
+  }

@@ -1,0 +1,452 @@
+---
+sidebar_title: API Integration
+page_title: WhatsApp Collect API Integration
+order: 3
+visible_in_sidebar: true
+---
+
+## API integration
+
+These set of APIs allow you to send bills to your customers directly on WhatsApp. The bills will have an embedded “Pay Now” payment link for seamless payments.
+
+There are 2 modes in which you could integrate, to be able to send bills—
+
+- **Create and send bill**—when you know the latest bill amount and want to create and share bill with the customer.
+- **Fetch latest bill**—when you want the latest bill amount to be fetched from your system.
+
+You can choose to integrate with one or more options as per your requirements.
+
+Note, the production URL is `https://prod.setu.co`.
+
+<Callout type="warning">
+  The Sandbox endpoint is presently not available.
+</Callout>
+
+<br />
+
+<Callout type="highlight">
+  Setu also has a CSV upload based Campaign API—explained below for both
+  integration modes—that lets you send payment reminders or create bills on
+  Setu’s system in bulk.
+</Callout>
+
+<hr class="primary" />
+
+### Option 1 — Create and send bill
+
+In this mode, you would know the amount to be collected beforehand and pass the amount in the request payload. Setu will then internally generate a UPI deep link and use the existing WhatsApp provider configurations to send the bill on WhatsApp.
+
+| Endpoint                      | Headers                                                                                                                                         |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/v1/message/bill/create` | `Content-Type: application/json`<br/><br/>`X-Setu-Product-Instance-ID: <Relevant-Product-Instance-ID>`<br/><br/>`Authorization: Bearer`<br/>`<token>`<br/><br/>`x-setu-client-id: <x-setu-client-id>`<br/><br/> |
+
+
+
+<Callout type="tip">
+  <code>token</code> can be obtained from the response of{" "}
+  <a
+    href="/dev-tools/bridge/org-settings/api-keys/oauth#generate-token-api"
+    target="_blank"
+  >
+    OAuth token generation API
+  </a><br/>
+</Callout>
+<br/>
+<Callout type="tip">
+  To obtain <code>x-setu-client-id</code>, decode the <code>token</code> obtained from {" "}
+  <a
+    href="/dev-tools/bridge/org-settings/api-keys/oauth#generate-token-api"
+    target="_blank"
+  >
+    OAuth token generation API
+  </a> and find the value of<code>X-Setu-Client-ID</code> in the decoded <code>token</code>
+</Callout>
+<br/>
+
+
+
+###### Request body
+
+<CodeBlockWithCopy language="json">
+  {`POST /api
+{
+    "bill": {
+        "amount": { // Mandatory
+            "value": 20000, // Defined in paisa
+            "currencyCode": "INR"
+        },
+        "billerBillID": "TEST_TRANSACTION_01", // Mandatory
+        "expiryDate": "2022-04-28T18:30:59Z", // Optional
+        "additionalInfo": { //Optional, with custom key, value pairs
+        },
+        "amountExactness": "EXACT_DOWN", // Mandatory
+        "transactionNote": "Loan Repayment of 200rs" // Optional
+        "campaignID": "WA-Coll-Apr-2022" // Optional
+    },
+    "channels": [{
+        "destination": "918147077475", // Mandatory
+        "campaignID": "234-2343-234324" // Mandatory
+        "channel": "whatsapp", // Mandatory
+        "template": { // Mandatory, to be approved
+            "name":"Ramesh", // Template Variables
+            "loanNumber":"12344"
+        }
+    }]
+} `}
+</CodeBlockWithCopy>
+
+- `bill.additionalInfo` is an object where you can pass any key, value. This will be passed back in webhook notification.
+- `channels.template` is based on the message template approved. Please contact Setu along with the whitelisted templates, to get the exact payload.
+- `bill.billerBillID` is an identifier for this link in merchant’s system which they will later look up or reconcile against.
+- `bill.amount.value` is the value in **paise** of the amount needed to be collected from the user, expressed as data type `integer`
+- `bill.amount.currencyCode` would always be `INR`.
+- `bill.amountExactness` allows flexibility in the amount being paid by the customer, as per merchant specification.
+  - Specifying `EXACT` will allow your customer to pay only the exact amount specified by you in the create link API.
+  - Specifying `ANY` will simply allow your customer to pay any amount above INR 1.
+  - Specifying `EXACT_DOWN` will only allow the paid amount to be more than INR 1 and less than the amount specified in the Create bill API.
+- `bill.transactionNote` is a field that allows you to display a note on the Payer application.
+- `bill.campaignID` is a field that allows you to group payment links and view all payments with the same `bill.campaignID` on Bridge Dashboard.
+- `channels.campaignID` is a Setu internal Campaign ID that maps to a specific Collection Template and Acknowledgement Template.
+
+Note that UPI does not recognise a “maximum allowed amount” and any payment value above INR 1 will be successful with `EXACT_DOWN`.
+
+However, paying more than the amount specified in the Create bill API will fail Setu’s validation, and will be refunded to your customer. Contact our support team for more details on how refunds are handled.
+
+<Callout type="warning">
+  <code>amountExactness</code> is not honoured consistently across UPI apps. As
+  explained above, failure against the <code>amountExactness</code> logic on
+  Setu may cause a successful payment to trigger a refund for the customer.
+  Hence, we recommend setting <code>EXACT</code> for{" "}
+  <code>amountExactness</code>, for higher predictability.
+</Callout>
+
+<br/>
+
+###### Response
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Success",
+      content: (
+        <CodeBlockWithCopy language="json">
+          {`{ 
+    "success": true, 
+    "status" : 200, 
+    "data": { 
+        "messageID": "<message id sent by whatsapp provider>", 
+        "platformBillID": "", 
+        "paymentLink": { 
+            "shortURL": "<short_url>", 
+            "upiID": "<upi_id>", 
+            "upiLink": "<upi_deeplink>" 
+        } 
+    } 
+} `}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "2",
+      label: "Error",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{ 
+    "success": false, 
+    "status": <http_error_code>, 
+    "error": { 
+        "message": "<error_message>", 
+        "code": "<error_code>" 
+    } 
+} `}
+          </CodeBlockWithCopy>
+          <p>
+            Refer to list of detailed{" "}
+            <a href="/payment/whatsapp-collect/errors">error codes</a>.
+          </p>
+        </>
+      ),
+    },
+  ]}
+/>
+
+<hr class="tertiary" />
+
+##### Add on — Campaign API to share bills in bulk
+
+Most of the time, businesses want to collect bill payments from a lot of their customers at once. Although the above two APIs can be used for that, it’s a tedious job to do so in bulk.
+
+For that reason, we also support a either of the above two actions in bulk using a Campaign API.
+
+###### The CSV file format
+
+The following format should be followed while posting the data to Setu.
+
+<table>
+  <tr>
+    <th>mobile</th>
+    <th>amount</th>
+    <th>expiryDate</th>
+    <th>referenceID</th>
+    <th>transactionNote (Optional Column)</th>
+    <th>Template param 1</th>
+    <th>Template param 2</th>
+    <th>Template param n</th>
+  </tr>
+  <tr>
+    <td>12 digit number starting with 91</td>
+    <td>Amount in paisa</td>
+    <td>dd/mm/yyyy</td>
+    <td>Unique reference identifier of the customer</td>
+    <td>Loan Repayment of 200rs</td>
+    <td>Variable to be used as part of message sent to your customer</td>
+    <td>Example—Name</td>
+    <td>Another example—Due date</td>
+  </tr>
+</table>
+
+- The **Template Param (1...n)** columns of the CSV should contain all the template variables in the same order as in the pre-approved WhatsApp template that would be used for bill reminder campaigns. It cannot be changed once you go live.
+- If `referenceID` is not null, `billerBillID` on bridge will be dynamically generated in `<mobile>_<referenceID>` format. Otherwise, it will be `mobile`.
+
+| Endpoint                        | Headers                                                                                                                                            |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/v1/message/bill/campaign` | `Content-Type: multipart/form-data`<br/><br/>`X-Setu-Product-Instance-ID: <Relevant-Product-Instance-ID>`<br/><br/>`Authorization: Bearer`<br/>`<token>`<br/><br/>`x-setu-client-id: <x-setu-client-id>`<br/><br/> |
+<br/>
+
+<Callout type="tip">
+  <code>token</code> can be obtained from the response of{" "}
+  <a
+    href="/dev-tools/bridge/org-settings/api-keys/oauth#generate-token-api"
+    target="_blank"
+  >
+    OAuth token generation API
+  </a><br/>
+</Callout>
+<br/>
+<Callout type="tip">
+  To obtain <code>x-setu-client-id</code>, decode the <code>token</code> obtained from {" "}
+  <a
+    href="/dev-tools/bridge/org-settings/api-keys/oauth#generate-token-api"
+    target="_blank"
+  >
+    OAuth token generation API
+  </a> and find the value of<code>X-Setu-Client-ID</code> in the decoded <code>token</code>
+</Callout>
+<br/>
+
+
+###### Request body
+
+<CodeBlockWithCopy language="json">
+  {`POST /api/v1/message/bill/campaign
+{
+    name: <campaign_name> 
+    id: <campaign_id>
+    channel: whatsapp,sms
+    file: <should contain the csv file>
+} `}
+</CodeBlockWithCopy>
+
+<br />
+
+<Callout type="tip">
+  The body is of type <code>multipart/form-data</code>
+</Callout>
+
+<br />
+
+<Callout type="tip">
+  The <code>name</code> would be re-used for CampaignID (in UPI DL), which will group payment links and allows you to query all payments on Bridge Dashboard with the same.
+</Callout>
+
+<br />
+
+###### Response
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Success",
+      content: (
+        <CodeBlockWithCopy language="json">
+          {`{ 
+    "success": true, 
+    "status": 200, 
+} `}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "2",
+      label: "Error",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{ 
+    "success": false, 
+    "status": <http_error_code>, 
+    "error": { 
+        "message": "<error_message>", 
+        "code": "<error_code>" 
+    } 
+} `}
+          </CodeBlockWithCopy>
+          <p>
+            Refer to list of detailed{" "}
+            <a href="/payment/whatsapp-collect/errors">error codes</a>.
+          </p>
+        </>
+      ),
+    },
+  ]}
+/>
+
+<hr class="primary" />
+
+### Option 2 — Fetch latest bill
+
+In this mode, you would need to be integrated with Setu <a href="/payments/bbps/overview" target="_blank">BBPS BillCollect</a> already. The customer identifiers that are required to fetch the bill are passed in the request body. Once the bill is successfully fetched, we use the configured WhatsApp partner to send the bill to your customer.
+
+| Endpoints                    | Headers                                                                                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/v1/message/bill/fetch` | `Content-Type: application/json`<br/><br/>`X-Setu-Product-Instance-ID: <Relevant-Product-Instance-ID>`<br/><br/>`Authorization: Bearer`<br/>`<token>`<br/><br/>`x-setu-client-id: <x-setu-client-id>`<br/><br/> |
+<br/>
+
+<Callout type="tip">
+  <code>token</code> can be obtained from the response of{" "}
+  <a
+    href="/dev-tools/bridge/org-settings/api-keys/oauth#generate-token-api"
+    target="_blank"
+  >
+    OAuth token generation API
+  </a><br/>
+</Callout>
+<br/>
+<Callout type="tip">
+  To obtain <code>x-setu-client-id</code>, decode the <code>token</code> obtained from {" "}
+  <a
+    href="/dev-tools/bridge/org-settings/api-keys/oauth#generate-token-api"
+    target="_blank"
+  >
+    OAuth token generation API
+  </a> and find the value of<code>X-Setu-Client-ID</code> in the decoded <code>token</code>
+</Callout>
+<br/>
+
+###### Request body
+
+<CodeBlockWithCopy language="json">
+  {`POST /api/v1/message/bill/fetch
+{
+    "bill": {
+        "customerIdentifiers": [{ //Mandatory
+          "attributeName": "Loan Number", //Sample value
+          "attributeValue": "122342" //Sample value
+        },{
+          "attributeName": "Loan Type", //Sample value
+          "attributeValue": "cat loan" //Sample value
+        }]
+    },
+    "channels": [{
+        "destination": "918147077475", //Mandatory
+        "campaignID": "234-2343-234", //Mandatory
+        "channel": "whatsapp", //Mandatory
+        "template": { //Mandatory, to be approved
+            "name":"Ramesh", //Template Variables
+            "loanNumber":"12344"
+        }
+    }]
+}`}
+</CodeBlockWithCopy>
+
+- `channels.template` is based on the message template approved. Please contact Setu along with the whitelisted templates, to get the exact payload.
+
+###### Response
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Success",
+      content: (
+        <CodeBlockWithCopy language="json">
+          {`{ 
+    "success": true, 
+    "status" : 200, 
+    "data": { 
+        "messageID": "<message id sent by whatsapp provider>", 
+        "platformBillID": "", 
+        "paymentLink": { 
+            "shortURL": "<short_url>", 
+            "upiID": "<upi_id>", 
+            "upiLink": "<upi_deeplink>" 
+        } 
+    } 
+} `}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "2",
+      label: "Error",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{ 
+    "success": false, 
+    "status": <http_error_code>, 
+    "error": { 
+        "message": "<error_message>", 
+        "code": "<error_code>" 
+    } 
+} `}
+          </CodeBlockWithCopy>
+          <p>
+            Refer to list of detailed{" "}
+            <a href="/payment/whatsapp-collect/errors">error codes</a>.
+          </p>
+        </>
+      ),
+    },
+  ]}
+/>
+
+<hr class="tertiary" />
+
+##### Add on — Campaign API to share bills in bulk
+
+This works similar to how it does in the “Create bill” mode. However, the CSV file format is changed to the following—
+
+###### The CSV file format
+
+The following format should be followed while posting the data to Setu.
+
+<table>
+  <tr>
+    <th>mobile</th>
+    <th>Customer Identifier 1</th>
+    <th>Customer Identifier 2</th>
+    <th>Customer Identifier n</th>
+    <th>Template Param 1</th>
+    <th>Template Param 2</th>
+    <th>Template Param n</th>
+  </tr>
+  <tr>
+    <td>12 digit number starting with 91</td>
+    <td>Unique identifier for fetching the customer’s bill</td>
+    <td>Example—Loan number</td>
+    <td>Another example—Admission number</td>
+    <td>Variable to be used as part of message sent to your customer</td>
+    <td>Example—Name</td>
+    <td>Another example—Due date</td>
+  </tr>
+</table>
+
+- The **Template Param (1...n)** columns of the CSV should contain all the template variables in the same order as in the pre-approved WhatsApp template that would be used for bill reminder campaigns. It cannot be changed once you go live.
+
+For API details, refer to <a href="/payments/whatsapp-collect/api-reference#/paths/~1bill~1campaign/post">this</a>.
+
+<WasPageHelpful />

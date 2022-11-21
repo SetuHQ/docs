@@ -1,0 +1,188 @@
+---
+sidebar_title: Request signing
+page_title: Account Aggregator Request signing
+order: 1
+visible_in_sidebar: false
+---
+
+<Callout type="error">
+  Please note that, due to changes on the Sandbox integration process for Setu
+  Account Aggregator, this document is now outdated. Please refer to the updated{" "}
+  <a href="/data/account-aggregator/quickstart">quickstart</a> to proceed.
+</Callout>
+
+<br />
+
+## Request signing
+
+According to ReBIT spec, each API call should be signed using a JSON Web Token to verify the source of the request. This is for all API calls made within the AA framework, be it a consent request or a health check.
+
+The JWT implementation is of the the JWS (JSON Web Signature) flavour. This signature should be sent in the HTTP header “`x-jws-signature`” with each request or response.
+
+The “detached” JWS is an approach that allows you to sign a request or response without modifying content body.
+
+<hr class="primary" />
+
+#### How it works
+
+A public-key-private-key pair is required for the request signing.
+
+<Callout type="tip">
+  These keys would need to be generated once and do not have an expiry. These
+  keys are used to verify the sanctity of request/response payloads between the
+  FIU and Setu.
+</Callout>
+
+<br />
+
+- As an FIU, you should generate a signature using your private key and send it in the request/response. The public key is shared with Setu AA, via The Bridge FIU config, to verify the signature.
+- Setu AA generates a signature as well, using our private key and sends it in the request/response. The public key is shared with you on The Bridge FIU config to verify the signature.
+
+<hr class="primary" />
+
+#### Generate keys for request signing
+
+In the Setu Bridge, you can generate these keys with just a simple click of a button and download the keys in CSV format.
+
+![](https://storage.googleapis.com/strapi-assets/latest/Screenshot_2021_09_24_at_2_29_51_PM_bcf69b034e/Screenshot_2021_09_24_at_2_29_51_PM_bcf69b034e.png)
+
+Setu will share its public key during the creation of app (available in the "grab credentials" step). Your app code will use this key to verify requests from Setu.
+
+<hr class="primary" />
+
+#### Generate request signature
+
+The Postman collection is configured to auto-generate JWS signatures for every request. Use these steps to generate **\*detached JWS signatures in your application code**.
+
+- Create standard JWS with the header and payload
+- Split the JWS output with `.`
+- Replace the second element with an empty string `“”`, thus removing the payload.
+- Join the JWS back together with `.`
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Python-using pyJWT library",
+      content: (
+        <CodeBlockWithCopy language="python">
+          {`import jwt 
+ 
+private_key = b"""-----BEGIN PRIVATE KEY----- 
+MIIBIjANBgkqhkiG9w0BAQE.............. 
+-----END PRIVATE KEY-----""" 
+ 
+def makeDetachedJWS(payload, key): 
+    encoded = jwt.encode(payload, key, algorithm="RS256") 
+    splittedJWS = encoded.split(".") 
+    splittedJWS[1] = "" 
+    return ".".join(splittedJWS) 
+ 
+request_body = {"body":"test"} 
+detached_jws = makeDetachedJWS(request_body, private_key) `}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "2",
+      label: "Node.js - using jsrassign library",
+      content: (
+        <CodeBlockWithCopy language="javascript">
+          {`const rs = require("jsrsasign"); 
+ 
+const makeDetachedJWS = (header, body, privateKey) => { 
+    let jwt =  rs.KJUR.jws.JWS.sign(null, header, body, privateKey); 
+    let splittedJWS = jwt.split("."); 
+    splittedJWS[1] = ""; 
+    return splittedJWS.join("."); 
+} 
+ 
+const header = {"alg" : "RS256", "typ" : "JWT"}; 
+const privateKey = "-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBg................m56dRHW206xEQ==
+-----END PRIVATE KEY-----
+"; 
+let body = {"data" : "test"} 
+ 
+detachedJWS = makeDetachedJWS(header, body, privateKey) `}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+<hr class="primary" />
+
+### Verify request signature
+
+Follow these steps to verify detached JWS signatures in your app code.
+
+- Split JWS with `.`
+- Replace the second element with the payload encoded using Base64 URL.
+- Rejoin the modified JWS with `.`
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Python-using pyJWT library",
+      content: (
+        <CodeBlockWithCopy language="python">
+          {`import jwt 
+import json 
+import base64 
+ 
+public_key = b"""-----BEGIN PUBLIC KEY----- 
+MIIBIjANBgkqhkiG9w0BAQE.............. 
+-----END PUBLIC KEY-----""" 
+ 
+def base64url_encode(input): 
+  return base64.urlsafe_b64encode(input).replace(b"=", b"") 
+ 
+def validateDetatchedJWS(payload, signature, key): 
+  splittedJWS = signature.split(".") 
+  splittedJWS[1] = base64url_encode(json.dumps(payload, separators=(",", ":")).encode("utf-8")) 
+  splittedJWS[1] = splittedJWS[1].decode("utf-8") 
+  sig = ".".join(splittedJWS) 
+  try: 
+    jwt.decode(sig, key, algorithms=["RS256"]) 
+    return True 
+  except Exception as e: 
+    print(e) 
+    return False 
+ 
+request_body = {"body":"test"} 
+ 
+print(validateDetatchedJWS(request_body, detached_jws, public_key)) `}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "2",
+      label: "Node.js - using jsrassign library",
+      content: (
+        <CodeBlockWithCopy language="javascript">
+          {`const rs = require("jsrsasign"); 
+const base64url = require("base64url"); 
+ 
+const validateDetachedJWS = (detachedJWS, body, publicKey) => { 
+    let splitted_jws = detachedJWS.split("."); 
+    splitted_jws[1] = base64url(JSON.stringify(body)); 
+    let jwt = splitted_jws.join("."); 
+    let isValid = rs.KJUR.jws.JWS.verify(jwt, publicKey, ["RS256"]); 
+    return isValid; // boolean 
+} 
+ 
+const publicKey = "-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhki...............WQIDAQAB
+-----END PUBLIC KEY-----
+"; 
+let body = {"data" : "test"} 
+validateDetachedJWS(detachedJWS, body, publicKey) `}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+<WasPageHelpful />

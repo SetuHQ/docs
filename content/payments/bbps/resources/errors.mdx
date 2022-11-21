@@ -1,0 +1,392 @@
+---
+sidebar_title: Errors
+page_title: BBPS error codes
+order: 4
+visible_in_sidebar: true
+---
+
+## Error codes
+
+Typical errors you might come across, and what to do in the face of adversity.
+
+### Sample error object
+
+<CodeBlockWithCopy language="json">
+  {`// Sample error object
+{
+    "status"  : number, // HTTP status code, (eg 400, 404 etc)
+    "success" : false,
+    "error"   : {
+        "code"    : "string",  // Setu error code
+        "title"   : "string",  // Title of the error
+        "detail"  : "string",  // Detail of the error
+        "docURL"  : "string",  // optional — if there is any documentation about the error
+        "traceID" : "string",  // optional — trace
+ 
+        //  The child error array follows a similar pattern as above
+        "errors" : [
+            "code"    : "string",
+            "title"   : "string",
+            "detail"  : "string",
+            "docURL"  : "string",
+        ]
+    }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+#### Generic errors
+
+In some rare cases, if Setu is unable determine the exact cause of a failure, Setu will return one of these generic error codes. Contact Setu here with the `traceId` in the response if you need more help.
+
+<table id="t01">
+  <tbody>
+    <tr>
+      <th>400</th>
+      <td>bad-request</td>
+      <td>This is a request-level issue. </td>
+    </tr>
+    <tr>
+      <th>401</th>
+      <td>unauthorised</td>
+      <td>This is a request-level issue. </td>
+    </tr>
+    <tr>
+      <th>403</th>
+      <td>forbidden</td>
+      <td>This is a request-level issue. </td>
+    </tr>
+    <tr>
+      <th>404</th>
+      <td>entity-not-found</td>
+      <td>This could be a platform error. </td>
+    </tr>
+    <tr>
+      <th>404</th>
+      <td>path-not-found</td>
+      <td>
+        It’s likely that the URL to which the request was made is invalid.
+        Verify the URL, or if that doesn’t help, contact Setu.
+      </td>
+    </tr>
+    <tr>
+      <th>500</th>
+      <td>unable-to-fulfil-request</td>
+      <td>
+        Something went wrong while trying to process the request. Try again in a
+        little bit, or contact Setu.
+      </td>
+    </tr>
+    <tr>
+      <th>500</th>
+      <td>bad-gateway</td>
+      <td>Try again in a little bit. If that still fails, contact Setu.</td>
+    </tr>
+    <tr>
+      <th>503</th>
+      <td>service-unavailable</td>
+      <td>
+        It’s likely that the server to which the request was made is down. Try
+        again after some time, or if that doesn’t help, contact Setu.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="primary" />
+
+#### Specific errors
+
+These error codes are tailored to respond to a wide variety of failure cases, and to make error handling a lot easier.
+
+<table>
+  <tbody>
+    <tr>
+      <th>400</th>
+      <td>invalid-param</td>
+      <td>
+        Please check your request, one of the parameters used does not seem
+        valid. Check the error response for more details.{" "}
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>header-not-found</td>
+      <td>
+        Some of the headers in your request seems to be missing. Check the error
+        response for more details.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>malformed-request</td>
+      <td>
+        The request payload seems invalid, and doesn’t conform to the Setu spec.
+        Please fix and try again.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>invalid-auth-header</td>
+      <td>
+        The authorisation header in the request seems invalid. It’s likely that
+        the <code>authorization</code> header, or the <code>bearer</code>, or
+        the JWT token is missing.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td> invalid-signature-header</td>
+      <td>
+        The signature header is either seems invalid. Either the digest header
+        is malformed, or the signature algorithm is not supported. Please check
+        the response object for more details.
+      </td>
+    </tr>
+    <tr>
+      <th>401</th>
+      <td>jwt-verification-failed</td>
+      <td>
+        The JWT token used in the request cannot be verified. Please fix that
+        and try again with a proper token.
+      </td>
+    </tr>
+    <tr>
+      <th>401</th>
+      <td>signature-verification-failed</td>
+      <td>
+        The signature used in the request cannot be verified. Please fix that
+        and try again with a proper signature.
+      </td>
+    </tr>
+    <tr>
+      <th>401</th>
+      <td>jwt-token-expired</td>
+      <td>
+        The allotted time for the JWT token used in the request seems to have
+        lapsed. Please retry with a new JWT token.
+      </td>
+    </tr>
+    <tr>
+      <th>403</th>
+      <td>request-not-authorised</td>
+      <td>
+        This particular request does not seem to have the authorisation to
+        perform the operation. Check the error response, and retry with a right{" "}
+        <code>X-Setu-Product-Insance-Id</code>.
+      </td>
+    </tr>
+    <tr>
+      <th>405</th>
+      <td>method-not-allowed</td>
+      <td>
+        The HTTP method used to make the API request is not allowed here. Please
+        check the error response for more details.
+      </td>
+    </tr>
+    <tr>
+      <th>425</th>
+      <td>duplicate-request</td>
+      <td>
+        Looks like you’ve made the exact same request before, with an identical{" "}
+        <code>issuedAt</code> value in the JWT token. Retry with a new token,
+        with a fresh value.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="primary" />
+
+#### Biller errors
+
+These error codes are specific to the biller.
+
+<table>
+  <tbody>
+    <tr>
+      <th>400</th>
+      <td>insufficient-customer-identifiers</td>
+      <td>
+        The provided customer identifiers are not enough to uniquely narrow down
+        a customer in our system. Check the error response for more details.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>customer-not-found</td>
+      <td>
+        A customer with the provided credentials does not exist in the biller
+        system.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>bill-not-found</td>
+      <td>
+        A bill with the provided <code>billerBillId</code> does not exist in the
+        biller system.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>bill-already-fulfilled</td>
+      <td>Looks like this particular bill has already been paid.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="primary" />
+
+#### Payer errors
+
+These error codes are specific to the payer.
+
+<table>
+  <tbody>
+    <tr>
+      <th>400</th>
+      <td>payment-instrument-not-allowed</td>
+      <td>
+        Looks like the payment was made with a payment instrument that isn’t
+        supported by the biller.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>incorrect-payment-scheme</td>
+      <td>
+        Looks like the payment scheme to pay this particular bill is incorrect.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>bill-expired</td>
+      <td>The time period for the bill payment has expired.</td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>incorrect-amount</td>
+      <td>Looks like the payment was made with the wrong amount.</td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>bill-already-fulfilled</td>
+      <td>Looks like this particular bill has already been paid before.</td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>biller-not-available</td>
+      <td>
+        The requested biller seems to be down right now. Sit tight, Setu will
+        notify you when the biller is back up.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>biller-not-found</td>
+      <td>
+        The biller with the given ID does not seem to exist. You can use the
+        getBillers API to verify the correct ID.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>insufficient-customer-identifiers</td>
+      <td>
+        The provided customer identifiers are not enough to uniquely narrow down
+        a customer in our system. Check the error response for more details.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>invalid-customer-identifier</td>
+      <td>
+        The customer identifiers don’t seem to be valid. Check the error
+        response for more details.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>customer-not-found</td>
+      <td>
+        There seems to be no customer with the provided identifiers in the
+        biller’s system. Please verify with the customer.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>bill-not-found</td>
+      <td>
+        There seems to be no bill with the provided identifiers in Setu’s
+        system. Please recheck and try again.
+      </td>
+    </tr>
+    <tr>
+      <th>500</th>
+      <td>biller-unable-to-fulfil-request</td>
+      <td>
+        The partner to which the request has to be forwarded is unable to fulfil
+        the request currently.
+      </td>
+    </tr>
+    <tr>
+      <th>502</th>
+      <td>biller-down</td>
+      <td>
+        The biller seems unreachable right now. Try again in sometime, or
+        contact Setu with the <code>traceId</code> in the response.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="primary" />
+
+#### Payment processor errors
+
+These error codes are specific to the payment processor.
+
+<table>
+  <tbody>
+    <tr>
+      <th>400</th>
+      <td>incorrect-charge</td>
+      <td>
+        One or more of the charge calculations don’t seem to add up. This could
+        either mean that the MDR doesn’t match the payment instrument and
+        scheme, or a simple math error. Investigate further to determine the
+        cause.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>incorrect-amount</td>
+      <td>
+        The requested amount for this bill seems wrong. This could mean that the
+        aggregate refund amount does not match the payment or refund transaction
+        amounts. In some cases, it might be that the processing fee amount
+        doesn’t match the charge component amounts.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>incorrect-transaction-count</td>
+      <td>
+        The total number of transactions mentioned seems wrong. There are three
+        possibilities for this mismatch—payment transaction count and its
+        aggregate, the refund transaction count and its aggregate, or the total
+        transaction count and its aggregate. Dig deeper to determine the exact
+        cause.
+      </td>
+    </tr>
+    <tr>
+      <th>400</th>
+      <td>settlement-failed</td>
+      <td>The bill settlement request has failed.</td>
+    </tr>
+  </tbody>
+</table>
+
+<WasPageHelpful />

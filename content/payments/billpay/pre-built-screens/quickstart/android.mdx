@@ -1,0 +1,171 @@
+---
+sidebar_title: Android
+page_title: BBPS Billpay Android integration
+order: 2
+visible_in_sidebar: true
+---
+
+## Android integration
+
+Setu provides ready to use URLs for the Android integration. Contact Setu to update your logo, colours, fonts as per your branding. You can reach out to <a href="">billpay.support@setu.co</a> for any further clarifications.
+
+<Callout type="tip">
+    This quickstart provides the integration guidelines for Android integration
+    with Setu’s default UPI payment option. If you’d like to use your own
+    payment gateway, please refer to{" "}
+    <a href="/payments/billpay/custom-payment/android" target="_blank">
+        this guide
+    </a>{" "}
+    instead.
+</Callout>
+
+<hr class="primary" />
+
+### Step 1 — Implement web view in your app
+
+The following steps need to be taken for Android integration—
+
+1. Get link from the backend
+2. Open a webview and attach the Android interface
+
+<hr class="tertiary" />
+
+##### Get link from the backend
+
+This step gives a one time Setu URL to be used by your customer for the bill fetch or payment flow. The <a href="/payments/billpay/api-reference/white-label#/category~Link/operation~getLink" target="_blank">Create link API</a> needs to be called when Android app wants to obtain a one time link to load Setu’s screen flow inside a webview.
+
+<Callout type="tip">
+    None of the parameters aside from mobile number are mandatory, but depending
+    on what is passed the returned link will display different UI.
+</Callout>
+
+<br />
+
+You can have the following scenarios, depending on what you choose to send along with the customer’s mobile number—
+
+-   If no other input is passed, it will take the user to the home page with all BBPS categories.
+-   If category code is passed, it will show user a list of billers in that category.
+-   If category code and biller ID is passed, it will show the bill fetch form where a customer can enter their identifers (biller specified parameters)
+-   If the category code, biller ID and parameters are passed, it will show the bill directly.
+
+<Callout type="warning">
+    All query parameters should be url-encoded to escape special characters
+</Callout>
+
+<br />
+
+The above request will return URL based on the input params. Here’s a sample—
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "link": "https://cou-whitelabelled-dev.setu.co/cou/categories/5f1fb0db-b2ed-4222-bb2f-53d238df370a"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Switch control from your app to Setu
+
+The link returned by the API should be loaded within Android in an activity class with a webview component.
+
+If you’re using a cross platform solution—like Flutter, React Native, Ionic—look at the code snippets provided <a href="/payments/billpay/quickstart/cross-platform" target="_blank">here</a>.
+
+<CodeBlockWithCopy language="java">
+  {`public class DisplayWebView extends AppCompatActivity {
+    WebView myWebView;
+    public static final String LINK = "com.example.axispayemulator.LINK";
+    private class MyWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            if (Uri.parse(url).getHost().contains(".setu.co")) {
+                return false;
+            }
+            // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+            return true;
+        }
+    }
+    @Override
+    public void onBackPressed(){
+        if(myWebView.canGoBack()){
+            myWebView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // Check if the key event was the Back button and if there's history
+        if ((keyCode == KeyEvent.KEYCODE_BACK) && myWebView.canGoBack()) {
+            myWebView.goBack();
+            return true;
+        }
+        // If it wasn't the Back key or there's no web page history, bubble up to the default
+        // system behavior (probably exit the activity)
+        return super.onKeyDown(keyCode, event);
+    }
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_display_web_view);
+        Intent intent = getIntent();
+        myWebView = findViewById(R.id.pswebview);
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        MyWebViewClient client = new MyWebViewClient();
+        myWebView.setWebViewClient(client);
+        myWebView.addJavascriptInterface(new WebAppInterface(this), "Android");
+        String link = intent.getStringExtra(DisplayWebView.LINK);
+        myWebView.loadUrl(link);
+        myWebView.setDownloadListener(new DownloadListener() {
+            public void onDownloadStart(String url, String userAgent,
+                                        String contentDisposition, String mimetype,
+                                        long contentLength) {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
+        });
+    }
+}`}
+
+</CodeBlockWithCopy>
+
+Here is a sample of the Java Interface class needed by the webview
+
+<CodeBlockWithCopy language="java">
+ {`public class WebAppInterface extends AppCompatActivity {
+    Context mContext;
+    /** Instantiate the interface and set the context */
+    WebAppInterface(Context c) {
+        mContext = c;
+    }
+    /** Unload webview */
+    @JavascriptInterface
+    public void unload() {
+        Intent intent = new Intent(mContext, MainActivity.class);
+        mContext.startActivity(intent);
+    }
+}`}
+
+</CodeBlockWithCopy>
+
+The interface will contain 1 method—
+
+-   `unload` This should be used by the your app to dismiss the webview.
+
+<hr class="primary" />
+
+### Step 2 — Optionally configure webhook
+
+You may optionally want to listen to user events—like successful or failed bill fetch, bill payment status and more—through webhooks. Refer to <a href="/payments/billpay/user-events" target="_blank">this guide</a> for more information.
+
+<hr class="primary" />
+
+### Step 3 — Get Production credentials and go live
+
+Once you are done testing your integration, ensure that all KYC and legal agreements are submitted. Contact Setu for getting enabled on production.
+
+<WasPageHelpful />

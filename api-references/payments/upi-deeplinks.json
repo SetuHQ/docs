@@ -1,0 +1,4211 @@
+{
+    "schemes": [
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "\u003ca href=\"http://docs.setu.co/\" target=\"_blank\"\u003eSetu Collect Documentation ↗\u003c/a\u003e\n",
+        "title": "Setu Collect APIs",
+        "version": "1.0.0"
+    },
+    "host": "uat.setu.co",
+    "basePath": "/api/v2",
+    "paths": {
+        "/\u003cpartner-base-api-url\u003e/notifications": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notifications"
+                ],
+                "operationId": "notification",
+                "parameters": [
+                    {
+                        "description": "Input parameters containing notification data. For example payloads see https://docs.setu.co/notifications#notification-events",
+                        "name": "notificationRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/notificationRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "If the payment is successful",
+                        "schema": {
+                            "type": "object",
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/token": {
+            "post": {
+                "description": "Fetch token to be used to authorize all Setu APIs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APIs to call"
+                ],
+                "summary": "Fetch auth token",
+                "operationId": "fetchToken",
+                "parameters": [
+                    {
+                        "description": "ClientID from the API key pair",
+                        "name": "fetchTokenPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/fetchTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "data"
+                            ],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/fetchTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-links": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APIs to call"
+                ],
+                "summary": "Create a payment link",
+                "operationId": "paymentLink",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Input parameters for creating a payment link.",
+                        "name": "paymentLinkRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/createPaymentLinkRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "data"
+                            ],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/createPaymentLinkResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-links/{platformBillId}": {
+            "get": {
+                "description": "Returns the status of the payment for the supplied bill id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APIs to call"
+                ],
+                "summary": "Check payment status",
+                "operationId": "paymentStatus",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The unique identifier for a payment link in Setu.",
+                        "name": "platformBillId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "data"
+                            ],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/paymentLinkStatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/refund/batch": {
+            "post": {
+                "description": "Initiate a batch of several refunds at once",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APIs to call"
+                ],
+                "summary": "Initiate Batch Refund",
+                "operationId": "initiateBatchRefund",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Input parameters for initiating a refund",
+                        "name": "initiateRefundPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/batchRefundRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "data"
+                            ],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/batchCreateRefundResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/refund/batch/{batchID}": {
+            "get": {
+                "description": "Returns details about all refunds as part of the requested batch",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APIs to call"
+                ],
+                "summary": "Get status of a refund batch",
+                "operationId": "getRefundsBatchStatus",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID corresponding to refund batch",
+                        "name": "batchID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "data"
+                            ],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/batchRefundResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/refund/{refundID}": {
+            "get": {
+                "description": "Returns details a specified refund",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APIs to call"
+                ],
+                "summary": "Get status of a refund",
+                "operationId": "getRefundStatus",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID corresponding to a specific refund request",
+                        "name": "refundID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "data"
+                            ],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/refundResponseItem"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/utilities/bills/{platformBillId}/expire": {
+            "post": {
+                "description": "Used to expire a bill.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APIs to call"
+                ],
+                "operationId": "expireBill",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The unique identifier for a bill in Setu.",
+                        "name": "platformBillId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not found",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/reports": {
+            "post": {
+                "description": "Used to retrieve a report from the Setu system.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Retrieve reports",
+                "operationId": "getReport",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Input parameters for Get Report.",
+                        "name": "GetReportRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/getReportRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "data"
+                            ],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/getReportResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/triggers/funds/addCredit": {
+            "post": {
+                "description": "Used to trigger a mock credit for testing purposes. You can use this in your sandbox to test your integration. This is not available in production.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Testing integration"
+                ],
+                "summary": "Trigger mock payment",
+                "operationId": "addCredit",
+                "parameters": [
+                    {
+                        "description": "Input parameters for requesting a bank account credit.",
+                        "name": "addCreditToAccountTriggerRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/paymentBase"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "data"
+                            ],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/paymentResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/triggers/funds/mockSettlement": {
+            "post": {
+                "description": "Used to trigger a mock settlement for testing purposes. You can use this in your sandbox to test your integration. This is not available in production.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Testing integration"
+                ],
+                "summary": "Trigger mock settlement",
+                "operationId": "mockSettlement",
+                "parameters": [
+                    {
+                        "description": "Input parameters for mocking a settlement.",
+                        "name": "mockSettlementTriggerRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/settlementBase"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth token. Required for authorisation.",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "actor": {
+            "allOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "id",
+                        "createdAt",
+                        "lastModifiedAt"
+                    ],
+                    "properties": {
+                        "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "lastModifiedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/definitions/baseActor"
+                }
+            ]
+        },
+        "address": {
+            "type": "object",
+            "required": [
+                "line1",
+                "city",
+                "state",
+                "country",
+                "pincode"
+            ],
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "line1": {
+                    "type": "string"
+                },
+                "line2": {
+                    "type": "string"
+                },
+                "pincode": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "amount": {
+            "description": "Amount to be refunded",
+            "type": "object",
+            "required": [
+                "value"
+            ],
+            "properties": {
+                "currencyCode": {
+                    "description": "Currency code of the amount, in the ISO-4217 standard.",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Amount value in the smallest subunit of the currency. If a currency has two or more subunits, use the smallest one. For example, For INR it would be paisa, and for Yen, which has two subunits sen(1/100) and rin(1/1000), it would be rin.",
+                    "type": "number",
+                    "format": "int"
+                }
+            }
+        },
+        "amountExactness": {
+            "description": "Exactness of the bill amount. \"ANY\" means customer can pay any amount. \"EXACT\" means customer can pay only the amount specified in the bill. \"EXACT_UP\" means customer must pay at least the specified amount or more, and \"EXACT_DOWN\" means customer can pay any amount upto the specified amount. \"RANGE\" means the customer can pay any amount between amountMin and amountMax specified in the validationRules.",
+            "type": "string",
+            "enum": [
+                "ANY",
+                "EXACT",
+                "EXACT_UP",
+                "EXACT_DOWN",
+                "RANGE"
+            ]
+        },
+        "amountObject": {
+            "type": "object",
+            "required": [
+                "displayName",
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "displayName": {
+                    "description": "Display name for the amount field.",
+                    "type": "string"
+                }
+            }
+        },
+        "amountValidation": {
+            "description": "Amount validation rules.",
+            "type": "object",
+            "properties": {
+                "maximum": {
+                    "description": "Maximum amount to be accepted as payment.",
+                    "type": "number",
+                    "format": "int"
+                },
+                "minimum": {
+                    "description": "Minimum amount to be accepted as payment.",
+                    "type": "number",
+                    "format": "int"
+                }
+            }
+        },
+        "apiKeys": {
+            "description": "Details of the reset credentials",
+            "type": "object",
+            "required": [
+                "schemeID",
+                "secret"
+            ],
+            "properties": {
+                "schemeID": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                }
+            }
+        },
+        "app": {
+            "allOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "id",
+                        "createdAt",
+                        "lastModifiedAt"
+                    ],
+                    "properties": {
+                        "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "lastModifiedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/definitions/baseApp"
+                }
+            ]
+        },
+        "appCredentialsResponse": {
+            "description": "Details of the api keys for the app.",
+            "type": "object",
+            "properties": {
+                "apiKeys": {
+                    "$ref": "#/definitions/apiKeys"
+                }
+            }
+        },
+        "bankAccount": {
+            "type": "object",
+            "required": [
+                "accountID"
+            ],
+            "properties": {
+                "accountID": {
+                    "description": "Used to uniquely identify the account.",
+                    "type": "string"
+                },
+                "ifsc": {
+                    "description": "IFSC of the account.",
+                    "type": "string"
+                }
+            }
+        },
+        "baseActor": {
+            "type": "object",
+            "required": [
+                "appId",
+                "name",
+                "description",
+                "configuration",
+                "productType",
+                "type",
+                "enableHttpSignature"
+            ],
+            "properties": {
+                "appId": {
+                    "type": "string"
+                },
+                "configuration": {
+                    "type": "object"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "enableHttpSignature": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "productType": {
+                    "type": "string",
+                    "enum": [
+                        "Collect",
+                        "GST"
+                    ]
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Bank",
+                        "Biller",
+                        "BillerAggregator",
+                        "Payer",
+                        "PayerAggregator",
+                        "PaymentProcessor",
+                        "GSTPayer",
+                        "GSTProcessor",
+                        "Reporter"
+                    ]
+                }
+            }
+        },
+        "baseApp": {
+            "type": "object",
+            "required": [
+                "name",
+                "description",
+                "partnerId"
+            ],
+            "properties": {
+                "bizRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bizRule"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "partnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "baseBizRule": {
+            "type": "object",
+            "required": [
+                "displayName",
+                "type",
+                "data"
+            ],
+            "properties": {
+                "data": {
+                    "type": "object"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Charge",
+                        "Commission",
+                        "SplitSettlement",
+                        "SplitGST"
+                    ]
+                }
+            }
+        },
+        "basePartner": {
+            "type": "object",
+            "required": [
+                "name",
+                "description",
+                "displayName",
+                "currency",
+                "taxIdNum",
+                "address",
+                "contacts"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/address"
+                },
+                "contacts": {
+                    "type": "object",
+                    "required": [
+                        "business"
+                    ],
+                    "properties": {
+                        "business": {
+                            "$ref": "#/definitions/contact"
+                        },
+                        "technical": {
+                            "$ref": "#/definitions/contact"
+                        }
+                    }
+                },
+                "currency": {
+                    "type": "string",
+                    "enum": [
+                        "INR",
+                        "USD"
+                    ]
+                },
+                "description": {
+                    "type": "string"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Legal Name",
+                    "type": "string"
+                },
+                "taxIdNum": {
+                    "description": "Tax Identification Number",
+                    "type": "string"
+                }
+            }
+        },
+        "baseResponse": {
+            "type": "object",
+            "required": [
+                "status",
+                "success"
+            ],
+            "properties": {
+                "status": {
+                    "description": "HTTP status code for the response.",
+                    "type": "integer",
+                    "example": 200
+                },
+                "success": {
+                    "description": "Indicator to denote whether the request is successful.",
+                    "type": "boolean"
+                }
+            }
+        },
+        "baseType": {
+            "type": "string",
+            "enum": [
+                "UPI",
+                "ACCOUNT"
+            ]
+        },
+        "batchCreateRefundResponse": {
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/batchRefundResponseBase"
+                }
+            ],
+            "properties": {
+                "refunds": {
+                    "description": "Contains status for each transaction being refunded.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/batchRefundResponseItem"
+                    }
+                }
+            }
+        },
+        "batchRefundRequest": {
+            "type": "object",
+            "required": [
+                "refunds"
+            ],
+            "properties": {
+                "refunds": {
+                    "description": "Contains individual transactions to refund.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/batchRefundRequestItem"
+                    }
+                }
+            }
+        },
+        "batchRefundRequestItem": {
+            "type": "object",
+            "required": [
+                "seqNo"
+            ],
+            "allOf": [
+                {
+                    "$ref": "#/definitions/refundRequestItem"
+                }
+            ],
+            "properties": {
+                "seqNo": {
+                    "description": "Unique integer representing individual refund items, used for matching corresponding items in the response.",
+                    "type": "integer"
+                }
+            }
+        },
+        "batchRefundResponse": {
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/batchRefundResponseBase"
+                }
+            ],
+            "properties": {
+                "refunds": {
+                    "description": "Contains status for each transaction being refunded.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/refundResponseItem"
+                    }
+                }
+            }
+        },
+        "batchRefundResponseBase": {
+            "type": "object",
+            "properties": {
+                "batchID": {
+                    "type": "string"
+                }
+            }
+        },
+        "batchRefundResponseErrorItem": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "Custom Setu error code.",
+                    "type": "string"
+                },
+                "detail": {
+                    "description": "Detailed description of error.",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "Short human-readable summary of error.",
+                    "type": "string"
+                }
+            }
+        },
+        "batchRefundResponseItem": {
+            "type": "object",
+            "required": [
+                "seqNo",
+                "success"
+            ],
+            "allOf": [
+                {
+                    "$ref": "#/definitions/refundResponseItem"
+                },
+                {
+                    "$ref": "#/definitions/batchRefundResponseErrorItem"
+                }
+            ],
+            "properties": {
+                "seqNo": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "bill": {
+            "description": "List of required details to pay a bill.",
+            "type": "object",
+            "required": [
+                "customerAccount",
+                "amountExactness",
+                "billerBillID",
+                "recurrence",
+                "generatedOn",
+                "aggregates",
+                "platformFee"
+            ],
+            "properties": {
+                "additionalInfo": {
+                    "description": "Additional information for the bill passed by the biller.",
+                    "type": "object"
+                },
+                "aggregates": {
+                    "$ref": "#/definitions/billAggregates"
+                },
+                "amountExactness": {
+                    "$ref": "#/definitions/amountExactness"
+                },
+                "billerBillID": {
+                    "description": "Unique bill identifier in the biller's system.",
+                    "type": "string"
+                },
+                "customerAccount": {
+                    "$ref": "#/definitions/billCustomerAccount"
+                },
+                "discounts": {
+                    "description": "Contains discounts on the bill.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/discount"
+                    }
+                },
+                "dueDate": {
+                    "description": "Due date of the genrated bill in the ISO 8601 format, upto seconds precision. This date has to be greater than the `billGeneratedOn` date.",
+                    "type": "string",
+                    "format": "date-time",
+                    "x-nullable": true
+                },
+                "fees": {
+                    "description": "An array containing bill-level additional costs, such as \"Delivery fees\" or \"Late charges\".",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/fees"
+                    }
+                },
+                "generatedOn": {
+                    "description": "Generation date of the bill in the ISO 8601 format, upto seconds precision.",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "items": {
+                    "description": "Contains individual line items for the bill.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/items"
+                    }
+                },
+                "platformFee": {
+                    "$ref": "#/definitions/fees"
+                },
+                "recurrence": {
+                    "$ref": "#/definitions/billRecurrence"
+                },
+                "settlement": {
+                    "$ref": "#/definitions/settlementConfiguration"
+                },
+                "taxes": {
+                    "description": "Contains taxes for the bill.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/billTax"
+                    }
+                },
+                "transactionNote": {
+                    "type": "string"
+                },
+                "validationRules": {
+                    "$ref": "#/definitions/validationRules"
+                }
+            },
+            "x-go-name": "BillAPIModel"
+        },
+        "billAggregates": {
+            "description": "Contains bill-level aggregates of individual data points. For example \"Total number of items\" is an aggregate.",
+            "type": "object",
+            "required": [
+                "total"
+            ],
+            "properties": {
+                "discount": {
+                    "$ref": "#/definitions/amountObject"
+                },
+                "fee": {
+                    "$ref": "#/definitions/amountObject"
+                },
+                "itemQuantity": {
+                    "$ref": "#/definitions/itemQuantity"
+                },
+                "subTotal": {
+                    "$ref": "#/definitions/amountObject"
+                },
+                "tax": {
+                    "$ref": "#/definitions/amountObject"
+                },
+                "total": {
+                    "$ref": "#/definitions/amountObject"
+                }
+            }
+        },
+        "billBase": {
+            "type": "object",
+            "required": [
+                "customerAccount",
+                "billType",
+                "recurrence",
+                "billerBillID",
+                "amountExactness",
+                "aggregates"
+            ],
+            "properties": {
+                "additionalInfo": {
+                    "description": "Additional information which is specific to that bill type.",
+                    "type": "object"
+                },
+                "aggregates": {
+                    "$ref": "#/definitions/billAggregates"
+                },
+                "amountExactness": {
+                    "$ref": "#/definitions/amountExactness"
+                },
+                "billType": {
+                    "$ref": "#/definitions/billType"
+                },
+                "billerActorID": {
+                    "description": "Unique identifier of the biller actor.",
+                    "type": "string"
+                },
+                "billerBillID": {
+                    "description": "Unique bill identifier provided by the biller. For GST, it is the CPIN.",
+                    "type": "string"
+                },
+                "billerCategory": {
+                    "description": "Category of the bill.",
+                    "type": "string"
+                },
+                "customer": {
+                    "$ref": "#/definitions/billCustomer"
+                },
+                "customerAccount": {
+                    "$ref": "#/definitions/customerAccount"
+                },
+                "discounts": {
+                    "description": "Contains the discounts on the bill.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/discount"
+                    }
+                },
+                "dueDate": {
+                    "description": "Due date of the bill in the ISO 8601 format, upto seconds precision.",
+                    "type": "string",
+                    "format": "date-time",
+                    "x-nullable": true,
+                    "x-omitempty": false
+                },
+                "fees": {
+                    "description": "An array containing bill-level additional costs, such as \"Delivery fees\" or \"Late charges\".",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/fees"
+                    }
+                },
+                "generatedOn": {
+                    "description": "Creation date of the bill in the ISO 8601 format, upto seconds precision.",
+                    "type": "string",
+                    "format": "date-time",
+                    "x-nullable": true,
+                    "x-omitempty": false
+                },
+                "items": {
+                    "description": "Contains individual line items for the bill.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/items"
+                    }
+                },
+                "recurrence": {
+                    "$ref": "#/definitions/billRecurrence"
+                },
+                "taxes": {
+                    "description": "Contains the taxes on the bill.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/billTax"
+                    }
+                },
+                "validationRules": {
+                    "$ref": "#/definitions/validationRules"
+                }
+            },
+            "x-go-name": "BillBaseAPIModel"
+        },
+        "billCustomer": {
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/customer"
+                }
+            ],
+            "x-go-name": "Customer"
+        },
+        "billCustomerAccount": {
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/customerAccount"
+                }
+            ],
+            "x-go-name": "CustomerAccount"
+        },
+        "billFetchStatus": {
+            "description": "Types of fetch bill statuses.",
+            "type": "string",
+            "enum": [
+                "NOT_SUPPORTED",
+                "NO_OUTSTANDING",
+                "AVAILABLE"
+            ]
+        },
+        "billFulfilmentRequest": {
+            "description": "Specifications of the bill fulfilment request.",
+            "type": "object",
+            "required": [
+                "transactionID",
+                "payment"
+            ],
+            "properties": {
+                "payment": {
+                    "$ref": "#/definitions/fulfilmentPaymentDetails"
+                },
+                "transactionID": {
+                    "description": "Unique transaction reference ID for a payment in the payer app system",
+                    "type": "string",
+                    "example": "201905161605011233"
+                }
+            },
+            "x-go-name": "BillFulfilmentRequestAPIModel"
+        },
+        "billFulfilmentResponse": {
+            "type": "object",
+            "required": [
+                "platformBillID",
+                "platformBillStatus",
+                "receipt"
+            ],
+            "properties": {
+                "name": {
+                    "description": "Human-readable name of bill.",
+                    "type": "string"
+                },
+                "platformBillID": {
+                    "description": "Unique identifier of bill in Setu.",
+                    "type": "string"
+                },
+                "platformBillStatus": {
+                    "$ref": "#/definitions/setuBillStatus"
+                },
+                "receipt": {
+                    "$ref": "#/definitions/billReceiptWithStatus"
+                }
+            },
+            "x-go-name": "BillFulfilmentResponseAPIModel"
+        },
+        "billReceipt": {
+            "description": "Receipt details of a bill.",
+            "type": "object",
+            "required": [
+                "id",
+                "date"
+            ],
+            "properties": {
+                "date": {
+                    "description": "Receipt date of the bill.",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "id": {
+                    "description": "Receipt number of the bill.",
+                    "type": "string"
+                }
+            }
+        },
+        "billReceiptWithStatus": {
+            "description": "Receipt details of a bill.",
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "date": {
+                    "description": "Receipt date of the bill.",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "id": {
+                    "description": "Receipt number of the bill.",
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/receiptFetchStatus"
+                }
+            }
+        },
+        "billRecurrence": {
+            "description": "Bill recurrence type.",
+            "type": "string",
+            "enum": [
+                "ONE_TIME",
+                "DAILY",
+                "WEEKLY",
+                "FORTNIGHTLY",
+                "MONTHLY",
+                "QUARTERLY",
+                "HALF_YEARLY",
+                "YEARLY",
+                "AS_PRESENTED"
+            ]
+        },
+        "billSettlementDetails": {
+            "type": "object",
+            "required": [
+                "vanAddress",
+                "ifsc",
+                "utr",
+                "amount",
+                "instrument",
+                "aggregates",
+                "transactions"
+            ],
+            "properties": {
+                "aggregates": {
+                    "$ref": "#/definitions/settlementAggregates"
+                },
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "ifsc": {
+                    "description": "IFSC for the VAN address to which the payment was made.",
+                    "type": "string"
+                },
+                "instrument": {
+                    "$ref": "#/definitions/paymentInstrument"
+                },
+                "scheme": {
+                    "$ref": "#/definitions/paymentSchemes"
+                },
+                "transactions": {
+                    "description": "Reason for validation failure.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transactions"
+                    }
+                },
+                "utr": {
+                    "description": "Bank UTR for the bill payment made by the customer or the challan number in case of CASH payments.",
+                    "type": "string"
+                },
+                "vanAddress": {
+                    "description": "VAN address to which the settlement for the bills were made.",
+                    "type": "string"
+                }
+            }
+        },
+        "billSettlementRequest": {
+            "description": "Specifications of the bill settlement request.",
+            "type": "object",
+            "required": [
+                "settlement"
+            ],
+            "properties": {
+                "settlement": {
+                    "$ref": "#/definitions/billSettlementDetails"
+                }
+            },
+            "x-go-name": "BillSettlementRequestAPIModel"
+        },
+        "billTax": {
+            "description": "Tax parent object containing all the relevant taxes and their individual components at the bill-level.",
+            "type": "object",
+            "required": [
+                "displayName",
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "components": {
+                    "description": "Parent object containing the breakdown of individual tax components at the bill level.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/taxComponent"
+                    }
+                },
+                "computation": {
+                    "$ref": "#/definitions/computation"
+                },
+                "displayName": {
+                    "description": "Display name for the tax applied on the particular bill.",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "The type of tax component levied.",
+                    "type": "string"
+                }
+            }
+        },
+        "billType": {
+            "description": "Type of bill. eg. GST.",
+            "type": "string",
+            "enum": [
+                "GST",
+                "COLLECT"
+            ]
+        },
+        "billWithBillerBillIdResponse": {
+            "description": "Details of bills for the supplied biller billID.",
+            "type": "object",
+            "required": [
+                "bills"
+            ],
+            "properties": {
+                "bills": {
+                    "description": "List of bills for the supplied biller billID.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/platformBill"
+                    }
+                }
+            }
+        },
+        "biller": {
+            "description": "Biller entity data",
+            "type": "object",
+            "required": [
+                "description",
+                "logoURL",
+                "customerParameters",
+                "deemedEnabled",
+                "receiptFetchStatus",
+                "allowedPaymentInstruments"
+            ],
+            "properties": {
+                "allowedPaymentInstruments": {
+                    "description": "Instruments allowed for bill payment.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/paymentInstrument"
+                    }
+                },
+                "category": {
+                    "description": "Category code the biller belongs to.",
+                    "type": "string"
+                },
+                "customerParameters": {
+                    "description": "List of parameters to identify a customer for the biller.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/billerCustomerParams"
+                    }
+                },
+                "deemedEnabled": {
+                    "description": "Enable deemed payments for biller.",
+                    "type": "boolean"
+                },
+                "description": {
+                    "description": "Description of the biller.",
+                    "type": "string"
+                },
+                "logoURL": {
+                    "description": "URL of the biller logo in PNG or SVG format.",
+                    "type": "string"
+                },
+                "partner": {
+                    "description": "Partner details such as ID and Name.",
+                    "type": "object",
+                    "required": [
+                        "id",
+                        "name"
+                    ],
+                    "properties": {
+                        "id": {
+                            "description": "Unique identifier of a biller partner in Setu.",
+                            "type": "string"
+                        },
+                        "name": {
+                            "description": "Display name of the biller partner.",
+                            "type": "string"
+                        }
+                    }
+                },
+                "productInstance": {
+                    "$ref": "#/definitions/productInstance"
+                },
+                "receiptFetchStatus": {
+                    "$ref": "#/definitions/receiptFetchStatus"
+                }
+            },
+            "x-go-name": "BillerAPIModel"
+        },
+        "billerCustomerIdentifier": {
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/customerIdentifier"
+                }
+            ],
+            "x-go-name": "BillerCustomerIdentifierAPIModel"
+        },
+        "billerCustomerParams": {
+            "description": "Specifications of each customer parameter.",
+            "type": "object",
+            "required": [
+                "displayName",
+                "attributeName",
+                "dataType",
+                "isMandatory",
+                "minLength",
+                "maxLength"
+            ],
+            "properties": {
+                "attributeName": {
+                    "description": "Attribute name to be passed in the fetch bill request.",
+                    "type": "string"
+                },
+                "dataType": {
+                    "description": "Data type for the field which needs to be used in validation.",
+                    "type": "string"
+                },
+                "displayName": {
+                    "description": "Display name of the biller.",
+                    "type": "string"
+                },
+                "isMandatory": {
+                    "description": "Defines if a particular parameter must be passed.",
+                    "type": "boolean"
+                },
+                "maxLength": {
+                    "description": "Maximum length of the parameter.",
+                    "type": "integer"
+                },
+                "minLength": {
+                    "description": "Minimum length of the parameter.",
+                    "type": "integer"
+                }
+            },
+            "x-go-name": "BillerCustomerParamsAPIModel"
+        },
+        "billerFetchBillsRequest": {
+            "description": "Details of customer identifiers.",
+            "type": "object",
+            "required": [
+                "customerIdentifiers"
+            ],
+            "properties": {
+                "customerIdentifiers": {
+                    "description": "List of parameters to uniquely identify a customer.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/customerIdentifier"
+                    }
+                }
+            }
+        },
+        "billerFetchBillsResponse": {
+            "description": "Details of bills for the supplied customer identifiers.",
+            "type": "object",
+            "required": [
+                "customer",
+                "billDetails"
+            ],
+            "properties": {
+                "billDetails": {
+                    "$ref": "#/definitions/fetchBillsDetails"
+                },
+                "customer": {
+                    "$ref": "#/definitions/customer"
+                }
+            }
+        },
+        "bizRule": {
+            "allOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "id"
+                    ],
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/definitions/baseBizRule"
+                }
+            ]
+        },
+        "callbackEventCreateRequest": {
+            "type": "object",
+            "required": [
+                "eventUID",
+                "eventType",
+                "eventTimeStamp",
+                "eventData"
+            ],
+            "properties": {
+                "eventData": {
+                    "description": "Payload of an event which contains detailed information about an event.",
+                    "type": "object"
+                },
+                "eventTimeStamp": {
+                    "description": "The time at which an event occured.",
+                    "type": "integer"
+                },
+                "eventType": {
+                    "description": "The type of event specific to a product.",
+                    "type": "string"
+                },
+                "eventUID": {
+                    "description": "Unique identifier for an event.",
+                    "type": "string"
+                }
+            },
+            "x-go-name": "CallbackRequestAPIModel"
+        },
+        "callbackresponse": {
+            "description": "Callback response data",
+            "type": "object"
+        },
+        "chargeType": {
+            "description": "Type of charge levied for processing the payment.",
+            "type": "string",
+            "enum": [
+                "MDR",
+                "MDR_GST",
+                "COMMISSION",
+                "COMMISSION_GST",
+                "REFUND",
+                "REFUND_GST"
+            ]
+        },
+        "charges": {
+            "type": "object",
+            "required": [
+                "amount",
+                "percentage",
+                "flatFee",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "flatFee": {
+                    "description": "FlatFee value for charge calculation.",
+                    "type": "string",
+                    "example": "4"
+                },
+                "percentage": {
+                    "description": "Percentage value for charge calculation.",
+                    "type": "string",
+                    "example": "18"
+                },
+                "type": {
+                    "$ref": "#/definitions/chargeType"
+                }
+            }
+        },
+        "computation": {
+            "type": "object",
+            "required": [
+                "method",
+                "value"
+            ],
+            "properties": {
+                "currencyCode": {
+                    "description": "Currency code of the amount, in the ISO-4217 standard.",
+                    "type": "string"
+                },
+                "method": {
+                    "description": "The method used to calculate the value of a particular component. This is usually done as a flat fee or a percentage. Some examples could be calculating the processing fees for a bill, or the discount amount for an item.",
+                    "type": "string",
+                    "enum": [
+                        "PERCENTAGE",
+                        "VALUE"
+                    ]
+                },
+                "value": {
+                    "description": "Amount value in the smallest subunit of the currency. If a currency has two or more subunits, use the smallest one. For example, For INR it would be paisa, and for Yen, which has two subunits sen(1/100) and rin(1/1000), it would be rin.",
+                    "type": "number"
+                }
+            }
+        },
+        "contact": {
+            "type": "object",
+            "required": [
+                "title",
+                "firstName",
+                "email",
+                "phone"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "phone": {
+                    "$ref": "#/definitions/phone"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "createActorResponse": {
+            "description": "Details of the created actor .",
+            "type": "object",
+            "required": [
+                "actor"
+            ],
+            "properties": {
+                "actor": {
+                    "$ref": "#/definitions/actor"
+                }
+            }
+        },
+        "createAppRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "description",
+                "partnerId"
+            ],
+            "properties": {
+                "bizRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/baseBizRule"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "partnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "createAppResponse": {
+            "description": "Details of the created app .",
+            "type": "object",
+            "required": [
+                "apiKeys",
+                "app"
+            ],
+            "properties": {
+                "apiKeys": {
+                    "$ref": "#/definitions/apiKeys"
+                },
+                "app": {
+                    "$ref": "#/definitions/app"
+                }
+            }
+        },
+        "createPartnerResponse": {
+            "description": "Details of the created partner .",
+            "type": "object",
+            "required": [
+                "partner"
+            ],
+            "properties": {
+                "partner": {
+                    "$ref": "#/definitions/partner"
+                }
+            }
+        },
+        "createPaymentLinkRequest": {
+            "type": "object",
+            "required": [
+                "billerBillID",
+                "amountExactness"
+            ],
+            "properties": {
+                "additionalInfo": {
+                    "type": "object"
+                },
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "amountExactness": {
+                    "$ref": "#/definitions/amountExactness"
+                },
+                "billerBillID": {
+                    "description": "Unique bill identifier provided by the biller. For GST, it is the CPIN.",
+                    "type": "string"
+                },
+                "campaignID": {
+                    "description": "This can be used to group payment links.",
+                    "type": "string"
+                },
+                "expiryDate": {
+                    "description": "Expiry date of the paymentLink in the ISO 8601 format, upto seconds precision.",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "name": {
+                    "description": "Payee name to be populated in the Payment Link.",
+                    "type": "string"
+                },
+                "settlement": {
+                    "$ref": "#/definitions/settlementConfiguration"
+                },
+                "transactionNote": {
+                    "description": "Used to show a note on payer app",
+                    "type": "string",
+                    "maxLength": 80,
+                    "example": "Payment for loan 123"
+                },
+                "validationRules": {
+                    "$ref": "#/definitions/validationRules"
+                }
+            },
+            "x-go-name": "PaymentLinkAPIModel",
+            "example": {
+                "amount": {
+                    "currencyCode": "INR",
+                    "value": 20000
+                },
+                "amountExactness": "EXACT",
+                "billerBillID": "918147077472",
+                "expiryDate": "2022-05-15T12:23:50Z",
+                "name": "Setu Payment Links Test",
+                "settlement": {
+                    "parts": [
+                        {
+                            "account": {
+                                "id": "Biller-External-002",
+                                "ifsc": "KKBK0000001"
+                            },
+                            "remarks": "EXACT sample split",
+                            "split": {
+                                "unit": "INR",
+                                "value": 10000
+                            }
+                        }
+                    ],
+                    "primaryAccount": {
+                        "id": "Biller-External-001",
+                        "ifsc": "KKBK0000001"
+                    }
+                }
+            }
+        },
+        "createPaymentLinkResponse": {
+            "type": "object",
+            "properties": {
+                "campaignID": {
+                    "description": "Campaign identifier",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human-readable name of bill.",
+                    "type": "string"
+                },
+                "paymentLink": {
+                    "$ref": "#/definitions/vPAPaymentAddress"
+                },
+                "platformBillID": {
+                    "description": "Unique identifier of bill in Setu.",
+                    "type": "string"
+                }
+            },
+            "example": {
+                "name": "Setu Payment Links Test",
+                "paymentLink": {
+                    "shortURL": "https://sandbox.bills.pe/8tA2TQd",
+                    "upiID": "nareshlocal@kaypay",
+                    "upiLink": "upi://pay?pa=nareshlocal@kaypay\u0026pn=Setu%20Payment%20Links%20Test\u0026am=200.00\u0026tr=875621444531258946\u0026tn=Payment%20for%20918147077472\u0026cu=INR\u0026mode=04"
+                },
+                "platformBillID": "875621444531258946"
+            }
+        },
+        "customer": {
+            "description": "Details of a customer in the biller system.",
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "additionalInfo": {
+                    "description": "Additional details of the customer in the biller system.",
+                    "type": "object"
+                },
+                "name": {
+                    "description": "Name of the customer in the biller system.",
+                    "type": "string"
+                }
+            }
+        },
+        "customerAccount": {
+            "description": "Details of a customer account in the biller system.",
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "additionalInfo": {
+                    "description": "Additional details for the customer account in the biller system.",
+                    "type": "object"
+                },
+                "id": {
+                    "description": "Unique identifier of the customer account in the biller system.",
+                    "type": "string"
+                }
+            }
+        },
+        "customerIdentifier": {
+            "description": "Unique customer identifier for a particular biller.",
+            "type": "object",
+            "required": [
+                "attributeName",
+                "attributeValue"
+            ],
+            "properties": {
+                "attributeName": {
+                    "description": "Attribute used to identify a customer of a biller. Could be phone number, PAN or email, depending on the biller.",
+                    "type": "string"
+                },
+                "attributeValue": {
+                    "description": "Value of the above customer identifier of a biller. This is entered by the customer in the payer app.",
+                    "type": "string"
+                }
+            }
+        },
+        "deductionParts": {
+            "description": "Account and split details for the deduction.",
+            "type": "object",
+            "required": [
+                "account",
+                "split"
+            ],
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/splitAccount"
+                },
+                "split": {
+                    "$ref": "#/definitions/splitDetails"
+                }
+            }
+        },
+        "discount": {
+            "description": "Contains details about the discount in a particular bill, if available. In a given bill, there could be upto three kinds of discount, bill-level, item-level and fee-level.",
+            "type": "object",
+            "required": [
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "code": {
+                    "description": "Coupon or voucher used to apply the discount.",
+                    "type": "string"
+                },
+                "computation": {
+                    "$ref": "#/definitions/computation"
+                },
+                "reason": {
+                    "description": "Reason why the discount was applied.",
+                    "type": "string"
+                }
+            }
+        },
+        "error": {
+            "type": "object",
+            "required": [
+                "code",
+                "title",
+                "detail",
+                "docURL"
+            ],
+            "properties": {
+                "code": {
+                    "description": "Custom Setu error code.",
+                    "type": "string"
+                },
+                "detail": {
+                    "description": "Detailed description of error.",
+                    "type": "string"
+                },
+                "docURL": {
+                    "description": "Link to reference document with details about the error.",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "Short human-readable summary of error.",
+                    "type": "string"
+                }
+            },
+            "x-go-name": "ErrorAPIModel"
+        },
+        "errorResponse": {
+            "type": "object",
+            "required": [
+                "error"
+            ],
+            "allOf": [
+                {
+                    "$ref": "#/definitions/baseResponse"
+                }
+            ],
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/errorResponseData"
+                }
+            },
+            "x-go-name": "ErrorResponseAPIModel"
+        },
+        "errorResponseData": {
+            "description": "Object containing data about the error.",
+            "type": "object",
+            "required": [
+                "traceID"
+            ],
+            "allOf": [
+                {
+                    "$ref": "#/definitions/error"
+                }
+            ],
+            "properties": {
+                "errors": {
+                    "description": "List of specific child errors for this request.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/error"
+                    }
+                },
+                "traceID": {
+                    "description": "Unique trace request identifier for tracing and debugging. Provide this to Setu support.",
+                    "type": "string"
+                }
+            },
+            "x-go-name": "ErrorResponseDataAPIModel"
+        },
+        "eventDetails": {
+            "description": "Details about the event.",
+            "type": "object",
+            "required": [
+                "id",
+                "type",
+                "timeStamp",
+                "data"
+            ],
+            "properties": {
+                "data": {
+                    "description": "Payload of an event which contains detailed information about an event.",
+                    "type": "object"
+                },
+                "id": {
+                    "description": "Unique identifier for an event.",
+                    "type": "string"
+                },
+                "timeStamp": {
+                    "description": "The time at which an event occured. It is denoted in milliseconds from the Unix epoch.",
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "The type of event generated by this appID and productInstanceID.",
+                    "type": "string"
+                }
+            }
+        },
+        "feeAggregates": {
+            "description": "Aggregate section for fees",
+            "type": "object",
+            "required": [
+                "total"
+            ],
+            "properties": {
+                "discount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "subTotal": {
+                    "$ref": "#/definitions/amount"
+                },
+                "tax": {
+                    "$ref": "#/definitions/amount"
+                },
+                "total": {
+                    "$ref": "#/definitions/amount"
+                }
+            }
+        },
+        "fees": {
+            "description": "Fees levied on the bill or individual items.",
+            "type": "object",
+            "required": [
+                "displayName",
+                "aggregates"
+            ],
+            "properties": {
+                "aggregates": {
+                    "$ref": "#/definitions/feeAggregates"
+                },
+                "description": {
+                    "description": "Description of the fees.",
+                    "type": "string"
+                },
+                "discounts": {
+                    "description": "Contains discounts on the fees.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/discount"
+                    }
+                },
+                "displayName": {
+                    "description": "Display name for the fees.",
+                    "type": "string"
+                },
+                "quantity": {
+                    "description": "Total number of fee quantity.",
+                    "type": "integer"
+                },
+                "taxes": {
+                    "description": "Contains taxes on the fees.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/itemTax"
+                    }
+                },
+                "unitCost": {
+                    "$ref": "#/definitions/amount"
+                }
+            }
+        },
+        "fetchBillReceiptResponse": {
+            "type": "object",
+            "properties": {
+                "receipt": {
+                    "$ref": "#/definitions/billReceipt"
+                }
+            }
+        },
+        "fetchBillersResponse": {
+            "type": "object",
+            "properties": {
+                "billers": {
+                    "description": "List of registered billers.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/biller"
+                    }
+                }
+            }
+        },
+        "fetchBillsDetails": {
+            "description": "Details of the bill to be paid.",
+            "type": "object",
+            "required": [
+                "billFetchStatus",
+                "bills"
+            ],
+            "properties": {
+                "billFetchStatus": {
+                    "$ref": "#/definitions/billFetchStatus"
+                },
+                "bills": {
+                    "description": "List of outstanding bills.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bill"
+                    }
+                }
+            },
+            "x-go-name": "FetchBillDetailsAPIModel"
+        },
+        "fetchBillsRequest": {
+            "description": "Fetch bill request payload",
+            "type": "object",
+            "required": [
+                "billerProductInstanceID",
+                "customerIdentifiers"
+            ],
+            "properties": {
+                "billerProductInstanceID": {
+                    "description": "Unique identifier of the biller product instance in Setu.",
+                    "type": "string"
+                },
+                "campaignID": {
+                    "description": "Unique identifier of the biller campaign.",
+                    "type": "string"
+                },
+                "customerIdentifiers": {
+                    "description": "Used to validate the customer account and fetch the bill details.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/billerCustomerIdentifier"
+                    }
+                }
+            }
+        },
+        "fetchBillsResponse": {
+            "description": "Details of bills for the supplied customer identifiers.",
+            "type": "object",
+            "required": [
+                "bills"
+            ],
+            "properties": {
+                "bills": {
+                    "description": "List of bills for the supplied customer identifiers.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/platformBill"
+                    }
+                }
+            }
+        },
+        "fetchCodeVersionResponse": {
+            "description": "Fetch Code version response data",
+            "type": "object",
+            "required": [
+                "commit_sha"
+            ],
+            "properties": {
+                "commit_sha": {
+                    "description": "GitLab commit-ID of the deployed code",
+                    "type": "string"
+                }
+            },
+            "x-go-name": "FetchCodeVersionResponseAPIModel"
+        },
+        "fetchDbVersionResponse": {
+            "description": "Fetch DB version response data",
+            "type": "object",
+            "properties": {
+                "applied_migrations": {
+                    "description": "A collection of individual migrations applied till date.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "current_db_version": {
+                    "description": "Current version[migration] of the DB.",
+                    "type": "integer"
+                }
+            },
+            "x-go-name": "FetchDbVersionResponseAPIModel"
+        },
+        "fetchPayerLinkRequest": {
+            "description": "Fetch payer link and one-time token API payload",
+            "type": "object",
+            "properties": {
+                "clientID": {
+                    "description": "clientID from the V2 API key pair",
+                    "type": "string"
+                },
+                "secret": {
+                    "description": "secret from the V2 API key pair",
+                    "type": "string"
+                }
+            }
+        },
+        "fetchPayerLinkResponse": {
+            "type": "object",
+            "required": [
+                "url",
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "description": "One-time auth token to be used to retrieve the JWT for subsequent API requests",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "The PWA redirect URL",
+                    "type": "string"
+                }
+            }
+        },
+        "fetchReceiptRequest": {
+            "type": "object",
+            "required": [
+                "platformBillID",
+                "billerBillID",
+                "paymentDetails"
+            ],
+            "properties": {
+                "billerBillID": {
+                    "description": "Unique bill identifier in the biller's system.",
+                    "type": "string"
+                },
+                "paymentDetails": {
+                    "description": "Details highlighting the payment of a bill.",
+                    "type": "object",
+                    "required": [
+                        "amountPaid",
+                        "billAmount",
+                        "platformTransactionRefID"
+                    ],
+                    "properties": {
+                        "additionalInfo": {
+                            "description": "Placeholder for any additional info that will be sent with the request.",
+                            "type": "object"
+                        },
+                        "amountPaid": {
+                            "$ref": "#/definitions/amount"
+                        },
+                        "billAmount": {
+                            "$ref": "#/definitions/amount"
+                        },
+                        "campaignID": {
+                            "description": "Unique identifier of the biller campaign.",
+                            "type": "string"
+                        },
+                        "instrument": {
+                            "description": "Payment method used to pay the bill.",
+                            "type": "string"
+                        },
+                        "transactionNote": {
+                            "description": "Used to show a note on payer app",
+                            "type": "string",
+                            "maxLength": 80,
+                            "example": "Payment for loan 123"
+                        },
+                        "uniquePaymentRefID": {
+                            "description": "Unique reference identifier for the money that Setu received as a payment for the bill.",
+                            "type": "string"
+                        }
+                    }
+                },
+                "platformBillID": {
+                    "description": "Unique bill identifier in the Setu system.",
+                    "type": "string"
+                }
+            }
+        },
+        "fetchTokenRequest": {
+            "description": "Fetch Token API payload",
+            "type": "object",
+            "properties": {
+                "clientID": {
+                    "description": "clientID from the V2 API key pair",
+                    "type": "string"
+                },
+                "secret": {
+                    "description": "secret from the V2 API key pair",
+                    "type": "string"
+                }
+            }
+        },
+        "fetchTokenResponse": {
+            "type": "object",
+            "required": [
+                "token",
+                "expiresIn"
+            ],
+            "properties": {
+                "expiresIn": {
+                    "description": "Token expiry duration in seconds",
+                    "type": "integer"
+                },
+                "token": {
+                    "description": "Token to be used in subsequent requests",
+                    "type": "string"
+                }
+            }
+        },
+        "fulfilmentPaymentDetails": {
+            "type": "object",
+            "required": [
+                "paidOn",
+                "amount",
+                "instrument"
+            ],
+            "properties": {
+                "accountIdentifier": {
+                    "description": "The masked digits of the account used. In case of `CC` / `DC` / `PREPAID`, it is the last 4 digits of the Card Number. In case of  `NEFT` / `RTGS` / `IFT` / `IMPS`, it is the last 4 digits of the Account Number. In case of `UPI`, it is the VPA. In case of  `PPI` / `CASH`, it is the last 4 digits of Mobile Number.",
+                    "type": "string"
+                },
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "instrument": {
+                    "$ref": "#/definitions/paymentInstrument"
+                },
+                "paidOn": {
+                    "description": "Payment date of the bill in the ISO 8601 format, upto seconds precision.",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "scheme": {
+                    "$ref": "#/definitions/paymentSchemes"
+                },
+                "utr": {
+                    "description": "Bank UTR for the bill payment made by the customer or the challan number in case of CASH payments.",
+                    "type": "string"
+                }
+            }
+        },
+        "getActorByIdResponse": {
+            "description": "Details of actor for the supplied actor identifier.",
+            "type": "object",
+            "required": [
+                "actor"
+            ],
+            "properties": {
+                "actor": {
+                    "$ref": "#/definitions/actor"
+                }
+            }
+        },
+        "getAppByIdResponse": {
+            "description": "Details of app for the supplied app identifier.",
+            "type": "object",
+            "required": [
+                "app"
+            ],
+            "properties": {
+                "app": {
+                    "$ref": "#/definitions/app"
+                }
+            }
+        },
+        "getPartnerByIdResponse": {
+            "description": "Details of partner for the supplied partner identifier.",
+            "type": "object",
+            "required": [
+                "partner"
+            ],
+            "properties": {
+                "partner": {
+                    "$ref": "#/definitions/partner"
+                }
+            }
+        },
+        "getReportRequest": {
+            "description": "get report request payload",
+            "type": "object",
+            "required": [
+                "productInstanceIDOfReport"
+            ],
+            "properties": {
+                "filters": {
+                    "description": "Payload containing the filters to be applied.",
+                    "type": "object"
+                },
+                "productInstanceIDOfReport": {
+                    "description": "The unique identifier of the product instance in app for which the report is fetched.",
+                    "type": "string"
+                }
+            }
+        },
+        "getReportResponse": {
+            "description": "Report response data",
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "description": "Basic information about what is contained in the report.",
+                    "type": "object"
+                },
+                "records": {
+                    "description": "A collection of individual data fields in a report.",
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "reportDetails": {
+                    "description": "(Deprecated)Basic information about what is contained in the report.",
+                    "type": "object"
+                }
+            },
+            "x-go-name": "ReportResponseAPIModel"
+        },
+        "itemAggregates": {
+            "description": "Aggregate section for item.",
+            "type": "object",
+            "required": [
+                "total"
+            ],
+            "properties": {
+                "discount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "subTotal": {
+                    "$ref": "#/definitions/amount"
+                },
+                "tax": {
+                    "$ref": "#/definitions/amount"
+                },
+                "total": {
+                    "$ref": "#/definitions/amount"
+                }
+            }
+        },
+        "itemQuantity": {
+            "type": "object",
+            "required": [
+                "quantity",
+                "displayName"
+            ],
+            "properties": {
+                "displayName": {
+                    "description": "Display name for the quantity on payers app.",
+                    "type": "string"
+                },
+                "quantity": {
+                    "description": "Total number of items in the bill.",
+                    "type": "integer"
+                }
+            }
+        },
+        "itemTax": {
+            "description": "Tax parent object containing all the relevant taxes and their individual components at the item-level.",
+            "type": "object",
+            "required": [
+                "displayName",
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "components": {
+                    "description": "Parent object containing the breakdown of individual tax components at the item level.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/taxComponent"
+                    }
+                },
+                "computation": {
+                    "$ref": "#/definitions/computation"
+                },
+                "displayName": {
+                    "description": "Display name for the item tax applied on the particular item.",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "The type of tax component levied.",
+                    "type": "string"
+                }
+            }
+        },
+        "items": {
+            "description": "Line items for the bill.",
+            "type": "object",
+            "required": [
+                "displayName",
+                "aggregates"
+            ],
+            "properties": {
+                "aggregates": {
+                    "$ref": "#/definitions/itemAggregates"
+                },
+                "code": {
+                    "description": "Unique code for the item in the biller system.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Item description.",
+                    "type": "string"
+                },
+                "discounts": {
+                    "description": "Contains discounts on the items.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/discount"
+                    }
+                },
+                "displayName": {
+                    "description": "Display name for the item on the payer app.",
+                    "type": "string"
+                },
+                "fees": {
+                    "description": "Array of fees per item.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/fees"
+                    }
+                },
+                "measurementUnit": {
+                    "description": "Unit of measurement for the item.",
+                    "type": "string",
+                    "enum": [
+                        "WEIGHT",
+                        "VOLUME",
+                        "NUMBER"
+                    ]
+                },
+                "quantity": {
+                    "description": "Total number of items of one type.",
+                    "type": "integer"
+                },
+                "taxes": {
+                    "description": "Contains taxes on the items.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/itemTax"
+                    }
+                },
+                "unitPrice": {
+                    "$ref": "#/definitions/amount"
+                }
+            }
+        },
+        "kotakUpiCallbackRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "Encrypted request data.",
+                    "type": "string"
+                }
+            },
+            "x-go-name": "KotakUpiCallbackRequestAPIModel"
+        },
+        "listActorsResponse": {
+            "type": "object",
+            "required": [
+                "actors"
+            ],
+            "properties": {
+                "actors": {
+                    "description": "Details of actors for the supplied actor identifiers.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/actor"
+                    }
+                }
+            }
+        },
+        "listAppsResponse": {
+            "type": "object",
+            "required": [
+                "apps"
+            ],
+            "properties": {
+                "apps": {
+                    "description": "Details of apps for the supplied app identifiers.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/app"
+                    }
+                }
+            }
+        },
+        "listPartnersResponse": {
+            "type": "object",
+            "required": [
+                "partners"
+            ],
+            "properties": {
+                "partners": {
+                    "description": "Details of partners for the supplied partner identifiers.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/partner"
+                    }
+                }
+            }
+        },
+        "notificationRequest": {
+            "type": "object",
+            "required": [
+                "partnerDetails",
+                "events"
+            ],
+            "properties": {
+                "events": {
+                    "description": "Array of events.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/eventDetails"
+                    }
+                },
+                "partnerDetails": {
+                    "$ref": "#/definitions/partnerDetails"
+                }
+            },
+            "x-go-name": "NotificationRequestAPIModel"
+        },
+        "partner": {
+            "allOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "id",
+                        "createdAt",
+                        "lastModifiedAt"
+                    ],
+                    "properties": {
+                        "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "id": {
+                            "type": "string"
+                        },
+                        "lastModifiedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/definitions/basePartner"
+                }
+            ]
+        },
+        "partnerDetails": {
+            "description": "Details about the partner.",
+            "type": "object",
+            "required": [
+                "appID",
+                "productInstanceID"
+            ],
+            "properties": {
+                "appID": {
+                    "description": "Unique identifier for the app.",
+                    "type": "string"
+                },
+                "productInstanceID": {
+                    "description": "Unique identifier for the product instance.",
+                    "type": "string"
+                }
+            }
+        },
+        "paymentAddress": {
+            "description": "Payment address info where funds can be deposited.",
+            "type": "object",
+            "required": [
+                "addressType",
+                "identifier",
+                "additionalInfo"
+            ],
+            "properties": {
+                "additionalInfo": {
+                    "description": "Payment address details for this type.",
+                    "type": "object"
+                },
+                "addressType": {
+                    "$ref": "#/definitions/paymentAddressType"
+                },
+                "identifier": {
+                    "description": "Unique identifier of payment address. For ACCOUNT type, it will be AccountID.",
+                    "type": "string"
+                }
+            }
+        },
+        "paymentAddressType": {
+            "description": "Type of paymnent address. Can be a bank account or UPI handle.",
+            "type": "string",
+            "enum": [
+                "ACCOUNT",
+                "VPA"
+            ]
+        },
+        "paymentBase": {
+            "type": "object",
+            "required": [
+                "amount",
+                "sourceAccount",
+                "destinationAccount"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "Amount for the mock credit.",
+                    "type": "number",
+                    "format": "double"
+                },
+                "destinationAccount": {
+                    "$ref": "#/definitions/bankAccount"
+                },
+                "sourceAccount": {
+                    "$ref": "#/definitions/bankAccount"
+                },
+                "transactionReference": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/baseType"
+                }
+            },
+            "x-go-name": "DummyBankPaymentBaseAPIModel",
+            "example": {
+                "amount": 200,
+                "destinationAccount": {
+                    "accountID": "nareshlocal@kaypay"
+                },
+                "sourceAccount": {
+                    "accountID": "saainithil97@icici"
+                },
+                "transactionReference": "875621444531258946",
+                "type": "UPI"
+            }
+        },
+        "paymentInstrument": {
+            "type": "string",
+            "enum": [
+                "UPI",
+                "CASH",
+                "NEFT",
+                "RTGS",
+                "IMPS",
+                "IFT",
+                "CC",
+                "DC",
+                "Prepaid",
+                "Internet Banking",
+                "Debit Card",
+                "Credit Card",
+                "Cash",
+                "Wallet",
+                "Prepaid Card",
+                "AEPS",
+                "Account Transfer",
+                "Bharat QR",
+                "USSD",
+                "PPI"
+            ]
+        },
+        "paymentLinkStatusResponse": {
+            "type": "object",
+            "properties": {
+                "additionalInfo": {
+                    "type": "object"
+                },
+                "amountPaid": {
+                    "$ref": "#/definitions/amount"
+                },
+                "billerBillID": {
+                    "description": "Unique bill identifier in the biller's system.",
+                    "type": "string"
+                },
+                "campaignID": {
+                    "type": "string",
+                    "decription": "campaign id from biller"
+                },
+                "createdAt": {
+                    "description": "Creation date of the paymentLink in the format \\\"2019-08-01T08:28:12Z\\\".",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "expiresAt": {
+                    "description": "Expiry date of the paymentLink in the format \\\"2019-08-01T08:28:12Z\\\".",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "name": {
+                    "description": "Human-readable name of bill.",
+                    "type": "string"
+                },
+                "payerVpa": {
+                    "description": "Vpa address of a payer",
+                    "type": "string"
+                },
+                "paymentLink": {
+                    "$ref": "#/definitions/vPAPaymentAddress"
+                },
+                "platformBillID": {
+                    "description": "Unique identifier of bill in Setu.",
+                    "type": "string"
+                },
+                "receipt": {
+                    "$ref": "#/definitions/billReceipt"
+                },
+                "status": {
+                    "$ref": "#/definitions/setuBillStatus"
+                },
+                "transactionNote": {
+                    "description": "Used to show a note on payer app",
+                    "type": "string",
+                    "example": "Payment for loan 123"
+                }
+            },
+            "example": {
+                "amountPaid": {
+                    "currencyCode": "INR",
+                    "value": 20000
+                },
+                "billerBillID": "918147077472",
+                "createdAt": "2022-04-18T13:55:00.000Z",
+                "expiresAt": "2022-05-15T12:23:50.000Z",
+                "name": "Setu Payment Links Test",
+                "payerVpa": "saainithil97@icici",
+                "paymentLink": {
+                    "upiID": "nareshlocal@kaypay",
+                    "upiLink": "upi://pay?pa=nareshlocal@kaypay\u0026pn=Setu%20Payment%20Links%20Test\u0026am=200.00\u0026tr=875621444531258946\u0026tn=Payment%20for%20918147077472\u0026cu=INR\u0026mode=04"
+                },
+                "platformBillID": "875621444531258946",
+                "receipt": {
+                    "date": "2022-04-18T13:55:41.000Z",
+                    "id": "2801283953906381"
+                },
+                "status": "PAYMENT_SUCCESSFUL",
+                "transactionNote": "Payment for 918147077472"
+            }
+        },
+        "paymentResponse": {
+            "type": "object",
+            "properties": {
+                "utr": {
+                    "type": "string"
+                }
+            }
+        },
+        "paymentSchemes": {
+            "description": "Payment schemes supported by Setu.",
+            "type": "string",
+            "enum": [
+                "NETBANKING",
+                "AMEX",
+                "DINERS",
+                "DISCOVER",
+                "JCB",
+                "MAESTRO",
+                "MASTERCARD",
+                "RUPAY",
+                "VISA",
+                "OTHER",
+                "NONE"
+            ]
+        },
+        "phone": {
+            "type": "object",
+            "required": [
+                "countryCode",
+                "number"
+            ],
+            "properties": {
+                "countryCode": {
+                    "type": "string"
+                },
+                "extension": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                }
+            }
+        },
+        "platformBill": {
+            "description": "Bill entity data.",
+            "type": "object",
+            "required": [
+                "platformBillID",
+                "name",
+                "paymentAddresses",
+                "platformBillStatus",
+                "deemedBillStatus"
+            ],
+            "allOf": [
+                {
+                    "$ref": "#/definitions/billBase"
+                }
+            ],
+            "properties": {
+                "deemedBillStatus": {
+                    "$ref": "#/definitions/setuBillDeemedStatus"
+                },
+                "name": {
+                    "description": "Human-readable name of bill.",
+                    "type": "string"
+                },
+                "paymentAddresses": {
+                    "description": "Payment addresses such as a VAN or a VPA to which the funds to pay the bill needs to be sent.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/paymentAddress"
+                    }
+                },
+                "platformBillID": {
+                    "description": "Unique identifier of bill in Setu.",
+                    "type": "string"
+                },
+                "platformBillStatus": {
+                    "$ref": "#/definitions/setuBillStatus"
+                },
+                "receipt": {
+                    "$ref": "#/definitions/billReceiptWithStatus"
+                }
+            }
+        },
+        "processingFees": {
+            "description": "Fees involved in processing a particular bill payment / refund.",
+            "type": "object",
+            "required": [
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "charges": {
+                    "description": "Charges applicable for the transaction made.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/charges"
+                    }
+                }
+            }
+        },
+        "productInstance": {
+            "description": "Biller product details such as the ID and Name.",
+            "type": "object",
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "description": "Unique identifier of a biller product instance in Setu.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name of the biller product instance in Setu.",
+                    "type": "string"
+                }
+            }
+        },
+        "receiptFetchStatus": {
+            "description": "Receipt fetch status for a particular biller. Eg. AVAILABLE.",
+            "type": "string",
+            "enum": [
+                "AVAILABLE",
+                "NOT_SUPPORTED",
+                "UNAVAILABLE",
+                "DEEMED"
+            ]
+        },
+        "refundRequestItem": {
+            "type": "object",
+            "required": [
+                "identifier",
+                "identifierType",
+                "refundType"
+            ],
+            "properties": {
+                "deductions": {
+                    "description": "List of accounts to deduct refund from. Required only if original bill had split settlements specified.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/deductionParts"
+                    }
+                },
+                "identifier": {
+                    "description": "Unique identifier value representing the transaction to be refunded",
+                    "type": "string"
+                },
+                "identifierType": {
+                    "$ref": "#/definitions/refundRequestItemIdentifierType"
+                },
+                "refundAmount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "refundType": {
+                    "$ref": "#/definitions/refundRequestItemAmountType"
+                }
+            }
+        },
+        "refundRequestItemAmountType": {
+            "description": "Type of refund. Can be either FULL or PARTIAL. If PARTIAL, refundAmount should also be specified.",
+            "type": "string",
+            "enum": [
+                "FULL",
+                "PARTIAL"
+            ]
+        },
+        "refundRequestItemIdentifierType": {
+            "description": "Type of identifier. Currently, only BILL_ID is supported.",
+            "type": "string",
+            "enum": [
+                "BILL_ID"
+            ]
+        },
+        "refundResponseItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "billID": {
+                    "type": "string"
+                },
+                "deductions": {
+                    "description": "List of accounts to deduct refund from.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/deductionParts"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "initiatedAt": {
+                    "description": "Refund initiation time in the format \\\"2019-08-01T08:28:12Z\\\".",
+                    "type": "string",
+                    "format": "date-time",
+                    "x-nullable": true
+                },
+                "status": {
+                    "type": "string"
+                },
+                "transactionRefID": {
+                    "type": "string"
+                }
+            }
+        },
+        "settlementAggregates": {
+            "description": "Aggregates section for settlement.",
+            "type": "object",
+            "required": [
+                "total",
+                "payment",
+                "refund"
+            ],
+            "properties": {
+                "payment": {
+                    "$ref": "#/definitions/transactionTotal"
+                },
+                "refund": {
+                    "$ref": "#/definitions/transactionTotal"
+                },
+                "total": {
+                    "$ref": "#/definitions/transactionCount"
+                }
+            }
+        },
+        "settlementBase": {
+            "type": "object",
+            "required": [
+                "transactions"
+            ],
+            "properties": {
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/settlementTransaction"
+                    }
+                }
+            },
+            "x-go-name": "DummySettlementBaseAPIModel"
+        },
+        "settlementConfiguration": {
+            "description": "Contains the settlement configuration for the bill.",
+            "type": "object",
+            "required": [
+                "primaryAccount"
+            ],
+            "properties": {
+                "parts": {
+                    "description": "Array of settlement parts which have to be split.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/settlementParts"
+                    }
+                },
+                "primaryAccount": {
+                    "$ref": "#/definitions/splitAccount"
+                }
+            }
+        },
+        "settlementParts": {
+            "description": "Part of the bill which has to be split and settled.",
+            "type": "object",
+            "required": [
+                "account"
+            ],
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/splitAccount"
+                },
+                "remarks": {
+                    "description": "Remarks if any for this split transaction.",
+                    "type": "string"
+                },
+                "split": {
+                    "$ref": "#/definitions/splitDetails"
+                }
+            }
+        },
+        "settlementTransaction": {
+            "type": "object",
+            "required": [
+                "utr"
+            ],
+            "properties": {
+                "utr": {
+                    "type": "string"
+                }
+            }
+        },
+        "setuBillDeemedStatus": {
+            "description": "Current deemed status of bill in Setu.",
+            "type": "string",
+            "enum": [
+                "NOT_DEEMED",
+                "DEEMED",
+                "DEEMED_RETRY_SUCCESSFUL"
+            ]
+        },
+        "setuBillStatus": {
+            "description": "Current status of bill in Setu.",
+            "type": "string",
+            "enum": [
+                "BILL_CREATED",
+                "PAYMENT_SUCCESSFUL",
+                "PAYMENT_FAILED",
+                "CREDIT_RECEIVED",
+                "SETTLEMENT_SUCCESSFUL",
+                "SETTLEMENT_FAILED",
+                "BILL_EXPIRED"
+            ]
+        },
+        "sourceAccount": {
+            "type": "object",
+            "required": [
+                "number",
+                "ifsc"
+            ],
+            "properties": {
+                "ifsc": {
+                    "description": "IFSC code of the source account.",
+                    "type": "string"
+                },
+                "number": {
+                    "description": "Account number of the source account.",
+                    "type": "string"
+                }
+            }
+        },
+        "sourceAccounts": {
+            "description": "List of source accounts that can be used to pay the bill.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/sourceAccount"
+            }
+        },
+        "splitAccount": {
+            "description": "Details of the settlement account to which a split has to be settled.",
+            "type": "object",
+            "required": [
+                "id",
+                "ifsc"
+            ],
+            "properties": {
+                "id": {
+                    "description": "Beneficiary account id as in Setu's biller actor configuration.",
+                    "type": "string"
+                },
+                "ifsc": {
+                    "description": "Beneficiary account IFSC as in Setu's biller actor configuration.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Beneficiary account name as in Setu's biller actor configuration.",
+                    "type": "string"
+                }
+            },
+            "x-nullable": true
+        },
+        "splitDetails": {
+            "description": "Details of split to be processed.",
+            "type": "object",
+            "required": [
+                "value",
+                "unit"
+            ],
+            "properties": {
+                "unit": {
+                    "$ref": "#/definitions/splitUnit"
+                },
+                "value": {
+                    "description": "The value of the split. The value will be an integer in case of `INR` and `BPS`, float in case of `PERCENTAGE`.",
+                    "type": "number"
+                }
+            }
+        },
+        "splitUnit": {
+            "type": "string",
+            "enum": [
+                "BPS",
+                "PERCENTAGE",
+                "INR",
+                "INP"
+            ]
+        },
+        "taxComponent": {
+            "description": "Describes the tax levied on a particular bill. In a given bill, there could be upto three kinds of taxes, bill-level, item-level and fee-level.",
+            "type": "object",
+            "required": [
+                "displayName",
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "computation": {
+                    "$ref": "#/definitions/computation"
+                },
+                "displayName": {
+                    "description": "Display name for the particulr tax component on the payers app.",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "The type of tax component levied. In a given bill, this will be the breakup of the different types of tax applied.",
+                    "type": "string"
+                }
+            }
+        },
+        "transactionAggregate": {
+            "type": "object",
+            "required": [
+                "amount"
+            ],
+            "allOf": [
+                {
+                    "$ref": "#/definitions/transactionCount"
+                }
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                }
+            }
+        },
+        "transactionCount": {
+            "type": "object",
+            "required": [
+                "transactionCount"
+            ],
+            "properties": {
+                "transactionCount": {
+                    "description": "Total number of transactions made in the process.",
+                    "type": "number",
+                    "format": "integer"
+                }
+            }
+        },
+        "transactionTotal": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "$ref": "#/definitions/transactionAggregate"
+                }
+            }
+        },
+        "transactionType": {
+            "description": "Transaction type for a bill.",
+            "type": "string",
+            "enum": [
+                "PAYMENT",
+                "REFUND"
+            ]
+        },
+        "transactions": {
+            "description": "Individual transaction details of the settlement made by the payment processor.",
+            "type": "object",
+            "required": [
+                "utr",
+                "type",
+                "amount",
+                "platformBillID",
+                "instrument"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amount"
+                },
+                "date": {
+                    "description": "Payment date as in the MIS file.",
+                    "type": "string"
+                },
+                "instrument": {
+                    "$ref": "#/definitions/paymentInstrument"
+                },
+                "platformBillID": {
+                    "description": "Unique identifier of bill in Setu.",
+                    "type": "string"
+                },
+                "processingFees": {
+                    "$ref": "#/definitions/processingFees"
+                },
+                "type": {
+                    "$ref": "#/definitions/transactionType"
+                },
+                "utr": {
+                    "description": "Bank UTR for the bill payment/ refund made by/to the customer.",
+                    "type": "string"
+                }
+            }
+        },
+        "updateActor": {
+            "type": "object",
+            "properties": {
+                "configuration": {
+                    "type": "object"
+                },
+                "description": {
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "enableHttpSignature": {
+                    "type": "boolean",
+                    "x-nullable": true
+                },
+                "name": {
+                    "type": "string",
+                    "x-nullable": true
+                }
+            }
+        },
+        "updateActorByIdResponse": {
+            "description": "Details of the updated actor .",
+            "type": "object",
+            "required": [
+                "actor"
+            ],
+            "properties": {
+                "actor": {
+                    "$ref": "#/definitions/actor"
+                }
+            }
+        },
+        "updateApp": {
+            "type": "object",
+            "properties": {
+                "bizRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/upsertBizRule"
+                    }
+                },
+                "description": {
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "name": {
+                    "type": "string",
+                    "x-nullable": true
+                }
+            }
+        },
+        "updateAppByIdResponse": {
+            "description": "Details of the updated app .",
+            "type": "object",
+            "required": [
+                "app"
+            ],
+            "properties": {
+                "app": {
+                    "$ref": "#/definitions/app"
+                }
+            }
+        },
+        "updatePartnerByIdResponse": {
+            "description": "Details of the updated partner .",
+            "type": "object",
+            "required": [
+                "partner"
+            ],
+            "properties": {
+                "partner": {
+                    "$ref": "#/definitions/partner"
+                }
+            }
+        },
+        "updatePartnerRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/address"
+                },
+                "contacts": {
+                    "type": "object",
+                    "required": [
+                        "business"
+                    ],
+                    "properties": {
+                        "business": {
+                            "$ref": "#/definitions/contact"
+                        },
+                        "technical": {
+                            "$ref": "#/definitions/contact"
+                        }
+                    }
+                },
+                "currency": {
+                    "type": "string",
+                    "enum": [
+                        "INR",
+                        "USD"
+                    ]
+                },
+                "description": {
+                    "type": "string"
+                },
+                "displayName": {
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "name": {
+                    "description": "Legal Name",
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "taxIdNum": {
+                    "description": "Tax Identification Number",
+                    "type": "string",
+                    "x-nullable": true
+                }
+            }
+        },
+        "upsertBizRule": {
+            "type": "object",
+            "properties": {
+                "base": {
+                    "$ref": "#/definitions/baseBizRule"
+                },
+                "id": {
+                    "type": "string",
+                    "x-nullable": true
+                }
+            }
+        },
+        "vPAPaymentAddress": {
+            "type": "object",
+            "properties": {
+                "shortURL": {
+                    "description": "Account Number",
+                    "type": "string",
+                    "example": "setu.co/1asd213"
+                },
+                "upiID": {
+                    "description": "UPI identifier",
+                    "type": "string",
+                    "example": "setu-358715582872290627@setubank"
+                },
+                "upiLink": {
+                    "description": "Account Number",
+                    "type": "string",
+                    "example": "upi://pay?pa=setu-358715582872290627@setubank\u0026pn=Setu\u0026am=1\u0026cu=INR"
+                }
+            }
+        },
+        "validationRules": {
+            "description": "Bill validation rules",
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/amountValidation"
+                },
+                "sourceAccounts": {
+                    "$ref": "#/definitions/sourceAccounts"
+                }
+            }
+        },
+        "verifyPaymentAddressRequest": {
+            "type": "object",
+            "required": [
+                "RequestData"
+            ],
+            "properties": {
+                "RequestData": {
+                    "description": "Encrypted request for VPA verification.",
+                    "type": "string"
+                }
+            }
+        },
+        "verifyPaymentAddressResponse": {
+            "type": "object",
+            "required": [
+                "ResponseData"
+            ],
+            "properties": {
+                "ResponseData": {
+                    "description": "Encrypted response for VPA verification request.",
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "description": "Notifications are pushed to `\u003cCallback URL\u003e/api/notifications`. A partner can listen to this endpoint and consume notification requests.\n",
+            "name": "upi-deep-links-events",
+            "x-displayName": "Notifications"
+        },
+        {
+            "name": "upi-deep-links-reports",
+            "x-displayName": "Reports"
+        },
+        {
+            "name": "upi-deep-links-test-integration",
+            "x-displayName": "Testing integration"
+        },
+        {
+            "name": "upi-deep-links",
+            "x-displayName": "APIs to Call"
+        },
+        {
+            "description": "A collection of APIs for billers to implement.",
+            "name": "Billers"
+        },
+        {
+            "description": "A collection of APIs Setu uses to notify developer partners.",
+            "name": "Notifications"
+        }
+    ],
+    "x-tagGroups": [
+        {
+            "name": "UPI Deep Links",
+            "tags": [
+                "upi-deep-links-test-integration",
+                "upi-deep-links-events",
+                "upi-deep-links-reports",
+                "upi-deep-links"
+            ]
+        }
+    ]
+}

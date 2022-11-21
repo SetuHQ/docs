@@ -1,0 +1,330 @@
+---
+sidebar_title: Special cases
+page_title: BBPS - Bill Structure special cases
+order: 1
+visible_in_sidebar: true
+---
+
+## Special cases for Biller categories
+
+Certain biller categories require additional parameters, aside from the usual data points required in a bill to be sent to BBPS.
+
+<hr class="primary" />
+
+### Biller Category—Education
+
+The `customer` object requires some more details to be added when the biller is a school or an university. This is handled through the `additionalInfo` object, that supports custom parameters.
+
+For example, for collecting school or university fees from the student, `customer` could contain details of the student, like so—
+
+<CodeBlockWithCopy language="json">
+    {`{ 
+    "customer" : {
+        "name" : "string", // should be student name
+        "additionalInfo" : {
+            "academicYear"   : "2020-2021",  // school academic year for the fees
+            "course"          : "Class VIII-B",  // student class
+            "enrollmentCode" : "7340-24703M",  // student unique enrolment code
+            "parentName"     : "Asha Dev",  // parent name
+            "schoolName"     : "India Public School",  // school name
+            "schoolAddress"  : "5/3, KG Avenue, 2nd Block, Sector 6, Delhi"  // school address
+        }
+    }
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+<Callout type="warning">
+    Please note that, <code>dueDate</code> is a mandatory field for education
+    category, even though it is optional as per the standard API reference.
+</Callout>
+
+<br />
+
+To know more about how the bill object is structured to support line items for such use cases, see the sample bill below.
+
+<br />
+
+#### Sample bill for education category
+
+Here’s a sample bill for a school wanting to collect tuition, transport and canteen fees for a student on a monthly basis—
+
+<table>
+    <thead>
+        <tr>
+            <td>
+                <b>Monthly charges</b>
+            </td>
+            <td>
+                <b>Amount (₹)</b>
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Tuition</td>
+            <td>15,000</td>
+        </tr>
+        <tr>
+            <td>Transport charges</td>
+            <td>3000</td>
+        </tr>
+        <tr>
+            <td>Canteen charges</td>
+            <td>2000</td>
+        </tr>
+        <tr>
+            <td>Convenience fees</td>
+            <td>30</td>
+        </tr>
+        <tr>
+            <td>
+                <b>Total payable</b>
+            </td>
+            <td>
+                <b>20,030</b>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<br />
+
+In the above bill, we need to process three line items for monthly school payments, one type of fee and one total amount for the entire bill. There are two ways of sharing this information with Setu.
+
+<hr class="tertiary" />
+
+###### Option 1
+
+The line items are constructed using the `items` object, like so—
+
+<CodeBlockWithCopy language="json">
+    {`"items": [
+    {
+        "displayName" : "Tuition",
+        "description" : "Tuition for June",
+        "aggregates"  : {
+            "total"   : {
+                "currencyCode" : "INR",
+                "value"        : 1500000  // in paise
+            }
+        }
+    },
+    {
+        "displayName" : "Transport charges",
+        "description" : "Transport charges for June",
+        "aggregates"  : {
+            "total"   : {
+                "currencyCode" : "INR",
+                "value"        : 300000  // in paise
+            }
+        }
+    }, 
+    {
+        "displayName" : "Canteen charges",
+        "description" : "Canteen charges for June",
+        "aggregates"  : {
+            "total"   : {
+                "currencyCode" : "INR",
+                "value"        : 200000  // in paise
+            }
+        }
+    }
+]`}
+</CodeBlockWithCopy>
+
+<br />
+
+And for the processing fees included, we use the `fees` object—
+
+<CodeBlockWithCopy language="json">
+    {`"fees": [
+    
+    {
+        "displayName" : "Payment mode fees",
+        "description" : "Online processing fees",
+        "aggregates"  : {
+            "total"   : {
+                "currencyCode" : "INR",
+                "value"        : 3000  // in paise
+            }
+        }
+    }
+]`}
+</CodeBlockWithCopy>
+
+<br />
+
+Now, filling the other attributes and putting it all together, the bill object begins to look something like this—
+
+<CodeBlockWithCopy language="json">
+    {`//  ENTIRE BILL OBJECT
+{
+    "billerBillID"    : "CXR5JEQO8K",
+    "recurrence"      : "ONE_TIME",
+    "generatedOn"     : "2020-07-27T12:56:39Z",
+    "dueDate"         : "2020-08-26T12:56:39Z",
+    "amountExactness" : "EXACT",
+    "fees" : [
+        <Convenience fees object>
+    ],
+    "items" : [
+        <Monthly tuition object> //shown above,
+        <Monthly transport object> //shown above,
+        <Monthly canteen object> //shown above
+    ],
+    "customerAccount" : {
+        "id" : "asha.dev@gmail.com"
+    },
+    "aggregates"      : {
+        "subtotal" : {
+            "amount" : {
+                "value"       : 2000000  // in paise
+            },
+            "displayName" : "EMI amount"
+        },
+        "total": {
+            "amount" : {
+                "value"       : 2003000  // in paise
+            },
+            "displayName" : "Total payable amount"
+        }
+    }
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+Wrap the bill object in the following pattern, and send it across to us as part of the <a href="../api-reference#/category~APIs_to_Implement/operation~fetchCustomerBills" target="_blank"><code>fetchCustomerBills</code>↗</a> response to Setu. Be sure to include details in the `additionalInfo` array required for education category in the `data.customer` object.
+
+<CodeBlockWithCopy language="json">
+    {`//  fetchCustomerBills API response
+{
+    "status"  : 200,
+    "success" : true,
+    "data"    : {
+        "customer" : {
+            "name" : "Shailesh Yadav", // student name
+            "additionalInfo" : {
+                "academicYear"   : "2020-2021",  // school academic year for the fees
+                "course"         : "Class VIII-B",  // student class
+                "enrollmentCode" : "7340-24703M",  // student unique enrolment code
+                "parentName"     : "Asha Dev",  // parent name
+                "schoolName"     : "India Public School",  // school name
+                "schoolAddress"  : "5/3, KG Avenue, 2nd Block, Sector 6, Delhi"  // school address
+            }
+        },
+        "billDetails" : {
+            "billFetchStatus" : "ENUM",
+            "bills" : [
+                <bill object>
+            ]
+        }
+    }
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+**Please note that**, for a biller—a school or university in this case—to be able to display a line by line break up of tuition fees, transport fees, mess fees etc, the biller has to get all line items registered with Setu to display the fees break up properly. [Raise a ticket](https://support.setu.co/support/tickets/new) to get support.
+
+<hr class="tertiary" />
+
+###### Option 2
+
+We recommend this method since this gives you the flexibility to change the bill breakup headers dynamically.
+
+The line items are shared using a parameter named `URL` in the `customer.additionalInfo` object, like so—
+
+<CodeBlockWithCopy language="json">
+    {`{
+    "customer" : {
+        "name" : "string", // should be student name
+        "additionalInfo" : {
+            "academicYear"   : "2020-2021",  // school academic year for the fees
+            "course"          : "Class VIII-B",  // student class
+            "enrollmentCode" : "7340-24703M",  // student unique enrolment code
+            "parentName"     : "Asha Dev",  // parent name
+            "schoolName"     : "India Public School",  // school name
+            "schoolAddress"  : "5/3, KG Avenue, 2nd Block, Sector 6, Delhi",  // school address
+            "URL"            : "https://some.url/with/bill/details"  // bill breakup URL
+        }
+    }
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+And the customer facing UI would contain some simple HTML code to display the breakup of the bill, like so—
+
+<CodeBlockWithCopy language="html">
+    {`<table>
+    <thead>
+        <tr>
+            <td>Monthly charges</td>
+            <td>Amount (₹)</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Tuition</td>
+            <td>15,000</td>
+        </tr>
+        <tr>
+            <td>Transport charges</td>
+            <td>3000</td>
+        </tr>
+        <tr>
+            <td>Canteen charges</td>
+            <td>2000</td>
+        </tr>
+        <tr>
+            <td>Convenience fees</td>
+            <td>30</td>
+        </tr>
+        <tr >
+            <td>
+                Total payable
+            </td>
+            <td>
+                20,030
+            </td>
+        </tr>
+    </tbody>
+</table>`}
+</CodeBlockWithCopy>
+
+<br />
+
+Wrap the customer object with other details like the bill object in the following pattern, and send it across to us as part of the <a href="../api-reference#/category~APIs_to_Implement/operation~fetchCustomerBills" target="_blank"><code>fetchCustomerBills</code>↗</a> response to Setu. Be sure to include details in the `additionalInfo` array required for education category in the `data.customer` object.
+
+<CodeBlockWithCopy language="json">
+    {`//  fetchCustomerBills API response
+{
+    "status"  : 200,
+    "success" : true,
+    "data"    : {
+        "customer" : {
+            "name" : "Shailesh Dev", // student name
+            "additionalInfo" : {
+                "Academic Year"   : "2020-2021",  
+                "Course"          : "Class VIII-B",  
+                "Enrollment Code" : "7340-24703M",  
+                "Parent Name"     : "Asha Dev",  
+                "School Name"     : "India Public School",  
+                "School Address"  : "5/3, KG Avenue, 2nd Block, Sector 6, Delhi" ,
+                "URL"             : "https://some.url/with/bill/details"
+            }
+        },
+        "billDetails" : {
+            "billFetchStatus" : "ENUM",
+            "bills" : [
+                <bill object>
+            ]
+        }
+    }
+}`}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />

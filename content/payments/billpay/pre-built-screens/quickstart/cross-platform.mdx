@@ -1,0 +1,47 @@
+---
+sidebar_title: Cross platform
+page_title: BBPS Billpay cross platform integration
+order: 4
+visible_in_sidebar: true
+---
+
+## Cross platform implementation
+
+In case you are using a cross platform solution—like Flutter, React Native, Ionic—for your Android and iOS apps, you can refer to the code snippets provided below. The integration process remains the same, but changes as per the language you use.
+
+The code snippets provided below deal specifically with how the web view is loaded and dismissed within your Android/iOS app. Usage of the Create Link API will remain unaffected.
+
+<hr class="primary" />
+
+### Flutter
+
+<CodeBlockWithCopy language="null">
+{`import 'package:url_launcher/url_launcher.dart'; //Package used for handling app links
+import 'package:webview_flutter/webview_flutter.dart'; //Package for webViews in android and iOS
+_launchAppLink(String url) async {
+   try {
+        launch(url);
+    } catch (e) {
+        alertDialog(text: 'App not found', context: context);
+        throw 'Could not launch $url';
+        }
+    }
+WebViewController controllerGlobal;
+final webView = WebView(
+  initialUrl: _url,
+  javascriptMode: JavascriptMode.unrestricted,
+  navigationDelegate: (NavigationRequest request) {
+      //Ref: https://bills-sandbox.setu.co/docs/android-simple
+      if (!request.url.contains('.setu.co')) {
+          print('blocking navigation to $request}');
+          _launchAppLink(request.url); //Declared above
+          return NavigationDecision.prevent;
+      }
+      print('allowing navigation to $request');
+      return NavigationDecision.navigate;
+  },
+);`}
+
+</CodeBlockWithCopy>
+
+<WasPageHelpful />

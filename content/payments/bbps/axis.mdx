@@ -1,0 +1,181 @@
+---
+sidebar_title: Axis BBPS
+page_title: Axis BBPS API Approach Document
+order: 10
+visible_in_sidebar: false
+---
+
+# Axis BBPS API Approach Document
+
+## Loan Category
+
+2 APIs to be shared :
+
+1. Bill Fetch API
+2. Payment Posting API
+
+### Authentication Measures
+
+**Note: This section is not mandatory. This is just a mechanism to enhance API security.**
+
+This is common to both APIs, the biller's team can include an Authentication mechanism to make sure only validated requests are entertained. We support a wide variety of authentication schemes including `Basic Auth`, `JWT`, `OAuth` etc. These auth tokens are included in the headers of every request to validate it.
+
+We also support encrypted requests using Symmetric and Asymmetric Encryption algorithms. Most common schemes include `AES` and `RSA` encryption. If encryption is implemented it is recommended to share the encryption logic while sharing the API spec for us to implement on our stack.
+
+Another measure that can be taken is `IP Whitelisting`. We can hand over specific IPs from which we make request to the biller system to make sure only validated requests are entertained.
+
+**HTTPS is mandatory for Prod deployment.**
+
+### Bill Fetch API
+
+This is sent by Setu system to biller system. Biller needs to handle 4 scenarios as given below :
+
+1. Successful Fetch
+2. Customer Not Found / Invalid identifier
+3. No Amount Due / Payment already made
+4. API Error / All other error scenarios
+
+For loan cateogory some mandatory parameters include :
+
+1. Customer Name
+2. Amount
+3. Bill Date
+4. Due Date
+5. Bill Period
+
+Other parameters can also be added as `Additional Info`
+eg. `Interest`, `Penalty` etc.
+
+These parameters listed above must be a part of a successful fetch response (excluding additional info).
+
+##### Sample Request
+
+Request is made based on unique identifier selected by biller, in this case it can be `Loan Number`.
+
+This is a sample `POST` request to some endpoint given by the biller's technical team. This can also be a simple `GET` request with `loan_number` as a Parameter.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "loan_number": "123456789",
+    // any other identifier can be added here
+}`}
+</CodeBlockWithCopy>
+
+**Note: loan_number is as per business use case and can be changed**
+
+##### Success Response
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "SUCCESS",
+    "errorCode" : "00",
+    "customerName": "Ashok Kumar",
+    "amountDue": "1290.20",
+    "billDate" : "2021-07-15",
+    "dueDate" : "2021-07-30",
+    "billNumber" : "TUVW1234",
+    "billPeriod" : "MONTHLY",
+    "additionalInfo":{
+        "interest": "value1", // Optional
+        "penalty": "value2" // Optional
+         // ... MAX 4
+    }
+}`}
+</CodeBlockWithCopy>
+
+Points to consider :
+
+1. billDate must not be future date ( wrt date of fetching the bill ) and must always be less then or equal to dueDate
+2. Max 4 additional info parameters are allowed
+
+##### Customer Not Found
+
+Triggered when invalid credentials are entered. In this case when incorrect `loan_number` is entered by customer.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "FAILURE",
+    "errorCode" : "01"
+}`}
+</CodeBlockWithCopy>
+
+##### No Amount Due
+
+Triggered when payment has already been made for this particular set of identifiers.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "FAILURE",
+    "errorCode" : "02"
+}`}
+</CodeBlockWithCopy>
+
+##### API Error
+
+Triggered when any other issue occurs while making a request.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "FAILURE",
+    "errorCode" : "03"
+}`}
+</CodeBlockWithCopy>
+
+### Payment Posting API
+
+This API is used to indicate that payment is received for given details.
+
+3 cases are to be handled :
+
+1. Successful posting
+2. Failure
+3. Duplicate Payment
+
+##### Request
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "loan_number": "123456789",
+    "amountPaid": "1290.20",
+    "transactionId": "AX09812J812", // BBPS Transaction Reference ID
+    "paymentMode": "UPI", // optional
+    "paymentDate" : "2021-07-17" // optional,
+    "billNumber" : "TUVW1234"
+    // any other information required for successful posting
+}`}
+</CodeBlockWithCopy>
+
+**Note: Any other details that are required in this API need to be present as part of the Fetch API.**
+
+##### Successful Posting
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "SUCCESS",
+    "acknowledgementId": "1AJI1344"
+}`}
+</CodeBlockWithCopy>
+
+##### Failure
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "FAILURE",
+    "acknowledgementId": ""
+}`}
+</CodeBlockWithCopy>
+
+##### Duplicate Payment
+
+When payment had been posted successfully but we got a `Failure` response for some reason from the API and retry this payment again.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "DUPLICATE",
+    "acknowledgementId": ""
+}`}
+</CodeBlockWithCopy>
+
+Difference between `Failure` and `Duplicate` is maintained since in case of `Failure` Axis or even Setu will retry payment in batches until it is accepted. Whereas in case of `Duplicate` there are no retries.
+
+Duplicacy check can be added on the basis of the `BBPS Transaction Reference ID`.

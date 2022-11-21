@@ -1,0 +1,875 @@
+---
+sidebar_title: API Integration
+page_title: Offline Aadhar API integration
+order: 3
+visible_in_sidebar: true
+---
+
+## API integration
+
+Setu’s API solution can be used to complete a customer’s KYC with offline Aadhaar in real-time—with your own screens on your app or website. With this, you will get a downloadable, locked XML file with Aadhaar information from your customers.
+
+The following APIs are required for enabling this flow—
+
+- **Create OKYC request**—Create OKYC request for your customer. You will get a unique `id` in the response which can be used to track this particular request.
+- **Initiate OKYC Request**—Initialise the OKYC request for your customer with the previously returned request `id` and receive a `base64` encoded `captchaImage` from Setu. Once you have called this API, you can redirect your customer to your OKYC screens, to collect Aadhaar number and captcha from your customer.
+- **Verify OKYC Request**—Share the `aadhaarNumber` and `captchaCode`, collected from your customer, with Setu. Next, redirect your customer to a screen to collect OTP sent to your customer’s Aadhaar linked mobile number. Also request your customer to enter a 4 digit share code—this is the code that will be used to unlock you customer’s fetch Aadhaar XML file.
+- **Complete OKYC Request**—Share the collected `otp` and `shareCode` to complete verification process. Next, you can call the **Get OKYC request status** API. Once the OKYC request has been processed successfully you wll get customer details from the Aadhaar and the XML file link in the response.
+- **Get OKYC request status**—Get status of customer verification by providing the request `id` and optionally, the `shareCode`.
+
+Additionally, here is the information you would need for calling these APIs—
+
+- Sandbox URL—`https://dg-sandbox.setu.co`
+- Production URL—`https://dg.setu.co`
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+
+<hr class="primary" />
+
+### Create OKYC request
+
+Call this API to create a unique request to get your customer started on the OKYC journey.
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "201",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Your request has been
+                processed successfully and a new OKYC request has been created.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                Use the request <code>id</code> in this response for all
+                subsequent API calls.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "id": "7097e53a-ba29-48a2-983d-878433b4f33e", 
+  "validUpto": "Wed, 23 Jun 2021 19:33:55 GMT", 
+  "status": "incomplete" 
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "500",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Setu has
+                failed to process your request due to some error in code or an
+                unreachable database; or because authentication services are
+                down.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "internal_server_error", 
+  "detail": "Internal Server Error", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    ></Tabs>
+  </Portion>
+</Row>
+
+<hr class="primary" />
+
+### Initiate OKYC request
+
+Call this API to initiate your customer’s OKYC journey. Pass the previously shared request `id` in the API call.
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Your request has been processed successfully.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/initiate/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                As part of the response, you will receive a <code>captchaImage</code> that is <code>base-64</code> encoded. This image data is passed on to you by Setu, after we receive it from UIDAI. You would need to convert this to an image and display it on subsequent screens to let your customer enter text from the captcha.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{  
+   "captchaImage": "base 64 Image data", 
+   "id": "7097e53a-ba29-48a2-983d-878433b4f33e", 
+   "captchaRetriesRemaining": 4 
+}  `}
+              </CodeBlockWithCopy>
+              <p><code>captchaRetriesRemaining</code> indicates the number of times you can call this API with the same request <code>id</code> to generate a new captcha.</p>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INVALID SEQUENCE</Badge> This API has been called after the <code>status</code> associated with request <code>id</code> is <code>complete</code>, i.e, this request has already been completed.
+                <br /><br/>
+This also means that the Aadhaar number provided with this request id is already processed and is confirmed as either verified or incorrect. You should instead call the Get OKYC request status API to proceed.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/initiate/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "invalid_sequence", 
+  "detail": "Invalid request order", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "429",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">EXCEEDED CAPTCHA REQUESTS</Badge> There have been too many captcha requests for a particular request <code>id</code>.
+                
+              </p>
+              <Callout type="warning">
+                This API is called to get a new captcha, in case a customer enters an incorrect one. By default, you are allowed to fetch captcha for a request <code>id</code> upto 5 times, including the first captcha fetched.
+              </Callout>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/initiate/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "exceeded_captcha_requests", 
+  "detail": "Exceeded captcha requests", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "404",
+          content: (
+              <>
+              <p>
+                <Badge type="failure">REQUEST NOT FOUND</Badge> The request <code>id</code> provided by you was not found—it is either incorrect or has expired, i.e, is past the time of the <code>validUpto</code> time in the <strong>Create OKYC request</strong> API’s response. Create a fresh request to do KYC for the same customer.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "request_not_found", 
+  "detail": "Request not found", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "5",
+          label: "500",
+          content: (
+              <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Setu’s system has failed to process your request due to some error in code or an unreachable database; or because authentication services are down.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/initiate/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "internal_server_error", 
+  "detail": "Internal Server Error", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+}
+]} ></Tabs>
+
+  </Portion>
+</Row>
+
+<hr class="primary" />
+
+### Verify OKYC request
+
+Call this API once you have collected the following details from your customer—
+
+- `aadhaarNumber` —This is not saved/stored by Setu, but is passed on to UIDAI to initiate sending an OTP to your customer’s Aadhaar linked mobile number.
+- `captchaCode`—An encoded captcha image is provided to you by Setu, as received from UIDAI, in the **_Initiate OKYC request_** API response. You would need to convert this to an image and display it to your customer, wherein they would enter the text associated with the captcha. A correct captcha response is expected to proceed to the next API call.
+
+<Callout type="tip">
+  For testing this API on Sandbox, use 999999990019 as the Aadhaar number for
+  success and 773032249986 for an Aadhaar that does not have a linked mobile
+  number. Any other value for Aadhaar will be considered invalid. Use 2GAD0 for
+  valid captcha and any other value for invalid.
+</Callout>
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">OTP SENT</Badge> The request has a valid OKYC request <code>id</code> and correct <code>captchaCode</code>. Your customer has successfully received an OTP.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/verify/ 
+ 
+{  
+   "aadhaarNumber": "aadhaarNumber", 
+   "captchaCode": "captchaCode" 
+}  `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "code": "otp_sent", 
+    "message": "OTP sent to your registered mobile number." 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INVALID CAPTCHA</Badge> The captcha entered by your user in invalid.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/verify/ 
+ 
+{  
+   "aadhaarNumber": "aadhaarNumber", 
+   "captchaCode": "captchaCode" 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "invalid_captcha_entered", 
+  "detail": "Invalid captcha entered", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+              <p>If an incorrect captcha text is filled in by your customer, they would need to get a new captcha and try again. You would need to call the Initiate OKYC request API again to get a fresh captcha image to display it to your customer.</p>
+              <Callout type="warning">
+                  By default, you are allowed to fetch captcha for a request <code>id</code> upto 5 times, including the first captcha that was fetched.
+              </Callout>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INVALID SEQUENCE</Badge> This API has been called in incorrect sequence, either—
+                <ul><li><em><strong>Before</strong></em> calling the <strong>Initiate OKYC request</strong> API with this request <code>id</code> . Call the <strong>Initiate OKYC request</strong> API to proceed.</li><li>Or <em><strong>after</strong></em> the <code>status</code> associated with request <code>id</code> is <code>complete</code>, i.e, this request has already been completed. This also means that the Aadhaar number provided with this request <code>id</code> is already processed and is confirmed as either verified or incorrect.  You should instead call the <strong>Get OKYC request status</strong> API to proceed.</li></ul>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/verify/ 
+ 
+{  
+   "aadhaarNumber": "aadhaarNumber", 
+   "captchaCode": "captchaCode" 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "invalid_sequence", 
+  "detail": "Invalid request order", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "404",
+          content: (
+              <>
+              <p>
+                <Badge type="failure">REQUEST NOT FOUND</Badge> The request <code>id</code> provided by you was not found—it is either incorrect or has expired, i.e, is past the time of the <code>validUpto</code> time in the <strong>Create OKYC request</strong> API’s response. Create a fresh request to do KYC for the same customer.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/verify/ 
+ 
+{  
+   "aadhaarNumber": "aadhaarNumber", 
+   "captchaCode":  "captchaCode" 
+}  `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{{  
+  "code": "request_not_found", 
+  "detail": "Request not found", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "5",
+          label: "500",
+          content: (
+              <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Setu’s system has failed to process your request due to some error in code or an unreachable database; or because authentication services are down.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/verify/ 
+ 
+{  
+   "aadhaarNumber": "aadhaarNumber", 
+   "captchaCode": "captchaCode" 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "internal_server_error", 
+  "detail": "Internal Server Error", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+}
+]} ></Tabs>
+
+  </Portion>
+</Row>
+
+<hr className="primary" />
+
+### Complete OKYC request
+
+Call this API once you have collected the following details from your customer—
+
+- `otp` —This should be filled in by the customer, who would have received an OTP from UIDAI, on their Aadhaar linked mobile number.
+- `shareCode` is a 4 digit pin set by the customer and serves as the password to unlock the contents of the XML file at a later stage.
+
+<Callout type="tip">
+  Before calling the API, you may want to save the <code>shareCode</code> on
+  your end, as Setu will not store it and will simply pass on the value you
+  provide to UIDAI.
+</Callout>
+
+<hr class="tertiary" />
+
+This API returns the unwrapped Aadhaar response, as well as a link to the XML, if the `otp` is correct. If `otp` is incorrect, the OKYC `status` remains `incomplete`. To test for different scenarios, use the following `otp` values on Sandbox—
+
+- Use 123456 for a valid OTP.
+- Use 123457 for OTP to mimic 1st failed attempt.
+- Use 123458 for OTP to mimic 2nd failed attempt.
+- Use 123459 for OTP to mimic failed attempts limit exceeded.
+- Anything aside from these values returns an error description as a generic “error”, if the upstream service returns an error.
+
+You may use any 4 digit value for the `shareCode`, when testing on Sandbox.
+
+<Callout type="warning">
+  Note that the error description will always be “Invalid OTP”. We are working
+  on more appropriate descriptions, and will release them soon.
+</Callout>
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Your request has a valid OKYC request <code>id</code> and correct <code>otp</code> as per UIDAI. Additionally, it has the correct shareCode that was previously set by your customer.
+              </p>
+              <Callout type="warning">In the event that the <code>otp</code> is incorrect, you would need to redirect your customer to the screen you use to collect OTP. Your customer can retry entering the same OTP up to <strong>3 times</strong>.
+<br/><br/>
+You may also let your customer receive a new OTP by calling the <strong>Verify OKYC request</strong> API again. The old OTP will be void after new OTP is generated. Captcha, since already verified, will be honoured still and you needn’t fetch a fresh captcha from Setu to display to your customer.</Callout>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>If you pass the correct value of the <code>shareCode</code> to Setu, and if the <code>status</code> of the OKYC request is <code>complete</code>, Setu will respond with details from your customer’s Aadhaar XML file.</p>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/complete/ 
+ 
+{  
+   "otp": "132347", 
+   "shareCode": "1234" 
+}  
+ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>If the value of the <code>shareCode</code> is incorrect, the <code>status</code> associated with this OKYC request <code>id</code> will remain in <code>incomplete</code> state. Please retry the API to move the <code>status</code> to <code>complete</code>.</p>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+  "aadhaar": { 
+    "address": { 
+      "careOf": "S/O: Gurjar Pradeep", 
+      "country": "India", 
+      "district": "Bangalore", 
+      "house": "# 90 1 Cross", 
+      "landmark": "Near Talkies", 
+      "locality": "Nagarabhavi", 
+      "pin": "560072", 
+      "postOffice": "Nagarbhavi", 
+      "state": "Karnataka", 
+      "street": "Nagarbhavi 1st Main Road", 
+      "subDistrict": "Bangalore North", 
+      "vtc": "Bangalore North" 
+    }, 
+    "dateOfBirth": "23-05-1990", 
+    "email": "550fa5fd91eee3f29f6361a8c89aa9713d4d38811d1a5", 
+    "gender": "M", 
+    "generatedAt": "20210419145604802", 
+    "maskedNumber": "xxxx-xxxx-8832", 
+    "name": "Jignesh Gurjar", 
+    "phone": "09c91184c1d610282d661dd63d257e3b44446853fb1388c9d5b", 
+    "photo": "/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKD==", 
+    "verified": { 
+      "email": false, 
+      "phone": false, 
+      "signature": true 
+    }, 
+    "xml": { 
+      "fileUrl": "https://setus3linkgoeshere.com/", 
+      "validUntil": "Wed, 23 Jun 2021 19:33:55 GMT", 
+      "shareCode": "1234" 
+    } 
+  }, 
+  "status": "complete", 
+  "id": "7097e53a-ba29-48a2-983d-878433b4f33e" 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INVALID SEQUENCE</Badge> This API has been called in incorrect sequence, either—
+                <ul><li><em><strong>Before</strong></em> calling the <strong>Initiate OKYC request</strong> API with this request <code>id</code> . Call the <strong>Initiate OKYC request</strong> API to proceed.</li><li>Or <em><strong>after</strong></em> the <code>status</code> associated with request <code>id</code> is <code>complete</code>, i.e, this request has already been completed. This also means that the Aadhaar number provided with this request <code>id</code> is already processed and is confirmed as either verified or incorrect.  You should instead call the <strong>Get OKYC request status</strong> API to proceed.</li></ul>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/complete/ 
+{  
+   "otp": "132347", 
+   "shareCode": "1234" 
+}  `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "invalid_sequence", 
+  "detail": "Invalid request order", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "404",
+          content: (
+              <>
+              <p>
+                <Badge type="failure">REQUEST NOT FOUND</Badge> The request <code>id</code> provided by you was not found—it is either incorrect or has expired, i.e, is past the time of the <code>validUpto</code> time in the <strong>Create OKYC request</strong> API’s response. Create a fresh request to do KYC for the same customer.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/complete/ 
+{  
+   "otp": "132347", 
+   "shareCode": "1234" 
+}  `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{{  
+  "code": "request_not_found", 
+  "detail": "Request not found", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "500",
+          content: (
+              <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Setu’s system has failed to process your request due to some error in code or an unreachable database; or because authentication services are down.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/:requestId/complete/ 
+{  
+   "otp": "132347", 
+   "shareCode": "1234" 
+}  `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "internal_server_error", 
+  "detail": "Internal Server Error", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+}
+]} ></Tabs>
+
+  </Portion>
+</Row>
+
+<hr class="primary" />
+
+### Get OKYC request status
+
+Call this API to view status of an OKYC journey that you initiated with a customer.
+
+When the `status` of the OKYC request `id` is `complete`, this API returns—
+
+- Aadhaar details in json, if a correct `shareCode` is passed.
+- An error, if an incorrect `shareCode` is passed.
+- A link to the zip/xml aadhaar details, if no `shareCode` is passed.
+
+<Callout type="warning">
+  If the request <code>status</code> is <code>incomplete</code>, call the{" "}
+  <strong>Complete OKYC request</strong> API with a correct <code>otp</code>{" "}
+  input to mark request <code>status</code> as <code>complete</code>.
+</Callout>
+
+<br />
+
+<Callout type="tip">
+  You can call this API whenever you need to check for the <code>status</code>{" "}
+  associated with a particular request <code>id</code>.
+</Callout>
+
+<br />
+
+Possible values for `status`, received as part of the response—
+
+- When `complete`, KYC is complete for a customer. If you provide a `shareCode` in the API request, you will get all customer details from the Aadhaar XML file.
+- When `incomplete`, you can check for KYC completion after some time.
+- In case the request has `expired`, your will get a `404` error code.
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">WITH SHARE CODE</Badge> Your request has a
+                valid OKYC request <code>id</code> and 4-digit{" "}
+                <code>shareCode</code>.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/:shareCode/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                When <code>status</code> is <code>complete</code>, you will get
+                all customer KYC details included in the XML, and the URL for
+                the zip file.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+  "aadhaar": { 
+        "address": { 
+              "careOf": "S/O: Gurjar Pradeep", 
+              "country": "India", 
+              "district": "Bangalore", 
+              "house": "# 90 1 Cross", 
+              "landmark": "Near Talkies", 
+              "locality": "Nagarabhavi", 
+              "pin": "560072", 
+              "postOffice": "Nagarbhavi", 
+              "state": "Karnataka", 
+              "street": "Nagarbhavi 1st Main Road", 
+              "subDistrict": "Bangalore North", 
+              "vtc": "Bangalore North" 
+        }, 
+        "dateOfBirth": "23-05-1990", 
+        "email": "550fa5fd91eee3f29f6361a8c89aa9713d4d38811d1a5", 
+        "gender": "M", 
+        "generatedAt": "20210419145604802", 
+        "maskedNumber": "xxxx-xxxx-8832", 
+        "name": "Jignesh Gurjar", 
+        "phone": "09c91184c1d610282d661dd63d257e3b44446853fb1388c9d5b", 
+        "photo": "/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKD==", 
+        "verified": { 
+              "email": false, 
+              "phone": false, 
+              "signature": true 
+        }, 
+        "xml": { 
+            "fileUrl": "https://dg-esign-uat.s3.amazonaws.com/testFolder/sample.zip", 
+            "shareCode": "1111", 
+            "validUntil": "Tue, 27 Jul 2021 12:16:27 GMT" 
+       }  
+      }, 
+      "status": "complete", 
+      "id": "7097e53a-ba29-48a2-983d-878433b4f33e" 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">WITHOUT SHARE CODE</Badge> Your request
+                has a valid OKYC request <code>id</code>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                When <code>status</code> is <code>complete</code>, you will get
+                the URL for the zip file. You can use the share code to decrypt
+                the zip file and access the Aadhaar XML file.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "aadhaar": { 
+        "xml": { 
+            "fileUrl": "https://setus3linkgoeshere.com/", 
+            "validUntil": "Wed, 23 Jun 2021 19:33:55 GMT" 
+        } 
+    }, 
+    "status": "complete", 
+    "id": "7097e53a-ba29-48a2-983d-878433b4f33e" 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">INCOMPLETE</Badge>  Your request has been processed successfuly, but the <code>status</code> associated with this OKYC request <code>id</code> is <code>incomplete</code>.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "id": "7097e53a-ba29-48a2-983d-878433b4f33e", 
+    "status": "incomplete", 
+    "validUpto": "Fri, 10 Sep 2021 20:11:17 GMT" 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">UPSTREAM SERVICE DOWN</Badge> Setu partners with other companies to provide data blocks to you. If you get this error, it means that our partner’s service is down. Please retry in some time.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+  "error": { 
+    "code": "upstream_service_down", 
+    "detail": "Upstream service is down", 
+    "traceID": "" // unique identifier for this error  
+  }, 
+  "id": "7097e53a-ba29-48a2-983d-878433b4f33e" 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "404",
+          content: (
+              <>
+              <p>
+                <Badge type="failure">EXPIRED REQEUST ID</Badge> Setu has processed your request successfully. However, the status of the provided request <code>id</code> is <code>expired</code>, ie, is past the time of the provided <code>validUpto</code> time. You would need to create a fresh request to do KYC for the same customer.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>You will get <code>status</code> as <code>expired</code>.</p>
+              <CodeBlockWithCopy language="json">
+                {`{{  
+  "code": "request_not_found", 
+  "detail": "Request not found.", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "5",
+          label: "500",
+          content: (
+              <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Setu’s system has failed to process your request due to some error in code or an unreachable database; or because authentication services are down.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/okyc/:requestId/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
+  "code": "internal_server_error", 
+  "detail": "Internal Server Error", 
+  "traceId": "" // unique identifier for this error   
+}  `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+}
+]} ></Tabs>
+
+  </Portion>
+</Row>
+
+<WasPageHelpful />

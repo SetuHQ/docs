@@ -1,0 +1,226 @@
+---
+sidebar_title: Quickstart
+page_title: PAN verification quickstart
+order: 0
+visible_in_sidebar: true
+---
+
+## PAN API Quickstart
+
+### What is Setu PAN API?
+
+Setu PAN API allows you to use just one API to verify your customer’s PAN details. We directly connect with NSDL, to maintain the best uptimes.
+
+### What can I do with this product?
+
+Use our lightweight PAN API to verify your customer, with their consent—to check identity during onboarding, enable other financial products or to enable income tax filing/verification.
+
+Here’s a quick overview of the PAN API. Additionally, here are the URLs you would need for this API—
+
+- Sandbox—`https://dg-sandbox.setu.co`
+- Production—`https://dg.setu.co`
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+
+<hr className="primary" />
+
+### Verify PAN
+
+Call this API to verify a PAN provided by your customer. A quick explanation of the request params—
+
+- `pan` is the PAN value. It may belong to different categories like _Person, Company, Trust, Goverment, Firm,_ etc.
+- `consent` indicates if you have collected consent from your customer. To get a successful verification, it must contain `Y` or `y`.
+- `reason` is the explanation of why you are requesting for PAN from your customer. It should be explained in 20 characters or more.
+
+<Callout type="tip">
+  While the implementation of <code>consent</code> and <code>reason</code>{" "}
+  cannot be enforced by Setu, we recommend collecting explicit consent from your
+  customers and also explaining to your customers the reason why you are
+  verifying their PAN.
+</Callout>
+
+<br />
+
+While testing on Sandbox, you may use the following sample values—
+
+- Use ABCDE1234A for a valid PAN
+- Use ABCDE1234B for an invalid PAN, i.e, a PAN number has been found but is invalid. A PAN is considered invalid by NSDL for different reasons. For e.g, if it is a blacklisted one, or maybe because it is not linked to an Aadhaar card.
+- If you use any other values for `pan`, you will get a 404 PAN not found error.
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "200",
+      content: (
+        <>
+          <p>
+            <Badge type="success">SUCCESS</Badge> Your request has a valid{" "}
+            <code>pan</code> and Setu has processed your request successfully.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST  /api/verify/pan 
+ 
+{ 
+  "pan": "ABCDE1234A",  
+  "consent": "Y" , 
+  "reason": "Reason for verifying PAN set by the developer"  
+}   `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{ 
+  "data": { 
+    "category": "Individual", 
+    "full_name": "John Doe" 
+  }, 
+  "message": "PAN is valid", 
+  "verification": "success" 
+}    `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "200",
+      content: (
+        <>
+          <p>
+            <Badge type="success">SUCCESS</Badge> Setu has processed your
+            request successfully, but the request has an invalid{" "}
+            <code>pan</code>
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST  /api/verify/pan 
+ 
+{ 
+  "pan": "ABCDE1234AZZ",  
+  "consent": "Y" , 
+  "reason": "Reason for verifying PAN set by the developer"  
+}   `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{ 
+  "verification": "failed", 
+  "message": "PAN is invalid" 
+}    `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "3",
+      label: "400",
+      content: (
+        <>
+          <p>
+            <Badge type="failure">BAD REQUEST</Badge> Your request does not have{" "}
+            <code>consent</code> recorded as yes, from your customer’s end. This
+            is indicated by <code>y</code> or <code>Y</code> against the{" "}
+            <code>consent</code> param.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST  /api/verify/pan 
+ 
+{ 
+  "pan": "ABCDE1234A",  
+  "consent": "N" , 
+  "reason": "Reason for verifying PAN set by the developer"  
+}   `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{   
+    "error": { 
+    "code": "consent_not_given", 
+    "detail": "Consent is required and should be Y/y.", 
+    "traceId": "" // unique identifier for this error  
+  } 
+}    `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "4",
+      label: "400",
+      content: (
+        <>
+          <p>
+            <Badge type="failure">BAD REQUEST</Badge> The <code>reason</code>{" "}
+            specified for verifying PAN details is not sufficiently long—it
+            should be greater than 20 characters.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST  /api/verify/pan 
+ 
+{ 
+ "pan": "ABDPB123H",  
+  "consent": "Y" , 
+  "reason": "reason < 20 chars"  
+}    `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{ 
+  "error": { 
+    "code": "insufficient_reason_length", 
+    "detail": "Reason should be at least 20 characters in length.", 
+    "traceId": "" // unique identifier for this error  
+  } 
+}    `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "5",
+      label: "404",
+      content: (
+        <>
+          <p>
+            <Badge type="failure">FAILURE</Badge> Setu has processed your
+            request successfully but the PAN does not exist.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST  /api/verify/pan 
+ 
+{ 
+ "pan": "ABDPB123H",  
+  "consent": "Y" , 
+  "reason": "Reason for verifying PAN set by the developer"  
+}    `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{ 
+    "message": "PAN not found.", 
+    "verification": "failed" 
+}    `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+  ]}
+/>
+
+<br />
+<WasPageHelpful />

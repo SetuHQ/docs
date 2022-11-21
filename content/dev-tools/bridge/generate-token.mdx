@@ -1,0 +1,112 @@
+---
+sidebar_title: Generate Token
+page_title: Bridge generate token
+order: 4
+visible_in_sidebar: false
+---
+
+## Generate Token API
+
+An API to generate tokens, which are used to authorise any other API requests made to Setu.
+
+<hr class="primary" />
+
+### Note on JWT authentication
+
+The generate token API works only with <a href="oauth">OAuth keys</a>. If you have implemented <a href="/dev-tools/bridge/org-settings/api-keys/jwt" target="_blank"> JWT auth </a> for Setu hosted endpoints, we recommend upgrading to OAuth soon. We support JWT auth but will not build any further features for it.
+
+**Please note**, that switching to OAuth will mean a change to all endpoints hosted by Setu. If the previous endpoint was `https://uat.setu.co/api/<path>`, it would change to `https://uat.setu.co/api/v2/<path>`—note the `/v2` added before the `<path>`.
+
+<hr class="primary" />
+
+### Generate New Token
+
+Generate a new access token using the `clientID` and `secret` values assigned to the relevant product configuration(s) on The Bridge.
+
+<table>
+  <tbody>
+    <tr>
+      <th>URL</th>
+      <td>
+        Sandbox: <code>https://uat.setu.co/api/v2/auth/token</code>
+        <br />
+        Production: <code>https://prod.setu.co/api/v2/auth/token</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>POST</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Header</th>
+      <td>
+        <code>Content-Type</code>: <code>application/json</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<br />
+<br />
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "clientID" : "c0a411d5-b6f9-4bfd-a342-7cb01935ed43",    
+    "secret"   : "b2b3e650-a31b-47a3-acf6-c96c9c5c282d",
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Response
+
+**Success**
+
+A new token is provided by Setu in the success response, along with an `expiresIn` parameter, which states the validity of the token in seconds (the present default value is 1800 seconds or 30 minutes). You may store and keep reusing the same token till it expires.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status"  : 200,
+    "success" : true,
+    "data" : {
+        "expiresIn" : 1800, //seconds
+        "token"     : "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJsaWJ6NGFNaE4yUk5xMlpyVk9QaFhaMXpoMjA0V2gtdTdhT21LX2huRVQ4In0.eyJleHAiOjE2MTM5OTQzMTIsImlhdCI6MTYxMzk5NDAxMiwianRpIjoiZmZhZjM2ZTUtZmI3Mi00NTY2LTljOGYtY2U5N2I5MjY2Y2E4IiwiaXNzIjoiaHR0cHM6Ly9hdXRoLWRldi5zZXR1LmNvL2F1dGgvcmVhbG1zL2NvbGxlY3QiLCJzdWIiOiJhZGE1MTNhMS0xYjVhLTQ1NGQtYTk2Ny05OGI3YTYwNjY3MTAiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJjZDRlYTM5OC03YWIzLTQ3ZGUtYWE1MC03YzNiOWIzZjBhMjYiLCJzZXNzaW9uX3N0YXRlIjoiYmYxYjJjZjgtNTgzZC00Y2MwLWIwN2QtNmI5YWQyNmZiNGI0IiwiYWNyIjoiMSIsInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiY2xpZW50SWQiOiJjZDRlYTM5OC03YWIzLTQ3ZGUtYWE1MC03YzNiOWIzZjBhMjYiLCJjbGllbnRIb3N0IjoiMTA2LjUxLjE1LjI1MCIsIlgtU2V0dS1Qcm9kdWN0LUluc3RhbmNlLUlEIjoiNTYyNDMzODMwNDMwOTY2OTk4IiwicHJlZmVycmVkX3VzZXJuYW1lIjoic2VydmljZS1hY2NvdW50LWNkNGVhMzk4LTdhYjMtNDdkZS1hYTUwLTdjM2I5YjNmMGEyNiIsImNsaWVudEFkZHJlc3MiOiIxMDYuNTEuMTUuMjUwIn0.QfEzImuN1P9jwTBJTcJ6ozP_gC3J-FOJp0D0va2AfXUUw8d5HLA5zqojCd6BnE6ApqKWnVU1aB0YWFwDbgHaVA3Netr-hmGadElLMhGiHah2UaLO0Bk86pZpyxNxtdx9u6YjfVYT6TSvUsqO4lISegFTJRTqFZxuBFv4WoKJPPD0JwEMYGH71LyOiCJA2sAq4YbOMKOvRrj2X_ipkSqvsrgEZicJ3lTY4vWyoGJ8wps0VW6k4vFSdX1qRKrAz_7XVKr8MKz_H1ng91h5XlZqsUh6BPz3WW0atWjt0RbAtXR32iB0zaB204IECxwriNmka1FxA9PZq94NvPwANDznhQ"
+    }
+}`}
+</CodeBlockWithCopy>
+
+**Failure**
+
+If incorrect `clientID` and `secret` details are provided, Setu will respond with the following error—
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status"  : 400,
+    "success" : false,
+    "error" : {
+        "code"    : "invalid-api-key",
+        "detail"  : "API key invalid [cd4ea398-7ab3-47de-aa50-7c3b9b3f0a21], please recheck your credentials.",
+        "docURL"  : "",
+        "title"   : "AUTHENTICATION_ERROR",
+        "errors"  : [],
+        "traceID" : "8b7bd233-5231-4bdd-8d48-aa4c0dae07b9"
+    }
+}`}
+</CodeBlockWithCopy>
+<hr class="primary" />
+
+### How to use the token
+
+Once you have a valid token available against product configuration(s), you can store it and use it to authorise an API call made to Setu, by setting the `authorization` request header as `Bearer <token-value>`.
+
+**On expiry**
+
+Implement a workflow to generate new token when the old one expires. The general setup might look something like this—
+
+- Store `clientID` and `secret`.
+- Generate new token with stored `clientID` and `secret` when token has expired. If the API you call returns `401 unauthorized`, it could be an indication that the token has expired.
+- Store the newly generated token and use for subsequent API calls.
+
+<WasPageHelpful />
