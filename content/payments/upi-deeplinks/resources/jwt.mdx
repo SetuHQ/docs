@@ -76,7 +76,7 @@ eyJhdWQiOiI4ZjQ3ZTQxYy00Njg0LTRhZjEtYjFiOC0yNDZjODMxMTIwMzMiLCJpYXQiOjE1NzI0OTMz
 </CodeBlockWithCopy>
 
 - `aud` is the `scheme_id` in JWT. The entity sending the API response shares this with the entity making the API requests. Setu would provide this value under credentials for making calls to Setu APIs. You should set this value and share it with Setu to enable Setu to make calls to your APIs.
-- `iat`  is the epoch timestamp in seconds, at which the request was issued. Requests older than 60 seconds (1 minute) are considered stale, and hence must be rejected.
+- `iat`  is the epoch timestamp in seconds, at which the request was issued. Requests older than 30 seconds are considered stale, and hence will be rejected.
 - `jti` is a unique ID for every request that can be used to identify the request for logging, debugging and tracking purpose. Since this is unique for every request, the same JWT token should not be reused or repeated for different requests.
 
 <hr class="tertiary" />
@@ -157,7 +157,8 @@ Below here are some samples in popular languages.
 ##### Python
 
 <CodeBlockWithCopy language="python">
-  {`import jwt
+  {`## pyjwt==1.7.1
+import jwt
 import datetime
 import uuid
 scheme_id = "8f47e41c-4684-4af1-b1b8-246c83112033"
@@ -172,7 +173,7 @@ token = jwt.encode(payload, secret, algorithm="HS256")
 // And to decode the token and verify the aud claim—
 try:
     # verified claim
-    jwt.decode(token, secret, audience=api_key)
+    jwt.decode(token, secret, audience=scheme_id)
     print("Verified token")
 except jwt.PyJWTError:
     # unverified claim
