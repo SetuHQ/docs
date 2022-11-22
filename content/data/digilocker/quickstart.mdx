@@ -11,20 +11,20 @@ Setu DigiLocker APIs can be used to fetch documents of your users instantly—wi
 
 Here’s a quick run through of the APIs—
 
-- **Create a DigiLocker request**—Create a request to start the user journey, with which you can get user consent and then fetch the document from user’s digilocker. You get an `id` in response, which you can use to track this request throughout the journey.
-- **Get DigiLocker request status**—Check status of a request that was created by passing the request `id`, at any point in the journey.
-- **Get list of all docs available**—Get a global list of all documents that DigiLocker lets you fetch and the identifiers required to fetch a particular document.
-- **Fetch a document**—Get the document that the user has consented to share with you, made available as a file URL to download. All docs other than Aadhaar, can be fetched with this API.
-- **Fetch Aadhaar data**—Fetch Aadhaar document data in JSON format as well as an XML file. The API response is consistent with our <a href="/data/okyc/overview" target="blank">OKYC APIs</a>, which aids in replacing OKYC with DigiLocker, for carrying out Aadhaar KYC.
-- **Revoke access token**—Revoke the OAuth user token, once necessary user documents are fetched.
+-   **Create a DigiLocker request**—Create a request to start the user journey, with which you can get user consent and then fetch the document from user’s digilocker. You get an `id` in response, which you can use to track this request throughout the journey.
+-   **Get DigiLocker request status**—Check status of a request that was created by passing the request `id`, at any point in the journey.
+-   **Get list of all docs available**—Get a global list of all documents that DigiLocker lets you fetch and the identifiers required to fetch a particular document.
+-   **Fetch a document**—Get the document that the user has consented to share with you, made available as a file URL to download. All docs other than Aadhaar, can be fetched with this API.
+-   **Fetch Aadhaar data**—Fetch Aadhaar document data in JSON format as well as an XML file. The API response is consistent with our <a href="/data/okyc/overview" target="blank">OKYC APIs</a>, which aids in replacing OKYC with DigiLocker, for carrying out Aadhaar KYC.
+-   **Revoke access token**—Revoke the OAuth user token, once necessary user documents are fetched.
 
 Additionally, here are the URLs you would need for these APIs—
 
-- Sandbox—`https://dg-sandbox.setu.co`
-- Production—`https://dg.setu.co`
-- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
-  - `x-client-id`
-  - `x-client-secret`
+-   Sandbox—`https://dg-sandbox.setu.co`
+-   Production—`https://dg.setu.co`
+-   Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+    -   `x-client-id`
+    -   `x-client-secret`
 
 <hr class="primary" />
 
@@ -33,26 +33,26 @@ Additionally, here are the URLs you would need for these APIs—
 Call this API to create a new DigiLocker request. Pass the `redirectUrl` in the request body.
 
 <Callout type="tip">
-  A DigiLocker account is not mandatory for a user to start this flow. If the
-  user does not have a DigiLocker account, DigiLocker will automatically create
-  an account during the consent journey. User has to sign up by providing their
-  Aadhaar number and authenticate with the OTP sent to Aadhaar registered mobile
-  number.
+    A DigiLocker account is not mandatory for a user to start this flow. If the
+    user does not have a DigiLocker account, DigiLocker will automatically
+    create an account during the consent journey. User has to sign up by
+    providing their Aadhaar number and authenticate with the OTP sent to Aadhaar
+    registered mobile number.
 </Callout>
 
 <br />
 
 <Callout type="warning">
-  To sign up for DigiLocker, user should have linked their mobile number with
-  Aadhaar.{" "}
+    To sign up for DigiLocker, user should have linked their mobile number with
+    Aadhaar.{" "}
 </Callout>
 
 <br />
 
 <Row>
-  <Portion desktopSpan="half">
-    <img src="https://storage.googleapis.com/strapi-assets/latest/digilocker_auth_flow_c84910dbf3/digilocker_auth_flow_c84910dbf3.png" />
-  </Portion>
+    <Portion desktopSpan="half">
+        <img src="https://storage.googleapis.com/strapi-assets/latest/digilocker_auth_flow_c84910dbf3/digilocker_auth_flow_c84910dbf3.png" />
+    </Portion>
 </Row>
 
 <hr class="tertiary" />
@@ -63,109 +63,117 @@ You have to provide a `redirectUrl` in the request, which has to be a valid publ
 
 It will also be used by Setu to send back relevant information about a request. By default Setu includes the `success` flag of the user consent and DigiLocker request `id`.
 
-- For a failed user consent, we will send back—`<redirectUrl>?success={false}&id={Digilocker_request.id}&errCode={code}&errMessage={message}`
-- For a successful signature—`<redirect_url>?success={true}&id={Digilocker_request.id}`
+-   For a failed user consent, we will send back—`<redirectUrl>?success={false}&id={Digilocker_request.id}&errCode={code}&errMessage={message}`
+-   For a successful signature—`<redirect_url>?success={true}&id={Digilocker_request.id}`
 
 <Callout type="tip">
-  You can also add custom query params such as <code>session id</code> from your
-  end. You would append this to the provided URL, like so—
-  <code>(redirectUrl)?sessionId=XYZ</code>
+    You can also add custom query params such as <code>session id</code> from
+    your end. You would append this to the provided URL, like so—
+    <code>(redirectUrl)?sessionId=XYZ</code>
 </Callout>
 
 <Row>
-  <Portion desktopSpan="whole">
-    <Tabs
-      tabs={[
-        {
-          key: "1",
-          label: "200",
-          content: (
-            <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <CodeBlockWithCopy language="json">
-                {`POST /api/digilocker/ 
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Setu has
+                                processed your request successfully.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST /api/digilocker/ 
  
 { 
     "redirectUrl": "https://setu.co" 
 } `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <p>You will get the following details—</p>
-              <ul>
-                <li>
-                  Unique DigiLocker request <code>id</code> which can be used to
-                  manage this request.
-                </li>
-                <li>
-                  The status will be <code>unauthenticated</code> for requests
-                  that do not have user consent yet and will change to{" "}
-                  <code>authenticated</code> once the user has provided their
-                  consent. You can check the status of a request at any point of
-                  time, using the <strong>Get DigiLocker request status</strong>{" "}
-                  API.
-                </li>
-                <li>
-                  The <code>url</code> from the response should be used to
-                  redirect your user to Sign in / Sign up and provide consent to
-                  access their DigiLocker.
-                </li>
-                <li>
-                  Validity of this request in <code>ISO 8601 format</code>{" "}
-                  timestamp, after which the request is expired and deleted.
-                </li>
-              </ul>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>You will get the following details—</p>
+                            <ul>
+                                <li>
+                                    Unique DigiLocker request <code>id</code>{" "}
+                                    which can be used to manage this request.
+                                </li>
+                                <li>
+                                    The status will be{" "}
+                                    <code>unauthenticated</code> for requests
+                                    that do not have user consent yet and will
+                                    change to <code>authenticated</code> once
+                                    the user has provided their consent. You can
+                                    check the status of a request at any point
+                                    of time, using the{" "}
+                                    <strong>
+                                        Get DigiLocker request status
+                                    </strong>{" "}
+                                    API.
+                                </li>
+                                <li>
+                                    The <code>url</code> from the response
+                                    should be used to redirect your user to Sign
+                                    in / Sign up and provide consent to access
+                                    their DigiLocker.
+                                </li>
+                                <li>
+                                    Validity of this request in{" "}
+                                    <code>ISO 8601 format</code> timestamp,
+                                    after which the request is expired and
+                                    deleted.
+                                </li>
+                            </ul>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "id": "ea31e1e6-96eb-4e56-a355-7bc51de94d24", 
     "status": "unauthenticated", //ENUM values—unauthenticated | authenticated | revoked 
     "url": "User login url", 
     "validUpto": "2021-10-05T19:06:28+05:30"  
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-        {
-          key: "2",
-          label: "400",
-          content: (
-            <>
-              <p>
-                <Badge type="failure">BAD REQUEST</Badge> The{" "}
-                <code>redirectUrl</code> provided is not valid.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <CodeBlockWithCopy language="json">
-                {`POST /api/digilocker/ 
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "400",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">BAD REQUEST</Badge> The{" "}
+                                <code>redirectUrl</code> provided is not valid.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST /api/digilocker/ 
  
 { 
     "redirectUrl": "https://.co" 
 } `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "error": { 
         "code": "invalid_redirect_url", 
         "detail": "Please enter a valid redirect URL.", 
         "traceId": "" 
     } 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-      ]}
-    ></Tabs>
-  </Portion>
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
 </Row>
 
 <hr class="primary" />
@@ -175,102 +183,109 @@ It will also be used by Setu to send back relevant information about a request. 
 Call this API to get status of a DigiLocker request.
 
 <Row>
-  <Portion desktopSpan="whole">
-    <Tabs
-      tabs={[
-        {
-          key: "1",
-          label: "200",
-          content: (
-            <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>
-                Pass the DigiLocker request <code>id</code> as a URL parameter
-              </p>
-              <CodeBlockWithCopy language="json">
-                {`GET /api/digilocker/:id/status `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <p>You will get the following details—</p>
-              <ul>
-                <li>
-                  <p>
-                    DigiLocker request <code>id</code>
-                  </p>
-                </li>
-                <li>
-                  <p>
-                    The status will be <code>unauthenticated</code> for requests
-                    that do not have user consent yet and will change to{" "}
-                    <code>authenticated</code> once the user has provided their
-                    consent.
-                  </p>
-                </li>
-                <li>
-                  <p>
-                    The <code>url</code> from the response should be used to
-                    redirect your user to Sign in / Sign up and provide consent
-                    to access their DigiLocker.
-                  </p>
-                </li>
-                <li>
-                  <p>
-                    Validity of this request in <code>ISO 8601 format</code>{" "}
-                    timestamp, after which the request is expired and deleted.
-                  </p>
-                </li>
-              </ul>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Setu has
+                                processed your request successfully.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <p>
+                                Pass the DigiLocker request <code>id</code> as a
+                                URL parameter
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`GET /api/digilocker/:id/status `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>You will get the following details—</p>
+                            <ul>
+                                <li>
+                                    <p>
+                                        DigiLocker request <code>id</code>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>
+                                        The status will be{" "}
+                                        <code>unauthenticated</code> for
+                                        requests that do not have user consent
+                                        yet and will change to{" "}
+                                        <code>authenticated</code> once the user
+                                        has provided their consent.
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>
+                                        The <code>url</code> from the response
+                                        should be used to redirect your user to
+                                        Sign in / Sign up and provide consent to
+                                        access their DigiLocker.
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>
+                                        Validity of this request in{" "}
+                                        <code>ISO 8601 format</code> timestamp,
+                                        after which the request is expired and
+                                        deleted.
+                                    </p>
+                                </li>
+                            </ul>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "id": "477dc21a-fa28-4c7f-9291-f35d63d5bda7", 
     "status": "authenticated", //ENUM values—unauthenticated | authenticated | revoked 
     "url": "User login url", 
     "validUpto": "2021-10-06T08:43:18+05:30" 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-        {
-          key: "2",
-          label: "404",
-          content: (
-            <>
-              <p>
-                <Badge type="failure">BAD REQUEST</Badge> The DigiLocker request
-                has expired.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>
-                Pass the DigiLocker request <code>id</code> as a URL parameter
-              </p>
-              <CodeBlockWithCopy language="json">
-                {`GET /api/digilocker/:id/status `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "404",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">BAD REQUEST</Badge> The
+                                DigiLocker request has expired.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <p>
+                                Pass the DigiLocker request <code>id</code> as a
+                                URL parameter
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`GET /api/digilocker/:id/status `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "error": { 
         "code": "request_not_found", 
         "detail": "The request id is invalid/expired.", 
         "traceId": "" 
     } 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-      ]}
-    ></Tabs>
-  </Portion>
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
 </Row>
 
 <hr class="primary" />
@@ -280,90 +295,101 @@ Call this API to get status of a DigiLocker request.
 Call this API to get a global list of all documents that DigiLocker lets you fetch and the corresponding meta data for each document.
 
 <Callout type="warning">
-  This list can be very huge and the response can take a few minutes. It is
-  recommended that you store this list on your end for usage in your
-  application.{" "}
+    This list can be very huge and the response can take a few minutes. It is
+    recommended that you store this list on your end for usage in your
+    application.{" "}
 </Callout>
 
 <br />
 
 <Callout type="tip">
-  Consider updating this list of documents only once every month or as needed,
-  as it does not change very often.
+    Consider updating this list of documents only once every month or as needed,
+    as it does not change very often.
 </Callout>
 
 <Row>
-  <Portion desktopSpan="whole">
-    <Tabs
-      tabs={[
-        {
-          key: "1",
-          label: "200",
-          content: (
-            <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <CodeBlockWithCopy language="json">
-                {`GET /api/digilocker/documents `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <p>Each document in the response has the following details—</p>
-              <ul>
-                <li>
-                  <code>availableFormats</code> is an array that specifies the
-                  formats in which the document is made available through
-                  DigiLocker.
-                </li>
-                <li>
-                  <code>description</code> specifies the name of the document,
-                  as given by the document issuer.
-                </li>
-                <li>
-                  <code>docType</code> is a short code that identifies the type
-                  of the document.
-                </li>
-                <li>
-                  <code>orgId</code> is the code of the document issuer.
-                </li>
-                <li>
-                  <code>orgName</code> is the name of the document issuer
-                </li>
-              </ul>
-              <Callout type="tip">
-                To uniquely identify a document, both <code>docType</code> and{" "}
-                <code>orgId</code> are necessary. Multiple issuers, with their
-                unique <code>orgId</code>, can issue documents which can be of
-                the same <code>docType</code>. A quick example would be driving
-                license being issued by different states—the{" "}
-                <code>docType</code> is same whereas the <code>orgId</code>{" "}
-                differs.
-              </Callout>
-              <ul>
-                <li>
-                  <code>parameters</code> is an array that contains key-value
-                  pairs, which specifies the user-specific identifiers required
-                  to fetch the document. You can use the description to aid your
-                  user, to input information on your UI.
-                </li>
-              </ul>
-              <Callout type="warning">
-                A document can require more than one parameter, as specified by
-                the document issuer.
-              </Callout>
-              <br />
-              <Callout type="warning">
-                <code>description</code> key-value pair in parameters array, is
-                only for your information and should not to be passed as an
-                identifier to fetch that document
-              </Callout>
-              <br />
-              <CodeBlockWithCopy language="json">
-                {`{ 
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Setu has
+                                processed your request successfully.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`GET /api/digilocker/documents `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>
+                                Each document in the response has the following
+                                details—
+                            </p>
+                            <ul>
+                                <li>
+                                    <code>availableFormats</code> is an array
+                                    that specifies the formats in which the
+                                    document is made available through
+                                    DigiLocker.
+                                </li>
+                                <li>
+                                    <code>description</code> specifies the name
+                                    of the document, as given by the document
+                                    issuer.
+                                </li>
+                                <li>
+                                    <code>docType</code> is a short code that
+                                    identifies the type of the document.
+                                </li>
+                                <li>
+                                    <code>orgId</code> is the code of the
+                                    document issuer.
+                                </li>
+                                <li>
+                                    <code>orgName</code> is the name of the
+                                    document issuer
+                                </li>
+                            </ul>
+                            <Callout type="tip">
+                                To uniquely identify a document, both{" "}
+                                <code>docType</code> and <code>orgId</code> are
+                                necessary. Multiple issuers, with their unique{" "}
+                                <code>orgId</code>, can issue documents which
+                                can be of the same <code>docType</code>. A quick
+                                example would be driving license being issued by
+                                different states—the <code>docType</code> is
+                                same whereas the <code>orgId</code> differs.
+                            </Callout>
+                            <ul>
+                                <li>
+                                    <code>parameters</code> is an array that
+                                    contains key-value pairs, which specifies
+                                    the user-specific identifiers required to
+                                    fetch the document. You can use the
+                                    description to aid your user, to input
+                                    information on your UI.
+                                </li>
+                            </ul>
+                            <Callout type="warning">
+                                A document can require more than one parameter,
+                                as specified by the document issuer.
+                            </Callout>
+                            <br />
+                            <Callout type="warning">
+                                <code>description</code> key-value pair in
+                                parameters array, is only for your information
+                                and should not to be passed as an identifier to
+                                fetch that document
+                            </Callout>
+                            <br />
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "documents": [ 
         { 
             "availableFormats": [ 
@@ -401,13 +427,13 @@ Call this API to get a global list of all documents that DigiLocker lets you fet
         } 
     ] 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-      ]}
-    ></Tabs>
-  </Portion>
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
 </Row>
 
 <hr class="primary" />
@@ -417,71 +443,85 @@ Call this API to get a global list of all documents that DigiLocker lets you fet
 Call this API to fetch document of a user from DigiLocker.
 
 <Row>
-  <Portion desktopSpan="whole">
-    <Tabs
-      tabs={[
-        {
-          key: "1",
-          label: "200",
-          content: (
-            <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully and the document was fetched.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>Provide the following details in the request—</p>
-              <ul>
-                <li>
-                  DigiLocker request <code>id</code> as a URL parameter
-                </li>
-                <li>
-                  Refer to the response of{" "}
-                  <strong>Get list of all docs available</strong> API for
-                  obtaining document specific values explained here—
-                  <ul>
-                    <li>
-                      <code>docType</code> of the document
-                    </li>
-                    <li>
-                      <code>orgId</code> of the document issuer
-                    </li>
-                    <li>
-                      The <code>format</code> in which you require the document.
-                      This should be one of the formats that the document is
-                      actually available in.
-                    </li>
-                    <li>
-                      User <code>consent</code> should be <code>Y</code> to
-                      attempt a document fetch
-                    </li>
-                    <li>
-                      <code>parameters</code> is an array that contains
-                      key-value pairs, which specifies the identifiers required
-                      to fetch the document. Refer to the sample response of{" "}
-                      <strong>Get list of all docs available</strong> API for a
-                      detailed explanation of <code>parameters</code> array.
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-              <Callout type="warning">
-                <strong>
-                  Note that for each parameter specified by the document issuer—
-                </strong>{" "}
-                <br />
-                <br />
-                The first element has to be the key-value pair specified by the
-                document issuer, like so— <code>
-                  "name": "MemberName"
-                </code>. <br /> The second element should be the key-value pair
-                with the actual value of the parameter specified, like so—{" "}
-                <code>"value":"Ramesh"</code>.
-              </Callout>
-              <br />
-              <CodeBlockWithCopy language="json">
-                {`POST /api/digilocker/:id/document 
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Setu has
+                                processed your request successfully and the
+                                document was fetched.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <p>Provide the following details in the request—</p>
+                            <ul>
+                                <li>
+                                    DigiLocker request <code>id</code> as a URL
+                                    parameter
+                                </li>
+                                <li>
+                                    Refer to the response of{" "}
+                                    <strong>
+                                        Get list of all docs available
+                                    </strong>{" "}
+                                    API for obtaining document specific values
+                                    explained here—
+                                    <ul>
+                                        <li>
+                                            <code>docType</code> of the document
+                                        </li>
+                                        <li>
+                                            <code>orgId</code> of the document
+                                            issuer
+                                        </li>
+                                        <li>
+                                            The <code>format</code> in which you
+                                            require the document. This should be
+                                            one of the formats that the document
+                                            is actually available in.
+                                        </li>
+                                        <li>
+                                            User <code>consent</code> should be{" "}
+                                            <code>Y</code> to attempt a document
+                                            fetch
+                                        </li>
+                                        <li>
+                                            <code>parameters</code> is an array
+                                            that contains key-value pairs, which
+                                            specifies the identifiers required
+                                            to fetch the document. Refer to the
+                                            sample response of{" "}
+                                            <strong>
+                                                Get list of all docs available
+                                            </strong>{" "}
+                                            API for a detailed explanation of{" "}
+                                            <code>parameters</code> array.
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <Callout type="warning">
+                                <strong>
+                                    Note that for each parameter specified by
+                                    the document issuer—
+                                </strong>{" "}
+                                <br />
+                                <br />
+                                The first element has to be the key-value pair
+                                specified by the document issuer, like so—{" "}
+                                <code>"name": "MemberName"</code>. <br /> The
+                                second element should be the key-value pair with
+                                the actual value of the parameter specified,
+                                like so— <code>"value":"Ramesh"</code>.
+                            </Callout>
+                            <br />
+                            <CodeBlockWithCopy language="json">
+                                {`POST /api/digilocker/:id/document 
  
 { 
     "docType": "PRFND", 
@@ -497,49 +537,51 @@ Call this API to fetch document of a user from DigiLocker.
         "value": "Ramesh" 
     }] 
 } `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <p>You will get the following details—</p>
-              <ul>
-                <li>
-                  <p>
-                    <code>fileUrl</code> to download fetched document
-                  </p>
-                </li>
-                <li>
-                  <p>
-                    Validity of the <code>fileUrl</code> in{" "}
-                    <code>ISO 8601 format</code> timestamp
-                  </p>
-                </li>
-              </ul>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>You will get the following details—</p>
+                            <ul>
+                                <li>
+                                    <p>
+                                        <code>fileUrl</code> to download fetched
+                                        document
+                                    </p>
+                                </li>
+                                <li>
+                                    <p>
+                                        Validity of the <code>fileUrl</code> in{" "}
+                                        <code>ISO 8601 format</code> timestamp
+                                    </p>
+                                </li>
+                            </ul>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "fileUrl": "s3_url of the file to be downloaded", 
     "validUpto": "2021-09-21T09:12:12+05:30" 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-        {
-          key: "2",
-          label: "400",
-          content: (
-            <>
-              <p>
-                <Badge type="failure">BAD REQUEST</Badge> Your request has an
-                invalid payload.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>
-                The key-value pair for <code>MemberName</code> and its value are
-                missing in this example JSON body.
-              </p>
-              <CodeBlockWithCopy language="json">
-                {`POST /api/digilocker/:id/document 
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "400",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">BAD REQUEST</Badge> Your
+                                request has an invalid payload.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <p>
+                                The key-value pair for <code>MemberName</code>{" "}
+                                and its value are missing in this example JSON
+                                body.
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`POST /api/digilocker/:id/document 
  
 { 
     "docType": "PRFND", 
@@ -551,34 +593,34 @@ Call this API to fetch document of a user from DigiLocker.
         "value": "98432234234" 
     }] 
 } `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "error": { 
         "code": "invalid_payload", 
         "detail": "Missing required parameter in the JSON body", 
         "traceId": "" 
     } 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-        {
-          key: "3",
-          label: "400",
-          content: (
-            <>
-              <p>
-                <Badge type="failure">BAD REQUEST</Badge> User consent is not
-                available
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <CodeBlockWithCopy language="json">
-                {`POST /api/digilocker/:id/document 
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
+                    label: "400",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">BAD REQUEST</Badge> User
+                                consent is not available
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST /api/digilocker/:id/document 
  
 { 
     "docType": "PRFND", 
@@ -594,34 +636,35 @@ Call this API to fetch document of a user from DigiLocker.
         "value": "Ramesh" 
     }] 
 } `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "error": { 
         "code": "consent_not_given", 
         "detail": "Only accepted value for consent is Y", 
         "traceId": "" 
     } 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-        {
-          key: "4",
-          label: "401",
-          content: (
-            <>
-              <p>
-                <Badge type="failure">BAD REQUEST</Badge> User token has been
-                revoked. Generate a fresh DigiLocker request.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <CodeBlockWithCopy language="json">
-                {`POST /api/digilocker/:id/document 
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "4",
+                    label: "401",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">BAD REQUEST</Badge> User
+                                token has been revoked. Generate a fresh
+                                DigiLocker request.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST /api/digilocker/:id/document 
  
 { 
     "docType": "PRFND", 
@@ -637,24 +680,24 @@ Call this API to fetch document of a user from DigiLocker.
         "value": "Ramesh" 
     }] 
 } `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "error": { 
         "code": "token_revoked", 
         "detail": "The user has revoked the token for the given request.", 
         "traceId": "" 
     } 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-      ]}
-    ></Tabs>
-  </Portion>
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
 </Row>
 
 <hr class="primary" />
@@ -664,39 +707,43 @@ Call this API to fetch document of a user from DigiLocker.
 Call this API to fetch the Aadhaar data of a user from DigiLocker. The Aadhaar XML file is signed by DigiLocker.
 
 <Row>
-  <Portion desktopSpan="whole">
-    <Tabs
-      tabs={[
-        {
-          key: "1",
-          label: "200",
-          content: (
-            <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully and Aadhaar data was fetched successfully.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>
-                Provide the DigiLocker request <code>id</code> in the request—
-              </p>
-              <CodeBlockWithCopy language="json">
-                {`GET /api/digilocker/:id/aadhaar `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <p>
-                You will get the Aadhaar data of the user as JSON along with the
-                <code>fileUrl</code> to Aadhaar XML.
-              </p>
-              <Callout type="tip">
-                The <code>shareCode</code> will always be empty for this API and
-                is present to match the JSON response of Setu OKYC APIs.
-              </Callout>
-              <br />
-              <CodeBlockWithCopy language="json">
-                {`{
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Setu has
+                                processed your request successfully and Aadhaar
+                                data was fetched successfully.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <p>
+                                Provide the DigiLocker request <code>id</code>{" "}
+                                in the request—
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`GET /api/digilocker/:id/aadhaar `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>
+                                You will get the Aadhaar data of the user as
+                                JSON along with the
+                                <code>fileUrl</code> to Aadhaar XML.
+                            </p>
+                            <Callout type="tip">
+                                The <code>shareCode</code> will always be empty
+                                for this API and is present to match the JSON
+                                response of Setu OKYC APIs.
+                            </Callout>
+                            <br />
+                            <CodeBlockWithCopy language="json">
+                                {`{
     "aadhaar": { 
         "address": { 
             "careOf": "S/O John Doe", 
@@ -734,44 +781,46 @@ Call this API to fetch the Aadhaar data of a user from DigiLocker. The Aadhaar X
     "id": "391a45be-d08d-4dd0-b8a8-06e53392d435", 
     "status": "complete" 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-        {
-          key: "2",
-          label: "401",
-          content: (
-            <>
-              <p>
-                <Badge type="failure">BAD REQUEST</Badge> User token has been
-                revoked. Generate a fresh DigiLocker request.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>
-                Provide the DigiLocker request <code>id</code> in the request—
-              </p>
-              <CodeBlockWithCopy language="json">
-                {`GET /api/digilocker/:id/aadhaar `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "401",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">BAD REQUEST</Badge> User
+                                token has been revoked. Generate a fresh
+                                DigiLocker request.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <p>
+                                Provide the DigiLocker request <code>id</code>{" "}
+                                in the request—
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`GET /api/digilocker/:id/aadhaar `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "error": { 
         "code": "token_revoked", 
         "detail": "The user has revoked the token for the given request.", 
         "traceId": "" 
     } 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-      ]}
-    ></Tabs>
-  </Portion>
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
 </Row>
 
 <hr class="primary" />
@@ -781,39 +830,40 @@ Call this API to fetch the Aadhaar data of a user from DigiLocker. The Aadhaar X
 Call this API to revoke a DigiLocker request. The request id can no longer be used to interact with user’s DigiLocker.
 
 <Row>
-  <Portion desktopSpan="whole">
-    <Tabs
-      tabs={[
-        {
-          key: "1",
-          label: "200",
-          content: (
-            <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>
-                Provide the DigiLocker request <code>id</code> in the request—
-              </p>
-              <CodeBlockWithCopy language="json">
-                {`GET /api/digilocker/:id/revoke `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Setu has
+                                processed your request successfully.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <p>
+                                Provide the DigiLocker request <code>id</code>{" "}
+                                in the request—
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`GET /api/digilocker/:id/revoke `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{ 
     "success": true 
 } `}
-              </CodeBlockWithCopy>
-            </>
-          ),
-        },
-      ]}
-    ></Tabs>
-  </Portion>
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
 </Row>
 
 <WasPageHelpful />
