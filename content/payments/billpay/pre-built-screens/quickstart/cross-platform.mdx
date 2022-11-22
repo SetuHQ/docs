@@ -44,4 +44,65 @@ final webView = WebView(
 
 </CodeBlockWithCopy>
 
+<br />
+
+### React Native
+
+Below are the steps to embed the pre-built screens into React Native app,
+
+-   Implement a web view. We recommend to use the WebView component from <a href="https://github.com/react-native-webview/react-native-webview" target="_blank">react-native-webview</a> library. You’re free to choose any other library for implementing this.
+
+-   Pass the webview URL into the `uri` parameter on the WebView component. Ideally, this URL can be sent as a parameter from the previous screen to the WebView screen.
+
+-   WebView component exposes a function `onNavigationStateChange` which is called every time there is a change in the navigation of web view.
+
+<CodeBlockWithCopy language="jsx">
+{`
+    import React, { useRef, useEffect } from "react";
+    import { SafeAreaView, ActivityIndicator, StyleSheet } from "react-native";
+    import WebView from "react-native-webview"; // Load WebView from "react-native-webview"
+    export default function WebView({ navigation }) {
+        const webviewRef = useRef(null);
+        // Check if webview URI contain .setu.co
+        useEffect(() => {
+            if(!webViewUri.includes('.setu.co')){
+                console.log('Blocking navigation');
+                navigation.navigate("Start");
+            }
+        });
+        // Function to check the navigation state inside webview
+        const onNavigation = (navState) => {
+            let url = navState.url;
+        };
+        return (
+            <>
+            <SafeAreaView style={styles.flexContainer}>
+                <WebView
+                source={{
+                    uri: webviewUri,
+                        }}
+                    startInLoadingState={true}
+                    renderLoading={() => (
+                        <ActivityIndicator color="black" size="large" style={styles.flexContainer} />
+                    )}
+                ref={webviewRef}
+                onNavigationStateChange={onNavigation}
+                style={styles.margin}
+                />
+            </SafeAreaView>
+            </>
+            );
+    }
+    // Styles
+    const styles = StyleSheet.create({
+        flexContainer: {
+            flex: 1,
+        },
+        margin: {
+            marginTop: 50,
+        },
+    }); `}
+
+</CodeBlockWithCopy>
+
 <WasPageHelpful />
