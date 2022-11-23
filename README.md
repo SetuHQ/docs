@@ -30,9 +30,15 @@ Cloning and editing in local is faster due to virtual workspace in online VS Cod
 
 ### Install VS code extensions
 
-For easy syntax higlighting, install this [extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx)
+For easy syntax higlighting, 
 
-For documentation preview, install this [extension](https://marketplace.visualstudio.com/items?itemName=SetuDesign.docter-preview)
+* Install this [extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) from marketplace.
+* or you can install in VS Code by the extensions tab in the leftside bar or press `Shift + Cmd/Ctrl + X` and search for `MDX`
+
+For documentation preview, 
+
+* Install this [extension](https://marketplace.visualstudio.com/items?itemName=SetuDesign.docter-preview) from marketplace.
+* You can install in VS Code by the extensions tab in the leftside bar or press `Shift + Cmd/Ctrl + X` and search for `Docter Preview`
 
 ## Features
 
@@ -68,3 +74,8 @@ You can find API reference spec files for [Setu docs](https://docs.setu.co) in `
 
 -   Each category is a folder with products as API reference spec files in JSON or YAML format.
 -   All API reference files are in JSON or YAML format
+
+
+## Editing and Viewing
+
+WIP on how to view changes and API references editing guide. Please keep an eye for updates
