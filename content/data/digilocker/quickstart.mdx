@@ -163,6 +163,67 @@ It will also be used by Setu to send back relevant information about a request. 
             </>
           ),
         },
+        {
+          key: "3",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">BAD REQUEST</Badge> invalid payload
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/digilocker/ 
+ 
+{ 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": {
+        "code": "invalid_payload",
+        "detail": "redirect url for the user",
+        "traceId": ""
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "5",
+          label: "500",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Upstream service failure or Error while processing request
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/digilocker/ 
+ 
+{ 
+   "redirectUrl": "https://setu.co" 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": {
+        "code": "internal_server_error",
+        "detail": "Upstream service failure", // Or, "Error while processing request"
+        "traceId": ""
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
       ]}
     ></Tabs>
   </Portion>
@@ -268,6 +329,36 @@ Call this API to get status of a DigiLocker request.
             </>
           ),
         },
+         {
+          key: "3",
+          label: "500",
+          content: (
+            <>
+               <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Upstream service failure or Error while processing request
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Pass the DigiLocker request <code>id</code> as a URL parameter
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/status `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+   "error": {
+        "code": "internal_server_error",
+        "detail": "Upstream service failure", // Or, "Error while processing request"
+        "traceId": ""
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
       ]}
     ></Tabs>
   </Portion>
@@ -307,9 +398,6 @@ Call this API to get a global list of all documents that DigiLocker lets you fet
               </p>
               <hr className="tertiary" />
               <h5>Request</h5>
-              <p>
-                Pass the DigiLocker request <code>id</code> as a URL parameter
-              </p>
               <CodeBlockWithCopy language="json">
                 {`GET /api/digilocker/documents `}
               </CodeBlockWithCopy>
@@ -404,6 +492,33 @@ Call this API to get a global list of all documents that DigiLocker lets you fet
         } 
     ] 
 } `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "500",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Upstream service failure or Error while processing request
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/documents`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "internal_server_error",
+        "detail": "Upstream service failure", // Or, "Error while processing request"
+        "traceId": ""
+    }
+}`}
               </CodeBlockWithCopy>
             </>
           ),
@@ -614,6 +729,133 @@ Call this API to fetch document of a user from DigiLocker.
         },
         {
           key: "4",
+          label: "400",
+          content: (
+            <>
+               <p>
+                <Badge type="failure">BAD REQUEST</Badge> Aadhaar not linked to mobile number.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Pass the DigiLocker request <code>id</code> as a URL parameter
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/digilocker/:id/document 
+{ 
+    "docType": "PRFND", 
+    "orgId": "002317", 
+    "format": "pdf", 
+    "consent": "Y", 
+    "parameters": [ { 
+        "name": "AC_NO", 
+        "value": "98432234234" 
+    }, 
+    { 
+        "name": "MemberName", 
+        "value": "Ramesh" 
+    }] 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": { 
+        "code": "aadhaar_not_linked", 
+        "detail": "The user has not linked his Aadhaar card with Digilocker account.", 
+        "traceId": "" 
+    } 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "5",
+          label: "404",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">BAD REQUEST</Badge> The DigiLocker request
+                has expired.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/digilocker/:id/document 
+{ 
+    "docType": "PRFND", 
+    "orgId": "002317", 
+    "format": "pdf", 
+    "consent": "Y", 
+    "parameters": [ { 
+        "name": "AC_NO", 
+        "value": "98432234234" 
+    }, 
+    { 
+        "name": "MemberName", 
+        "value": "Ramesh" 
+    }] 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": { 
+        "code": "request_not_found", 
+        "detail": "The request id is invalid/expired.", 
+        "traceId": "" 
+    } 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "6",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">BAD REQUEST</Badge> User not authenticated
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/digilocker/:id/document 
+{ 
+    "docType": "PRFND", 
+    "orgId": "002317", 
+    "format": "pdf", 
+    "consent": "Y", 
+    "parameters": [ { 
+        "name": "AC_NO", 
+        "value": "98432234234" 
+    }, 
+    { 
+        "name": "MemberName", 
+        "value": "Ramesh" 
+    }] 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+               <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "user_not_authenticated",
+        "detail": "User is not authenticated to access this resource",
+        "traceId": ""
+    }
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "7",
           label: "401",
           content: (
             <>
@@ -651,6 +893,48 @@ Call this API to fetch document of a user from DigiLocker.
         "traceId": "" 
     } 
 } `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "8",
+          label: "500",
+          content: (
+            <>
+               <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Upstream service failure or Error while processing request
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/digilocker/:id/document 
+ 
+{ 
+    "docType": "PRFND", 
+    "orgId": "002317", 
+    "format": "pdf", 
+    "consent": "Y", 
+    "parameters": [ { 
+        "name": "AC_NO", 
+        "value": "98432234234" 
+    }, 
+    { 
+        "name": "MemberName", 
+        "value": "Ramesh" 
+    }] 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "internal_server_error",
+        "detail": "Upstream service failure", // Or, "Error while processing request"
+        "traceId": ""
+    }
+}`}
               </CodeBlockWithCopy>
             </>
           ),
@@ -743,6 +1027,97 @@ Call this API to fetch the Aadhaar data of a user from DigiLocker. The Aadhaar X
         },
         {
           key: "2",
+          label: "400",
+          content: (
+            <>
+               <p>
+                <Badge type="failure">BAD REQUEST</Badge> Aadhaar not linked to mobile number.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Pass the DigiLocker request <code>id</code> as a URL parameter
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/aadhaar`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": { 
+        "code": "aadhaar_not_linked", 
+        "detail": "The user has not linked his Aadhaar card with Digilocker account.", 
+        "traceId": "" 
+    } 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "404",
+          content: (
+            <>
+               <p>
+                <Badge type="failure">BAD REQUEST</Badge> The DigiLocker request
+                has expired.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Pass the DigiLocker request <code>id</code> as a URL parameter
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/aadhaar`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": { 
+        "code": "request_not_found", 
+        "detail": "The request id is invalid/expired.", 
+        "traceId": "" 
+    } 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "401",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">BAD REQUEST</Badge> User not authenticated
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Pass the DigiLocker request <code>id</code> as a URL parameter
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/aadhaar`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "user_not_authenticated",
+        "detail": "User is not authenticated to access this resource",
+        "traceId": ""
+    }
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "5",
           label: "401",
           content: (
             <>
@@ -766,6 +1141,66 @@ Call this API to fetch the Aadhaar data of a user from DigiLocker. The Aadhaar X
         "code": "token_revoked", 
         "detail": "The user has revoked the token for the given request.", 
         "traceId": "" 
+    } 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "6",
+          label: "500",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">BAD REQUEST</Badge> Failed to get user's Aadhaar XML.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Provide the DigiLocker request <code>id</code> in the request—
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/aadhaar `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": { 
+        "code": "get_xml_failed", 
+        "detail": "Failed to get user's Aadhaar XML.", 
+        "traceId": "" 
+    } 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+         {
+          key: "7",
+          label: "500",
+          content: (
+            <>
+             <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Upstream service failure or Error while processing request
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Provide the DigiLocker request <code>id</code> in the request—
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/aadhaar `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": { 
+        "code": "internal_server_error",
+        "detail": "Upstream service failure", // Or, "Error while processing request"
+        "traceId": ""
     } 
 } `}
               </CodeBlockWithCopy>
@@ -810,6 +1245,97 @@ Call this API to revoke a DigiLocker request. The request id can no longer be us
                 {`{ 
     "success": true 
 } `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "404",
+          content: (
+            <>
+             <p>
+                <Badge type="failure">BAD REQUEST</Badge> The DigiLocker request
+                has expired.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Provide the DigiLocker request <code>id</code> in the request—
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/revoke `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+    "error": { 
+        "code": "request_not_found", 
+        "detail": "The request id is invalid/expired.", 
+        "traceId": "" 
+    } 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "401",
+          content: (
+            <>
+             <p>
+                <Badge type="failure">BAD REQUEST</Badge> User not authenticated
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Provide the DigiLocker request <code>id</code> in the request—
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/revoke `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+               <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "user_not_authenticated",
+        "detail": "User is not authenticated to access this resource",
+        "traceId": ""
+    }
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "500",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Upstream service failure or Error while processing request
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Provide the DigiLocker request <code>id</code> in the request—
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/digilocker/:id/revoke `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "internal_server_error",
+        "detail": "Upstream service failure", // Or, "Error while processing request"
+        "traceId": ""
+    }
+}`}
               </CodeBlockWithCopy>
             </>
           ),
