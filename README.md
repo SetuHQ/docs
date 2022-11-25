@@ -28,6 +28,8 @@ To edit any page, you can either,
 
 Cloning and editing in local is faster due to virtual workspace in online VS Code
 
+Go through this [detailed guide](./content/README.md) on how to write content
+
 ### Install VS code extensions
 
 For easy syntax higlighting,
