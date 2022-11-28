@@ -287,6 +287,16 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -344,8 +354,12 @@
           {
             "name": "limit",
             "in": "query",
+            "description": "Limit",
             "schema": {
-              "type": "integer"
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer",
+              "default": 250
             }
           },
           {
@@ -1258,19 +1272,34 @@
             "name": "status",
             "in": "query",
             "style": "form",
-            "explode": true,
+            "explode": false,
             "schema": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "INITIALIZED",
+                  "ASSIGNED",
+                  "RE_ASSIGNED",
+                  "ASSIGNED_TO_BOU",
+                  "ASSIGNED_TO_COU",
+                  "ASSIGNED_TO_OU",
+                  "ESCALATED",
+                  "RESOLVED",
+                  "UNRESOLVED"
+                ]
               }
             }
           },
           {
             "name": "limit",
             "in": "query",
+            "description": "Limit",
             "schema": {
-              "type": "integer"
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer",
+              "default": 250
             }
           },
           {
@@ -1399,8 +1428,12 @@
           {
             "name": "limit",
             "in": "query",
+            "description": "Limit",
             "schema": {
-              "type": "integer"
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer",
+              "default": 250
             }
           },
           {
@@ -1530,16 +1563,18 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21",
+            "description": "start date of the timestamp provided by the partner while making the request. full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21",
             "schema": {
               "type": "string",
               "format": "date"
-            }
+            },
+            "example": "2017-07-21"
           },
           {
             "name": "endDate",
             "in": "query",
-            "description": "full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21",
+            "description": "end date of the timestamp provided by the partner while making the request. full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21",
+            "example": "2017-07-21",
             "schema": {
               "type": "string",
               "format": "date"
@@ -1573,11 +1608,10 @@
             "schema": {
               "type": "string",
               "enum": [
-                "Refunded",
                 "Processing",
-                "Submitted",
+                "Success",
                 "Error",
-                "Success"
+                "Refunded"
               ]
             }
           },
@@ -1824,6 +1858,11 @@
         }
       },
       "autofetchSubscription": {
+        "required": [
+          "hash",
+          "isActive",
+          "lastFetchDate"
+        ],
         "type": "object",
         "properties": {
           "biller": {
@@ -1843,7 +1882,7 @@
           "lastFetchDate": {
             "type": "string",
             "format": "date",
-            "example": "2017-07-21T00:00:00.000Z"
+            "example": "2017-07-21"
           }
         }
       },
@@ -1896,7 +1935,7 @@
           "nextFetchDate": {
             "type": "string",
             "format": "date",
-            "example": "2017-07-21T00:00:00.000Z"
+            "example": "2017-07-21"
           }
         }
       },
@@ -1910,19 +1949,19 @@
           "code": {
             "type": "string",
             "description": "BBPS Error code",
-            "example": "BOU008"
+            "example": "ERR004"
           },
           "message": {
             "type": "string",
             "description": "BBPS Failure message",
-            "example": "Unable to Connect to BOU"
+            "example": "customer not found"
           },
           "type": {
             "type": "string",
             "enum": [
+              "FUND_TRANSFER",
               "BBPS",
-              "APP",
-              "FUND_TRANSFER"
+              "APP"
             ]
           }
         }
@@ -1952,7 +1991,7 @@
           "billDate": {
             "type": "string",
             "format": "date",
-            "example": "2021-01-02T00:00:00.000Z"
+            "example": "2021-01-02"
           },
           "billNumber": {
             "type": "string",
@@ -1978,7 +2017,7 @@
           "dueDate": {
             "type": "string",
             "format": "date",
-            "example": "2021-09-24T00:00:00.000Z"
+            "example": "2021-09-24"
           }
         },
         "x-go-name": "BillData"
@@ -2024,12 +2063,7 @@
             "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
           },
           "status": {
-            "type": "string",
-            "enum": [
-              "Processing",
-              "Success",
-              "Failure"
-            ]
+            "$ref": "#/components/schemas/status"
           }
         }
       },
@@ -2092,13 +2126,7 @@
                 "$ref": "#/components/schemas/errorMessage"
               },
               "status": {
-                "type": "string",
-                "example": "SUCCESS",
-                "enum": [
-                  "PROCESSING",
-                  "SUCCESS",
-                  "FAILURE"
-                ]
+                "$ref": "#/components/schemas/status"
               },
               "transactionId": {
                 "type": "string",
@@ -2108,8 +2136,7 @@
             "nullable": true
           },
           "status": {
-            "type": "string",
-            "example": "PROCESSING/COMPLETE/TIMEOUT"
+            "$ref": "#/components/schemas/status"
           },
           "transactionId": {
             "type": "string",
@@ -2144,7 +2171,7 @@
             "type": "string",
             "format": "date-time",
             "nullable": true,
-            "example": "2021-11-12T08:07:04.572Z",
+            "example": "2020-12-12T13:12:00+05:30",
             "x-omitempty": false
           },
           "customerParams": {
@@ -2188,7 +2215,7 @@
             "type": "string",
             "format": "date-time",
             "nullable": true,
-            "example": "2021-11-12T08:07:04.572Z",
+            "example": "2020-12-12T13:12:00+05:30",
             "x-omitempty": false
           },
           "name": {
@@ -2573,17 +2600,17 @@
           "assigned": {
             "type": "string",
             "description": "BBPOU to which the complaint is assigned",
-            "example": "ADIT00000NATRA"
+            "example": "OU Four"
           },
           "complaintId": {
             "type": "string",
             "description": "Complaint ID",
-            "example": "Loan Repayment"
+            "example": "OP0121046567755"
           },
           "complaintStatus": {
             "type": "string",
             "description": "Status of the complaint",
-            "example": "Aditya Birla Housing Finance Limited",
+            "example": "RESOLVED",
             "enum": [
               "INITIALIZED",
               "ASSIGNED",
@@ -2599,21 +2626,21 @@
           "refId": {
             "type": "string",
             "description": "Reference ID",
-            "example": "Loan Repayment"
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10461713"
           },
           "remarks": {
             "type": "string",
             "description": "BBPS Complaint remarks",
-            "example": "ADIT00000NATRA"
+            "example": "Payment pending"
           },
           "responseCode": {
             "type": "string",
             "description": "Carries the response code indicating success or failure of the transaction",
-            "example": "ADIT00000NATRA"
+            "example": "0"
           },
           "responseReason": {
             "type": "string",
-            "example": "ADIT00000NATRA"
+            "example": "SUCCESS"
           }
         }
       },
@@ -2687,11 +2714,17 @@
           },
           "status": {
             "type": "string",
-            "example": "OPEN",
+            "example": "INITIALIZED",
             "enum": [
-              "PROCESSING",
-              "OPEN",
-              "CLOSED"
+              "INITIALIZED",
+              "ASSIGNED",
+              "RE_ASSIGNED",
+              "ASSIGNED_TO_BOU",
+              "ASSIGNED_TO_COU",
+              "ASSIGNED_TO_OU",
+              "ESCALATED",
+              "RESOLVED",
+              "UNRESOLVED"
             ]
           }
         },
@@ -2888,7 +2921,9 @@
         "type": "object",
         "properties": {
           "amount": {
+            "minimum": 1,
             "type": "integer",
+            "description": "Amount in Paise",
             "example": 10000
           },
           "mode": {
@@ -2911,6 +2946,7 @@
             ]
           },
           "paymentRefId": {
+            "maxLength": 35,
             "minLength": 6,
             "type": "string",
             "example": "BD019181220291"
@@ -2918,7 +2954,7 @@
           "timestamp": {
             "type": "string",
             "format": "date-time",
-            "example": "2020-12-12T07:42:00.000Z"
+            "example": "2020-12-12T13:12:00+05:30"
           }
         }
       },
@@ -3017,7 +3053,7 @@
             "description": "Effective from date of corresponding Plan.",
             "format": "date",
             "nullable": true,
-            "example": "2017-07-21T00:00:00.000Z",
+            "example": "2017-07-21",
             "x-omitempty": false
           },
           "effectiveTo": {
@@ -3025,7 +3061,7 @@
             "description": "Effective to date of corresponding Plan.",
             "format": "date",
             "nullable": true,
-            "example": "2020-08-21T00:00:00.000Z",
+            "example": "2020-08-21",
             "x-omitempty": false
           },
           "id": {
@@ -3057,6 +3093,32 @@
         },
         "x-go-name": "RefIdBasedRequest",
         "x-omitempty": true
+      },
+      "status": {
+        "type": "string",
+        "example": "Success",
+        "enum": [
+          "Processing",
+          "Success",
+          "Failure"
+        ]
+      },
+      "successAndTracerDetails": {
+        "required": [
+          "success",
+          "traceId"
+        ],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        }
       },
       "transactionsResponse": {
         "required": [
@@ -3107,17 +3169,17 @@
             "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
           },
           "status": {
+            "$ref": "#/components/schemas/txnStatus"
+          },
+          "timestamp": {
             "type": "string",
-            "enum": [
-              "Processing",
-              "Success",
-              "Failure",
-              "Error"
-            ]
+            "description": "Timestamp provided by partner while making payment request.",
+            "format": "date-time",
+            "example": "2020-12-12T13:12:00+05:30"
           },
           "transactionId": {
             "type": "string",
-            "description": "Transaction ID",
+            "description": "Setu BillPay Transaction ID.",
             "example": "AX30910192192192192"
           }
         }
@@ -3136,6 +3198,16 @@
             }
           }
         }
+      },
+      "txnStatus": {
+        "type": "string",
+        "example": "Success",
+        "enum": [
+          "Processing",
+          "Success",
+          "Error",
+          "Refunded"
+        ]
       },
       "wrappedRefId": {
         "required": [
