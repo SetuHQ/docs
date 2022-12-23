@@ -109,6 +109,9 @@ Here is a quick description of the values required to call this API—
 
 <hr class="tertiary" />
 
+###### signature request with configID
+Create signature req can also be created by using configId in case of flexible signature placement. Check section <a name="configReq"> here </a>
+
 ##### Usage of the redirect URL
 
 You have to provide a `redirectUrl` in the request, which has to be a valid publicly hosted URL—the signer gets redirected to this URL after going through Setu’s eSign screens.
@@ -124,7 +127,7 @@ It will also be used by Setu to send back relevant information about a signer. B
   <code>(redirectUrl)?sessionId=XYZ</code>
 </Callout>
 
-<Row>
+<Row> 
   <Portion desktopSpan="whole">
     <Tabs
       tabs={[
@@ -177,6 +180,83 @@ It will also be used by Setu to send back relevant information about a signer. B
                             "status": "pending", 
                             "url": "https://dg-uat.setu.co/signature/preview?requestId=6bae9d1f-0fa6-44e5-a801-3ad4a5f10a12&signerId=34f94af1-a8b9-4797-b287-c5ef7bff99a1" 
                     }], 
+                    "status": "sign_initiated" 
+                } `}
+              </CodeBlockWithCopy>
+              <p>
+                The <code>url</code> from this response should be used to redirect your customer to complete a signature. The session of the <code>url</code> is activated once the user is redirected to it, and remains active for 15 minutes by default. Note that if one of the signers is signing the document, other signers have to wait until the active signer has finished signing.
+              </p>
+              <Callout type="warning">
+                When the session of a <code>url</code> is active, the  <code>status</code> of the signature request is <code>sign_in_progress</code> and no other signer will be able to sign the document at that point of time.
+              </Callout>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "201 With configId",
+          content: (
+            <> //(#configReq)
+              <p>
+                When passiing a configID, width, height, position and on pages field are not required as they are picked from the config associated with the id.
+              </p>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request with configId</h5> 
+              <CodeBlockWithCopy language="json">
+                {`POST /api/signature {
+                  "documentId": "{{document_id}}",
+                  "redirectUrl": "http://setu.co",
+                  "configId": "e66e4d4b-165b-49db-bef2-3f11f9f2384",
+                  "signers": [
+                    {
+                      "identifier": "7002484002",
+                      "displayName": "Rahul R",
+                      "birthYear": "1988",
+                      "signerConfigNumber": 1
+                    },
+                    {
+                      "identifier": "9811412438",
+                      "displayName": "chetri R",
+                      "birthYear": "1987",
+                      "signerConfigNumber": 2
+                    }
+                  ]
+                } 
+              `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You will get a unique signature request <code>id</code> from Setu—to track this signature request. Additionally, you will get an array of <code>signers</code>, each with their own signer <code>id</code>, <code>status</code> and <code>url</code>.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+                    "documentId": "67e0ca30-49e4-4883-86f9-3762f0e6798c", 
+                    "id": "cb80bfb4-d163-426e-ad57-1fd8889e62d4", 
+                    "redirectUrl": "your-redirect-url.com?other_keys=youcandefinehere", 
+                    "signers": [{ 
+                            "displayName": "Rahul R", 
+                            "birthYear": "1988", //included if specified in Create signature request API
+                            "id": "34f94af1-a8b9-4797-b287-c5ef7bff99a1", 
+                            "identifier": "7002484002", 
+                            "signatureDetails": null, 
+                            "status": "pending", 
+                            "url": "https://dg-uat.setu.co/signature/preview?requestId=6bae9d1f-0fa6-44e5-a801-3ad4a5f10a12&signerId=34f94af1-a8b9-4797-b287-c5ef7bff99a1" 
+                    },
+                    { 
+                            "displayName": "chetri R", 
+                            "birthYear": "1988", //included if specified in Create signature request API
+                            "id": "34f94af1-a8b9-4797-b287-c5ef7bff99a1", 
+                            "identifier": "9811412438", 
+                            "signatureDetails": null, 
+                            "status": "pending", 
+                            "url": "https://dg-uat.setu.co/signature/preview?requestId=6bae9d1f-0fa6-44e5-a801-3ad4a5f10a12&signerId=34f94af1-a8b9-4797-b287-c5ef7bff90a2" 
+                    }
+                    ], 
                     "status": "sign_initiated" 
                 } `}
               </CodeBlockWithCopy>
