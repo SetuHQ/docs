@@ -88,6 +88,7 @@ files= [
 <hr class="primary" />
 
 ### Create signature request
+
 Create a signature request with defined signer(s) and a redirect url. You get an `id` in response, which you can use to track the signature request. 
 
 In case you want to validate a customer’s name and year of birth, pass the values for `displayName` and `birthYear` in create signature request. If there is a mismatch in name or birth year (based on data from Aadhaar OTP based verification), we will display an error and the customer will not be able to sign the document.
@@ -127,21 +128,23 @@ It will also be used by Setu to send back relevant information about a signer. B
 <br/>
 
 #### Create Signature request with configID
+
 Create signature request can also be created by using configId in case of flexible signature placement. Please refer to the `201 with configId` tab below for request and response sample.
 
-<Row> 
-  <Portion desktopSpan="whole">
-    <Tabs
+<Tabs
       tabs={[
         {
           key: "1",
           label: "201",
           content: (
             <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully.
-              </p>
+            <Text size="small" weight="600">Normal esign (without configID)</Text>
+            <Card padding="nano" shape="rounded" marginBottom="micro">
+  <details>
+    <summary>
+                <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.</Text>
+    </summary>
               <hr className="tertiary" />
               <h5>Request</h5>
               <CodeBlockWithCopy language="json">
@@ -193,22 +196,20 @@ Create signature request can also be created by using configId in case of flexib
               <Callout type="warning">
                 When the session of a <code>url</code> is active, the  <code>status</code> of the signature request is <code>sign_in_progress</code> and no other signer will be able to sign the document at that point of time.
               </Callout>
-            </>
-          ),
-        },
-        {
-          key: "2",
-          label: "201 with configId",
-          content: (
-            <> 
-              <p>
+              </details>
+              </Card>
+              
+              <Text size="small" weight="600">Flexi esign (with configID)</Text>
+              <Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+                <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.</Text>
+    </summary>
+              <hr className="tertiary" />
+               <p>
                 When passiing a configID, width, height, position and on pages field are not required as they are picked from the config associated with the id.
               </p>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully.
-              </p>
-              <hr className="tertiary" />
               <h5>Request with configId</h5> 
               <CodeBlockWithCopy language="json">
                 {`POST /api/signature 
@@ -272,14 +273,13 @@ Create signature request can also be created by using configId in case of flexib
               <Callout type="warning">
                 When the session of a <code>url</code> is active, the  <code>status</code> of the signature request is <code>sign_in_progress</code> and no other signer will be able to sign the document at that point of time.
               </Callout>
+              </details>
+              </Card>
             </>
           ),
-        },
+        }
       ]}
     ></Tabs>
-
-  </Portion>
-</Row>
 
 <hr class="primary" />
 
@@ -307,10 +307,13 @@ The following table lists the possible values of `status` of the signature reque
           label: "200",
           content: (
             <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully and no signer has signed the document yet.
-              </p>
+            <Text size="small" weight="600">Type 1</Text>
+            <Card padding="nano" shape="rounded" marginBottom="micro">
+              <details>
+                <summary>
+                <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully and no signer has signed the document yet.</Text>
+                </summary>
               <hr className="tertiary" />
               <h5>Request</h5>
               <p>
@@ -369,27 +372,25 @@ The following table lists the possible values of `status` of the signature reque
                     "status": "sign_initiated" // ENUM values—sign_initiated | sign_pending | sign_in_progress | sign_complete 
                 } `}
               </CodeBlockWithCopy>
-            </>
-          ),
-        },
-        {
-          key: "2",
-          label: "200",
-          content: (
-            <>
-              <p>
-                <Badge type="success">SUCCESS</Badge> Setu has processed your
+              </details>
+              </Card>
+              
+              <Text size="small" weight="600">Type 2</Text>
+              <Card padding="nano" shape="rounded" marginBottom="micro">
+              <details>
+                <summary>
+                  <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
                 request successfully and at least one of the signers has signed
-                the document.
-              </p>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>
-                Pass the signature request <code>id</code> as a URL parameter
-              </p>
-              <CodeBlockWithCopy language="json">
-                {`GET  /api/signature/:id `}
-              </CodeBlockWithCopy>
+                the document.</Text>
+                  </summary>
+                <hr className="tertiary" />
+                <h5>Request</h5>
+                <p>
+                  Pass the signature request <code>id</code> as a URL parameter
+                  </p>
+                <CodeBlockWithCopy language="json">
+                  {`GET  /api/signature/:id `}
+                  </CodeBlockWithCopy>
               <hr className="tertiary" />
               <h5>Response</h5>
               <p>
@@ -451,12 +452,14 @@ The following table lists the possible values of `status` of the signature reque
                     ], 
                     "status": "sign_complete" // ENUM values—sign_initiated | sign_pending | sign_in_progress | sign_complete 
                 } `}
-              </CodeBlockWithCopy>
-            </>
+                </CodeBlockWithCopy>
+                </details>
+                </Card>
+              </>
           ),
         },
         {
-          key: "3",
+          key: "2",
           label: "404",
           content: (
             <>
