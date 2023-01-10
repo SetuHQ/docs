@@ -44,7 +44,7 @@ For documentation preview, `Docter Preview`
 
 ## Preview
 
-Using the `Docter Preview` extension, we can preview content and sidebar changes. Please go through the README to learn about the features and follow the steps mentioned to use it.
+Using the `Docter Preview` extension, we can preview content and sidebar changes. Please go through the [README](https://github.com/SetuHQ/vscode-docter-preview#readme) to learn about the features and follow the steps mentioned to use it.
 
 # API References
 
