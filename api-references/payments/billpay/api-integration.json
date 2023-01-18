@@ -377,6 +377,86 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "pincode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentChannel",
+            "in": "query",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "INT",
+                  "INTB",
+                  "MOB",
+                  "BNKBRNCH",
+                  "BSC",
+                  "AGT",
+                  "KIOSK",
+                  "ATM",
+                  "MOBB",
+                  "POS",
+                  "MPOS"
+                ]
+              }
+            }
+          },
+          {
+            "name": "paymentMode",
+            "in": "query",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "Internet Banking",
+                  "Debit Card",
+                  "Credit Card",
+                  "Prepaid Card",
+                  "IMPS",
+                  "Cash",
+                  "UPI",
+                  "Wallet",
+                  "NEFT",
+                  "AEPS",
+                  "Account Transfer",
+                  "Bharat QR",
+                  "USSD"
+                ]
+              }
+            }
           }
         ],
         "responses": {
@@ -1308,6 +1388,67 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "mobile",
+            "in": "query",
+            "description": "Mobile number with 6, 10 and 20 digits are valid.",
+            "schema": {
+              "maxLength": 20,
+              "minLength": 6,
+              "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionIds",
+            "in": "query",
+            "description": "Transaction IDs",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "partnerRefIds",
+            "in": "query",
+            "description": "Partner provided transaction Ids",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "billerIds",
+            "in": "query",
+            "description": "The biller ID on BBPS",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "customerMobileNumber",
+            "in": "query",
+            "description": "Mobile number with 6, 10 and 20 digits are valid.",
+            "schema": {
+              "maxLength": 20,
+              "minLength": 6,
+              "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1563,22 +1704,22 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "start date of the timestamp provided by the partner while making the request. full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21",
+            "description": "start date of the timestamp provided by the partner while making the request. Full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21",
             "schema": {
               "type": "string",
               "format": "date"
             },
-            "example": "2017-07-21"
+            "example": "2022-07-19"
           },
           {
             "name": "endDate",
             "in": "query",
-            "description": "end date of the timestamp provided by the partner while making the request. full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21",
-            "example": "2017-07-21",
+            "description": "full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21",
             "schema": {
               "type": "string",
               "format": "date"
-            }
+            },
+            "example": "2022-07-19"
           },
           {
             "name": "billerId",
@@ -1618,8 +1759,11 @@
           {
             "name": "mobile",
             "in": "query",
-            "description": "Mobile No.",
+            "description": "Mobile number with 6, 10 and 20 digits are valid.",
             "schema": {
+              "maxLength": 20,
+              "minLength": 6,
+              "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
               "type": "string"
             }
           }
@@ -1763,20 +1907,7 @@
             "example": "SmartPay"
           },
           "channel": {
-            "type": "string",
-            "description": "This is the initiating channel.\n1. `AGT`: Offline agent.\n2. `BNKBRNCH`: Bank branch.\n3. `BSC`: Business correspondent\n4. `MOB`: Mobile application\n5. `INT`: Internet portal\n6. `INTB`: Internet banking\n7. `MOBB`: Mobile banking\n8. `ATM`: ATM\n9. `KIOSK`: KIOSK\n",
-            "example": "INT",
-            "enum": [
-              "INT",
-              "INTB",
-              "MOB",
-              "BNKBRNCH",
-              "BSC",
-              "AGT",
-              "KIOSK",
-              "ATM",
-              "MOBB"
-            ]
+            "$ref": "#/components/schemas/paymentChannel"
           },
           "geocode": {
             "type": "string",
@@ -1811,12 +1942,7 @@
             "example": "48-4D-7E-CB-DB-6F"
           },
           "mobile": {
-            "maxLength": 20,
-            "minLength": 6,
-            "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
-            "type": "string",
-            "description": "Mandatory if channel is `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
-            "example": "9481773011"
+            "$ref": "#/components/schemas/mobile"
           },
           "os": {
             "type": "string",
@@ -2167,6 +2293,10 @@
             "type": "string",
             "example": "city"
           },
+          "coverage": {
+            "type": "string",
+            "example": "IND"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -2352,6 +2482,22 @@
           }
         }
       },
+      "complaintStatus": {
+        "type": "string",
+        "description": "BBPS Complaint status",
+        "example": "ASSIGNED",
+        "enum": [
+          "INITIALIZED",
+          "ASSIGNED",
+          "RE_ASSIGNED",
+          "ASSIGNED_TO_BOU",
+          "ASSIGNED_TO_COU",
+          "ASSIGNED_TO_OU",
+          "ESCALATED",
+          "RESOLVED",
+          "UNRESOLVED"
+        ]
+      },
       "couAgentBillFetchRequest": {
         "required": [
           "agent",
@@ -2515,12 +2661,7 @@
             "$ref": "#/components/schemas/billParameters"
           },
           "mobile": {
-            "maxLength": 20,
-            "minLength": 6,
-            "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
-            "type": "string",
-            "description": "Mobile number with 6, 10 and 20 digits are valid.",
-            "example": "9481773053"
+            "$ref": "#/components/schemas/mobile"
           }
         }
       },
@@ -2602,26 +2743,25 @@
             "description": "BBPOU to which the complaint is assigned",
             "example": "OU Four"
           },
+          "billerId": {
+            "type": "string",
+            "description": "The biller ID on BBPS",
+            "example": "MAHI00000NATIC"
+          },
           "complaintId": {
             "type": "string",
             "description": "Complaint ID",
             "example": "OP0121046567755"
           },
           "complaintStatus": {
+            "$ref": "#/components/schemas/complaintStatus"
+          },
+          "customerMobileNumber": {
+            "$ref": "#/components/schemas/mobile"
+          },
+          "partnerRefId": {
             "type": "string",
-            "description": "Status of the complaint",
-            "example": "RESOLVED",
-            "enum": [
-              "INITIALIZED",
-              "ASSIGNED",
-              "RE_ASSIGNED",
-              "ASSIGNED_TO_BOU",
-              "ASSIGNED_TO_COU",
-              "ASSIGNED_TO_OU",
-              "ESCALATED",
-              "RESOLVED",
-              "UNRESOLVED"
-            ]
+            "example": "AX30910192192192192"
           },
           "refId": {
             "type": "string",
@@ -2631,7 +2771,7 @@
           "remarks": {
             "type": "string",
             "description": "BBPS Complaint remarks",
-            "example": "Payment pending"
+            "example": "Payment Pending"
           },
           "responseCode": {
             "type": "string",
@@ -2641,6 +2781,11 @@
           "responseReason": {
             "type": "string",
             "example": "SUCCESS"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "Setu BillPay Transaction ID.",
+            "example": "AX30910192192192192"
           }
         }
       },
@@ -2713,19 +2858,7 @@
             "example": "Resolved in favour of Biller"
           },
           "status": {
-            "type": "string",
-            "example": "INITIALIZED",
-            "enum": [
-              "INITIALIZED",
-              "ASSIGNED",
-              "RE_ASSIGNED",
-              "ASSIGNED_TO_BOU",
-              "ASSIGNED_TO_COU",
-              "ASSIGNED_TO_OU",
-              "ESCALATED",
-              "RESOLVED",
-              "UNRESOLVED"
-            ]
+            "$ref": "#/components/schemas/complaintStatus"
           }
         },
         "x-go-name": "DisputeResponseData"
@@ -2884,6 +3017,32 @@
           }
         }
       },
+      "mobile": {
+        "maxLength": 20,
+        "minLength": 6,
+        "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
+        "type": "string",
+        "description": "Mobile number with 6, 10 and 20 digits are valid.",
+        "example": "9481773053"
+      },
+      "paymentChannel": {
+        "type": "string",
+        "description": "This is the initiating channel.\n1. `AGT`: Offline agent.\n2. `BNKBRNCH`: Bank branch.\n3. `BSC`: Business correspondent\n4. `MOB`: Mobile application\n5. `INT`: Internet portal\n6. `INTB`: Internet banking\n7. `MOBB`: Mobile banking\n8. `ATM`: ATM\n9. `KIOSK`: KIOSK\n",
+        "example": "INT",
+        "enum": [
+          "INT",
+          "INTB",
+          "MOB",
+          "BNKBRNCH",
+          "BSC",
+          "AGT",
+          "KIOSK",
+          "ATM",
+          "MOBB",
+          "POS",
+          "MPOS"
+        ]
+      },
       "paymentChannelSpec": {
         "required": [
           "maxLimit",
@@ -2902,8 +3061,7 @@
             "example": 10100
           },
           "paymentChannel": {
-            "type": "string",
-            "example": "Internet"
+            "$ref": "#/components/schemas/paymentChannel"
           },
           "supportsPendingStatus": {
             "type": "boolean",
@@ -2927,23 +3085,10 @@
             "example": 10000
           },
           "mode": {
-            "type": "string",
-            "example": "INTERNET BANKING",
-            "enum": [
-              "Internet Banking",
-              "Debit Card",
-              "Credit Card",
-              "Prepaid Card",
-              "IMPS",
-              "Cash",
-              "UPI",
-              "Wallet",
-              "NEFT",
-              "AEPS",
-              "Account Transfer",
-              "Bharat QR",
-              "USSD"
-            ]
+            "$ref": "#/components/schemas/paymentMode"
+          },
+          "paymentParams": {
+            "$ref": "#/components/schemas/paymentParameters"
           },
           "paymentRefId": {
             "maxLength": 35,
@@ -2957,6 +3102,25 @@
             "example": "2020-12-12T13:12:00+05:30"
           }
         }
+      },
+      "paymentMode": {
+        "type": "string",
+        "example": "Internet Banking",
+        "enum": [
+          "Internet Banking",
+          "Debit Card",
+          "Credit Card",
+          "Prepaid Card",
+          "IMPS",
+          "Cash",
+          "UPI",
+          "Wallet",
+          "NEFT",
+          "AEPS",
+          "Account Transfer",
+          "Bharat QR",
+          "USSD"
+        ]
       },
       "paymentModeSpec": {
         "required": [
@@ -2976,13 +3140,38 @@
             "example": 10100
           },
           "paymentMode": {
-            "type": "string",
-            "example": "Internet_Banking"
+            "$ref": "#/components/schemas/paymentMode"
           },
           "supportsPendingStatus": {
             "type": "boolean",
             "example": false
           }
+        }
+      },
+      "paymentParameterItem": {
+        "required": [
+          "name",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The display name of the parameter. This has to match what is sent in fields.",
+            "example": "Early Payment Amount"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the payment parameter",
+            "example": "100"
+          }
+        }
+      },
+      "paymentParameters": {
+        "type": "array",
+        "description": "Additional Payment Parameters",
+        "items": {
+          "$ref": "#/components/schemas/paymentParameterItem"
         }
       },
       "planItem": {
@@ -3156,8 +3345,7 @@
             "example": "MAHI00000NATIC"
           },
           "customerMobileNumber": {
-            "type": "string",
-            "example": "9181878282"
+            "$ref": "#/components/schemas/mobile"
           },
           "partnerRefId": {
             "type": "string",
