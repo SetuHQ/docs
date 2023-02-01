@@ -1,0 +1,123 @@
+---
+sidebar_title: Objects
+page_title: BBPS COU — API integration
+order: 1
+visible_in_sidebar: true
+---
+
+## Payment Channel
+
+This is the initiating payment channel. ****more description ????****
+
+| type       | description            | who should use ??? |
+|------------+------------------------+--------------------|
+| `INT`      | Internet Portal        |                    |
+| `INTB`     | Internet Banking       |                    |
+| `MOB`      | Mobile Application     |                    |
+| `BNKBRNCH` | Bank Branch            |                    |
+| `BSC`      | Business correspondent |                    |
+| `AGT`      | Offline Agent          |                    |
+| `KIOSK`    | KIOSK                  |                    |
+| `ATM`      | ATM                    |                    |
+| `MOBB`     | Mobile Banking         |                    |
+| `POS`      | POS                    |                    |
+| `MPOS`     | MPOS                   |                    |
+
+
+## Payment Mode
+
+Payment modes supported by a biller.
+
+| type             | Who shuld use ??? |
+| Cash             |                   |
+| Internet Banking |                   |
+| Credit Card      |                   |
+| Debit Card       |                   |
+| Prepaid Card     |                   |
+| IMPS             |                   |
+| NEFT             |                   |
+| UPI              |                   |
+| Wallet           |                   |
+| AEPS             |                   |
+| Account Transfer |                   |
+| Bharat QR        |                   |
+| USSD             |                   |
+
+
+
+
+## Customer
+
+Customer object holds the customer mobile number and the customer bill parameters.
+
+| parameter                | type                               | description                                                                                        | example                                       |
+|--------------------------+------------------------------------+----------------------------------------------------------------------------------------------------+-----------------------------------------------|
+| `mobile`                 | `string` (6, 10 and 20 digits)     | Customer Mobile Number                                                                             | 9876543210, 357220                            |
+| `billParameters`         | `{ name: string, value: string}[]` | Bill Parameters. The parameters to send is found in the biller details API.                        | [{"name": "Loan Number", "value": "1895159"}] |
+| `billParameters[].name`  | `string`                           | Name of the bill parameter. name should match the parameter in biller details API.                 | "Loan Number"                                 |
+| `billParameters[].value` | `string`                           | Value of the bill parameter. Value is validate according to the regex found in the biller details. | "1895159"                                     |
+
+
+## Biller
+
+Biller object holds the biller ID.
+
+| parameter | type     | description           | example          |
+|-----------+----------+-----------------------+------------------|
+| `id`      | `string` | The Biller ID on BBPS | "MAHI00000NATIC" |
+
+
+## Agent
+
+Details pertaining to the Agent which initiates the
+transaction. Values of the field if provided to NPCI has to be matched
+against it. ????
+
+
+| parameter    | type                | description                    | example                |
+|--------------+---------------------+--------------------------------+------------------------|
+| `id`         | `string`            | The Agent ID on BBPS           | "AS01AI06512391457204" |
+| `channel`    | `PaymentChannel`    | Payment Channel used by Agent. | "INT"                  |
+| `ip`         | `string,ipv4`       | Agent server IP address        | "124.170.23.24"        |
+| `mac`        | `string,mac`        | Server MAC address             | "48-4D-7E-CB-DB-6F"    |
+| `mobile`     | `string`            | Agent Mobile number            | "9876543210"           |
+| `geocode`    | `string`            | Agent Geocode                  | "19.0139,72.8254"      |
+| `postalCode` | `string`            | Agent Pincode                  | "600001"               |
+| `terminalId` | `string`            | Agent terminal ID              | "6000011234"           |
+| `imei`       | `string`            | Agent IMEI                     | "123456789012345"      |
+| `ifsc`       | `string`            | Agent IFSC                     | "ICIC0000152"          |
+| `os`         | `iOS \vert Android` | Initiating device OS           | "Android"              |
+| `app`        | `string`            | Initiating app name            | "SmartPay"             |
+
+
+## Initiating Channel & Required Agent parameters
+
+| Channel    | Agent parameters                             |
+|------------+----------------------------------------------|
+| `BNKBRNCH` | `ifsc`,`mobile`,`geocode`,`postalCode`       |
+| `MOB`      | `ip`,`imei`,`os`,`app`                       |
+| `MOBB`     | `ip`,`imei`,`os`,`app`                       |
+| `INT`      | `ip`,`mac`                                   |
+| `INTB`     | `ip`,`mac`                                   |
+| `ATM`      | `terminalId`                                 |
+| `KIOSK`    | `terminalId`                                 |
+| `AGT`      | `terminalId`,`mobile`,`geocode`,`postalCode` |
+| `BSC`      | `terminalId`,`mobile`,`geocode`,`postalCode` |
+
+## Initiating Channel & Eligible Payment modes
+
+| Payment Mode     | INT | INTB | MOB | MOBB | ATM | BNKBRNCH | KIOSK | AGT | BSC |
+|------------------+-----+------+-----+------+-----+----------+-------+-----+-----|
+| Cash             | N   | N    | N   | N    | N   | Y        | Y     | Y   | Y   |
+| Internet Banking | Y   | Y    | Y   | Y    | Y   | N        | N     | N   | N   |
+| Credit Card      | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
+| Debit Card       | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
+| Prepaid Card     | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
+| IMPS             | Y   | Y    | Y   | Y    | N   | Y        | N     | Y   | Y   |
+| NEFT             | Y   | Y    | Y   | Y    | Y   | Y        | N     | Y   | Y   |
+| UPI              | Y   | Y    | Y   | Y    | N   | Y        | N     | Y   | Y   |
+| Wallet           | Y   | Y    | Y   | Y    | N   | Y        | Y     | Y   | Y   |
+| AEPS             | N   | N    | Y   | N    | N   | Y        | N     | Y   | Y   |
+| Account Transfer | N   | N    | N   | N    | N   | Y        | N     | N   | Y   |
+| Bharat QR        | N   | N    | Y   | Y    | N   | Y        | N     | Y   | Y   |
+| USSD             | N   | N    | Y   | Y    | N   | N        | N     | N   | N   |
