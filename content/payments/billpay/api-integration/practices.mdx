@@ -69,7 +69,7 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
   ### Request
 
-  ```json
+  ```js
 {
     "agent": {
         "channel": "INT",
@@ -110,7 +110,7 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
 ### Response
 
-```json
+```js
 {
     "data": {
         "refId": "CE9U2F9RHQPJICM8SC0G87SZTUR23440700"
@@ -127,7 +127,7 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
   ### Request
 
-  ```json
+  ```js
 {
     "refId": "CE9U2F9RHQPJICM8SC0G87SZTUR23440700"
 }
@@ -135,7 +135,7 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
 ### Response
 
-```json
+```js
 {
     "data": {
         "additionalInfo": [
@@ -188,7 +188,7 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
   ### Request
 
-  ```json
+  ```js
 {
     "refId": "CE9U2F9RHQPJICM8SC0G87SZTUR23440700",
     "paymentDetails": {
@@ -202,7 +202,7 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
 ### Response
 
-```json
+```js
 {
     "data": {
         "refId": "CE9U2F9RHQPJICM8SC0G87SZTUR23440700"
@@ -218,7 +218,7 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
   ### Request
 
-  ```json
+  ```js
 {
     "refId": "CE9U2F9RHQPJICM8SC0G87SZTUR23440700"
 }
@@ -226,13 +226,13 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
 ### Response
 
-```json
+```js
 {
     "data": {
         "failureReason": {
-            "code": "BOU002",
-            "message": "TMM001",
-            "type": "BBPS"
+            "code": "BOU002",    // Payment failed due to type "BBPS". Fetch can be reused in the next 48 hours
+            "message": "TMM001", // from the first try of the Payment. In case the Biller is of Validation Type,
+            "type": "BBPS"       // Ageing period will be 24 hours of successful validation.
         },
         "refId": "CE9U2F9RHQPJICM8SC0G87SZTUR23440700",
         "refundDetails": {
@@ -246,9 +246,6 @@ Currently we don't allow retrying payment requests that fail due to error types 
     "traceId": "CE9U461RHQPJICM8SCGG"
 }
 ```
-
-- Payment was failure due to error type "BBPS".
-- Fetch can be reused in the next 48 hours from the Payment Failure timestamp.
 </details>
 
 <details>
@@ -256,9 +253,9 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
   ### Request
 
-  ```json
+  ```js
 {
-    "refId": "CE9U2F9RHQPJICM8SC0G87SZTUR23440700",
+    "refId": "CE9U2F9RHQPJICM8SC0G87SZTUR23440700", // Provided refId in the Payment Request is the one linked to the Bill fetch (for which the Bill payment was a failure with "BBPS" error).
     "paymentDetails": {
         "mode": "Credit Card",
         "paymentRefId": "N2001121212344",
@@ -270,18 +267,15 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
 ### Response
 
-```json
+```js
 {
     "data": {
-        "refId": "CE9U4I9RHQPJICM8SCK0303EZUD23440705"
+        "refId": "CE9U4I9RHQPJICM8SCK0303EZUD23440705" // A different refID is returned in Payment Response.
     },
     "success": true,
     "traceId": "CE9U4E9RHQPJICM8SCIG"
 }
 ```
-
-- Provided refId in the Payment Request is the one linked to the Bill fetch (for which the Bill payment was a failure with "BBPS" error).
-- A different refID is returned in Payment Response.
 
 </details>
 
@@ -290,15 +284,15 @@ Currently we don't allow retrying payment requests that fail due to error types 
 
   ### Request
 
-  ```json
+  ```js
 {
-    "refId": "CE9U4I9RHQPJICM8SCK0303EZUD23440705"
+    "refId": "CE9U4I9RHQPJICM8SCK0303EZUD23440705" // Using the new refId, we can find the status of the second transaction.
 }
   ```
 
 ### Response
 
-```json
+```js
 {
     "data": {
         "billerId": "OTOE00005XXZ43",
@@ -317,7 +311,5 @@ Currently we don't allow retrying payment requests that fail due to error types 
     "traceId": "CE9U4OHRHQPJICM8SCNG"
 }
 ```
-
-- Using the new refId, we can find the status of the second transaction.
 
 </details>
