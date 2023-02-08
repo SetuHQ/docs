@@ -1,0 +1,293 @@
+---
+sidebar_title: Quickstart
+page_title: GST Verification quickstart
+order: 6
+visible_in_sidebar: true
+---
+
+## GST API Quickstart
+
+### GST overview
+
+GSTIN is a Goods and Services Tax Identification Number that is assigned to each individual registered under GST. It is a 15-digit unique identification number.
+GSTIN resolves as follows: The state code is represented by the first two digits of the 15-digit GSTIN. The PAN number for the individual or corporate entity is the following 10 digits. The thirteenth digit is depending on how many times the company has registered under the same PAN within a state.
+
+### What is Setu GST API?
+
+With Setu's GSTIN Verification API, you can quickly confirm the GSTIN information of your clients for speedy KYC, vendor onboarding, business loan financing, and insurance needs.
+eSign APIs can be used to collect legally binding signatures on a document, for upto 6 signers.
+
+### steps to integrate
+
+#### 1 :- Start KYC and business documentation
+
+This is started once Setu’s Sales team has interacted with you and confirmed integration. You will need to add a few KYC details and review some agreements. Please reachout to support@setu.co to get started here.
+
+#### 2 :- Get API credentials
+
+Contact Setu to receive x-client-id and x-client-secret details. These credentials are required to make API calls on Sandbox or Production.
+
+#### 3 :- Integrate on Sandbox
+
+The URLs you would need for this API—
+
+- Sandbox—`https://dg-sandbox.setu.co`
+- Production—`https://dg.setu.co`
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+
+<hr className="primary" />
+
+### Verify GST
+
+Call this API to verify gstin number provided by your customer. The request param are.
+
+- `gstin` is the gstin value. It may belong to different categories like Company, Trust, Goverment, Firm,\_ etc.
+
+<br />
+
+While testing on Sandbox, you may use the following sample values—
+
+- Use 27AAICB3918J1CT for a valid GST
+- Use 27AAICA3919J1CT for a valid GST with additional address present.
+- If you use any other values for `gstin`, you will get a inavlid gstin response.
+
+
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "200",
+      content: (
+        <>
+          <p>
+            <Badge type="success">SUCCESS</Badge> Your request has a valid{" "}
+            <code>gstin</code> and Setu has processed your request successfully.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST  /api/verify/gst
+
+{
+"gstin": "27AAICB3918J1CT"
+} `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{
+"data": {
+"address": {
+"additional": [],
+"principle": {
+"buildingName": "MESH COMPLEX",
+"buildingNumber": "WAREHOUSE H",
+"city": "",
+"district": "Thane",
+"floorNo": "SURVEY NO. 35/4, 36/2",
+"latitude": "",
+"location": "BHIWANDI",
+"longitude": "",
+"naturePlaceOfBusiness": "",
+"pinCode": "421302",
+"stateCode": "Maharashtra",
+"street": "SARAVALI"
+}
+},
+"company": {
+"constitutionOfBusiness": "Private Limited Company",
+"name": "XYZ SELLER SERVICES PRIVATE LIMITED",
+"natureOfBusinessActivity": "",
+"state": "State - Maharashtra,Zone - Thane,Division - THANE CITY,Charge - BHIWANDI_701",
+"status": "Active",
+"taxPayerType": "Tax Collector (Electronic Commerce Operator)",
+"tradeName": "XYZ SELLER SERVICES PRIVATE LIMITED",
+"type": "Private Limited Company"
+},
+"gst": {
+"dateOfCancellation": "",
+"id": "27AAICB3918J1CT",
+"lastUpdatedDate": "",
+"registrationDate": "12/10/2018"
+},
+"jurisdiction": {
+"centre": "Commissionerate - BHIWANDI,Division - DIVISION IV,Range - RANGE-I (Jurisdictional Office)",
+"centreCode": "VQ0401",
+"state": "State - Maharashtra,Zone - Thane,Division - THANE CITY,Charge - BHIWANDI_701",
+"stateCode": "MHCG1425"
+}
+},
+"message": "",
+"requestId": "e347e79b-dddc-49c1-b266-afb2c44843e8",
+"verification": "success",
+"traceId": "1-633f22e0-6eb8245d7043f93e1bf83604"
+} `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "200",
+      content: (
+        <>
+          <p>
+            <Badge type="success">SUCCESS</Badge> Setu has processed your
+            request successfully, but the request has an invalid{" "}
+            <code>gstin</code>
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST /api/verify/gst
+
+{
+"gstin": "27AAICA3919J1CT"
+} `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{
+"data": {
+"address": {
+"additional": [
+{
+"buildingName": "",
+"buildingNumber": "DOOR NO, 17",
+"city": "",
+"district": "Dakshina Kannada",
+"floorNo": "1ST FLOOR",
+"latitude": "",
+"location": "ONNAKATTE KULAI OF MANGALORE",
+"longitude": "",
+"naturePlaceOfBusiness": "Office / Sale Office",
+"pinCode": "575019",
+"stateCode": "Karnataka",
+"street": "XYZ COMPLEX OPP MAHILA MANDALA"
+}
+],
+"principle": {
+"buildingName": "MESH COMPLEX",
+"buildingNumber": "WAREHOUSE H",
+"city": "",
+"district": "Thane",
+"floorNo": "SURVEY NO. 35/4, 36/2",
+"latitude": "",
+"location": "BHIWANDI",
+"longitude": "",
+"naturePlaceOfBusiness": "",
+"pinCode": "421302",
+"stateCode": "Maharashtra",
+"street": "SARAVALI"
+}
+},
+"company": {
+"constitutionOfBusiness": "Private Limited Company",
+"name": "XYZ SELLER SERVICES PRIVATE LIMITED",
+"natureOfBusinessActivity": "",
+"state": "State - Maharashtra,Zone - Thane,Division - THANE CITY,Charge - BHIWANDI_701",
+"status": "Active",
+"taxPayerType": "Tax Collector (Electronic Commerce Operator)",
+"tradeName": "XYZ SELLER SERVICES PRIVATE LIMITED",
+"type": "Private Limited Company"
+},
+"gst": {
+"dateOfCancellation": "",
+"id": "27AAICB3918J1CT",
+"lastUpdatedDate": "",
+"registrationDate": "12/10/2018"
+},
+"jurisdiction": {
+"centre": "Commissionerate - BHIWANDI,Division - DIVISION IV,Range - RANGE-I (Jurisdictional Office)",
+"centreCode": "VQ0401",
+"state": "State - Maharashtra,Zone - Thane,Division - THANE CITY,Charge - BHIWANDI_701",
+"stateCode": "MHCG1425"
+}
+},
+"message": "",
+"requestId": "e347e79b-dddc-49c1-b266-afb2c44843e8",
+"verification": "success",
+"traceId": "1-633f22e0-6eb8245d7043f93e1bf83604"
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "3",
+      label: "200",
+      content: (
+        <>
+          <p>
+            <Badge type="success">SUCCESS</Badge> Setu has processed your
+            request successfully, but the request has an invalid{" "}
+            <code>gstin</code>
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST /api/verify/gst
+
+{
+"gstin": "27AAICA3918J1C"
+} `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{
+"data": {},
+"message": "Invalid GSTIN / UID",
+"requestId": "f8baadba-5f92-481c-9ce4-f5ba45af030b",
+"verification": "success",
+"traceId": "1-633c15e8-24825b38477426d4165bb6c2"
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "4",
+      label: "500",
+      content: (
+        <>
+          <p>
+            <Badge type="failure">BAD REQUEST</Badge> Your request does not have{" "}
+            <code>consent</code> recorded as yes, from your customer’s end. This
+            is indicated by <code>y</code> or <code>Y</code> against the{" "}
+            <code>consent</code> param.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST /api/verify/gst
+{
+"gstin": "27AAICA3918J1C"
+} `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{
+"error": {
+"code": "upstream_error_response",
+"detail": "error response from upstream.",
+"requestId": "006425cd-7ebe-452a-9c0b-64e4df512324",
+"traceId": "1-633c1b9c-0ab06611209a2b750b610d23"
+}
+}`
+}
+
+</CodeBlockWithCopy>
+</>
+),
+},
+]}
+/>
+
+<br />
+<WasPageHelpful />
