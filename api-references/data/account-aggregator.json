@@ -50,12 +50,16 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreatenewconsentRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreatenewconsentRequest"
+                  }
+                ]
               },
               "example": {
                 "Detail": {
                   "consentStart": "{{$isoTimestamp}}",
-                  "consentExpiry": "2022-04-23T05:44:53.822Z",
+                  "consentExpiry": "2023-04-23T05:44:53.822Z",
                   "Customer": {
                     "id": "9999999999@onemoney"
                   },
@@ -100,6 +104,12 @@
                     "DEPOSIT"
                   ]
                 },
+                "context": [
+                  {
+                    "key": "accounttype",
+                    "value": "CURRENT"
+                  }
+                ],
                 "redirectUrl": "https://setu.co"
               }
             }
@@ -203,7 +213,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreatenewdatasessionRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreatenewdatasessionRequest"
+                  }
+                ]
               },
               "example": {
                 "consentId": "",
@@ -324,12 +338,20 @@
         "title": "CreatenewconsentRequest",
         "required": [
           "Detail",
+          "context",
           "redirectUrl"
         ],
         "type": "object",
         "properties": {
           "Detail": {
             "$ref": "#/components/schemas/Detail"
+          },
+          "context": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Context"
+            },
+            "description": ""
           },
           "redirectUrl": {
             "type": "string"
@@ -338,7 +360,7 @@
         "example": {
           "Detail": {
             "consentStart": "{{$isoTimestamp}}",
-            "consentExpiry": "2022-04-23T05:44:53.822Z",
+            "consentExpiry": "2023-04-23T05:44:53.822Z",
             "Customer": {
               "id": "9999999999@onemoney"
             },
@@ -383,6 +405,12 @@
               "DEPOSIT"
             ]
           },
+          "context": [
+            {
+              "key": "accounttype",
+              "value": "CURRENT"
+            }
+          ],
           "redirectUrl": "https://setu.co"
         }
       },
@@ -459,7 +487,7 @@
         },
         "example": {
           "consentStart": "{{$isoTimestamp}}",
-          "consentExpiry": "2022-04-23T05:44:53.822Z",
+          "consentExpiry": "2023-04-23T05:44:53.822Z",
           "Customer": {
             "id": "9999999999@onemoney"
           },
@@ -667,6 +695,26 @@
         },
         "example": {
           "type": "string"
+        }
+      },
+      "Context": {
+        "title": "Context",
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "key": "accounttype",
+          "value": "CURRENT"
         }
       },
       "CreatenewdatasessionRequest": {

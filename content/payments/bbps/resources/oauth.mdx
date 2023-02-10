@@ -1,21 +1,104 @@
 ---
 sidebar_title: OAuth 2.0
-page_title: UPI Deeplinks OAuth 2.0
+page_title: BBPS OAuth 2.0
 order: 1
 visible_in_sidebar: true
 ---
 
 ## OAuth 2.0
 
-OAuth 2.0 is an open standard for authorisation and works over HTTPS. In Setu's context, it is used to authorise API requests with access tokens. Read more about OAuth 2.0 <a href="https://tools.ietf.org/html/rfc6749" target="_blank">here ↗</a>.
+OAuth 2.0 is an open standard for authorization and works over HTTPS. In Setu's context, it can be used in two different occassions. 
+ - Merchant can authorize Setu requests for BBPS
+ - Setu can authorize merchant's requests to Setu Reports API
 
-For Setu products, OAuth keys provide a lot of flexibility—you can setup a single set of keys to authorise requests for multiple product configurations, or authorise requests for a single configuration using multiple sets of keys.
+Read more about OAuth 2.0 <a href="https://tools.ietf.org/html/rfc6749" target="_blank">here ↗</a>.
 
 <hr class="primary" />
 
-### Calling Setu-hosted APIs
+### Setu consuming Merchant OAuth Token API
 
-A merchant calls Setu hosted APIs for creating payment links, checking link status, for fetching reports etc. Merchants can use OAuth keys to generate an access token and authorise such API requests with the <a href="/payments/upi-deeplinks/resources/oauth#generate-token-api">generate token API</a> explained below.
+Setu will make a request to the `Token URL` with the credentials configured on Bridge under the `OAuth2.0` Auth scheme.
+
+Assume the URLs to be
+ - `Base URL`: `https://api.my-company.com/v1/bbps`
+ - `Token URL`: `https://api.my-company.com/v1/bbps/auth/oauth`
+
+Based on the chosen `OAuth2.0 scheme` on Bridge, Setu will make either one of the following requests
+
+- For `Client credentials`
+
+<CodeBlockWithCopy language="shell">
+  {
+    `
+    curl --location --request POST 'https://api.my-company.com/v1/bbps/auth/oauth' \\
+    --header 'Content-Type: application/x-www-form-urlencoded' \\
+    --data-urlencode 'grant_type=client_credentials' \\
+    --data-urlencode 'client_secret=myOAuthSecret' \\
+    --data-urlencode 'client_id=myClientID'
+    `
+  }
+</CodeBlockWithCopy>
+
+<CodeBlockWithCopy language="json">
+  {`{
+      "access_token": "actual_token", 
+      "refresh_token": "token_used_to_refresh_access_token"
+}`}
+</CodeBlockWithCopy>
+
+- For `Password`
+
+<CodeBlockWithCopy language="shell">
+  {
+    `
+    curl --location --request POST 'https://api.my-company.com/v1/bbps/auth/oauth' \\
+    --header 'Content-Type: application/x-www-form-urlencoded' \\
+    --data-urlencode 'username=myUsername' \\
+    --data-urlencode 'password=myPassword' \\
+    --data-urlencode 'grant_type=password' \\
+    --data-urlencode 'client_secret=myOAuthSecret' \\
+    --data-urlencode 'client_id=myClientID'
+    `
+  }
+</CodeBlockWithCopy>
+
+<CodeBlockWithCopy language="json">
+  {
+    `{
+      "access_token": "actual_token", 
+      "refresh_token": "token_used_to_refresh_access_token"
+}`}
+</CodeBlockWithCopy>
+
+<Callout type="tip">
+  Setu currently doesn't consume the <code>refresh_token</code>, but no error is thrown if you specify it in the response body.
+  Setu will fetch a new <code>access_token</code> after the expiry of the previous <code>access_token</code>.
+  The default expiry of the <code>access_token</code> is taken from the OAuth2.0 configuration on Bridge.
+</Callout>
+
+<br />
+
+This `access_token` would then be used to make `/bills/fetch` and `/bills/fetchReceipt` requests to the `Base URL` configured on Bridge as follows.
+
+<CodeBlockWithCopy language="shell">
+  {`curl --location --request POST 'https://api.my-company.com/v1/bbps/bills/<fetch||fetchReceipt>' \\
+    --header 'Content-Type: application/json' \\
+    --header 'Authorization: Bearer <access_token>' \\
+    --data '{......}'
+    `}
+</CodeBlockWithCopy>
+
+
+<hr class="primary" />
+
+
+### Calling Setu-hosted APIs for Reports
+
+A merchant calls Setu hosted APIs for fetching reports. Merchants can use OAuth keys to generate an access token and authorize such API requests with the <a href="/payments/bbps/resources/oauth#generate-token-api">generate token API</a> explained below.
+
+For Setu products, OAuth keys provide a lot of flexibility—you can setup a single set of keys to authorize requests for multiple product configurations, or authorize requests for a single configuration using multiple sets of keys.
+
+
 
 ###### Note on JWT authentication
 
@@ -69,7 +152,7 @@ And done! You can now use this key to make API requests to Setu. <a href="/dev-t
 
 ### Generate Token API
 
-An API to generate tokens, which are used to authorise any other API requests made to Setu. This API works with OAuth keys only.
+An API to generate tokens, which are used to authorize any other API requests made to Setu. This API works with OAuth keys only.
 
 ##### Request
 
@@ -153,7 +236,7 @@ If incorrect `clientID` and `secret` details are provided, Setu could respond wi
 
 ### How to use the token
 
-Once you have a valid token available against product configuration(s), you can store it and use it to authorise an API call made to Setu, by setting the `authorization` request header as `Bearer <token-value>`.
+Once you have a valid token available against product configuration(s), you can store it and use it to authorize an API call made to Setu, by setting the `authorization` request header as `Bearer <token-value>`.
 
 **On expiry**
 
