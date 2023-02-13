@@ -128,7 +128,7 @@ against it. ????
 |-----------|--------------------------------|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
 | code      | `string`                       | Error codes includes Application, Banking and BBPS error codes                                     | `"invalid-amount"`                                                |
 | message   | `string`                       | Error code description                                                                             | `"Amount is invalid for this payment. Exactness does not match."` |
-| type      | `FUND_TRANSFER \| BBPS \| APP` | Error Type. BBPS errors are due to BBPS, and code and message field contain the actual BBPS error. | `"APP"`                                                           |
+| type      | `FUND_TRANSFER | BBPS | APP`   | Error Type. BBPS errors are due to BBPS, and code and message field contain the actual BBPS error. | `"APP"`                                                           |
 
 
 ## Payment Details
@@ -141,13 +141,34 @@ against it. ????
 | timestamp    | `date-time`                   | Timestamp                            | `2020-12-12T13:12:00+05:30` |
 
 
-# Bill Status
+## Bill Status
 | type         | description                                        |
 |--------------|----------------------------------------------------|
-| `Processing` | Fetching a bill (or) Paying a bill is in progress. |
-| `Success`    | Successfully fetched a bill (or) paid a bill.      |
-| `Failure`    | Unable to fetch a bill or pay a bill.              |
+| `Processing` | Fetching a bill (or) Paying a bill is in progress |
+| `Success`    | Successfully fetched a bill (or) paid a bill      |
+| `Failure`    | Unable to fetch a bill or pay a bill              |
 
+## Transaction Status
+| type         | description                                        |
+|--------------|----------------------------------------------------|
+| `Processing` | Transaction is in progress                         |
+| `Success`    | Transaction is successful                          |
+| `Failure`    | Transaction has failed                             |
+| `Refunded`   | Transaciton refunded. This happens post `Failure` |
+
+
+## Dispute Status
+
+| type              | description                                                                                                                                             |
+|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `INITIALIZED`     | Initialized                                                                                                                                             |
+| `ASSIGNED`        | Complaint has been accepted.                                                                                                                            |
+| `RE_ASSIGNED`     | When Customer BBPOU re assigned the complaint to the Biller BBPOU.                                                                                      |
+| `ASSIGNED_TO_BOU` | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
+| `ASSIGNED_TO_COU` | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
+| `ASSIGNED_TO_OU`  | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
+| `RESOLVED`        | Once the BBPOU resolves the customer related complaint, the BBPOU updates the system.                                                                   |
+| `UNRESOLVED`      | If the BBPOU does not respond to the complaint within the specified TAT (Super escalation), the complaint status changed to unresolved.                 |
 
 ## Bill Period
 
@@ -199,7 +220,7 @@ Amount acceptance by the biller.
 |---------------|----------------------------------------|----------------------------------------------|----------------------------------------------------------------------------------------|
 | status        | [Status](#bill-status)                 | Status of the refund process                 | `Success`                                                                              |
 | transactionId | `string`                               | Setu Transaction ID                          | `REFAS01303112462917ELVJ`                                                              |
-| error         | `{code:string,message:string} \| null` | Error code and message during refund process | `{"code":"bank-connectivity-error", "message:"The account debit could not be happen."` |
+| error         | `{code:string,message:string} | null`  | Error code and message during refund process | `{"code":"bank-connectivity-error", "message:"The account debit could not be happen."` |
 
 
 
@@ -209,8 +230,8 @@ Amount acceptance by the biller.
 |-----------------------|-------------------------------|---------------------------------------------------------|--------------|
 | paymentMode           | [Payment Mode](#payment-mode) | payment mode                                            | `Debit Card` |
 | supportsPendingStatus | `bool`                        | Whether payment mode for biller supports pending status | `false`      |
-| minLimit              | `integer \| null`             | Minimum acceptable amount in paise                      | `1000`       |
-| maxLimit              | `integer \| null`             | Maximum acceptable amount in paise                      | `1000`       |
+| minLimit              | `integer | null`              | Minimum acceptable amount in paise                      | `1000`       |
+| maxLimit              | `integer | null`              | Maximum acceptable amount in paise                      | `1000`       |
 
 
 ## Fetch Response - `/bills/fetch/response`
@@ -224,7 +245,7 @@ Amount acceptance by the biller.
 | additionalInfo | `{"name":"value"}[]`              | Additional information of the bill sent by the biller   | ???                                                                                        |
 | billerRefId    | `string`                          | Biller reference ID used by the biller for the request. | `7f16a032e514`                                                                             |
 | exactness      | [Exactness](#exactness)           | Biller Exactness                                        | `Exact`                                                                                    |
-| paymentLimits  | [Payment Limit](#payment-limit)[] | Payment limits???                                       | `{"maxLimit":1000,"minLimit":10,"paymentMode":"Debit Card","supportsPendingStatus":false}` |
+| paymentLimits  | [Payment Limit](#payment-limit)`[]` | Payment limits???                                       | `{"maxLimit":1000,"minLimit":10,"paymentMode":"Debit Card","supportsPendingStatus":false}` |
 | autoFetchHash  | `string`                          | Auto fetch identifier for the bill.                     | `d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a`                         |
 
 
@@ -253,3 +274,138 @@ Amount acceptance by the biller.
 | paymentDetails | [Payment Details](#payment-details) | Payment Details for the transaction                             | `{"amount": 100000, "mode": "Credit Card", "paymentRefId": "N2001121212344", "timestamp": "2020-12-12T13:12:00.000+05:30"}` |
 | additionalInfo | `{"name":"value"}[]`                | Additional information of the bill sent by the biller           | ???                                                                                                                         |
 | refundDetails  | [Refund Details](#refund-details)   | Refund details if the payment failed.                           | ???                                                                                                                            |
+
+## Dispute Type
+| type                                                    | description                                                                |
+|---------------------------------------------------------|----------------------------------------------------------------------------|
+| `account-not-updated`                                   | Transaction Successful, account not updated                                |
+| `double-payment`                                        | Double payment updated                                                     |
+| `paid-to-wrong-account`                                 | Erroneously paid in wrong account                                          |
+| `amount-deducted-biller-credited-no-transaction-id`     | Amount deducted, biller account credited but transaction ID not received   |
+| `amount-deducted-biller-not-credited-no-transaction-id` | Amount deducted, biller account not credited & transaction ID not received |
+| `amount-deducted-multiple-times`                        | Amount deducted multiple times                                             |
+| `others`                                                | Other reason                                                               |
+
+## Dispute Request - `/bills/dispute/request`
+
+| parameter      | type                          | description         | example                                       |
+|----------------|-------------------------------|---------------------|-----------------------------------------------|
+| txnReferenceId | `string`                      | Setu Transaction ID | `AS01303112462917ELVJ`                        |
+| disputeType    | [Dispute Type](#dispute-type) | Dispute type        | `double-payment`                              |
+| description    | `string` (100 characters)     | Dispute description | `There was a double deduction in the wallet.` |
+
+
+## Dispute Response - `/bills/dispute/response`
+
+| parameter  | type                              | description                                    | example                               |
+|------------|-----------------------------------|------------------------------------------------|---------------------------------------|
+| refId      | `string`                          | BBPS Reference ID                              | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246` |
+| disputeId  | `string`                          | Dispute ID used for the complaint              | `OP0121046567755`                     |
+| status     | [Dispute Status](#dispute-status) | Dispute Status                                 | `RESOLVED`                            |
+| assignedTo | `string`                          | The entity who has this complaint assigned to. | `ICICI Bank`                          |
+| remarks    | `string`                          | Remarks of the complaint                       | `Resolved in favour of Biller`        |
+
+
+
+## Transaction
+
+| parameter            | type                                      | description                          | example                               |
+|----------------------|-------------------------------------------|--------------------------------------|---------------------------------------|
+| refId                | `string`                                  | BBPS Reference ID                    | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246` |
+| status               | [Transaction Status](#transaction-status) | Transaction Status                   | `Success`                             |
+| transactionId        | `string`                                  | Setu Transaction ID                  | `AS01303112462917ELVJ`                |
+| partnerRefId         | `string` (6 - 35 characters)              | Payment Reference ID tagged by agent | `BD019181220291`                      |
+| billerId             | `string`                                  | BBPS Biller ID                       | `MAHI00000NATIC`                      |
+| amount               | `integer`                                 | Amount in paise                      | `10000`                               |
+| customerMobileNumber | `string` (6, 10 and 20 digits)            | Customer Mobile Number               | 9876543210, 357220                    |
+| timestamp            | `date-time`                               | Transaction timestamp                | `2020-12-12T13:12:00+05:30`           |
+
+
+## Dispute
+
+| parameter            | type                              | description                                   | example                               |
+|----------------------|-----------------------------------|-----------------------------------------------|---------------------------------------|
+| assigned             | `string`                          | BBPOU to which the complaint is assigned      | `ICICI Bank`                          |
+| billerId             | `string`                          | Dispute's Transaction Biller ID               | `MAHI00000NATIC`                      |
+| complaintId          | `string`                          | Complaint ID for the dispute provided by BBPS | `OP0121046567755`                     |
+| complaintStatus      | [Dispute Status](#dispute-status) | BBPS Complaint status                         | `RESOLVED`                            |
+| customerMobileNumber | `string` (6, 10 and 20 digits)    | Customer Mobile Number                        | 9876543210, 357220                    |
+| partnerRefId         | `string` (6 - 35 characters)      | Payment Reference ID tagged by agent          | `BD019181220291`                      |
+| refId                | `string`                          | BBPS reference ID for the dispute request     | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246` |
+| remarks              | `string`                          | BBPS Remarks for the complaint                | `Resolved in favour of Biller`        |
+| responseCode         | `string`                          | BBPS Response code for the dispute request    | `000`                                 |
+| responseReason       | `string`                          | BBPS Response reason for the dispute request  | `SUCCESS`                             |
+| transactionId        | `string`                          | Setu Transaction ID                           | `AS01303112462917ELVJ`                |
+
+
+## Biller Customer Params
+
+| parameter  | type                      | description               | example              |
+|------------|---------------------------|---------------------------|----------------------|
+| dataType   | `NUMERIC | ALPHANUMERIC`  | Value format              | "123456" (`NUMERIC`) |
+| maxLength  | `integer | null`          | Value's max length        | `6`                  |
+| minLength  | `integer | null`          | Value's min length        | `2`                  |
+| optional   | `bool`                    | Is the parameter optional | `false`              |
+| paramName  | `string`                  | Parameter name            | `Policy Number`      |
+| regex      | `string` (Regex)          | Value Regex               | `"^[5-9][0-9]{9}$"`  |
+| values     | `string`                  | Possible default values   | ???                  |
+| visibility | `bool`                    | ???                       | `true`               |
+
+
+## Fetch API Type
+| type            | descrption                                                              |
+|-----------------|-------------------------------------------------------------------------|
+| `BILL_FETCH`    | Biller can accept a Bill Fetch request.                                 |
+| `BILL_VALIDATE` | Biller can accept a Bill Validate request.                              |
+| `BILL_DIRECT`   | Biller can accept direct payment without a Bill Fetch or Bill Validate. |
+
+
+## Biller Payment Channel
+
+Maxium amount accepted by the biller for the [Payment Channel](#payment-channel).
+
+| parameter             | type                                | description                                                | example                            |        |
+|-----------------------|-------------------------------------|------------------------------------------------------------|------------------------------------|--------|
+| paymentChannel        | [Payment Channel](#payment-channel) | Payment Channel                                            | `INT`                              |        |
+| supportsPendingStatus | `bool`                              | Whether payment channel for biller supports pending status | `false`                            |        |
+| minLimit              | `integer                            | null`                                                      | Minimum acceptable amount in paise | `1000` |
+| maxLimit              | `integer                            | null`                                                      | Maximum acceptable amount in paise | `1000` |
+
+
+## Biller Plan Information
+
+| parameter       | type                 | description                              | example      |
+|-----------------|----------------------|------------------------------------------|--------------|
+| amount          | `integer`            | Plan amount in paise                     | `15000`      |
+| id              | `string`             | Plan ID                                  | ???          |
+| categoryType    | `string`             | Plan Category defined by the biller.     | ???          |
+| categorySubType | `string`             | Plan Sub-Category defined by the biller. | ???          |
+| description     | `string`             | Plan description                         | ???          |
+| effectiveFrom   | `date`               | Plan effective from                      | `2021-09-24` |
+| effectiveTo     | `date`               | Plan effective to                        | `2021-09-24` |
+| status          | `ACTIVE | DEACTIVE`  | Plan status                              | `ACTIVE`     |
+
+
+## Biller MDM
+
+| parameter              | type                                                    | description                                                                                                                             | example                                                                                    |
+|------------------------|---------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| categoryName           | `string`                                                | Biller Category                                                                                                                         | `FASTag`                                                                                   |
+| city                   | `string`                                                | Biller City                                                                                                                             | `BLR`                                                                                      |
+| coverage               | `string`                                                | Biller coverage                                                                                                                         | `IND`                                                                                      |
+| createdAt              | `date-time`                                             | Biller Created At                                                                                                                       | `2020-12-12T13:12:00+05:30`                                                                |
+| customerParams         | [Biller Customer Params](#biller-customer-params)`[]`   | Customer Parameter format descrption                                                                                                    | ???                                                                                        |
+| exactness              | [Exactness](#exactness)                                 | Biller Exactness                                                                                                                        | `Exact`                                                                                    |
+| fetchApiType           | [Fetch API Type](#fetch-api-type)                       | Biller Fetch API Type                                                                                                                   | `BILL_FETCH`                                                                               |
+| id                     | `string`                                                | Biller ID                                                                                                                               | `MAHI00000NATIC`                                                                           |
+| logo                   | `string`                                                | ???                                                                                                                                     | ???                                                                                        |
+| modifiedAt             | `date-time`                                             | Biller Created At                                                                                                                       | `2020-12-12T13:12:00+05:30`                                                                |
+| name                   | `string`                                                | Biller Name                                                                                                                             | `LIC`                                                                                      |
+| payWithoutFetchAllowed | `bool`                                                  | Whether biller allows bill payment without a fetch or not. Even in case of `BILL_FETCH` API type, certain bills make the fetch optional | `false`                                                                                    |
+| paymentChannels        | [Biller Payment Channel](#bill-payment-channel)`[]`     | Payment Channel limits set by the biller.                                                                                               | ???                                                                                        |
+| paymentModes           | [Payment Limit](#payment-limit)`[]`                       | Payment mode limits set by the biller.                                                                                                  | `{"maxLimit":1000,"minLimit":10,"paymentMode":"Debit Card","supportsPendingStatus":false}` |
+| pincode                | `string`                                                | Biller Pincode                                                                                                                          | `517001`                                                                                   |
+| supportsPendingStatus  | `bool`                                                  | Whether the biller supports pending status. In this case, a payment can be in progress for up to 2 days.????                            | `false`                                                                                    |
+| tags                   | `string`                                                | Additional Tags of the biller. ????                                                                                                     | ???                                                                                        |
+| state                  | `string`                                                | Biller State                                                                                                                            | `Karnataka`                                                                                |
+| plans                  | [Biller-Plan-Information](#biller-plan-information)`[]` | Plans provided by the biller.                                                                                                           | ???                                                                                           |
