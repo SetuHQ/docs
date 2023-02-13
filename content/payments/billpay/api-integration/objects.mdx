@@ -167,7 +167,7 @@ against it. ????
 | parameter    | type                        | description          | example      |
 |--------------|-----------------------------|----------------------|--------------|
 | customerName | `string`                    | Bill owner           | `James Bond` |
-| amount       | `int`                       | Bill amount in paise | 1200000      |
+| amount       | `integer`                   | Bill amount in paise | 1200000      |
 | dueDate      | `date`                      | Bill due date        | 2021-09-24   |
 | billDate     | `date`                      | Bill date            | 2021-09-24   |
 | billNumber   | `string`                    | Bill number          | 1232332      |
@@ -185,22 +185,47 @@ against it. ????
 
 ## Exactness
 
-???
+Amount acceptance by the biller.
+
+| type              | description           |
+|-------------------|-----------------------|
+| `Exact`           | Exact amount          |
+| `Exact and below` | Exact amount or below |
+| `Exact and above` | Exact amount or above |
+
+## Refund Details
+
+| parameter     | type                                   | description                                  | example                                                                                |
+|---------------|----------------------------------------|----------------------------------------------|----------------------------------------------------------------------------------------|
+| status        | [Status](#bill-status)                 | Status of the refund process                 | `Success`                                                                              |
+| transactionId | `string`                               | Setu Transaction ID                          | `REFAS01303112462917ELVJ`                                                              |
+| error         | `{code:string,message:string} \| null` | Error code and message during refund process | `{"code":"bank-connectivity-error", "message:"The account debit could not be happen."` |
+
+
+
+## Payment Limit
+
+| parameter             | type                          | description                                             | example      |
+|-----------------------|-------------------------------|---------------------------------------------------------|--------------|
+| paymentMode           | [Payment Mode](#payment-mode) | payment mode                                            | `Debit Card` |
+| supportsPendingStatus | `bool`                        | Whether payment mode for biller supports pending status | `false`      |
+| minLimit              | `integer \| null`             | Minimum acceptable amount in paise                      | `1000`       |
+| maxLimit              | `integer \| null`             | Maximum acceptable amount in paise                      | `1000`       |
 
 
 ## Fetch Response - `/bills/fetch/response`
 
-| parameter      | type                              | description                                             | example                                                            |
-|----------------|-----------------------------------|---------------------------------------------------------|--------------------------------------------------------------------|
-| refId          | `string`                          | BBPS reference ID for the fetch request.                | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246`                              |
-| status         | [Bill Status](#bill-status)       | Bill fetch/pay request status.                          | `Success`                                                          |
-| failureReason  | [Failure Reason](#failure-reason) | Failure reason on status `Failure`                      |                                                                    |
-| bill           | [Bill Data](#bill-data)           | Bill                                                    | ???                                                                |
-| additionalInfo | `{"name":"value"}[]`              | Additional information of the bill sent by the biller   | ???                                                                |
-| billerRefId    | `string`                          | Biller reference ID used by the biller for the request. | `7f16a032e514`                                                     |
-| exactness      | [Exactness](#exactness)           | Biller Exactness                                        | `Exact`                                                            |
-| paymentLimits  | ???                               | Payment limits???                                       | ???                                                                |
-| autoFetchHash  | `string`                          | Auto fetch identifier for the bill.                     | `d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a` |
+| parameter      | type                              | description                                             | example                                                                                    |
+|----------------|-----------------------------------|---------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| refId          | `string`                          | BBPS reference ID for the fetch request.                | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246`                                                      |
+| status         | [Bill Status](#bill-status)       | Bill fetch request status.                              | `Success`                                                                                  |
+| failureReason  | [Failure Reason](#failure-reason) | Failure reason on status `Failure`                      | `{ "code": "BOU002", "message": "TMM001", "type": "BBPS" }`                                |
+| bill           | [Bill Data](#bill-data)           | Bill                                                    | ???                                                                                        |
+| additionalInfo | `{"name":"value"}[]`              | Additional information of the bill sent by the biller   | ???                                                                                        |
+| billerRefId    | `string`                          | Biller reference ID used by the biller for the request. | `7f16a032e514`                                                                             |
+| exactness      | [Exactness](#exactness)           | Biller Exactness                                        | `Exact`                                                                                    |
+| paymentLimits  | [Payment Limit](#payment-limit)[] | Payment limits???                                       | `{"maxLimit":1000,"minLimit":10,"paymentMode":"Debit Card","supportsPendingStatus":false}` |
+| autoFetchHash  | `string`                          | Auto fetch identifier for the bill.                     | `d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a`                         |
 
 
 ## Payment Request - `/bills/payment/request`
@@ -217,12 +242,14 @@ against it. ????
 
 ## Payment Response - `/bills/payment/response`
 
-| parameter      | type                                | description                                                     | example                                                                                                                       |
-|----------------|-------------------------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
-| refId          | `string`                            | BBPS Reference ID                                               | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246`                                                                                         |
-| status         | `Processing \| Success \| Failure`  | Transaction Status                                              | `Processing`                                                                                                                  |
-| failureReason  | [Failure Reason](#failure-reason)   | Failure information in case of Transaction failure              | `{ "code": "BOU002", "message": "TMM001", "type": "BBPS" }`                                                                   |
-| transactionId  | `string`                            | Setu Transaction ID                                             | `AS01303112462917ELVJ`                                                                                                        |
-| billerRefId    | `string`                            | Internal reference number used by the Biller for a transaction. | `AB123456`                                                                                                                    |
-| billerId       | `string`                            | BBPS Biller ID                                                  | `MAHI00000NATIC`                                                                                                              |
+| parameter      | type                                | description                                                     | example                                                                                                                     |
+|----------------|-------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| refId          | `string`                            | BBPS Reference ID                                               | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246`                                                                                       |
+| status         | [Bill Status](#bill-status)         | Transaction Status                                              | `Processing`                                                                                                                |
+| failureReason  | [Failure Reason](#failure-reason)   | Failure information in case of Transaction failure              | `{ "code": "BOU002", "message": "TMM001", "type": "BBPS" }`                                                                 |
+| transactionId  | `string`                            | Setu Transaction ID                                             | `AS01303112462917ELVJ`                                                                                                      |
+| billerRefId    | `string`                            | Internal reference number used by the Biller for a transaction. | `AB123456`                                                                                                                  |
+| billerId       | `string`                            | BBPS Biller ID                                                  | `MAHI00000NATIC`                                                                                                            |
 | paymentDetails | [Payment Details](#payment-details) | Payment Details for the transaction                             | `{"amount": 100000, "mode": "Credit Card", "paymentRefId": "N2001121212344", "timestamp": "2020-12-12T13:12:00.000+05:30"}` |
+| additionalInfo | `{"name":"value"}[]`                | Additional information of the bill sent by the biller           | ???                                                                                                                         |
+| refundDetails  | [Refund Details](#refund-details)   | Refund details if the payment failed.                           | ???                                                                                                                            |
