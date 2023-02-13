@@ -45,8 +45,6 @@ Payment modes supported by a biller.
 | USSD             |                   |
 
 
-
-
 ## Customer
 
 Customer object holds the customer mobile number and the customer bill parameters.
@@ -122,3 +120,109 @@ against it. ????
 | Account Transfer | N   | N    | N   | N    | N   | Y        | N     | N   | Y   |
 | Bharat QR        | N   | N    | Y   | Y    | N   | Y        | N     | Y   | Y   |
 | USSD             | N   | N    | Y   | Y    | N   | N        | N     | N   | N   |
+
+
+## Failure Reason
+
+| parameter | type                           | description                                                                                        | example                                                           |
+|-----------|--------------------------------|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| code      | `string`                       | Error codes includes Application, Banking and BBPS error codes                                     | `"invalid-amount"`                                                |
+| message   | `string`                       | Error code description                                                                             | `"Amount is invalid for this payment. Exactness does not match."` |
+| type      | `FUND_TRANSFER \| BBPS \| APP` | Error Type. BBPS errors are due to BBPS, and code and message field contain the actual BBPS error. | `"APP"`                                                           |
+
+
+## Payment Details
+
+| parameter    | type                          | description                          | example                     |
+|--------------|-------------------------------|--------------------------------------|-----------------------------|
+| mode         | [Payment Mode](#payment-mode) | Payment Mode                         | `Credit Card`               |
+| paymentRefId | `string` (6 - 35 characters)  | Payment Reference ID tagged by agent | `BD019181220291`            |
+| amount       | `integer`                     | Amount in paise                      | `10000`                     |
+| timestamp    | `date-time`                   | Timestamp                            | `2020-12-12T13:12:00+05:30` |
+
+
+# Bill Status
+| type         | description                                        |
+|--------------|----------------------------------------------------|
+| `Processing` | Fetching a bill (or) Paying a bill is in progress. |
+| `Success`    | Successfully fetched a bill (or) paid a bill.      |
+| `Failure`    | Unable to fetch a bill or pay a bill.              |
+
+
+## Bill Period
+
+| type          | description |
+|---------------|-------------|
+| `ONETIME`     | ???         |
+| `DAILY`       | ???         |
+| `WEEKLY`      | ???         |
+| `BIMONTHLY`   | ???         |
+| `MONTHLY`     |             |
+| `QUARTERLY`   |             |
+| `HALFYEARLY`  |             |
+| `YEARLY`      |             |
+| `ASPRESENTED` |             |
+
+## Bill Data
+| parameter    | type                        | description          | example      |
+|--------------|-----------------------------|----------------------|--------------|
+| customerName | `string`                    | Bill owner           | `James Bond` |
+| amount       | `int`                       | Bill amount in paise | 1200000      |
+| dueDate      | `date`                      | Bill due date        | 2021-09-24   |
+| billDate     | `date`                      | Bill date            | 2021-09-24   |
+| billNumber   | `string`                    | Bill number          | 1232332      |
+| billPeriod   | [Bill Period](#bill-period) | ???                  | `MONTHLY`    |
+
+
+## Fetch Request - `/bills/fetch/request`
+
+| parameter | type                  | description                                                         | example |
+|-----------|-----------------------|---------------------------------------------------------------------|---------|
+| customer  | [Customer](#customer) | Customer Object                                                     | ???     |
+| biller    | [Biller](#biller)     | Biller Object                                                       | ???     |
+| Agent     | [Agent](#agent)       | Agent Object                                                        | ???     |
+| autoFetch | `bool`                | On `true`, enables auto-fetch for the bill on successful bill fetch | `true`        |
+
+## Exactness
+
+???
+
+
+## Fetch Response - `/bills/fetch/response`
+
+| parameter      | type                              | description                                             | example                                                            |
+|----------------|-----------------------------------|---------------------------------------------------------|--------------------------------------------------------------------|
+| refId          | `string`                          | BBPS reference ID for the fetch request.                | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246`                              |
+| status         | [Bill Status](#bill-status)       | Bill fetch/pay request status.                          | `Success`                                                          |
+| failureReason  | [Failure Reason](#failure-reason) | Failure reason on status `Failure`                      |                                                                    |
+| bill           | [Bill Data](#bill-data)           | Bill                                                    | ???                                                                |
+| additionalInfo | `{"name":"value"}[]`              | Additional information of the bill sent by the biller   | ???                                                                |
+| billerRefId    | `string`                          | Biller reference ID used by the biller for the request. | `7f16a032e514`                                                     |
+| exactness      | [Exactness](#exactness)           | Biller Exactness                                        | `Exact`                                                            |
+| paymentLimits  | ???                               | Payment limits???                                       | ???                                                                |
+| autoFetchHash  | `string`                          | Auto fetch identifier for the bill.                     | `d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a` |
+
+
+## Payment Request - `/bills/payment/request`
+
+| parameter      | type                                | description                                              | example                               |
+|----------------|-------------------------------------|----------------------------------------------------------|---------------------------------------|
+| customer       | [Customer](#customer)               | Customer Object                                          | ???                                   |
+| Biller         | [Biller](#biller)                   | Biller Object                                            | ???                                   |
+| Agent          | [Agent](#agent)                     | Agent Object                                             | ???                                   |
+| refId          | `string`                            | BBPS Reference ID of Fetch Request for non-adhoc billers | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246` |
+| paymentDetails | [Payment Details](#payment-details) | Payment information for paying the bill                  | ???                                   |
+
+
+
+## Payment Response - `/bills/payment/response`
+
+| parameter      | type                                | description                                                     | example                                                                                                                       |
+|----------------|-------------------------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| refId          | `string`                            | BBPS Reference ID                                               | `CFCC0J9UR3CM6CP6I7BGZG54DG630311246`                                                                                         |
+| status         | `Processing \| Success \| Failure`  | Transaction Status                                              | `Processing`                                                                                                                  |
+| failureReason  | [Failure Reason](#failure-reason)   | Failure information in case of Transaction failure              | `{ "code": "BOU002", "message": "TMM001", "type": "BBPS" }`                                                                   |
+| transactionId  | `string`                            | Setu Transaction ID                                             | `AS01303112462917ELVJ`                                                                                                        |
+| billerRefId    | `string`                            | Internal reference number used by the Biller for a transaction. | `AB123456`                                                                                                                    |
+| billerId       | `string`                            | BBPS Biller ID                                                  | `MAHI00000NATIC`                                                                                                              |
+| paymentDetails | [Payment Details](#payment-details) | Payment Details for the transaction                             | `{"amount": 100000, "mode": "Credit Card", "paymentRefId": "N2001121212344", "timestamp": "2020-12-12T13:12:00.000+05:30"}` |
