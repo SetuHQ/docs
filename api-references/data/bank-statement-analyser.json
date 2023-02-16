@@ -5,80 +5,31 @@
         "version": "0.1.0",
         "description": "Setu’s bank statement analyser gives you actionable insights from a customer's bank statement about their income, expenditure and financial history."
     },
+    "servers": [{ "url": "https://di-uat.setu.co/", "variables": {} }],
     "paths": {
-        "/v1/graphql": {
-            "get": {
-                "tags": ["GraphQL"],
-                "summary": "Handle Http Get",
-                "operationId": "handle_http_get_v1_graphql_get",
-                "responses": {
-                    "200": {
-                        "description": "The GraphiQL integrated development environment.",
-                        "content": { "application/json": { "schema": {} } }
-                    },
-                    "404": {
-                        "description": "Not found if GraphiQL is not enabled."
-                    }
-                }
-            },
-            "post": {
-                "tags": ["GraphQL"],
-                "summary": "Handle Http Post",
-                "operationId": "handle_http_post_v1_graphql_post",
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": { "application/json": { "schema": {} } }
-                    }
-                }
-            }
-        },
-        "/v1/configure": {
-            "post": {
-                "tags": ["Configuration"],
-                "summary": "Configure Value-added-services (BSA)",
-                "description": "Configure BSA and other Add-ons for the FIU. Configuration can include callback URL, authentication keys etc.",
-                "operationId": "configure_fiu_v1_configure_post",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ConfigureFIURequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/GenericResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/v1/fi_data": {
             "get": {
                 "tags": ["AA Gateway"],
                 "summary": "Get FIData blocks",
                 "description": "Get a list of available FI Data blocks for the FIU",
                 "operationId": "get_fi_data_v1_fi_data_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -94,6 +45,21 @@
                                             "$ref": "#/components/schemas/GenericResponse"
                                         }
                                     ]
+                                },
+                                "examples": {
+                                    "FIDataBlockGetResponse": {
+                                        "summary": "FIDataBlockGetResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": [
+                                                {
+                                                    "data_id": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
+                                                    "fi_schema": "deposit",
+                                                    "expiry_date": "2023-03-11T06:52:36.457745"
+                                                }
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -105,6 +71,23 @@
                 "summary": "Create FIData block (FIU Webhook)",
                 "description": "Post FI DataFetch notification from AA Gateway to be processed for insights later",
                 "operationId": "create_fi_data_v1_fi_data_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -133,6 +116,19 @@
                                             "$ref": "#/components/schemas/GenericResponse"
                                         }
                                     ]
+                                },
+                                "examples": {
+                                    "FIDataBlockCreateResponse": {
+                                        "summary": "FIDataBlockCreateResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": {
+                                                "data_id": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
+                                                "fi_schema": "deposit",
+                                                "expiry_date": "2023-03-11T06:52:36.457745"
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -156,6 +152,23 @@
                 "summary": "Get Insight Masters",
                 "description": "Get all available Insights that can be included in a report",
                 "operationId": "get_insight_masters_v1_insight_master_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -171,6 +184,31 @@
                                             "$ref": "#/components/schemas/GenericResponse"
                                         }
                                     ]
+                                },
+                                "examples": {
+                                    "InsightMasterGetResponse": {
+                                        "summary": "InsightMasterGetResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": [
+                                                {
+                                                    "insight_id": "a8cdd272-9fae-49ee-b96c-492d6903c43e",
+                                                    "name": "name",
+                                                    "title": "Name"
+                                                },
+                                                {
+                                                    "insight_id": "3325a61a-e0e4-46c4-801d-fd8389a547d7",
+                                                    "name": "current_quarterly_average_eod_balance",
+                                                    "title": "Average End-of-day Balance for Current Quarter"
+                                                },
+                                                {
+                                                    "insight_id": "c15d1325-b6ae-4e7f-a661-873284ab5b35",
+                                                    "name": "quarterly_salary_average",
+                                                    "title": "3-months Salary Average"
+                                                }
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -184,6 +222,23 @@
                 "summary": "Get Reports",
                 "description": "Get a list of pre-existing reports for the FIU",
                 "operationId": "get_reports_v1_report_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -199,6 +254,32 @@
                                             "$ref": "#/components/schemas/GenericResponse"
                                         }
                                     ]
+                                },
+                                "examples": {
+                                    "ReportGetResponse": {
+                                        "summary": "ReportGetResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": [
+                                                {
+                                                    "report_id": "c8ca27b7-0003-41c3-bb5e-d016baa42862",
+                                                    "name": "Sample report",
+                                                    "insight_masters": [
+                                                        {
+                                                            "insight_id": "9abd94f8-70c1-466b-9f23-56ea8266074c",
+                                                            "name": "pan",
+                                                            "title": "Permanent Account Number"
+                                                        },
+                                                        {
+                                                            "insight_id": "b97582ed-d5bb-4b24-b8a4-d159e07d9ef7",
+                                                            "name": "cheque_bounces",
+                                                            "title": "Summary of Cheque Bounces"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -210,6 +291,23 @@
                 "summary": "Create Report",
                 "description": "Create a report with a list Insights",
                 "operationId": "create_report_v1_report_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -235,6 +333,30 @@
                                             "$ref": "#/components/schemas/GenericResponse"
                                         }
                                     ]
+                                },
+                                "examples": {
+                                    "ReportCreateResponse": {
+                                        "summary": "ReportCreateResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": {
+                                                "report_id": "c8ca27b7-0003-41c3-bb5e-d016baa42862",
+                                                "name": "Sample report",
+                                                "insight_masters": [
+                                                    {
+                                                        "insight_id": "9abd94f8-70c1-466b-9f23-56ea8266074c",
+                                                        "name": "pan",
+                                                        "title": "Permanent Account Number"
+                                                    },
+                                                    {
+                                                        "insight_id": "b97582ed-d5bb-4b24-b8a4-d159e07d9ef7",
+                                                        "name": "cheque_bounces",
+                                                        "title": "Summary of Cheque Bounces"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -267,6 +389,21 @@
                         },
                         "name": "job_id",
                         "in": "query"
+                    },
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -284,6 +421,77 @@
                                             "$ref": "#/components/schemas/GenericResponse"
                                         }
                                     ]
+                                },
+                                "examples": {
+                                    "InsightGetResponse": {
+                                        "summary": "InsightGetResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": {
+                                                "name": "Redacted Services",
+                                                "dob": "2006-06-27",
+                                                "email": "redacted@gmail.com",
+                                                "pan": "redacted",
+                                                "ckyc_compliance": false,
+                                                "mobile": 9999912345,
+                                                "bank_branch": "NARKATIAGANJ BH",
+                                                "bank_account_number": "XXXXXXXXXXX1234",
+                                                "bank_account_type": "CURRENT",
+                                                "opening_date": "2019-02-26",
+                                                "closing_balance": 27929.84,
+                                                "end_of_month_balances": {
+                                                    "2021": {
+                                                        "9": 245676.89,
+                                                        "10": 48650.54,
+                                                        "11": 145487.41,
+                                                        "12": 97725.67
+                                                    },
+                                                    "2022": {
+                                                        "1": 9152.09,
+                                                        "2": 5957.19,
+                                                        "3": 545.59,
+                                                        "4": 1282299.18,
+                                                        "5": 134376.04,
+                                                        "6": 84468.46,
+                                                        "7": 135585.11,
+                                                        "8": 3346.11,
+                                                        "9": 268766.7,
+                                                        "10": 50049.84,
+                                                        "11": 27929.84
+                                                    }
+                                                },
+                                                "balances_on_10th": {
+                                                    "2021": { "12": 55387.41 },
+                                                    "2022": {
+                                                        "1": 2426.67,
+                                                        "2": 9629.59,
+                                                        "3": 97487.45,
+                                                        "4": 1641.09,
+                                                        "5": 52517.54,
+                                                        "6": 72084.28,
+                                                        "7": 165864.04,
+                                                        "8": 63465.11,
+                                                        "9": 11226.11,
+                                                        "10": 418535.81,
+                                                        "11": 27929.84
+                                                    }
+                                                },
+                                                "average_end_of_day_balance": 297715.03,
+                                                "maximum_end_of_day_balance": 1818766.7,
+                                                "total_credits": 153,
+                                                "total_credits_value": 44810341.06,
+                                                "total_debits": 473,
+                                                "total_debits_value": 45178088.11,
+                                                "quarterly_salary_average": {
+                                                    "2021": { "4": 15072 }
+                                                },
+                                                "cash_deposit_x_total_credit": {
+                                                    "2021": { "12": 0.0095 },
+                                                    "2022": { "3": 0.0018 }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -302,9 +510,26 @@
             },
             "post": {
                 "tags": ["Insights"],
-                "summary": "Post Insights generation job",
+                "summary": "Create Insights generation job",
                 "description": "Process FI data for insights",
                 "operationId": "process_insights_v1_insight_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -330,6 +555,17 @@
                                             "$ref": "#/components/schemas/GenericResponse"
                                         }
                                     ]
+                                },
+                                "examples": {
+                                    "InsightJobCreateResponse": {
+                                        "summary": "InsightJobCreateResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": {
+                                                "job_id": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d"
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -409,14 +645,6 @@
                         "items": { "type": "string" },
                         "description": "Currently supports only one ID"
                     }
-                }
-            },
-            "ConfigureFIURequest": {
-                "title": "ConfigureFIURequest",
-                "required": ["webhook_url"],
-                "type": "object",
-                "properties": {
-                    "webhook_url": { "title": "Webhook Url", "type": "string" }
                 }
             },
             "DepositData": {
@@ -521,7 +749,7 @@
             },
             "Holder": {
                 "title": "Holder",
-                "required": ["nominee", "email", "pan", "ckycCompliance"],
+                "required": ["nominee", "ckycCompliance"],
                 "type": "object",
                 "properties": {
                     "name": { "title": "Name", "type": "string" },
@@ -792,8 +1020,7 @@
                     "transactionTimestamp",
                     "valueDate",
                     "txnId",
-                    "narration",
-                    "reference"
+                    "narration"
                 ],
                 "type": "object",
                 "properties": {
