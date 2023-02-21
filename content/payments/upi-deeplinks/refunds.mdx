@@ -129,18 +129,18 @@ Create a refund request for one or more transactions.
     "refunds": [
         {
             "seqNo": 1,
-            "identifier": "896458251304961389",
+            "identifier": "1099309092570138096",
             "identifierType": "BILL_ID",
             "refundType": "FULL"
         },
         {
             "seqNo": 2,
-            "identifier": "896458450802836853",
+            "identifier": "1099309493419771390",
             "identifierType": "BILL_ID",
             "refundType": "PARTIAL",
             "refundAmount": {
                 "currencyCode": "INR",
-                "value": 5000
+                "value": 1500
             }
         }
     ]
@@ -304,53 +304,32 @@ Check status of refunds created against a particular `batchID`.
     "status": 200,
     "success": true,
     "data": {
-        "batchID": "ca1l9e1bnsesi098pbn0",
         "refunds": [
             {
                 "amount": {
                     "currencyCode": "INR",
-                    "value": 20000
+                    "value": 1500
                 },
-                "billID": "896458251304961389",
+                "billID": "1099299575895688621",
+                "createdAt": "2023-02-21T04:44:10.082Z",
                 "deductions": [
                     {
                         "account": {
-                            "id": "Biller-External-001",
-                            "ifsc": "KKBK0000001",
-                            "name": "External-biller-Acc-1"
+                            "id": "50100221813167",
+                            "ifsc": "HDFC0000839",
+                            "name": "Santosh-Test"
                         },
                         "split": {
                             "unit": "INR",
-                            "value": 20000
+                            "value": 1500
                         }
                     }
                 ],
-                "id": "896458511922234749",
-                "status": "Created",  // ENUM—Created, MarkedForRefund, QueuedForRefund, Initiated
-                "transactionRefID": "8127920116918371"
-            },
-            {
-                "amount": {
-                    "currencyCode": "INR",
-                    "value": 5000
-                },
-                "billID": "896458450802836853",
-                "deductions": [
-                    {
-                        "account": {
-                            "id": "Biller-External-001",
-                            "ifsc": "KKBK0000001",
-                            "name": "External-biller-Acc-1"
-                        },
-                        "split": {
-                            "unit": "INR",
-                            "value": 5000
-                        }
-                    }
-                ],
-                "id": "896458511980955006",
-                "status": "Created",  // ENUM—Created, MarkedForRefund, QueuedForRefund, Initiated
-                "transactionRefID": "6004660259904990"
+                "id": "1099299900383823287",
+                "initiatedAt": "2023-02-21T04:44:50.461Z",
+                "status": "Initiated", // ENUM — Created, Pending, Initiated
+                "transactionRefID": "2092666374742383",
+                "type": "MerchantInitiated"
             }
         ]
     }
@@ -361,11 +340,15 @@ Check status of refunds created against a particular `batchID`.
 
 `Created`: This is when the merchant initiates a refund request via APIs or through The Bridge (Setu dashboard). The refund or its processing has not taken place at this point.
 
-`Marked for Refund`: This status indicates that we have received money from the bank for the underlying transaction, but the refund is yet to be reconciled with the settlement calculation for the day.
+`Initiated`: This is when the refund request has been intimated to the banking partner and begins processing the refund. This is the terminal status of a refund, as NPCI does not share information about when a refund hits the customer’s bank account.
 
-`Queued for Refund`: This status indicates that we are able to adjust the refund amount against the settlement amount.
+`Pending`: This status is implied in case the refunds have not been processed due to a low balance or the merchant not transacting for a while. There are 2 reasons to elaborate on this status:
 
-`Initiated`: This is when the refund request has been intimated to the banking partner and begins processing of the refund. This is the terminal status of a refund, as NPCI does not share information about when a refund hits the customer’s bank account.
+ - Insufficient funds: This status reason would appear if a merchant creates refunds and there is a low balance to refund all or any of the requests made. The merchant should have sufficient or more balance to avoid refunds getting delayed due to insufficient funds. 
+   Example: Merchant X created 10 refunds for Rs.1000, and only 8 got refunded since the clearing balance was insufficient for the refunds to get processed, consisting of 10, 100 rupee refund requests each, and the total settlement amount for the day is 850 rupees. These would be refunded once the merchant has sufficient balance. The first 8 refunds that were registered will be processed in the current settlement cycle. A callback notification will be sent to the merchant with the payload containing the first 8 refunds in the `initiated` block and the remaining in the `pending` block.
+
+ - No Active Transactions: This status implies that when a merchant has not had transactions for a while and raises a refund, active transactions are required for this to move to initiated status. 
+   Example: Merchant Y has not transacted for 1 or more days and has created Refund requests. Since there are no active transactions, the refunds would remain in Pending status with the reason No Active Transactions
 
 <hr class="tertiary" />
 
@@ -424,25 +407,28 @@ Check status of a specific refund with the refund `id`.
     "data": {
         "amount": {
             "currencyCode": "INR",
-            "value": 20000
+            "value": 1500
         },
-        "billID": "896458251304961389",
+        "billID": "1099299575895688621",
+        "createdAt": "2023-02-21T04:44:10.082Z",
         "deductions": [
             {
                 "account": {
-                    "id": "Biller-External-001",
-                    "ifsc": "KKBK0000001",
-                    "name": "External-biller-Acc-1"
+                    "id": "50100221813167",
+                    "ifsc": "HDFC0000839",
+                    "name": "Santosh-Test"
                 },
                 "split": {
                     "unit": "INR",
-                    "value": 20000
+                    "value": 1500
                 }
             }
         ],
-        "id": "896458511922234749",
-        "status": "Created",  // ENUM—Created, MarkedForRefund, QueuedForRefund, Initiated
-        "transactionRefID": "8127920116918371"
+        "id": "1099299900383823287",
+        "initiatedAt": "2023-02-21T04:44:50.461Z",
+        "status": "Initiated", // ENUM — Created, Pending, Initiated
+        "transactionRefID": "2092666374742383",
+        "type": "MerchantInitiated"
     }
 }`}
 </CodeBlockWithCopy>
