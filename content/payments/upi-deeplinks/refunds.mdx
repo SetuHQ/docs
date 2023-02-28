@@ -344,11 +344,11 @@ Check status of refunds created against a particular `batchID`.
 
 `Pending`: This status is implied in case the refunds have not been processed due to a low balance or the merchant not transacting for a while. There are 2 reasons to elaborate on this status:
 
- - Insufficient funds: This status reason would appear if a merchant creates refunds and there is a low balance to refund all or any of the requests made. The merchant should have sufficient or more balance to avoid refunds getting delayed due to insufficient funds.
+ - Insufficient funds: Refunds requested by a merchant are adjusted from the settlement amount to the merchant's account. But if the amount for a particular refund request cannot be adjusted due to insufficient settlement amount, the refund remains in a `Pending` state.
 
-   **Example**: Merchant X created 10 refunds for Rs.1000, and only 8 got refunded since the clearing balance was insufficient for the refunds to get processed, consisting of 10, 100 rupee refund requests each, and the total settlement amount for the day is 850 rupees. These would be refunded once the merchant has sufficient balance. The first 8 refunds that were registered will be processed in the current settlement cycle. A callback notification will be sent to the merchant with the payload containing the first 8 refunds in the `initiated` block and the remaining in the `pending` block.
+   **Example**: If the total settlement amount for the day for Merchant X is ₹850 and the merchant has created 10 refunds totalling ₹1000 in the same duration, only the first 8 will get refunded and move to an initiated state. The callback notification sent to the merchant will contain the first 8 refunds in the `initiated` block and the remaining in the `pending` block.
 
- - No Active Transactions: This status implies that when a merchant has not had transactions for a while and raises a refund, active transactions are required for this to move to initiated status. 
+ - No Active Transactions: A requested refund will remain in a `Pending` state if there are no active transactions (and thus settlements to the merchant's account) from which the refund amount can be deducted and sent back to the customer.
 
    **Example**: Merchant Y has not transacted for 1 or more days and has created Refund requests. Since there are no active transactions, the refunds would remain in Pending status with the reason No Active Transactions
 
