@@ -1,0 +1,165 @@
+---
+sidebar_title: Notifications
+page_title: Aadhaar eSign Notifications
+order: 5
+visible_in_sidebar: true
+---
+
+## Notifications
+
+Below is the summary of the notifications which need to be processed on your server by exposing an endpoint for Setu to send an HTTP POST request.
+
+These notifications are sent by Setu when the end user completes the eSign flow and we receive a callback from our ESP regarding the status of the signature request.
+
+<Callout type="tip">
+    Please send back an HTTP 200 status code if the request sent was processed
+    correctly to avoid receiving multiple notifications for the same eSign
+    event. Response body is ignored.
+</Callout>
+<br />
+
+The `base_url` is the server URL you share with us to receive notifications.
+
+To get started quickly, you can setup a mock API endpoint using <a href="https://beeceptor.com/" target="_blank">Beeceptor</a>. Once configured, Setu will send notifications to that URL.
+
+This will help you understand the notification flow before you start to implement it on your server.
+
+### Notification Samples
+
+Here’s a sample of a successful document signing by a signer, with the corresponding signature request `id` as well as the signing status for all signers associated with a signature request.
+
+<CodeBlockWithCopy language="json">
+    {`
+  {
+    "data": {
+      "esign": {
+        "id": "460b4de8-a240-4803-9a5a-51a0cb37a865",
+        "documentId": "c79fbf38-392f-4a57-b871-52b5b8f6ee59",
+        "status": "sign_pending",
+        "signers": [
+          {
+            "displayName": "John Doe",
+            "id": "cb504cc9-3c10-4847-9282-19cf23b49c40",
+            "identifier": "898925663920",
+            "status": "signed",
+            "errCode": "",
+            "signatureDetails": {
+              "aadhaarName": "John Doe",
+              "aadhaarSuffix": "1234",
+              "postalCode": "123456",
+              "gender": "M",
+              "birthYear": "1990"
+            }
+          },
+          {
+            "displayName": "Jane Doe",
+            "id": "7899d1b2-79c3-4878-907f-44136bf44298",
+            "identifier": "898925663929",
+            "status": "pending",
+            "errCode": "",
+            "signatureDetails": {}
+          }
+        ]
+      }
+    },
+    "event": "ESIGN_WEBHOOK_NOTIFICATION",
+    "timeStamp": "2023-03-08T23:45:25.989694+05:30"
+  }
+  `}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+Here is a sample notification of a failed eSign attempt by a signer, for a given signature request `id`, as well as the error code for the failure.
+
+<CodeBlockWithCopy language="json">
+    {`
+  {
+    "data": {
+      "esign": {
+        "id": "460b4de8-a240-4803-9a5a-51a0cb37a865",
+        "documentId": "c79fbf38-392f-4a57-b871-52b5b8f6ee59",
+        "status": "sign_pending",
+        "signers": [
+          {
+            "displayName": "Jane Doe",
+            "id": "7899d1b2-79c3-4878-907f-44136bf44298",
+            "identifier": "898925663929",
+            "status": "pending",
+            "errCode": "otp_not_entered",
+            "signatureDetails": {}
+          },
+          {
+            "displayName": "John Doe",
+            "id": "cb504cc9-3c10-4847-9282-19cf23b49c40",
+            "identifier": "898925663920",
+            "status": "signed",
+            "errCode": "",
+            "signatureDetails": {
+              "aadhaarName": "John Doe",
+              "aadhaarSuffix": "1234",
+              "postalCode": "123456",
+              "gender": "M",
+              "birthYear": "1990"
+            }
+          }
+        ]
+      }
+    },
+    "event": "ESIGN_WEBHOOK_NOTIFICATION",
+    "timeStamp": "2023-03-08T23:49:12.743012+05:30"
+  }
+  `}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+Here is a sample notification of an eSign request that's been completely signed by all signers, for a given signature request `id`.
+
+<CodeBlockWithCopy language="json">
+    {`
+  {
+    "data": {
+      "esign": {
+        "id": "460b4de8-a240-4803-9a5a-51a0cb37a865",
+        "documentId": "c79fbf38-392f-4a57-b871-52b5b8f6ee59",
+        "status": "sign_complete",
+        "signers": [
+          {
+            "displayName": "Jane Doe",
+            "id": "7899d1b2-79c3-4878-907f-44136bf44298",
+            "identifier": "898925663929",
+            "status": "signed",
+            "errCode": "",
+            "signatureDetails": {
+              "aadhaarName": "Jane Doe",
+              "aadhaarSuffix": "1235",
+              "postalCode": "123457",
+              "gender": "F",
+              "birthYear": "1989"
+            }
+          },
+          {
+            "displayName": "John Doe",
+            "id": "cb504cc9-3c10-4847-9282-19cf23b49c40",
+            "identifier": "898925663920",
+            "status": "signed",
+            "errCode": "",
+            "signatureDetails": {
+              "aadhaarName": "John Doe",
+              "aadhaarSuffix": "1234",
+              "postalCode": "123456",
+              "gender": "M",
+              "birthYear": "1990"
+            }
+          }
+        ]
+      }
+    },
+    "event": "ESIGN_WEBHOOK_NOTIFICATION",
+    "timeStamp": "2023-03-08T23:51:36.164321+05:30"
+  }
+  `}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />
