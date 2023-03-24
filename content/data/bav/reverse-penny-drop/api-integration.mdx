@@ -29,7 +29,7 @@ Here are the few things you would need for this integration—
 
 #### Create reverse penny drop request
 
-Send a `POST` request to the `/api/verify/ban/reverse/` endpoint to create a reverse penny drop request.
+Send a `POST` request to the `/api/verify/ban/reverse` endpoint to create a reverse penny drop request.
 Optionally you can pass `additionalData` with header `Content-Type` as `application/json`.
 
 `additionalData` should be simple key-value pairs (string value only).
@@ -105,7 +105,7 @@ We recommend showing the QR code on desktop devices so that a user can use their
                             <hr className="tertiary" />
                             <h5>Request</h5>
                             <CodeBlockWithCopy language="json">
-                                {`POST  /api/verify/ban/reverse/
+                                {`POST  /api/verify/ban/reverse
  
 {
     "additionalData": { // optional
@@ -148,7 +148,7 @@ We recommend showing the QR code on desktop devices so that a user can use their
                             <hr className="tertiary" />
                             <h5>Request</h5>
                             <CodeBlockWithCopy language="json">
-                                {`POST  /api/verify/ban/reverse/
+                                {`POST  /api/verify/ban/reverse
  
 {
     "additionalData": { 
@@ -188,7 +188,7 @@ We recommend showing the QR code on desktop devices so that a user can use their
                             <hr className="tertiary" />
                             <h5>Request</h5>
                             <CodeBlockWithCopy language="json">
-                                {`POST  /api/verify/ban/reverse/
+                                {`POST  /api/verify/ban/reverse
  
 {
     "additionalData": { // optional
@@ -240,13 +240,18 @@ This API lets you test the end to end flow without an actual payment. This will 
                             <p>
                                 <Badge type="success">SUCCSS</Badge>{" "}
                                 Successfully Mocked. If you already configured
-                                webhook url, you should receive a successful
-                                webhook now.
+                                webhook url, you should receive a webhook.
                             </p>
                             <hr className="tertiary" />
                             <h5>Request</h5>
                             <CodeBlockWithCopy language="json">
-                                {`POST  /api/verify/ban/reverse/mock_payment/:requestId`}
+                                {`POST  /api/verify/ban/reverse/mock_payment/:requestId
+                                
+{
+    "paymentStatus": "successful" // or 'expired'. Default = 'successful'
+}
+                                
+                                `}
                             </CodeBlockWithCopy>
                             <hr className="tertiary" />
                             <h5>Response</h5>
@@ -261,6 +266,39 @@ This API lets you test the end to end flow without an actual payment. This will 
                 },
                 {
                     key: "2",
+                    label: "400",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">
+                                    BAD REQUEST
+                                </Badge>{"Invalid request payload"}
+                                
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/verify/ban/reverse/mock_payment/:requestId
+{
+    "paymentStatus": "xyz" 
+}`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "error": {
+        "code": "invalid_payload",
+        "detail": "paymentStatus should be 'expired' or 'successful'",
+        "traceId": "9841613c-c16a-4685-a6a3-3717ee8f9b4a"
+    }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
                     label: "500",
                     content: (
                         <>
