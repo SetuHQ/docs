@@ -1,0 +1,74 @@
+---
+sidebar_title: Notifications
+page_title: BAV Async Penny drop Notifications
+order: 2
+visible_in_sidebar: true
+---
+
+## Notifications
+
+Below is the summary of the notifications which need to be processed on your server by exposing an endpoint for Setu to send an HTTP POST request.
+
+These notifications are sent by Setu when the BAV Async Penny drop request is completed and we receive a response from our Banking partner regarding the status of the penny drop request.
+
+<Callout type="tip">
+    Please send back an HTTP 200 status code if the request sent was processed
+    correctly to avoid receiving multiple notifications for the same async penny
+    drop event. Response body is ignored.
+</Callout>
+<br />
+
+The `base_url` is the server URL you share with us to receive notifications.
+
+To get started quickly, you can setup a mock API endpoint using <a href="https://beeceptor.com/" target="_blank">Beeceptor</a>. Once configured, Setu will send notifications to that URL.
+
+This will help you understand the notification flow before you start to implement it on your server.
+
+### Notification Samples
+
+Here’s a sample notification of a successful penny drop request, with the corresponding request `id` as well as the details of the account holder.
+
+<CodeBlockWithCopy language="json">
+    {`
+  {
+  "data": {
+    "bav": {
+      "id": "82ff6686-691d-4a8f-b4de-6c81354b8a17",
+      "verification": "success",
+      "message": "Account exists and is active.",
+      "data": {
+        "name": "JOHN DOE",
+        "transactionReference": "307316973027",
+        "verifiedAt": "2023-03-14T10:35:51+00:00",
+        "matchKey": null
+      }
+    }
+  },
+  "event": "BAV_WEBHOOK_NOTIFICATION",
+  "timeStamp": "2023-03-14T16:05:52.093816+05:30"
+}
+  `}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+Here is a sample notification of a failed penny drop request, with the corresponding request `id` as well as the reason for failure.
+
+<CodeBlockWithCopy language="json">
+    {`
+  {
+  "data": {
+    "bav": {
+      "id": "82ff6686-691d-4a8f-b4de-6c81354b8a17",
+      "verification": "failed",
+      "message": "This account does not exist or is invalid.",
+      "data": {}
+    }
+  },
+  "event": "BAV_WEBHOOK_NOTIFICATION",
+  "timeStamp": "2023-03-14T16:43:57.561533+05:30"
+}
+  `}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />
