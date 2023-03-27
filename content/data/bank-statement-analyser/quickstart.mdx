@@ -10,35 +10,37 @@ visible_in_sidebar: true
 Here is a quick summary of steps to help you integrate with Setu’s Insights API. Before you start, there are some key terms that will be referred to periodically in the documentation—
 
 -   **FI Datablock**— FI Datablocks is the data received from the FIP (Financial Information Provider), via the AA. Currently, we only support bank statement data.
--   **Report**— A report is the template in which the FIU wants the insights to be generated. An FIU can pick and choose exactly what modules should be added to a report based on their needs. For example, if an FIU only wants to get the income and expenses of a customer, the report can contain only those two modules.
+-   **Report**— A report is the template in which you want the insights to be generated. You can pick and choose exactly what modules should be added to a report based on their needs. For example, if you only want to get the income and expenses of a customer, the report can contain only those two modules.
+
+<Callout type="tip">
+    Please refer to the Account Aggregator's{" "}
+    <a href="/data/account-aggregator/quickstart#quickstart-guide">
+        quickstart guide
+    </a>{" "}
+    for key terms relating to AAs
+</Callout>
 
 <hr className="primary" />
 
 ### Step 1 - Report creation
 
-FIU needs to provide Setu with the following items for configuration
+FIU needs to send in the below information to be configured to [insights@setu.co](mailto:insights@setu.co)
 
 -   **FIU ID** received from the integration with AA
 -   **Name** for the report, and a list of required <a href="/data/bank-statement-analyser/postman" target="_blank">**Insights**</a>
 -   **Format** of the report's output (currently defaults to `JSON`)
 
-Please send these details via email to [bsa@setu.co](mailto:bsa@setu.co)
-
-Setu will create a report for the FIU and share a `Report ID`, which can be used when [generating insights](#step-3-generate-insights)
+Setu will create a report template on your behalf and share a `Report ID`, which can be used when [generating insights](#step-3-generate-insights)
 
 ### Step 2 - AA Gateway integration
 
 #### Create FI-Datablocks
 
-Create an FI Datablock in Setu's Insights module by making a POST call to `/v1/fi_data` with the data fetched from the FIP
+Create an FI Datablock in Setu's Insights module by making a POST call to `/v1/fi_data` with the data fetched from the AA
 
 -   The payload should be the same data fetched from the FIP. The schema of this data is validated against the [ReBIT schema](https://api.rebit.org.in/schema)
 -   The API returns a `Data ID` for the datablock along with some metadata, which can be used when [generating insights](#step-3-generate-insights)
 -   A list of available data blocks can also be obtained by making a GET call to `/v1/fi_data`
-
-<Callout type="tip">
-    FI Datablocks will be auto-fetched from the FIP in future.
-</Callout>
 
 ### Step 3 - Generate Insights
 
