@@ -10,8 +10,8 @@
         "/v1/fi_data": {
             "get": {
                 "tags": ["AA Gateway"],
-                "summary": "Get FIData blocks",
-                "description": "Get a list of available FI Data blocks for the FIU",
+                "summary": "Get FI Datablocks",
+                "description": "Call this API to get a list of FI Datablocks created by the FIU",
                 "operationId": "get_fi_data_v1_fi_data_get",
                 "parameters": [
                     {
@@ -69,7 +69,7 @@
             "post": {
                 "tags": ["AA Gateway"],
                 "summary": "Create FIData block (FIU Webhook)",
-                "description": "Post FI DataFetch notification from AA Gateway to be processed for insights later",
+                "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent in the future.",
                 "operationId": "create_fi_data_v1_fi_data_post",
                 "parameters": [
                     {
@@ -146,239 +146,11 @@
                 }
             }
         },
-        "/v1/insight/master": {
-            "get": {
-                "tags": ["Reports"],
-                "summary": "Get Insight Masters",
-                "description": "Get all available Insights that can be included in a report",
-                "operationId": "get_insight_masters_v1_insight_master_get",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "title": "Response Get Insight Masters V1 Insight Master Get",
-                                    "anyOf": [
-                                        {
-                                            "$ref": "#/components/schemas/InsightMasterGetResponse"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/GenericResponse"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "InsightMasterGetResponse": {
-                                        "summary": "InsightMasterGetResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": [
-                                                {
-                                                    "insight_id": "a8cdd272-9fae-49ee-b96c-492d6903c43e",
-                                                    "name": "name",
-                                                    "title": "Name"
-                                                },
-                                                {
-                                                    "insight_id": "3325a61a-e0e4-46c4-801d-fd8389a547d7",
-                                                    "name": "current_quarterly_average_eod_balance",
-                                                    "title": "Average End-of-day Balance for Current Quarter"
-                                                },
-                                                {
-                                                    "insight_id": "c15d1325-b6ae-4e7f-a661-873284ab5b35",
-                                                    "name": "quarterly_salary_average",
-                                                    "title": "3-months Salary Average"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/report": {
-            "get": {
-                "tags": ["Reports"],
-                "summary": "Get Reports",
-                "description": "Get a list of pre-existing reports for the FIU",
-                "operationId": "get_reports_v1_report_get",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "title": "Response Get Reports V1 Report Get",
-                                    "anyOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ReportGetResponse"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/GenericResponse"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "ReportGetResponse": {
-                                        "summary": "ReportGetResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": [
-                                                {
-                                                    "report_id": "c8ca27b7-0003-41c3-bb5e-d016baa42862",
-                                                    "name": "Sample report",
-                                                    "insight_masters": [
-                                                        {
-                                                            "insight_id": "9abd94f8-70c1-466b-9f23-56ea8266074c",
-                                                            "name": "pan",
-                                                            "title": "Permanent Account Number"
-                                                        },
-                                                        {
-                                                            "insight_id": "b97582ed-d5bb-4b24-b8a4-d159e07d9ef7",
-                                                            "name": "cheque_bounces",
-                                                            "title": "Summary of Cheque Bounces"
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": ["Reports"],
-                "summary": "Create Report",
-                "description": "Create a report with a list Insights",
-                "operationId": "create_report_v1_report_post",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Body_create_report_v1_report_post"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "title": "Response Create Report V1 Report Post",
-                                    "anyOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ReportCreateResponse"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/GenericResponse"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "ReportCreateResponse": {
-                                        "summary": "ReportCreateResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": {
-                                                "report_id": "c8ca27b7-0003-41c3-bb5e-d016baa42862",
-                                                "name": "Sample report",
-                                                "insight_masters": [
-                                                    {
-                                                        "insight_id": "9abd94f8-70c1-466b-9f23-56ea8266074c",
-                                                        "name": "pan",
-                                                        "title": "Permanent Account Number"
-                                                    },
-                                                    {
-                                                        "insight_id": "b97582ed-d5bb-4b24-b8a4-d159e07d9ef7",
-                                                        "name": "cheque_bounces",
-                                                        "title": "Summary of Cheque Bounces"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/v1/insight": {
             "get": {
                 "tags": ["Insights"],
                 "summary": "Get Insights",
-                "description": "Get Insights for a report",
+                "description": "Call this API with the job-id to get the created Insights",
                 "operationId": "get_insights_v1_insight_get",
                 "parameters": [
                     {
@@ -510,8 +282,8 @@
             },
             "post": {
                 "tags": ["Insights"],
-                "summary": "Create Insights generation job",
-                "description": "Process FI data for insights",
+                "summary": "Create Insights",
+                "description": "Call this API with the report-id received from Setu along with a list of data-ids, to create an Insights generation job. The FI Datablocks can belong to multiple bank accounts.The created Insights will be shared via a notification to the endpoint configured by the FIU.This API will respond with a job-id, which can also be used to query the created Insights.",
                 "operationId": "process_insights_v1_insight_post",
                 "parameters": [
                     {
@@ -816,14 +588,15 @@
             },
             "InsightJob": {
                 "title": "InsightJob",
-                "required": ["job_id"],
+                "required": ["job_id", "status"],
                 "type": "object",
                 "properties": {
                     "job_id": {
                         "title": "Job Id",
                         "type": "string",
                         "format": "uuid"
-                    }
+                    },
+                    "status": { "title": "Status", "type": "string" }
                 }
             },
             "InsightJobCreateResponse": {
@@ -843,44 +616,6 @@
                     "body": { "$ref": "#/components/schemas/InsightJob" }
                 }
             },
-            "InsightMaster": {
-                "title": "InsightMaster",
-                "required": ["name", "title"],
-                "type": "object",
-                "properties": {
-                    "insight_id": {
-                        "title": "Insight Id",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "name": { "title": "Name", "type": "string" },
-                    "title": { "title": "Title", "type": "string" },
-                    "description": { "title": "Description", "type": "string" }
-                }
-            },
-            "InsightMasterGetResponse": {
-                "title": "InsightMasterGetResponse",
-                "required": ["body"],
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "title": "Status",
-                        "type": "string",
-                        "default": "Success"
-                    },
-                    "status_description": {
-                        "title": "Status Description",
-                        "type": "string"
-                    },
-                    "body": {
-                        "title": "Body",
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/InsightMaster"
-                        }
-                    }
-                }
-            },
             "Pending": {
                 "title": "Pending",
                 "required": ["amount"],
@@ -897,66 +632,6 @@
                 "type": "object",
                 "properties": {
                     "holders": { "$ref": "#/components/schemas/Holders" }
-                }
-            },
-            "ReportCreateResponse": {
-                "title": "ReportCreateResponse",
-                "required": ["body"],
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "title": "Status",
-                        "type": "string",
-                        "default": "Success"
-                    },
-                    "status_description": {
-                        "title": "Status Description",
-                        "type": "string"
-                    },
-                    "body": { "$ref": "#/components/schemas/ReportResponse" }
-                }
-            },
-            "ReportGetResponse": {
-                "title": "ReportGetResponse",
-                "required": ["body"],
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "title": "Status",
-                        "type": "string",
-                        "default": "Success"
-                    },
-                    "status_description": {
-                        "title": "Status Description",
-                        "type": "string"
-                    },
-                    "body": {
-                        "title": "Body",
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ReportResponse"
-                        }
-                    }
-                }
-            },
-            "ReportResponse": {
-                "title": "ReportResponse",
-                "required": ["report_id", "name", "insight_masters"],
-                "type": "object",
-                "properties": {
-                    "report_id": {
-                        "title": "Report Id",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "name": { "title": "Name", "type": "string" },
-                    "insight_masters": {
-                        "title": "Insight Masters",
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/InsightMaster"
-                        }
-                    }
                 }
             },
             "StatusTypes": {
