@@ -16,6 +16,9 @@ Here’s a quick run through of the APIs—
 3. **Get status of signature request**—Get details against a signature request by passing the signature request `id`.
 4. **Download document**—Download a signed document by passing the signature request `id`.
 
+If using <a href="/data/esign/flexi-esign">flexible esign</a>, first need to upload the signging config and then the flow of api calls remain as above.
+uploading singing config is a one time task, if config does not change.
+
 <Callout type="tip">
   You can also <strong>delete a signature request</strong>—if required—by
   passing the request
@@ -47,15 +50,19 @@ Call this API to upload the document that has to be signed. The document and the
           label: "201",
           content: (
             <>
-              <p>
+            <Text size="small" weight="600">Upload doc from local</Text>
+            <Card padding="nano" shape="rounded" marginBottom="micro">
+            <details>
+              <summary>
+              <Text size="medium" marginBottom="none" paddingRight="medium">
                 <Badge type="success">SUCCESS</Badge> Setu has processed your
                 request successfully.
-              </p>
+              </Text>
+              </summary>
               <hr className="tertiary" />
               <h5>Request</h5>
               <CodeBlockWithCopy language="json">
                 {`POST /api/documents 
- 
 payload= { 
     "name": "name_your_file" 
  } 
@@ -77,11 +84,133 @@ files= [
   "name": "name_your_file" 
 } `}
               </CodeBlockWithCopy>
-            </>
+          </details>
+          </Card>
+
+          <Text size="small" weight="600">Upload doc from an url</Text>
+            <Card padding="nano" shape="rounded" marginBottom="micro">
+            <details>
+                <summary>
+              <Text size="medium" marginBottom="none" paddingRight="medium">
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.
+              </Text>
+              </summary>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/documents
+
+payload= {
+"name": "name_your_file"
+"url": "https://www.africau.edu/images/default/sample.pdf"
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You will get a unique <code>id</code> which is the{" "}
+                <code>documentId</code> from Setu for usage in signature request
+                creation.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{
+"id": "67e0ca30-49e4-4883-86f9-3762f0e6798n",
+"name": "name_your_file"
+} `}
+              </CodeBlockWithCopy>
+            </details>
+          </Card>
+          </>
           ),
         },
+        {
+          key: "2",
+          label: "400",
+          content: (
+            <>
+            <Text size="small" weight="600">Upload doc from local</Text>
+            <Card padding="nano" shape="rounded" marginBottom="micro">
+            <details>
+              <summary>
+              <Text size="medium" marginBottom="none" paddingRight="medium">
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.
+              </Text>
+              </summary>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/documents
+payload= {
+}
+
+files= [
+("document", ("sample.pdf", open("/Users/path/Sample.pdf", "rb"), "application/pdf"))
+] `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You will get a unique <code>id</code> which is the{" "}
+                <code>documentId</code> from Setu for usage in signature request
+                creation.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{
+"error": {
+"code": "invalid_payload",
+"detail": "Missing required parameter in the post body: name",
+"traceId": "1-643ccc4b-52ded2a74d6c94415c0d4737"
+}
+} `}
+              </CodeBlockWithCopy>
+                          
+                            <table>
+  <tr>
+    <th>
+      <strong>Status codes</strong>
+    </th>
+    <th>
+      <strong>Error codes</strong>
+    </th>
+    <th>
+      <strong>Error messages</strong>
+    </th>
+  </tr>
+  <tr>
+    <td>400</td>
+    <td><code>bad_request</code></td>
+    <td>
+      <ul>
+        <li>Either file or URL should be passed</li>
+        <li>Upload of both file and URL is not supported</li>
+        <li>File type is invalid</li>
+        <li>password not provided for a protected doc</li>
+        <li>The password entered for the document is incorrect</li>
+        <li>File URL is invalid</li>
+        <li>File to be uploaded is too large</li>
+        <li>File type is invalid</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>500</td>
+    <td><code>internal_server_error</code></td>
+    <td>
+    Internal Server Error
+    </td>
+  </tr>
+</table>
+          </details>
+
+          </Card>
+         </>
+          ),
+        }
       ]}
     ></Tabs>
+
   </Portion>
 </Row>
 
@@ -89,12 +218,15 @@ files= [
 
 ### Create signature request
 
-Create a signature request with defined signer(s) and a redirect url. You get an `id` in response, which you can use to track the signature request. 
+Create a signature request with defined signer(s) and a redirect url. You get an `id` in response, which you can use to track the signature request.
 
 In case you want to validate a customer’s name and year of birth, pass the values for `displayName` and `birthYear` in create signature request. If there is a mismatch in name or birth year (based on data from Aadhaar OTP based verification), we will display an error and the customer will not be able to sign the document.
 
-<Callout type="tip">Request to enable validation of customer name and birth year by writing to us at <a>support@setu.co</a>. Also specify threshold of fuzzy match for name.</Callout>
-<br/>
+<Callout type="tip">
+  Request to enable validation of customer name and birth year by writing to us
+  at <a>support@setu.co</a>. Also specify threshold of fuzzy match for name.
+</Callout>
+<br />
 Here is a quick description of the values required to call this API—
 
 - `documentId` the unique id of the document, which you get from the Upload document API response.
@@ -125,26 +257,30 @@ It will also be used by Setu to send back relevant information about a signer. B
   <code>(redirectUrl)?sessionId=XYZ</code>
 </Callout>
 
-<br/>
+<br />
 
 #### Create Signature request with configID
 
 Create signature request can also be created by using configId in case of flexible signature placement. Please refer to the `201 with configId` tab below for request and response sample.
 
 <Tabs
-      tabs={[
-        {
-          key: "1",
-          label: "201",
-          content: (
-            <>
-            <Text size="small" weight="600">Normal esign (without configID)</Text>
-            <Card padding="nano" shape="rounded" marginBottom="micro">
-  <details>
-    <summary>
-                <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully.</Text>
-    </summary>
+  tabs={[
+    {
+      key: "1",
+      label: "201",
+      content: (
+        <>
+          <Text size="small" weight="600">
+            Normal esign (without configID)
+          </Text>
+          <Card padding="nano" shape="rounded" marginBottom="micro">
+            <details>
+              <summary>
+                <Text size="medium" marginBottom="none" paddingRight="medium">
+                  <Badge type="success">SUCCESS</Badge> Setu has processed your
+                  request successfully.
+                </Text>
+              </summary>
               <hr className="tertiary" />
               <h5>Request</h5>
               <CodeBlockWithCopy language="json">
@@ -171,7 +307,10 @@ Create signature request can also be created by using configId in case of flexib
               <hr className="tertiary" />
               <h5>Response</h5>
               <p>
-                You will get a unique signature request <code>id</code> from Setu—to track this signature request. Additionally, you will get an array of <code>signers</code>, each with their own signer <code>id</code>, <code>status</code> and <code>url</code>.
+                You will get a unique signature request <code>id</code> from
+                Setu—to track this signature request. Additionally, you will get
+                an array of <code>signers</code>, each with their own signer{" "}
+                <code>id</code>, <code>status</code> and <code>url</code>.
               </p>
               <CodeBlockWithCopy language="json">
                 {`{ 
@@ -191,26 +330,40 @@ Create signature request can also be created by using configId in case of flexib
                 } `}
               </CodeBlockWithCopy>
               <p>
-                The <code>url</code> from this response should be used to redirect your customer to complete a signature. The session of the <code>url</code> is activated once the user is redirected to it, and remains active for 15 minutes by default. Note that if one of the signers is signing the document, other signers have to wait until the active signer has finished signing.
+                The <code>url</code> from this response should be used to
+                redirect your customer to complete a signature. The session of
+                the <code>url</code> is activated once the user is redirected to
+                it, and remains active for 15 minutes by default. Note that if
+                one of the signers is signing the document, other signers have
+                to wait until the active signer has finished signing.
               </p>
               <Callout type="warning">
-                When the session of a <code>url</code> is active, the  <code>status</code> of the signature request is <code>sign_in_progress</code> and no other signer will be able to sign the document at that point of time.
+                When the session of a <code>url</code> is active, the{" "}
+                <code>status</code> of the signature request is{" "}
+                <code>sign_in_progress</code> and no other signer will be able
+                to sign the document at that point of time.
               </Callout>
-              </details>
-              </Card>
-              
-              <Text size="small" weight="600">Flexi esign (with configID)</Text>
-              <Card padding="nano" shape="rounded">
-  <details>
-    <summary>
-                <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully.</Text>
-    </summary>
+            </details>
+          </Card>
+
+          <Text size="small" weight="600">
+            Flexi esign (with configID)
+          </Text>
+          <Card padding="nano" shape="rounded">
+            <details>
+              <summary>
+                <Text size="medium" marginBottom="none" paddingRight="medium">
+                  <Badge type="success">SUCCESS</Badge> Setu has processed your
+                  request successfully.
+                </Text>
+              </summary>
               <hr className="tertiary" />
-               <p>
-                When passiing a configID, width, height, position and on pages field are not required as they are picked from the config associated with the id.
+              <p>
+                When passiing a configID, width, height, position and on pages
+                field are not required as they are picked from the config
+                associated with the id.
               </p>
-              <h5>Request with configId</h5> 
+              <h5>Request with configId</h5>
               <CodeBlockWithCopy language="json">
                 {`POST /api/signature 
                 
@@ -238,7 +391,10 @@ Create signature request can also be created by using configId in case of flexib
               <hr className="tertiary" />
               <h5>Response</h5>
               <p>
-                You will get a unique signature request <code>id</code> from Setu—to track this signature request. Additionally, you will get an array of <code>signers</code>, each with their own signer <code>id</code>, <code>status</code> and <code>url</code>.
+                You will get a unique signature request <code>id</code> from
+                Setu—to track this signature request. Additionally, you will get
+                an array of <code>signers</code>, each with their own signer{" "}
+                <code>id</code>, <code>status</code> and <code>url</code>.
               </p>
               <CodeBlockWithCopy language="json">
                 {`{ 
@@ -268,18 +424,127 @@ Create signature request can also be created by using configId in case of flexib
                 } `}
               </CodeBlockWithCopy>
               <p>
-                The <code>url</code> from this response should be used to redirect your customer to complete a signature. The session of the <code>url</code> is activated once the user is redirected to it, and remains active for 15 minutes by default. Note that if one of the signers is signing the document, other signers have to wait until the active signer has finished signing.
+                The <code>url</code> from this response should be used to
+                redirect your customer to complete a signature. The session of
+                the <code>url</code> is activated once the user is redirected to
+                it, and remains active for 15 minutes by default. Note that if
+                one of the signers is signing the document, other signers have
+                to wait until the active signer has finished signing.
               </p>
               <Callout type="warning">
-                When the session of a <code>url</code> is active, the  <code>status</code> of the signature request is <code>sign_in_progress</code> and no other signer will be able to sign the document at that point of time.
+                When the session of a <code>url</code> is active, the{" "}
+                <code>status</code> of the signature request is{" "}
+                <code>sign_in_progress</code> and no other signer will be able
+                to sign the document at that point of time.
               </Callout>
-              </details>
-              </Card>
-            </>
-          ),
-        }
-      ]}
-    ></Tabs>
+            </details>
+          </Card>
+        </>
+      ),
+    },
+    {
+        key: "2",
+        label: "404",
+        content: (
+          <>
+            <p>
+              <Badge type="failure">NOT FOUND</Badge> When the provided
+              document <code>id</code> is incorrect or deleted.
+            </p>
+            <hr className="tertiary" />
+            <h5>Request</h5>
+            <CodeBlockWithCopy language="json">
+              {`POST /api/signature 
+                { 
+                  "documentId": "67e0ca30-49e4-4883-86f9-3762f0e6798c", 
+                  "redirectUrl": "your-redirect-url.com?other_keys=youcandefinehere", 
+                  "signers": [{ 
+                      "identifier": "9876543210", 
+                      "displayName": "John Doe", 
+                      "birthYear": "1988",
+                      "signature": { 
+                          "onPages": [ 
+                              "1" 
+                          ], 
+                          "position": "bottom-left", 
+                          "height": 60, 
+                          "width": 180 
+                      } 
+                  }] 
+                }`}
+            </CodeBlockWithCopy>
+            <hr className="tertiary" />
+            <h5>Response</h5>
+            <CodeBlockWithCopy language="json">
+              {`{
+    "error": {
+        "code": "document_not_found",
+        "detail": "This document is not available anymore.",
+        "traceId": "1-643e6ec4-5c5652e6368c22573d12fa31"
+    }
+} `}
+            </CodeBlockWithCopy>
+              <table>
+                <tr>
+                  <th>
+                    <strong>Status codes</strong>
+                  </th>
+                  <th>
+                    <strong>Error codes</strong>
+                  </th>
+                  <th>
+                    <strong>Error messages</strong>
+                  </th>
+                </tr>
+                <tr>
+                  <td>400</td>
+                  <td>
+                    <code>invalid_document</code>
+                  </td>
+                  <td>
+                    <li>The document Id is already being used in a signature</li>
+                  </td>
+                </tr>
+                <tr>
+                  <td>400</td>
+                  <td>
+                    <code>invalid_signer_list</code>
+                  </td>
+                  <td>
+                    <li>Not proper signer list, you will get parameter specific message</li>
+                  </td>
+                </tr>
+                <tr>
+                  <td>404</td>
+                  <td>
+                    <code>document_not_found_error</code>
+                  </td>
+                  <td>
+                    <li>Document is not available</li>
+                  </td>
+                </tr>
+                <tr>
+                  <td>404</td>
+                  <td>
+                    <code>signing_config_not_found</code>
+                  </td>
+                  <td>
+                    <li>Check the config id passed</li>
+                  </td>
+                </tr>
+                <tr>
+                  <td>500</td>
+                  <td>
+                    <code>internal_server_error</code>
+                  </td>
+                  <td> Internal Server Error </td>
+                </tr>
+              </table>
+          </>
+        ),
+      }
+  ]}
+></Tabs>
 
 <hr class="primary" />
 
@@ -307,54 +572,65 @@ The following table lists the possible values of `status` of the signature reque
           label: "200",
           content: (
             <>
-            <Text size="small" weight="600">Type 1</Text>
-            <Card padding="nano" shape="rounded" marginBottom="micro">
-              <details>
-                <summary>
-                <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully and no signer has signed the document yet.</Text>
-                </summary>
-              <hr className="tertiary" />
-              <h5>Request</h5>
-              <p>
-                Pass the signature request <code>id</code> as a URL parameter
-              </p>
-              <CodeBlockWithCopy language="json">
-                {`GET  /api/signature/:id `}
-              </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <p>
-                You will get the details associated with the provided signature
-                request <code>id</code> like—
-              </p>
-              <ul>
-                <li>
-                  <code>documentId</code> , points to the document to be signed.
-                </li>
-                <li>
-                  <code>id</code> is the signature request <code>id</code>{" "}
-                  associated with this signature.
-                </li>
-                <li>
-                  <code>redirectUrl</code> is publicly hosted URL, provided by
-                  you while creating a signature request. You will get the
-                  following query params by default—signature request{" "}
-                  <code>id</code>, a particular signer’s <code>id</code> and{" "}
-                  <code>status</code>
-                </li>
-                <li>
-                  <code>signers</code> is an array of upto 6 signers, each with
-                  an independent signer <code>id</code> and status
-                </li>
-                <li>
-                  <code>status</code>, the overall status for the signature
-                  request. It will change to <code>sign_complete</code>, once
-                  all signers have completed signatures.
-                </li>
-              </ul>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+              <Text size="small" weight="600">
+                Type 1
+              </Text>
+              <Card padding="nano" shape="rounded" marginBottom="micro">
+                <details>
+                  <summary>
+                    <Text
+                      size="medium"
+                      marginBottom="none"
+                      paddingRight="medium"
+                    >
+                      <Badge type="success">SUCCESS</Badge> Setu has processed
+                      your request successfully and no signer has signed the
+                      document yet.
+                    </Text>
+                  </summary>
+                  <hr className="tertiary" />
+                  <h5>Request</h5>
+                  <p>
+                    Pass the signature request <code>id</code> as a URL
+                    parameter
+                  </p>
+                  <CodeBlockWithCopy language="json">
+                    {`GET  /api/signature/:id `}
+                  </CodeBlockWithCopy>
+                  <hr className="tertiary" />
+                  <h5>Response</h5>
+                  <p>
+                    You will get the details associated with the provided
+                    signature request <code>id</code> like—
+                  </p>
+                  <ul>
+                    <li>
+                      <code>documentId</code> , points to the document to be
+                      signed.
+                    </li>
+                    <li>
+                      <code>id</code> is the signature request <code>id</code>{" "}
+                      associated with this signature.
+                    </li>
+                    <li>
+                      <code>redirectUrl</code> is publicly hosted URL, provided
+                      by you while creating a signature request. You will get
+                      the following query params by default—signature request{" "}
+                      <code>id</code>, a particular signer’s <code>id</code> and{" "}
+                      <code>status</code>
+                    </li>
+                    <li>
+                      <code>signers</code> is an array of upto 6 signers, each
+                      with an independent signer <code>id</code> and status
+                    </li>
+                    <li>
+                      <code>status</code>, the overall status for the signature
+                      request. It will change to <code>sign_complete</code>,
+                      once all signers have completed signatures.
+                    </li>
+                  </ul>
+                  <CodeBlockWithCopy language="json">
+                    {`{ 
                     "documentId": "67e0ca30-49e4-4883-86f9-3762f0e6798c", 
                     "id": "cb80bfb4-d163-426e-ad57-1fd8889e62d4", 
                     "redirectUrl": "setu.co/careers", 
@@ -371,65 +647,76 @@ The following table lists the possible values of `status` of the signature reque
                     ], 
                     "status": "sign_initiated" // ENUM values—sign_initiated | sign_pending | sign_in_progress | sign_complete 
                 } `}
-              </CodeBlockWithCopy>
-              </details>
-              </Card>
-              
-              <Text size="small" weight="600">Type 2</Text>
-              <Card padding="nano" shape="rounded" marginBottom="micro">
-              <details>
-                <summary>
-                  <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
-                request successfully and at least one of the signers has signed
-                the document.</Text>
-                  </summary>
-                <hr className="tertiary" />
-                <h5>Request</h5>
-                <p>
-                  Pass the signature request <code>id</code> as a URL parameter
-                  </p>
-                <CodeBlockWithCopy language="json">
-                  {`GET  /api/signature/:id `}
                   </CodeBlockWithCopy>
-              <hr className="tertiary" />
-              <h5>Response</h5>
-              <p>
-                You will get the details associated with the provided signature
-                request <code>id</code> like—
-              </p>
-              <ul>
-                <li>
-                  <code>documentId</code> , points to the document to be signed.
-                </li>
-                <li>
-                  <code>id</code> is the signature request <code>id</code>{" "}
-                  associated with this signature.
-                </li>
-                <li>
-                  <code>redirectUrl</code> is publicly hosted URL, provided by
-                  you while creating a signature request. You will get the
-                  following query params by default—signature request{" "}
-                  <code>id</code>, a particular signer’s <code>id</code> and{" "}
-                  <code>status</code>
-                </li>
-                <li>
-                  <code>signers</code> is an array of upto 6 signers, each with
-                  an independent signer <code>id</code> and status
-                </li>
-                <li>
-                  <code>signatureDetails</code> is a JSON object, which has
-                  details of the signer as per Aadhaar—<code>aadhaarName</code>,{" "}
-                  <code>aadhaarSuffix</code>, <code>birthYear</code>,{" "}
-                  <code>gender</code> and <code>postalCode</code>.
-                </li>
-                <li>
-                  <code>status</code>, the overall status for the signature
-                  request. It will change to <code>sign_complete</code>, once
-                  all signers have completed signatures.
-                </li>
-              </ul>
-              <CodeBlockWithCopy language="json">
-                {`{ 
+                </details>
+              </Card>
+
+              <Text size="small" weight="600">
+                Type 2
+              </Text>
+              <Card padding="nano" shape="rounded" marginBottom="micro">
+                <details>
+                  <summary>
+                    <Text
+                      size="medium"
+                      marginBottom="none"
+                      paddingRight="medium"
+                    >
+                      <Badge type="success">SUCCESS</Badge> Setu has processed
+                      your request successfully and at least one of the signers
+                      has signed the document.
+                    </Text>
+                  </summary>
+                  <hr className="tertiary" />
+                  <h5>Request</h5>
+                  <p>
+                    Pass the signature request <code>id</code> as a URL
+                    parameter
+                  </p>
+                  <CodeBlockWithCopy language="json">
+                    {`GET  /api/signature/:id `}
+                  </CodeBlockWithCopy>
+                  <hr className="tertiary" />
+                  <h5>Response</h5>
+                  <p>
+                    You will get the details associated with the provided
+                    signature request <code>id</code> like—
+                  </p>
+                  <ul>
+                    <li>
+                      <code>documentId</code> , points to the document to be
+                      signed.
+                    </li>
+                    <li>
+                      <code>id</code> is the signature request <code>id</code>{" "}
+                      associated with this signature.
+                    </li>
+                    <li>
+                      <code>redirectUrl</code> is publicly hosted URL, provided
+                      by you while creating a signature request. You will get
+                      the following query params by default—signature request{" "}
+                      <code>id</code>, a particular signer’s <code>id</code> and{" "}
+                      <code>status</code>
+                    </li>
+                    <li>
+                      <code>signers</code> is an array of upto 6 signers, each
+                      with an independent signer <code>id</code> and status
+                    </li>
+                    <li>
+                      <code>signatureDetails</code> is a JSON object, which has
+                      details of the signer as per Aadhaar—
+                      <code>aadhaarName</code>, <code>aadhaarSuffix</code>,{" "}
+                      <code>birthYear</code>, <code>gender</code> and{" "}
+                      <code>postalCode</code>.
+                    </li>
+                    <li>
+                      <code>status</code>, the overall status for the signature
+                      request. It will change to <code>sign_complete</code>,
+                      once all signers have completed signatures.
+                    </li>
+                  </ul>
+                  <CodeBlockWithCopy language="json">
+                    {`{ 
                     "documentId": "67e0ca30-49e4-4883-86f9-3762f0e6798c", 
                     "id": "cb80bfb4-d163-426e-ad57-1fd8889e62d4", 
                     "redirectUrl": "setu.co/careers", 
@@ -452,10 +739,10 @@ The following table lists the possible values of `status` of the signature reque
                     ], 
                     "status": "sign_complete" // ENUM values—sign_initiated | sign_pending | sign_in_progress | sign_complete 
                 } `}
-                </CodeBlockWithCopy>
+                  </CodeBlockWithCopy>
                 </details>
-                </Card>
-              </>
+              </Card>
+            </>
           ),
         },
         {
@@ -483,6 +770,7 @@ The following table lists the possible values of `status` of the signature reque
                     } 
                 } `}
               </CodeBlockWithCopy>
+              
             </>
           ),
         },
