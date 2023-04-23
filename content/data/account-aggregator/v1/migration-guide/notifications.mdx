@@ -1,0 +1,111 @@
+---
+sidebar_title: Notifications
+page_title: Account Aggregator Notifications
+order: 3
+visible_in_sidebar: true
+---
+
+## Notifications
+
+Below is a summary of the API endpoints you need to implement on your server and expose to receive notifications from Setu AA. These notifications are webhooks from Setu based on the events that occur during the consent and data flow.
+
+The `base_url` is the server URL you share with us to receive notifications.
+
+To **get started quickly**, you can setup a mock API endpoint using <a href="https://beeceptor.com/" target="_blank">Beeceptor</a>. Once configured on Bridge, Setu will send notifications to that URL. This will help you understand the notification flow before you start to implement it on your server.
+
+###### Types of notifications
+
+- **Consent notification**—notification triggered for the events that occur in consent flow
+- **FI notification**—notification triggered for the events that occur in data flow
+
+Note: Webhooks retries will be added in future iterations.
+
+<hr class="primary" />
+
+#### Consent notification
+
+This notification is used to communicate the updated status of the consent.
+
+**Types of consent status**
+
+- `ACTIVE`-Customer has approved consent
+- `REJECTED`-Customer has rejected consent
+- `REVOKED`-Customer revoked consent for an existing approved consent
+- `PAUSED`-Customer paused consent for an existing approved consent
+- `EXPIRED`-Consent request has expired
+
+We do not send notification for consent status `PENDING`, this is when consent is just created.
+
+###### Consent Notification Payload
+
+Setu will post this payload to your notification endpoint whenever there is a change in consent status.
+
+<CodeBlockWithCopy language="json">
+  {`POST  {base_url}
+{
+  "type": "CONSENT_STATUS_UPDATE",
+  "timestamp": 2018-12-06T11:39:57.153Z,
+  "consentId": d4f40bd9-a22f-4408-a622-4e8a1e4fbda6,
+  "success": true,
+  "data": {
+    "status": "ACTIVE", 
+    "Detail": {                            
+                        // consent details object
+                   }
+  },
+  "error": error
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+#### FI notification
+
+This notification is used to communicate the FI (Financial Information) status. Based on this status, you can initiate the data fetch request.
+
+**Types of FI status**
+
+- `ACTIVE`-FI data session is active
+- `COMPLETED`-FI data is fetched and posted to your base_url
+- `EXPIRED`- Data session had expired and
+- `FAILED`-Data Session request failed, retry creating a new session
+
+###### FI Notification Payload
+
+Setu will make an API call to your notification endpoint whenever Financial Information Provider responds to Fetch FI data
+Setu will make an API call to the below endpoint.
+
+<CodeBlockWithCopy language="json">
+  {`POST   {base_url}
+{
+  "type": "SESSION_STATUS_UPDATE",
+  "timestamp": 2018-12-06T11:39:57.153Z,
+  "consentId": d4f40bd9-a22f-4408-a622-4e8a1e4fbda6,
+  "dataSessionId": 378ec65c-f558-49fc-89ea-e880c2cf88b3,
+  "success": true,
+  "data": {
+    "status": ACTIVE,
+    "format": xml or json,
+    "DataRange": {
+      "from": 2018-12-06T11:39:57.153Z,
+      "to": 2021-12-31T14:25:33.440Z
+    }
+  },
+  "error": error
+}`}
+</CodeBlockWithCopy>
+
+###### Response
+
+Send the response in the format shown below.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "ver"       : "1.0",
+    "timestamp" : "2018-12-06T11:39:57.153Z", // current timestamp
+    "txnid"     : "f35761ac-4a18-11e8-96ff-0277a9fbfedc", // UUId v4
+    "response"  : "OK"
+}`}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />

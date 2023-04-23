@@ -1,0 +1,100 @@
+---
+sidebar_title: End-to-end encryption
+page_title: Account Aggregator End-to-end encryption
+order: 1
+visible_in_sidebar: false
+---
+
+<Callout type="error">
+  Please note that, due to changes on the Sandbox integration process for Setu
+  Account Aggregator, this document is now outdated. Please refer to the updated{" "}
+  <a href="/data/account-aggregator/quickstart">quickstart</a> to proceed.
+</Callout>
+
+## End-to-end encryption
+
+According to ReBIT spec, the FI data flow between the FIU and the FIP should be end-to-end encrypted. The FIU and the FIP should generate key pairs that are not permanent and are generated for every data fetch request that happens between them.
+
+<Callout type="highlight">
+  Account Aggregators are data-blind, which means that only encrypted data
+  passes through them. The AA will not be able to decrypt the data at any
+  point.{" "}
+</Callout>
+
+<hr class="primary" />
+
+### Key generation and exchange
+
+The FIU and the FIP should generate Curve25519 ephemeral key pairs comprising of public and private keys. Curve25519 is taken as default curve as per the ReBit spec.
+
+The Elliptic Curve Diffie-Hellman (ECDH) key-exchange protocol is an anonymous key-agreement scheme. It is used by the FIU and the FIP to generate a shared secret key, using the ephemeral key pairs for encryption and decrytpion. <a href="https://cryptobook.nakov.com/asymmetric-key-ciphers/ecdh-key-exchange" target="_blank">Learn more about ECDH</a>.
+
+<hr class="primary" />
+
+### KeyMaterial object
+
+`KeyMaterial` is an object which contains information about the public key, encryption algorithm and nonce, as in the sample provided below.
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "cryptoAlg"   : "ECDH",
+    "curve"       : "Curve25519",
+    "params"      : "AES/GCM/NoPadding",
+    "DHPublicKey" : {
+        "expiry"     : "<PUBLIC_KEY_EXPIRY_DATE>",
+        "Parameters" : "",
+        "KeyValue"   : "<PUBLIC_KEY_VALUE>"
+    },
+    "Nonce"       : "<256_BIT_NONCE>"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+### Encryption and decryption
+
+<Callout type="tip">
+  Below steps are derived from the official security library of Sahamati, called{" "}
+  <a href="https://github.com/Sahamati/Rahasya" target="_blank">
+    Rahasya
+  </a>
+  . We have deployed the official library with minor updates on Setu servers for
+  making testing easier. You can find it{" "}
+  <a href="#rahasya-helper-library">here</a>
+</Callout>
+
+Below is a list of steps that happen in a data flow session—
+
+**Encryption at FIP**
+
+- The FIU generates a ephemeral key pair, `fiu_public_key` & `fiu_private_key` and a 256-bit base64 encoded nonce, `fiu_nonce`. The FIU sends this information as `KeyMaterial` to the FIP in the data request for that session.
+- The FIP generates a ephemeral key pair, `fip_public_key` & `fip_private_key` and a 256-bit base64 encoded nonce, `fip_nonce`.
+- Using ECDH, the FIP generates a shared secret key, `fip_shared_secret` by using `fip_private_key` and `fiu_public_key`.
+- The FIP generates a `shared_nonce` by XOR of `fiu_nonce` and `fip_nonce`
+- The FIP generates a `session_key` by HKDF (HMAC based Key Derivation function) using the `fip_shared_secret` and `shared_nonce`. <a href="https://cryptobook.nakov.com/mac-and-key-derivation/hmac-and-key-derivation#key-derivation-functions-kdf" target="_blank">Learn more about HKDF</a>.
+- The FIP uses AES-GCM encryption algorithm with `session_key` used as the encryption key to encrypt the FI data requested by the FIU. According to spec and the library, AES-GCM is the default encryption algorithm. <a href="https://cryptobook.nakov.com/symmetric-key-ciphers/aes-cipher-concepts" target="_blank">Learn more about AES</a>.
+
+**Decryption at FIU**
+
+- Once the data is encrypted, the FIP sends the encrypted data along with `fip_public_key` and `fip_nonce` as `KeyMaterial`.
+- Using ECDH, the FIU generates a shared secret key, `fiu_shared_secret` by using `fiu_private_key` and `fip_public_key`.
+- Note that both the shared secret keys, `fiu_shared_secret` and `fip_shared_secret` will be the same.
+- The FIU generates a `shared_nonce` by XOR of `fiu_nonce` and `fip_nonce`
+- The FIU generates a `session_key` by HKDF (HMAC based Key Derivation function) using the `fiu_shared_secret` and `shared_nonce`.
+- The FIU uses the same AES-GCM encryption algorithm with `session_key` used as the decryption key to decrypt the FI data sent by FIP.
+
+<hr class="primary" />
+
+### Rahasya helper library
+
+To facilitate easier testing of our sandbox, Setu has deployed the official Sahamati library, Rahasya on our infra. This will help FIU to easily generate ephemeral keys and decrypting the FI data in sandbox.
+
+<Callout type="tip">
+  You can deploy the{" "}
+  <a href="https://github.com/SetuHQ/Rahasya" target="_blank">
+    Setu's fork of Rahasya library
+  </a>{" "}
+  on your own servers for custom usage of the library and its implementation.
+</Callout>
+
+Get the the Postman collection for key generation and decrypting data—the Rahasya helper library <a href="https://documenter.getpostman.com/view/16080598/TzzBoun5#29f5dbec-90ab-4124-9d44-0193c38840cf" target="_blank"> here</a>.
