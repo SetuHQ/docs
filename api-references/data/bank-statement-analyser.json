@@ -283,7 +283,7 @@
                             "title": "Report ID for which insights are needed",
                             "type": "string"
                         },
-                        "name": "report_id",
+                        "name": "reportId",
                         "in": "query"
                     },
                     {
@@ -320,7 +320,7 @@
                                     "title": "Response 200 Get Insights V1 Insight Get",
                                     "anyOf": [
                                         {
-                                            "$ref": "#/components/schemas/InsightJobCreateResponse"
+                                            "$ref": "#/components/schemas/ReportJobCreateResponse"
                                         },
                                         {
                                             "$ref": "#/components/schemas/InsightGetResponse"
@@ -472,7 +472,7 @@
             "post": {
                 "tags": ["Insight generation"],
                 "summary": "Create Insights",
-                "description": "Call this API with the template-id received from Setu along with a list of data-ids, to create an Insights generation report. The FI Datablocks can belong to multiple bank accounts.The created Insights will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to query the created Insights.",
+                "description": "Call this API with the template-id received from Setu along with a list of data-ids, to trigger an Insights generation job. The FI Datablocks can belong to multiple bank accounts.The created Insights will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to fetch the generated Insights.",
                 "operationId": "process_insights_v1_insight_post",
                 "parameters": [
                     {
@@ -516,11 +516,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/InsightJobCreateResponse"
+                                    "$ref": "#/components/schemas/ReportJobCreateResponse"
                                 },
                                 "examples": {
-                                    "InsightJobCreateResponse": {
-                                        "summary": "InsightJobCreateResponse",
+                                    "ReportJobCreateResponse": {
+                                        "summary": "ReportJobCreateResponse",
                                         "value": {
                                             "status": "Success",
                                             "body": {
@@ -681,11 +681,11 @@
             },
             "Body_process_insights_v1_insight_post": {
                 "title": "Body_process_insights_v1_insight_post",
-                "required": ["reportId", "dataIds"],
+                "required": ["templateId", "dataIds"],
                 "type": "object",
                 "properties": {
-                    "reportId": {
-                        "title": "Report ID for which insights are needed",
+                    "templateId": {
+                        "title": "Template ID for which insights are needed",
                         "type": "string"
                     },
                     "dataIds": {
@@ -855,36 +855,6 @@
                     "body": { "title": "Body", "type": "object" }
                 }
             },
-            "InsightJob": {
-                "title": "InsightJob",
-                "required": ["reportId", "status"],
-                "type": "object",
-                "properties": {
-                    "reportId": {
-                        "title": "Reportid",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "status": { "title": "Status", "type": "string" }
-                }
-            },
-            "InsightJobCreateResponse": {
-                "title": "InsightJobCreateResponse",
-                "required": ["body"],
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "title": "Status",
-                        "type": "string",
-                        "default": "Success"
-                    },
-                    "statusDescription": {
-                        "title": "Statusdescription",
-                        "type": "string"
-                    },
-                    "body": { "$ref": "#/components/schemas/InsightJob" }
-                }
-            },
             "Pending": {
                 "title": "Pending",
                 "required": ["amount"],
@@ -901,6 +871,38 @@
                 "type": "object",
                 "properties": {
                     "holders": { "$ref": "#/components/schemas/Holders" }
+                }
+            },
+            "ReportJobCreateResponse": {
+                "title": "ReportJobCreateResponse",
+                "required": ["body"],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "title": "Status",
+                        "type": "string",
+                        "default": "Success"
+                    },
+                    "statusDescription": {
+                        "title": "Statusdescription",
+                        "type": "string"
+                    },
+                    "body": {
+                        "$ref": "#/components/schemas/ReportJobResponseBody"
+                    }
+                }
+            },
+            "ReportJobResponseBody": {
+                "title": "ReportJobResponseBody",
+                "required": ["report_id", "status"],
+                "type": "object",
+                "properties": {
+                    "report_id": {
+                        "title": "Report Id",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "status": { "title": "Status", "type": "string" }
                 }
             },
             "StatusTypes": {
