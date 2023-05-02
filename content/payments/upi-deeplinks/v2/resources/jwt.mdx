@@ -1,0 +1,342 @@
+---
+sidebar_title: JWT authentication
+page_title: UPI Deeplinks JWT authentication
+order: 2
+visible_in_sidebar: true
+---
+
+## JWT basics
+
+The JWT is sent as part of the authorisation header of every API request. Typically it looks like this—
+
+<CodeBlockWithCopy language="http">
+  {`// Auth header format
+Authorization: Bearer <JWT_TOKEN>
+// Sample JWT encoded
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI4ZjQ3ZTQxYy00Njg0LTRhZjEtYjFiOC0yNDZjODMxMTIwMzMiLCJpYXQiOjE1NzI0OTMzNTYsImp0aSI6ImM1MzQ0N2UzLTk5M2EtNDRhZS05Yzc4LTMxZjQ1YzNjMDgyZSJ9.xfYii9lfWMHtMBgjK5U6NFN_6_Q9jw8UMQu8Jnvftbs`}
+</CodeBlockWithCopy>
+
+The JWT in itself has three parts—A `header`, `payload`, and a `signature`. Setu uses the following format—
+
+<CodeBlockWithCopy language="json">
+  {`// JWT format
+urlsafe_base64(<JWT_HEADER>).urlsafe_base64(<JWT_PAYLOAD>).urlsafe_base64(<SIGNATURE>)
+// Sample JWT decoded
+{
+    "alg" : "HS256",
+    "typ" : "JWT"
+},
+{
+    "aud" : "8f47e41c-4684-4af1-b1b8-246c83112033", // This is the schemeID
+    "iat" : 1572493356,
+    "jti" : "c53447e3-993a-44ae-9c78-31f45c3c082e"
+}`}
+</CodeBlockWithCopy>
+
+This means that—
+
+<CodeBlockWithCopy language="json">
+  {`header    : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+payload   : eyJhdWQiOiI4ZjQ3ZTQxYy00Njg0LTRhZjEtYjFiOC0yNDZjODMxMTIwMzMiLCJpYXQiOjE1NzI0OTMzNTYsImp0aSI6ImM1MzQ0N2UzLTk5M2EtNDRhZS05Yzc4LTMxZjQ1YzNjMDgyZSJ9
+signature : xfYii9lfWMHtMBgjK5U6NFN_6_Q9jw8UMQu8Jnvftbs`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Header
+
+This is a `base64` encoded value. It contains details about the algorithm used to calculate the signature. This could have values such as HMAC SHA256 or RSA.
+For example—
+
+<CodeBlockWithCopy language="json">
+  {`// Sample JWT header
+{
+  "alg" : "HS256",
+  "typ" : "JWT"
+}
+// is encoded to
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Payload
+
+This is also a `base64` encoded value. This is the main part of the JWT, and contains details about the entity, and the request made (also called “claims”). For example—
+
+<CodeBlockWithCopy language="json">
+  {`// Sample JWT payload
+{
+    "aud" : "8f47e41c-4684-4af1-b1b8-246c83112033", // This is the schemeID
+    "iat" : 1572493356,
+    "jti" : "c53447e3-993a-44ae-9c78-31f45c3c082e"
+}
+// is encoded to
+eyJhdWQiOiI4ZjQ3ZTQxYy00Njg0LTRhZjEtYjFiOC0yNDZjODMxMTIwMzMiLCJpYXQiOjE1NzI0OTMzNTYsImp0aSI6ImM1MzQ0N2UzLTk5M2EtNDRhZS05Yzc4LTMxZjQ1YzNjMDgyZSJ9`}
+</CodeBlockWithCopy>
+
+- `aud` is the `scheme_id` in JWT. The entity sending the API response shares this with the entity making the API requests. Setu would provide this value under credentials for making calls to Setu APIs. You should set this value and share it with Setu to enable Setu to make calls to your APIs.
+- `iat`  is the epoch timestamp in seconds, at which the request was issued. Requests older than 30 seconds are considered stale, and hence will be rejected.
+- `jti` is a unique ID for every request that can be used to identify the request for logging, debugging and tracking purpose. Since this is unique for every request, the same JWT token should not be reused or repeated for different requests.
+
+<hr class="tertiary" />
+
+##### Signature
+
+Using the algorithm specified in the header, along with the encoded header, encoded payload and secret, the signature is constructed in the following way—
+
+<CodeBlockWithCopy language="bash">
+  {`HMACSHA256(
+    base64UrlEncode(header) + "." +
+    base64UrlEncode(payload),
+    secret
+)`}
+</CodeBlockWithCopy>
+
+The `secret` is a private key shared between Setu and you, used to sign the token to verify the sender of the JWT, ie, if the claims are coming from the `aud` that they claim to be coming from. The request is authenticated based on both the validity of the signature, and also the verification of each claim individually. For example—
+
+<CodeBlockWithCopy language="json">
+  {`Input string   : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI4ZjQ3ZTQxYy00Njg0LTRhZjEtYjFiOC0yNDZjODMxMTIwMzMiLCJpYXQiOjE1NzI0OTMzNTYsImp0aSI6ImM1MzQ0N2UzLTk5M2EtNDRhZS05Yzc4LTMxZjQ1YzNjMDgyZSJ9
+Secret         : 7c2e036c-908f-48ba-abe3-cd8745a6fa99
+HA256 Signaure : xfYii9lfWMHtMBgjK5U6NFN_6_Q9jw8UMQu8Jnvftbs`}
+</CodeBlockWithCopy>
+
+You can try this on your command line by running—
+
+<CodeBlockWithCopy language="bash">
+  {`echo -n "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiI4ZjQ3ZTQxYy00Njg0LTRhZjEtYjFiOC0yNDZjODMxMTIwMzMiLCJpYXQiOjE1NzI0OTMzNTYsImp0aSI6ImM1MzQ0N2UzLTk5M2EtNDRhZS05Yzc4LTMxZjQ1YzNjMDgyZSJ9.xfYii9lfWMHtMBgjK5U6NFN_6_Q9jw8UMQu8Jnvftbs" | openssl dgst -sha256 -hmac BBzKUWAZeAS2tBsk0FtJT4ep -binary|openssl base64 -e -A | sed s/+/-/ | sed -E s/=+$//`}
+</CodeBlockWithCopy>
+
+Read more about how we arrived at this command [here ↗](https://gist.github.com/cheapRoc/5cbe11e9a8831c9e73f55121d4eddacf)
+
+<hr class="primary" />
+
+### JWT authentication for Setu APIs
+
+The JSON Web Token mechanism is used for securely communicating with Setu. It is an open standard for representing claims securely between two parties.
+
+The <a href="https://jwt.io/" target="_blank">JWT website ↗</a> covers the basics of how it works and the concepts involved. This guide provides a simple description of how JWT is implemented at Setu.
+
+For Setu products, JWT keys have a one-to-one mapping with individual product configurations. Essentially, each product configuration comes with its own JWT key that a merchant can use to authorise API requests.
+
+<Callout type="warning">
+  While we support JWT auth, we recommend using the more secure{" "}
+  <a href="/dev-tools/bridge/org-settings/api-keys/oauth" target="_blank">
+    OAuth keys
+  </a>
+  , which come with features like the ability to access multiple products with the
+  same key, or regenerate and delete keys as needed and so on.
+</Callout>
+
+<hr class="primary" />
+
+#### Calling Setu-hosted APIs
+
+A merchant will call Setu APIs for creating payment links, checking link status, for fetching reports etc and can use JWT to authenticate such requests with Setu.
+
+If you are an Admin for your Bridge account, you should be able to see the API keys card under “Org settings” in the left panel. Click the JWT keys card to view keys for all your product configs. <a href="/dev-tools/bridge/org-settings/api-keys/jwt" target="_blank">Read more ↗</a>
+
+<hr class="primary" />
+
+### Sample code
+
+Practically, you never need to worry about the encoding and decoding a JWT.
+
+A lot of third party libraries exist that can do this for you easily —you can take a look at all the available libraries in most of the programming languages at Libraries for Token Signing/Verification section <a href="https://jwt.io" target="_blank">here ↗</a>.
+
+Setu / partner can accept a request as legitimate when the JWT format is recognised, ie, the payload is verified and the signature is valid. Requests can be rejected if—
+
+1. The time since generation of the token is more than 2 minutes.
+2. The `aud` claim is not verified.
+3. The signature is invalid.
+
+Below here are some samples in popular languages.
+
+<hr class="tertiary" />
+
+##### Python
+
+<CodeBlockWithCopy language="python">
+  {`## pyjwt==1.7.1
+import jwt
+import datetime
+import uuid
+scheme_id = "8f47e41c-4684-4af1-b1b8-246c83112033"
+secret    = "7c2e036c-908f-48ba-abe3-cd8745a6fa99"
+payload   = {
+    "aud" : scheme_id,
+    "iat" : datetime.datetime.utcnow(),
+    "jti" : str(uuid.uuid1())
+}
+// generate a token like this
+token = jwt.encode(payload, secret, algorithm="HS256")
+// And to decode the token and verify the aud claim—
+try:
+    # verified claim
+    jwt.decode(token, secret, audience=scheme_id)
+    print("Verified token")
+except jwt.PyJWTError:
+    # unverified claim
+    print("Token error")
+`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### PHP
+
+<CodeBlockWithCopy language="php">
+  {`<?php
+require __DIR__.'/vendor/autoload.php';
+use FirebaseJWTJWT;
+$key = "7c2e036c-908f-48ba-abe3-cd8745a6fa99";
+$aud = "8f47e41c-4684-4af1-b1b8-246c83112033";
+// create token
+$token = array(
+    "aud" => $aud,
+    "iat" => 1572493356,
+    "jti" => "c53447e3-993a-44ae-9c78-31f45c3c082e"
+);
+$jwt = JWT::encode($token, $key);
+print_r($jwt);
+echo '<br/>';
+// Decode Logic
+/**
+ * You can add a leeway to account for when there is a clock skew times between
+ * the signing and verifying servers. It is recommended that this leeway should
+ * not be bigger than a few minutes.
+ *
+ * Source: http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#nbfDef
+ */
+JWT::$leeway = 60; // $leeway in seconds
+$decoded = JWT::decode($jwt, $key, array('HS256'));
+$audClaimInToken = $decoded -> aud;
+print_r($audClaimInToken);
+echo '<br/>';
+if($audClaimInToken == $aud){
+  echo "Success";
+}
+else{
+  echo "Fail";
+}
+?>`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### C#
+
+<CodeBlockWithCopy language="c">
+  {`using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+public class JwtAuthManager
+{
+    static string SecretKey = "ReallyLongSecret"; // this should come from your configuration file
+    static string audience = "YourAudClaim";// this should come from your configuration file
+    public string GenerateJWTToken()
+    {
+        byte[] symmetricKey = Encoding.ASCII.GetBytes(JwtAuthManager.SecretKey);
+        var token_Handler = new JwtSecurityTokenHandler();
+        var now = DateTime.UtcNow;
+        var securitytokenDescriptor = new SecurityTokenDescriptor
+        {
+            Audience = JwtAuthManager.audience,
+            IssuedAt = now,
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(symmetricKey), SecurityAlgorithms.HmacSha256)
+        };
+        var stoken = token_Handler.CreateToken(securitytokenDescriptor);
+        var token = token_Handler.WriteToken(stoken);
+        return token;
+    }
+    public bool ValidateToken(string token)
+    {
+        var simplePrinciple = JwtAuthManager.GetPrincipal(token);
+        Console.WriteLine(simplePrinciple);
+        if (simplePrinciple == null)
+            return false;
+        // You can implement more validation to check whether username exists in your DB or not or something else. 
+        return true;
+    }
+    public static ClaimsPrincipal GetPrincipal(string token)
+    {
+        try
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = jwtTokenHandler.ReadToken(token) as JwtSecurityToken;
+            if (jwtToken == null)
+                return null;
+            byte[] symmetricKey = Encoding.ASCII.GetBytes(JwtAuthManager.SecretKey);
+            var validationParameters = new TokenValidationParameters()
+            {
+                ValidateAudience = true,
+                RequireExpirationTime = false,
+                ValidateIssuer = false,
+                ValidAudience = JwtAuthManager.audience,
+                IssuerSigningKey = new SymmetricSecurityKey(symmetricKey)
+            };
+            SecurityToken securityToken;
+            var principal = jwtTokenHandler.ValidateToken(token, validationParameters, out securityToken);
+            Console.WriteLine("Principle");
+            Console.WriteLine(principal);
+            return principal;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return null;
+        }
+    }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Java
+
+<CodeBlockWithCopy language="java">
+  {`package com.setu.helpers;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import java.util.Date;
+import java.util.UUID;
+public class SetuJwtHelper {
+    private String schemedId;
+    private String secret;
+    public SetuJwtHelper(String secret, String schemedId) {
+        this.schemedId = schemedId;
+        this.secret = secret;
+    }
+    public void setSchemedId(String schemedId) {
+        this.schemedId = schemedId;
+    }
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
+    public String yieldBearerToken() {
+        Algorithm algorithm = Algorithm.HMAC256(this.secret);
+        String token = JWT.create()
+                .withAudience(this.schemedId)
+                .withIssuedAt(new Date())
+                .withClaim("jti",  UUID.randomUUID().toString())
+                .sign(algorithm);
+        return "Bearer " + token;
+    }
+    public void verifyBearerToken (String bearerToken) throws JWTVerificationException {
+        bearerToken = bearerToken.replace("Bearer ", "");
+        Algorithm algorithm = Algorithm.HMAC256(this.secret);
+        JWTVerifier verifier = JWT.require(algorithm)
+                .acceptLeeway(10)
+                .withAudience(this.schemedId)
+                .build(); //Reusable verifier instance
+        DecodedJWT jwt = verifier.verify(bearerToken);
+    }
+}`}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />
