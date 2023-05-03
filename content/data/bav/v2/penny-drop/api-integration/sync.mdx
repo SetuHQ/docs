@@ -1,0 +1,151 @@
+---
+sidebar_title: Sync API
+page_title: BAV Sync API integration
+order: 1
+visible_in_sidebar: true
+---
+
+## Sync API
+
+The following guide describes a sync API implementation for bank account verification. This lets you initiate a verification request and expect an immediate response on the status of the verification. Essentially, you will need the following API—
+
+- **Verify bank account**—This lets you initiate a verification request, and get verification status in response.
+
+Here are the URLs you would need for this integration—
+
+- Sandbox—`https://dg-sandbox.setu.co`
+- Production—`https://dg.setu.co`
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+
+<Callout type="warning">
+  While this is a simpler implementation, the experience for your end customer
+  may be better handled with our{" "}
+  <a href="/data/bav/api-integration/async">async APIs</a>, that let you
+  asynchronously fetch the status associated with a bank verification request.{" "}
+  <br />
+  You can update the <code>pending</code> status on your UI , whenever the new status is available,
+  rather than letting your customer wait for a response on the UI.
+</Callout>
+
+<hr class="primary" />
+
+### Verify bank account
+
+Call this API to verify bank account of your customer. A quick explanation of the request params—
+
+- `ifsc` is the IFSC (Indian Financial System Code) of the bank branch, where the bank account is held.
+- `accountNumber` is the bank account number that has to be verified.
+
+While testing on Sandbox, you may use the following sample values—
+
+- Use ABCD0123456 (IFSC) and 1234567890 (account number) to get a successful verification response.
+- Use DCBA6543210 (IFSC) and 0987654321 (account number) to get a failed verification response.
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Your request contains a
+                valid <code>bank account</code> and Setu has processed your
+                request successfully.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST  /api/verify/ban 
+ 
+{ 
+  "ifsc": "CNRB0008517",  
+  "accountNumber": "8517129000033" 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+  "verification": "success", 
+  "message": "Account exists and is active.", 
+  "data": { 
+    "name": "name of the account holder", 
+    "transactionReference": "120716373986" 
+  } 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully, but the <code>bank account</code> does not
+                exist or is invalid.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST  /api/verify/ban 
+ 
+{ 
+  "ifsc": "CNRB0008517",  
+  "accountNumber": "8517129000033" 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+  "verification": "failed", 
+  "message": "This account does not exist or is invalid." 
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+         {
+          key: "3",
+          label: "500",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Internal service error or upstream service failure while processing request
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST  /api/verify/ban 
+ 
+{ 
+  "ifsc": "CNRB0008517",  
+  "accountNumber": "8517129000031" 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "code": "internal_server_error", // or upstream_service_error
+    "detail": "Internal Server Error. Please reach out to support along with the traceId.",
+    "traceId": "..."
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    ></Tabs>
+  </Portion>
+</Row>
+
+<WasPageHelpful />
