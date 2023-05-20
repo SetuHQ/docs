@@ -15,8 +15,8 @@ To **get started quickly**, you can setup a mock API endpoint using <a href="htt
 
 ###### Types of notifications
 
-- **Consent notification**—notification triggered for the events that occur in consent flow
-- **FI notification**—notification triggered for the events that occur in data flow
+-   **Consent notification**—notification triggered for the events that occur in consent flow
+-   **FI notification**—notification triggered for the events that occur in data flow
 
 Note: Webhooks retries will be added in future iterations.
 
@@ -28,11 +28,11 @@ This notification is used to communicate the updated status of the consent.
 
 **Types of consent status**
 
-- `ACTIVE`-Customer has approved consent
-- `REJECTED`-Customer has rejected consent
-- `REVOKED`-Customer revoked consent for an existing approved consent
-- `PAUSED`-Customer paused consent for an existing approved consent
-- `EXPIRED`-Consent request has expired
+-   `ACTIVE`-Customer has approved consent
+-   `REJECTED`-Customer has rejected consent
+-   `REVOKED`-Customer revoked consent for an existing approved consent
+-   `PAUSED`-Customer paused consent for an existing approved consent
+-   `EXPIRED`-Consent request has expired
 
 We do not send notification for consent status `PENDING`, this is when consent is just created.
 
@@ -41,8 +41,7 @@ We do not send notification for consent status `PENDING`, this is when consent i
 Setu will post this payload to your notification endpoint whenever there is a change in consent status.
 
 <CodeBlockWithCopy language="json">
-  {`POST  {base_url}
-{
+    {`{
   "type": "CONSENT_STATUS_UPDATE",
   "timestamp": 2018-12-06T11:39:57.153Z,
   "consentId": d4f40bd9-a22f-4408-a622-4e8a1e4fbda6,
@@ -57,6 +56,27 @@ Setu will post this payload to your notification endpoint whenever there is a ch
 }`}
 </CodeBlockWithCopy>
 
+###### Error Notifications
+In the following two scenarios, an error notification will be sent:
+- No FIP Accounts Discovered
+- Consent creation failure on the AA
+
+The error notification payload:
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "type": "CONSENT_STATUS_UPDATE",
+  "timestamp": 2018-12-06T11:39:57.153Z,
+  "consentId": d4f40bd9-a22f-4408-a622-4e8a1e4fbda6,
+  "success": true,
+  "data": null,
+  "error":{
+      "code":"NoFIPAccountsDiscovered",
+      "message":"no_fip_accounts_found"
+   },
+}`}
+</CodeBlockWithCopy>
+
 <hr class="primary" />
 
 #### FI notification
@@ -67,37 +87,38 @@ The FI notification payload contains two status
 
 **Data Session Status** – returns updated status of the data session; determines whether to initiate Fetch API Data API
 
-- `ACTIVE`- FI data session is active
-- `COMPLETED`- All requested FIP(s) have status as `READY`
-- `EXPIRED`- Data session had expired and no data fetch can happen for the dataSessionId
-- `FAILED`- Data Session request failed, retry creating a new session
+-   `PENDING`- FI data session is active
+-   `COMPLETED`- All requested FIP(s) have status as `READY`
+-   `EXPIRED`- Data session had expired and no data fetch can happen for the dataSessionId
+-   `PARTIAL` - Some FIPs are ready with the data while a few others have failed. Ready data can still be fetched. <ReadMore />
+-   `FAILED`- Data Session request failed, retry creating a new session
 
 **FIStatus** - return status of the FIP(s) linked to the data session
 
-- `READY` - FIP is ready with requested data
-- `DENIED` - FIP has denied data sharing
-- `PENDING` - FIP received the data session request
-- `DELIVERED` - FIP has delivered the requested data
-- `TIMEOUT` - Request to FIP has timed out
+-   `READY` - FIP is ready with requested data
+-   `DENIED` - FIP has denied data sharing
+-   `PENDING` - FIP received the data session request
+-   `DELIVERED` - FIP has delivered the requested data
+-   `TIMEOUT` - Request to FIP has timed out
 
 Fetch FI Data API should be called only when these conditions are satified:
 
-- Data Session status is `ACTIVE` or `COMPLETED` (all FIPs are ready)
-- FIStatus is `READY`.
+-   Data Session status is `PENDING`, `PARTIAL` or `COMPLETED` (all FIPs are ready)
+-   FIStatus is `READY`.
 
 ###### FI Notification Payload
 
 Setu will notify you whenever the FIP (Financial Information Provider) responds with updated status. The following payload will be posted on your configured webhook endpoint.
 
 <CodeBlockWithCopy language="json">
-  {`{
+    {`{
   "type": "SESSION_STATUS_UPDATE",
   "timestamp": "2018-12-06T11:39:57.153Z",
   "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6",
   "dataSessionId": "378ec65c-f558-49fc-89ea-e880c2cf88b3",
   "success": true,
   "data": {
-    "status": "ACTIVE",
+    "status": "PENDING",
     "format": "json", // json or xml
     "DataRange": {
       "from": "2018-12-06T11:39:57.153Z",
@@ -120,19 +141,6 @@ Setu will notify you whenever the FIP (Financial Information Provider) responds 
       "message": ""
     }
   }`}
-</CodeBlockWithCopy>
-
-###### Response
-
-Send the response in the format shown below.
-
-<CodeBlockWithCopy language="json">
-  {`{
-    "ver"       : "1.0",
-    "timestamp" : "2018-12-06T11:39:57.153Z", // current timestamp
-    "txnid"     : "f35761ac-4a18-11e8-96ff-0277a9fbfedc", // UUId v4
-    "response"  : "OK"
-}`}
 </CodeBlockWithCopy>
 
 <WasPageHelpful />

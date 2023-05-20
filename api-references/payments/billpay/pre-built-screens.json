@@ -1,599 +1,502 @@
 {
-    "info":
-      {
+    "schemes": ["https"],
+    "info": {
         "title": "Setu Collect for Business - White label solution",
-        "x-logo":
-          {
+        "x-logo": {
             "url": "https://setu-customer-success.s3.ap-south-1.amazonaws.com/icons/setu-logo-dp-on-tp.svg",
-            "altText": "Setu logo",
-          },
+            "altText": "Setu logo"
+        },
         "version": "0.5.0",
-        "description": "Enable easy BBPS bill payments in your App",
-      },
-    "paths":
-      {
-        "/health":
-          {
-            "get":
-              {
+        "description": "Enable easy BBPS bill payments in your App"
+    },
+    "host": "bills-sandbox.setu.co",
+    "paths": {
+        "/health": {
+            "get": {
                 "tags": ["Health"],
                 "summary": "Return server version and some other info",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
-                "responses":
-                  {
-                    "200":
-                      {
-                        "schema":
-                          {
+                "responses": {
+                    "200": {
+                        "schema": {
                             "type": "object",
                             "required": ["entry"],
-                            "properties":
-                              {
-                                "entry":
-                                  {
+                            "properties": {
+                                "entry": {
                                     "type": "object",
-                                    "properties":
-                                      {
-                                        "server":
-                                          {
+                                    "properties": {
+                                        "server": {
                                             "type": "string",
-                                            "example": "oreseur",
-                                          },
-                                        "version":
-                                          {
+                                            "example": "oreseur"
+                                        },
+                                        "version": {
                                             "type": "string",
-                                            "example": "97787671f225fb82c8986642db31a3f2542d120d",
-                                          },
-                                        "environment":
-                                          {
+                                            "example": "97787671f225fb82c8986642db31a3f2542d120d"
+                                        },
+                                        "environment": {
                                             "type": "string",
-                                            "example": "development",
-                                          },
-                                      },
-                                  },
-                              },
-                          },
-                        "description": "Log entry successfully retrieved",
-                      },
-                  },
-              },
-          },
-        "/bill-link":
-          {
-            "post":
-              {
+                                            "example": "development"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Log entry successfully retrieved"
+                    }
+                }
+            }
+        },
+        "/bill-link": {
+            "post": {
                 "tags": ["Link"],
                 "summary": "Create link to bill",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
-                "responses":
-                  {
-                    "200":
-                      {
-                        "schema":
-                          {
+                "responses": {
+                    "200": {
+                        "schema": {
                             "type": "object",
-                            "properties":
-                              {
-                                "link":
-                                  {
+                            "properties": {
+                                "link": {
                                     "type": "string",
-                                    "example": "https://bills.setu.co/cou/bills/4ed91d53-9ee1-4018-b221-2e99d1f9d192/a765fc3f-e42d-40e7-80d3-99b1b0648ae1",
-                                  },
-                                "sessionId":
-                                  {
+                                    "example": "https://bills.setu.co/cou/bills/4ed91d53-9ee1-4018-b221-2e99d1f9d192/a765fc3f-e42d-40e7-80d3-99b1b0648ae1"
+                                },
+                                "sessionId": {
                                     "type": "string",
                                     "example": "520a17ce-73fe-4821-aaea-8af195625b35",
-                                    "description": "The unique session id ID",
-                                  },
-                              },
-                          },
-                        "description": "The link was successfully created",
-                      },
-                  },
-                "parameters":
-                  [
-                    {
-                      "in": "header",
-                      "name": "x-api-user",
-                      "description": "The API user",
-                    },
-                    {
-                      "in": "header",
-                      "name": "x-api-password",
-                      "description": "The API password",
-                    },
-                    {
-                      "in": "body",
-                      "name": "body",
-                      "schema":
-                        {
-                          "type": "object",
-                          "required": ["billId", "mobileNumber"],
-                          "properties":
-                            {
-                              "billId":
-                                {
-                                  "type": "string",
-                                  "example": "9456d962-2ee7-40f2-8275-32afc5095a0d",
-                                  "description": "The Bill ID",
-                                },
-                              "mobileNumber":
-                                {
-                                  "type": "string",
-                                  "example": "8181773053",
-                                  "description": "the mobile number",
-                                },
-                            },
+                                    "description": "The unique session id ID"
+                                }
+                            }
                         },
-                      "description": "The link generation parameter",
+                        "description": "The link was successfully created"
+                    }
+                },
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "x-api-user",
+                        "description": "The API user"
                     },
-                  ],
+                    {
+                        "in": "header",
+                        "name": "x-api-password",
+                        "description": "The API password"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "required": ["billId", "mobileNumber"],
+                            "properties": {
+                                "billId": {
+                                    "type": "string",
+                                    "example": "9456d962-2ee7-40f2-8275-32afc5095a0d",
+                                    "description": "The Bill ID"
+                                },
+                                "mobileNumber": {
+                                    "type": "string",
+                                    "example": "8181773053",
+                                    "description": "the mobile number"
+                                }
+                            }
+                        },
+                        "description": "The link generation parameter"
+                    }
+                ],
                 "description": "This API generates a one time link to the bill to the bill if the bill ID is known. This can be used to get the user to resume a bill payment journey.\nThe bill ID is communicated to a partners through [webhooks](/docs/webhook). Webhook feature is available on demand.",
-                "operationId": "getBillLink",
-              },
-          },
-        "/direct-link":
-          {
-            "post":
-              {
+                "operationId": "getBillLink"
+            }
+        },
+        "/direct-link": {
+            "post": {
                 "tags": ["Link"],
                 "summary": "Create one time link",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
-                "responses":
-                  {
-                    "200":
-                      {
-                        "schema":
-                          {
+                "responses": {
+                    "200": {
+                        "schema": {
                             "type": "object",
-                            "properties":
-                              {
-                                "link":
-                                  {
+                            "properties": {
+                                "link": {
                                     "type": "string",
-                                    "example": "https://bills.setu.co/cou/bills/4ed91d53-9ee1-4018-b221-2e99d1f9d192/a765fc3f-e42d-40e7-80d3-99b1b0648ae1",
-                                  },
-                                "sessionId":
-                                  {
+                                    "example": "https://bills.setu.co/cou/bills/4ed91d53-9ee1-4018-b221-2e99d1f9d192/a765fc3f-e42d-40e7-80d3-99b1b0648ae1"
+                                },
+                                "sessionId": {
                                     "type": "string",
                                     "example": "520a17ce-73fe-4821-aaea-8af195625b35",
-                                    "description": "The unique session id ID",
-                                  },
-                              },
-                          },
-                        "description": "The link was successfully created",
-                      },
-                  },
-                "parameters":
-                  [
-                    {
-                      "in": "header",
-                      "name": "x-api-user",
-                      "description": "The API user",
-                    },
-                    {
-                      "in": "header",
-                      "name": "x-api-password",
-                      "description": "The API password",
-                    },
-                    {
-                      "in": "body",
-                      "name": "body",
-                      "schema":
-                        {
-                          "type": "object",
-                          "required": ["mobileNumber"],
-                          "properties":
-                            {
-                              "billerId":
-                                {
-                                  "type": "string",
-                                  "example": "MAHI00000NATIC",
-                                  "description": "The biller ID on BBPS",
-                                },
-                              "redirectTo":
-                                {
-                                  "enum": ["transactions", "disputes"],
-                                  "type": "string",
-                                  "description": "The link to redirect the user to",
-                                },
-                              "categoryName":
-                                {
-                                  "type": "string",
-                                  "example": "Loan-Repayment",
-                                  "description": "the category name",
-                                },
-                              "mobileNumber":
-                                {
-                                  "type": "string",
-                                  "example": "8181773053",
-                                  "description": "the mobile number",
-                                },
-                              "defaultAmount":
-                                {
-                                  "type": "string",
-                                  "example": "1000",
-                                  "description": "the amount to be paid if the biller allows the amount to be overridden",
-                                },
-                              "customerParams":
-                                {
-                                  "type": "array",
-                                  "items":
-                                    {
-                                      "type": "object",
-                                      "properties":
-                                        {
-                                          "name":
-                                            {
-                                              "type": "string",
-                                              "example": "Loan Number",
-                                            },
-                                          "value":
-                                            {
-                                              "type": "string",
-                                              "example": "10001",
-                                            },
-                                        },
-                                    },
-                                  "description": "the customer params for the biller. This should be as per MDM",
-                                },
-                              "agentMobileNumber":
-                                {
-                                  "type": "string",
-                                  "example": "8181773053",
-                                  "description": "the mobile number of the agent",
-                                },
-                            },
+                                    "description": "The unique session id ID"
+                                }
+                            }
                         },
-                      "description": "The link generation parameter",
+                        "description": "The link was successfully created"
+                    }
+                },
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "x-api-user",
+                        "description": "The API user"
                     },
-                  ],
+                    {
+                        "in": "header",
+                        "name": "x-api-password",
+                        "description": "The API password"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "required": ["mobileNumber"],
+                            "properties": {
+                                "billerId": {
+                                    "type": "string",
+                                    "example": "MAHI00000NATIC",
+                                    "description": "The biller ID on BBPS"
+                                },
+                                "redirectTo": {
+                                    "enum": ["transactions", "disputes"],
+                                    "type": "string",
+                                    "description": "The link to redirect the user to"
+                                },
+                                "categoryName": {
+                                    "type": "string",
+                                    "example": "Loan-Repayment",
+                                    "description": "the category name"
+                                },
+                                "mobileNumber": {
+                                    "type": "string",
+                                    "example": "8181773053",
+                                    "description": "the mobile number"
+                                },
+                                "defaultAmount": {
+                                    "type": "string",
+                                    "example": "1000",
+                                    "description": "the amount to be paid if the biller allows the amount to be overridden"
+                                },
+                                "customerParams": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Loan Number"
+                                            },
+                                            "value": {
+                                                "type": "string",
+                                                "example": "10001"
+                                            }
+                                        }
+                                    },
+                                    "description": "the customer params for the biller. This should be as per MDM"
+                                },
+                                "agentMobileNumber": {
+                                    "type": "string",
+                                    "example": "8181773053",
+                                    "description": "the mobile number of the agent"
+                                }
+                            }
+                        },
+                        "description": "The link generation parameter"
+                    }
+                ],
                 "description": "This API generates a one time link to the bill payment system. None of the parameters are mandatory but depending on what is passed, the data link will display different UI.\n1. If nothing is passed in the input, it will take the user to the home page\n2. If category Code is passed, it will show the user the list of Billers\n3. If category code and the biller ID is passed, it will show the bill fetch form\n4. If the category code, biller Id and customer parameters are passed, it will show the bill directly.\nThe session is valid only for some time and becomes invalid if the user is inactive. You would need to generate this link uniquely for each of your customers and make sure you get a new link each time your customer wants to get back to the bill payment journey.",
-                "operationId": "getLink",
-              },
-          },
-        "/event-history":
-          {
-            "get":
-              {
+                "operationId": "getLink"
+            }
+        },
+        "/event-history": {
+            "get": {
                 "tags": ["Events"],
                 "summary": "History of events",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
-                "responses":
-                  {
-                    "200":
-                      {
-                        "schema":
-                          {
+                "responses": {
+                    "200": {
+                        "schema": {
                             "type": "object",
-                            "properties":
-                              {
-                                "data":
-                                  {
+                            "properties": {
+                                "data": {
                                     "type": "object",
-                                    "properties":
-                                      {
-                                        "_next":
-                                          {
+                                    "properties": {
+                                        "_next": {
                                             "type": "string",
                                             "example": "http://localhost:5611/webhooks/payment-event-history?after=10",
-                                            "description": "URL to access next page - stop iteration when this value is null or not present",
-                                          },
-                                        "events":
-                                          {
+                                            "description": "URL to access next page - stop iteration when this value is null or not present"
+                                        },
+                                        "events": {
                                             "type": "array",
-                                            "items":
-                                              {
+                                            "items": {
                                                 "type": "object",
-                                                "properties":
-                                                  {
-                                                    "event":
-                                                      {
-                                                        "enum":
-                                                          [
+                                                "properties": {
+                                                    "event": {
+                                                        "enum": [
                                                             "bill_fetch_success",
                                                             "bill_fetch_failure",
                                                             "bill_payment_success",
                                                             "bill_payment_failure",
                                                             "bill_payment_refunded",
                                                             "dispute_raised",
-                                                            "dispute_status_change",
-                                                          ],
+                                                            "dispute_status_change"
+                                                        ],
                                                         "type": "string",
-                                                        "description": "Type of event",
-                                                      },
-                                                  },
-                                              },
-                                            "description": "Array of Event data as described in https://docs.setu.co/payments/billpay/user-events",
-                                          },
-                                      },
-                                  },
-                                "status":
-                                  {
+                                                        "description": "Type of event"
+                                                    }
+                                                }
+                                            },
+                                            "description": "Array of Event data as described in https://docs.setu.co/payments/billpay/user-events"
+                                        }
+                                    }
+                                },
+                                "status": {
                                     "enum": ["success", "failure"],
                                     "type": "string",
-                                    "example": "success",
-                                  },
-                              },
-                            "description": "S",
-                          },
-                        "description": "The API is successful",
-                      },
-                  },
-                "parameters":
-                  [
+                                    "example": "success"
+                                }
+                            },
+                            "description": "S"
+                        },
+                        "description": "The API is successful"
+                    }
+                },
+                "parameters": [
                     {
-                      "in": "header",
-                      "name": "x-api-user",
-                      "description": "The API user",
+                        "in": "header",
+                        "name": "x-api-user",
+                        "description": "The API user"
                     },
                     {
-                      "in": "header",
-                      "name": "x-api-password",
-                      "description": "The API password",
+                        "in": "header",
+                        "name": "x-api-password",
+                        "description": "The API password"
                     },
                     {
-                      "in": "query",
-                      "enum":
-                        [
-                          "bill_fetch_success",
-                          "bill_fetch_failure",
-                          "bill_payment_success",
-                          "bill_payment_failure",
-                          "bill_payment_refunded",
-                          "dispute_raised",
-                          "dispute_status_change",
+                        "in": "query",
+                        "enum": [
+                            "bill_fetch_success",
+                            "bill_fetch_failure",
+                            "bill_payment_success",
+                            "bill_payment_failure",
+                            "bill_payment_refunded",
+                            "dispute_raised",
+                            "dispute_status_change"
                         ],
-                      "name": "eventType",
-                      "type": "string",
-                      "description": "Type of event",
+                        "name": "eventType",
+                        "type": "string",
+                        "description": "Type of event"
                     },
                     {
-                      "in": "query",
-                      "name": "startDate",
-                      "type": "string",
-                      "example": "2020-10-24T14:12:00Z",
-                      "description": "Start date time in UTC. It should in in `YYYY-MM-DDTHH:mm:SSZ` format",
+                        "in": "query",
+                        "name": "startDate",
+                        "type": "string",
+                        "example": "2020-10-24T14:12:00Z",
+                        "description": "Start date time in UTC. It should in in `YYYY-MM-DDTHH:mm:SSZ` format"
                     },
                     {
-                      "in": "query",
-                      "name": "endDate",
-                      "type": "string",
-                      "example": "2020-10-25T14:12:00Z",
-                      "description": "End date time in UTC. It should in in `YYYY-MM-DDTHH:mm:SSZ` format",
+                        "in": "query",
+                        "name": "endDate",
+                        "type": "string",
+                        "example": "2020-10-25T14:12:00Z",
+                        "description": "End date time in UTC. It should in in `YYYY-MM-DDTHH:mm:SSZ` format"
                     },
                     {
-                      "in": "query",
-                      "name": "mobileNumber",
-                      "type": "string",
-                      "example": "9998989999",
-                      "description": "Mobile number",
+                        "in": "query",
+                        "name": "mobileNumber",
+                        "type": "string",
+                        "example": "9998989999",
+                        "description": "Mobile number"
                     },
                     {
-                      "in": "query",
-                      "name": "sessionId",
-                      "type": "string",
-                      "example": "01fc",
-                      "description": "Session ID",
+                        "in": "query",
+                        "name": "sessionId",
+                        "type": "string",
+                        "example": "01fc",
+                        "description": "Session ID"
                     },
                     {
-                      "in": "query",
-                      "name": "after",
-                      "type": "integer",
-                      "description": "Internal paramter used for pagination",
-                    },
-                  ],
+                        "in": "query",
+                        "name": "after",
+                        "type": "integer",
+                        "description": "Internal paramter used for pagination"
+                    }
+                ],
                 "description": "Use this API to get payment events if custom payment methods are enabled",
-                "operationId": "paymentWebhook",
-              },
-          },
-        "/webhooks/refund-event":
-          {
-            "post":
-              {
+                "operationId": "eventHistory"
+            }
+        },
+        "/webhooks/refund-event": {
+            "post": {
                 "tags": ["Payment"],
                 "summary": "Refund status webhook for custom payments",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
-                "responses":
-                  {
-                    "200":
-                      {
-                        "schema":
-                          {
+                "responses": {
+                    "200": {
+                        "schema": {
                             "type": "object",
-                            "properties":
-                              {
-                                "status":
-                                  {
+                            "properties": {
+                                "status": {
                                     "enum": ["acknowledged", "failure"],
                                     "type": "string",
-                                    "example": "acknowledged",
-                                  },
-                              },
-                          },
-                        "description": "The API is successful",
-                      },
-                  },
-                "parameters":
-                  [
-                    {
-                      "in": "header",
-                      "name": "x-api-user",
-                      "description": "The API user",
-                    },
-                    {
-                      "in": "header",
-                      "name": "x-api-password",
-                      "description": "The API password",
-                    },
-                    {
-                      "in": "body",
-                      "name": "body",
-                      "schema":
-                        {
-                          "type": "object",
-                          "required":
-                            [
-                              "orderId",
-                              "refundId",
-                              "refundStatus",
-                              "refundDateTime",
-                            ],
-                          "properties":
-                            {
-                              "orderId":
-                                {
-                                  "type": "string",
-                                  "example": "COUWLje9V7wWs9N3w",
-                                  "description": "Order ID",
-                                },
-                              "refundId":
-                                {
-                                  "type": "string",
-                                  "example": "83622499563798242988621",
-                                  "description": "Unique transaction ID on partner system for refund",
-                                },
-                              "refundStatus":
-                                {
-                                  "enum": ["SUCCESS", "FAILURE"],
-                                  "type": "string",
-                                  "description": "THe status of payment",
-                                },
-                              "refundDateTime":
-                                {
-                                  "type": "string",
-                                  "example": "2020-10-12 14:02:59",
-                                  "description": "Date time in UTC. It should in in `YYYY-MM-DD HH:MM:SS` format",
-                                },
-                            },
+                                    "example": "acknowledged"
+                                }
+                            }
                         },
-                      "description": "The link generation parameter",
+                        "description": "The API is successful"
+                    }
+                },
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "x-api-user",
+                        "description": "The API user"
                     },
-                  ],
+                    {
+                        "in": "header",
+                        "name": "x-api-password",
+                        "description": "The API password"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "orderId",
+                                "refundId",
+                                "refundStatus",
+                                "refundDateTime"
+                            ],
+                            "properties": {
+                                "orderId": {
+                                    "type": "string",
+                                    "example": "COUWLje9V7wWs9N3w",
+                                    "description": "Order ID"
+                                },
+                                "refundId": {
+                                    "type": "string",
+                                    "example": "83622499563798242988621",
+                                    "description": "Unique transaction ID on partner system for refund"
+                                },
+                                "refundStatus": {
+                                    "enum": ["SUCCESS", "FAILURE"],
+                                    "type": "string",
+                                    "description": "THe status of payment"
+                                },
+                                "refundDateTime": {
+                                    "type": "string",
+                                    "example": "2020-10-12 14:02:59",
+                                    "description": "Date time in UTC. It should in in `YYYY-MM-DD HH:MM:SS` format"
+                                }
+                            }
+                        },
+                        "description": "The link generation parameter"
+                    }
+                ],
                 "description": "Use this API to send refund events from your service if custom payment methods are enabled",
-                "operationId": "refundWebhook",
-              },
-          },
-        "/webhooks/payment-event":
-          {
-            "post":
-              {
+                "operationId": "refundWebhook"
+            }
+        },
+        "/webhooks/payment-event": {
+            "post": {
                 "tags": ["Payment"],
                 "summary": "Payment webhook for custom payments",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
-                "responses":
-                  {
-                    "200":
-                      {
-                        "schema":
-                          {
+                "responses": {
+                    "200": {
+                        "schema": {
                             "type": "object",
-                            "properties":
-                              {
-                                "status":
-                                  {
+                            "properties": {
+                                "status": {
                                     "enum": ["acknowledged", "failure"],
                                     "type": "string",
-                                    "example": "acknoweledged",
-                                  },
-                              },
-                          },
-                        "description": "The API is successful",
-                      },
-                  },
-                "parameters":
-                  [
-                    {
-                      "in": "header",
-                      "name": "x-api-user",
-                      "description": "The API user",
-                    },
-                    {
-                      "in": "header",
-                      "name": "x-api-password",
-                      "description": "The API password",
-                    },
-                    {
-                      "in": "body",
-                      "name": "body",
-                      "schema":
-                        {
-                          "type": "object",
-                          "required":
-                            [
-                              "orderId",
-                              "transactionId",
-                              "paymentDateTime",
-                              "amount",
-                              "paymentMode",
-                              "paymentStatus",
-                            ],
-                          "properties":
-                            {
-                              "amount":
-                                {
-                                  "type": "string",
-                                  "example": "2032.02",
-                                  "description": "Amount formatted as a 2 decimal point string",
-                                },
-                              "orderId":
-                                {
-                                  "type": "string",
-                                  "example": "COUWLje9V7wWs9N3w",
-                                  "description": "Order ID",
-                                },
-                              "paymentMode":
-                                {
-                                  "enum":
-                                    [
-                                      "IMPS",
-                                      "DEBIT CARD",
-                                      "PREPAID CARD",
-                                      "NEFT",
-                                      "CREDIT CARD",
-                                      "INTERNET BANKING",
-                                      "ACCOUNT TRANSFER",
-                                      "WALLET",
-                                      "CASH",
-                                      "UPI",
-                                    ],
-                                  "type": "string",
-                                  "description": "The mode of payment",
-                                },
-                              "paymentStatus":
-                                {
-                                  "enum": ["SUCCESS", "FAILURE"],
-                                  "type": "string",
-                                  "description": "THe status of payment",
-                                },
-                              "transactionId":
-                                {
-                                  "type": "string",
-                                  "example": "83622499563798242988627",
-                                  "description": "Unique transaction ID on partner system",
-                                },
-                              "paymentDateTime":
-                                {
-                                  "type": "string",
-                                  "example": "2020-10-12 14:02:59",
-                                  "description": "Date time in UTC. It should in in `YYYY-MM-DD HH:MM:SS` format",
-                                },
-                            },
+                                    "example": "acknoweledged"
+                                }
+                            }
                         },
-                      "description": "The link generation parameter",
+                        "description": "The API is successful"
+                    }
+                },
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "x-api-user",
+                        "description": "The API user"
                     },
-                  ],
+                    {
+                        "in": "header",
+                        "name": "x-api-password",
+                        "description": "The API password"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "orderId",
+                                "transactionId",
+                                "paymentDateTime",
+                                "amount",
+                                "paymentMode",
+                                "paymentStatus"
+                            ],
+                            "properties": {
+                                "amount": {
+                                    "type": "string",
+                                    "example": "2032.02",
+                                    "description": "Amount formatted as a 2 decimal point string"
+                                },
+                                "orderId": {
+                                    "type": "string",
+                                    "example": "COUWLje9V7wWs9N3w",
+                                    "description": "Order ID"
+                                },
+                                "paymentMode": {
+                                    "enum": [
+                                        "IMPS",
+                                        "DEBIT CARD",
+                                        "PREPAID CARD",
+                                        "NEFT",
+                                        "CREDIT CARD",
+                                        "INTERNET BANKING",
+                                        "ACCOUNT TRANSFER",
+                                        "WALLET",
+                                        "CASH",
+                                        "UPI"
+                                    ],
+                                    "type": "string",
+                                    "description": "The mode of payment"
+                                },
+                                "paymentStatus": {
+                                    "enum": ["SUCCESS", "FAILURE"],
+                                    "type": "string",
+                                    "description": "THe status of payment"
+                                },
+                                "transactionId": {
+                                    "type": "string",
+                                    "example": "83622499563798242988627",
+                                    "description": "Unique transaction ID on partner system"
+                                },
+                                "paymentDateTime": {
+                                    "type": "string",
+                                    "example": "2020-10-12 14:02:59",
+                                    "description": "Date time in UTC. It should in in `YYYY-MM-DD HH:MM:SS` format"
+                                }
+                            }
+                        },
+                        "description": "The link generation parameter"
+                    }
+                ],
                 "description": "Use this API to send payment events from your service if custom payment methods are enabled",
-                "operationId": "paymentWebhook",
-              },
-          },
-      },
+                "operationId": "paymentWebhook"
+            }
+        }
+    },
     "swagger": "2.0",
-    "definitions": {},
-  }
+    "definitions": {}
+}

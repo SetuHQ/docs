@@ -1,0 +1,213 @@
+---
+sidebar_title: Active FIPs
+page_title: Account Aggregator Active FIPs
+order: 4
+visible_in_sidebar: true
+---
+
+## Get Active FIPs
+
+The GET Active FIP List API is the new version of our API to call the list of Active FIPs from which your customers can discover accounts, and consent to share data. The Active FIP List API works in a manner that
+
+-   Dynamically activates and deactivates FIPs based on performance.
+-   Can be used to simply check the status of FIPs that are active or inactive on the ecosystem.
+-   Can be used by FIUs as a mode of selection of FIPs/providers where a user has an account.
+
+#### Details Shared in the FIP List API
+
+Below is the parameters shared in the FIP List API that gives you each of the relevant details of the FIPs.
+These key details can be used by you for purposes like - offering a list of FIPs for your end-users to select or routing users to the Setu AA flow based on whether an FIP is active or not.
+
+<table>
+    <tr>
+        <th>
+            <strong>Status</strong>
+        </th>
+        <th>
+            <strong>Description</strong>
+        </th>
+    </tr>
+    <tr>
+        <td>
+            <code>Name</code>
+        </td>
+        <td>
+            The name of the FIP - this is typically their brand name in camel
+            case format.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <code>FIP ID</code>
+        </td>
+        <td>
+            The unique identifier for the FIP in the central registry of
+            participants maintained by Sahamati. This can be used in Context
+            filters if you want auto-discovery or to only discover accounts from
+            a particular institution. This is also the ID that is available in
+            the logs of data fetch transactions.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <code>FIP TYPES</code>
+        </td>
+        <td>
+            This refers to the type of data available via the FIP. For example,
+            an FIP with FIP_Types “DEPOSITS “ will have Savings or Current
+            Accounts available and be able to share bank statements upon user
+            consent
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <code>Status</code>
+        </td>
+        <td>
+            The Status field gives you the up-to-date status of the FIP. This
+            will determine whether the FIP’s accounts can be discovered and
+            whether data can be fetched from this FIP. More details on the
+            statuses in the next section.
+        </td>
+    </tr>
+</table>
+
+#### Categories of FIP Status
+
+Below is the list of statuses for FIPs that you will see in a typical GET FIP List response.
+
+<table>
+    <tr>
+        <th>
+            <strong>Status</strong>
+        </th>
+        <th>
+            <strong>Description</strong>
+        </th>
+    </tr>
+    <tr>
+        <td>
+            <code>ACTIVE</code>
+        </td>
+        <td>
+            Is an available FIP for account discovery, account linking, consent
+            and data fetches
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <code>INACTIVE</code>
+        </td>
+        <td>
+            This is an unavailable FIP. If you are using this to route customers
+            to AA — please route your customers to alternate methods of data
+            collection.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <code>TEMPORARILY INACTIVE</code>
+        </td>
+        <td>
+            This is an FIP that has been disabled for breaching SLIs on
+            performance. If you are using this to route customers to AA — please
+            route your customers to alternate methods of data collection.
+            However, this is a temporary status and will be moved to ACTIVE
+            status once their performance has improved. Do not redirect your
+            customers to the consent flow when an FIP status is INACTIVE or
+            TEMPORARILY INACTIVE as that will mean their consents and/or data
+            fetches are likely to fail.
+        </td>
+    </tr>
+</table>
+
+### FIP List API
+
+###### Request
+
+<CodeBlockWithCopy language="json">{` GET /v2/fips `}</CodeBlockWithCopy>
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "data": [
+        {
+            "name": "Axis Bank",
+            "fipId": "AXIS001",
+            "fiTypes": [
+                "DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "ACTIVE"
+        },
+        {
+            "name": "IndusInd Bank Ltd.",
+            "fipId": "fiplive@indusind",
+            "fiTypes": [
+                "DEPOSIT",
+                "TERM_DEPOSIT",
+                "RECURRING_DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "ACTIVE"
+        },
+        {
+            "name": "HDFC Bank",
+            "fipId": "HDFC-FIP",
+            "fiTypes": [
+                "DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "INACTIVE"
+        }
+   ],
+   "traceId": "1-64313583-255e3a0705424652664584b2"
+}
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "errorMsg": "string",
+  "errorCode": "string",
+  "txnid": "string",
+  "timestamp": "2023-03-30T08:20:31.367Z",
+  "ver": "string"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
+##### Using Get FIP List for routing end-users to AA Flows
+
+FIUs can use the FIP List API to route their end users to the AA flow or non-AA flows (Like PDF uploads, net banking integrations or alternative data collection modes)if the FIP is temporarily deactivated if the provider is not part of the list of active FIPs.
+How can you as an FIU route your users and select FIPs (providers where your end-user had accounts) ? We offer two modes of account discovery.
+
+The two methods are as follows.
+
+-   **Standard User Selection of FIPs**: Here it is used to offer FIP (Bank, insurers, securities providers, etc) selection when a customer begins a consent flow from Setu
+
+-   **Custom routing an FIP selection**: FIUs can use the API to have FIP selection on their own page OR “Pre-select” FIPs (a maximum of 6 FIPs can be selected in this method)and auto-discover accounts by passing FIP ID in the context parameter on the Create consent API.
+
+<WasPageHelpful />
