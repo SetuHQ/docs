@@ -42,25 +42,38 @@ Setu will post this payload to your notification endpoint whenever there is a ch
 
 <CodeBlockWithCopy language="json">
     {`{
-  "data": {
-    "status": "ACTIVE",
-    "detail": {
-      "accounts": [
-        {
-          "maskedAccNumber": "XXXXXXXX6053",
-          "accType": "CURRENT",
-          "fipId": "setu-fip",
-          "fiType": "DEPOSIT",
-          "linkRefNumber": "e4b27e62-e41a-42c0-a5b3-0a5542b25ddf"
-        }
-      ]
-    }
-  },
-  "timestamp": "2023-04-03T09:14:43.323Z",
-  "success": true,
   "type": "CONSENT_STATUS_UPDATE",
-  "error": null,
-  "consentId": "c16cc10e-eae3-4277-96e1-64c0ed21c53e"
+  "timestamp": 2018-12-06T11:39:57.153Z,
+  "consentId": d4f40bd9-a22f-4408-a622-4e8a1e4fbda6,
+  "success": true,
+  "data": {
+    "status": "ACTIVE", 
+    "Detail": {                            
+                        // consent details object
+                   }
+  },
+  "error": error
+}`}
+</CodeBlockWithCopy>
+
+###### Error Notifications
+In the following two scenarios, an error notification will be sent:
+- No FIP Accounts Discovered
+- Consent creation failure on the AA
+
+The error notification payload:
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "type": "CONSENT_STATUS_UPDATE",
+  "timestamp": 2018-12-06T11:39:57.153Z,
+  "consentId": d4f40bd9-a22f-4408-a622-4e8a1e4fbda6,
+  "success": true,
+  "data": null,
+  "error":{
+      "code":"NoFIPAccountsDiscovered",
+      "message":"no_fip_accounts_found"
+   },
 }`}
 </CodeBlockWithCopy>
 
@@ -99,29 +112,35 @@ Setu will notify you whenever the FIP (Financial Information Provider) responds 
 
 <CodeBlockWithCopy language="json">
     {`{
+  "type": "SESSION_STATUS_UPDATE",
+  "timestamp": "2018-12-06T11:39:57.153Z",
+  "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6",
+  "dataSessionId": "378ec65c-f558-49fc-89ea-e880c2cf88b3",
+  "success": true,
   "data": {
-    "status": "COMPLETED",
+    "status": "PENDING",
+    "format": "json", // json or xml
+    "DataRange": {
+      "from": "2018-12-06T11:39:57.153Z",
+      "to": "2021-12-31T14:25:33.440Z"
+    },
     "fips": [
       {
+        "fipID": "FIP-1",
         "Accounts": [
           {
+            "linkRefNumber": "XXXX-XXXX-XXXX",
             "FIStatus": "READY",
-            "description": "fi status description not found from FIP",
-            "linkRefNumber": "e4b27e62-e41a-42c0-a5b3-0a5542b25ddf"
+            "description": ""
           }
-        ],
-        "fipID": "setu-fip"
+        ]
       }
     ],
-    "format": "json"
-  },
-  "timestamp": "2023-04-03T09:20:53.424Z",
-  "dataSessionId": "32d40afc-4795-495d-8ca4-d817d730e5b5",
-  "success": true,
-  "type": "SESSION_STATUS_UPDATE",
-  "error": null,
-  "consentId": "c16cc10e-eae3-4277-96e1-64c0ed21c53e"
-}`}
+    "error": {
+      "code": "",
+      "message": ""
+    }
+  }`}
 </CodeBlockWithCopy>
 
 <WasPageHelpful />

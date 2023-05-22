@@ -10,11 +10,11 @@ visible_in_sidebar: true
 Get users' consent before you can start pulling their financial data with Setu AA by initiating Consent flow in your application. This flow broadly consists of two parts:
 
 1.  **Create Consent Request**—this is essentially a one-time data request that your user needs to approve. The consent request contains a [`Detail`](%28/data/account-aggregator/consent-object%29) object which specifies details around—
-    - the data you’ve requested for
-    - the purpose of requesting the data
-    - the frequency of data fetch
+    -   the data you’ve requested for
+    -   the purpose of requesting the data
+    -   the frequency of data fetch
 
-- Once a consent is created, you will receive a unique `id` with status = `PENDING`, along with a `url` where you can **redirect your customer to consent manager screens**, to review the data request. Here, the user may approve or reject the request
+-   Once a consent is created, you will receive a unique `id` with status = `PENDING`, along with a `url` where you can **redirect your customer to consent manager screens**, to review the data request. Here, the user may approve or reject the request
 
 2. **Consent Request status**—You can track the consent status with Get Consent Status API, alternatively Setu will notify you when the user has acted upon the consent request. See [Notifications](/data/account-aggregator/api-integration/notifications) to configure your notification endpoint.
 
@@ -26,65 +26,22 @@ Call this API to create a consent request. The details of the request will be pr
 
 ###### Request
 
-Read up more about the the `Detail` object <a href="/data/account-aggregator/consent-object" target="_blank">here</a>.
+Read up more about the the `Consent configurations` <a href="/data/account-aggregator/consent-object" target="_blank">here</a>.
+
 <CodeBlockWithCopy language="json">
-{`POST /consents
-{
-"Detail": {
-    "consentStart": "2022-01-06T06:23:51.832Z",
-    "consentExpiry": "2022-04-23T05:44:53.822Z",
-    "Customer": {
-        "id": "9999999999@onemoney" // {mobile_number@onemoney}
-    },
-    "FIDataRange": {
-        "from": "2021-04-01T00:00:00Z",
-        "to": "2021-10-01T00:00:00Z"
-    },
-    "consentMode": "STORE",
-    "consentTypes": [
-        "TRANSACTIONS",
-        "PROFILE",
-        "SUMMARY"
-    ],
-    "fetchType": "PERIODIC",
-    "Frequency": {
-        "value": 30,
-        "unit": "MONTH"
-    },
-    "DataFilter": [
-        {
-            "type": "TRANSACTIONAMOUNT",
-            "value": "5000",
-            "operator": ">="
-        }
-    ],
-    "DataLife": {
-        "value": 1,
-        "unit": "MONTH"
-    },
-    "DataConsumer": {
-        "id": "setu-fiu-id"
-    },
-    "Purpose": {
-        "Category": {
-            "type": "string"
-        },
-        "code": "101",
-        "text": "Loan underwriting",
-        "refUri": "https://api.rebit.org.in/aa/purpose/101.xml"
-    },
-    "fiTypes": [
-        "DEPOSIT"
-    ]
-},
-"context": 
-[
-  {
-    "key": "accounttype",
-    "value": "CURRENT"
+    {`POST /v2/consents
+{ 
+  "consentDuration": {
+    "unit" : "MONTH", 
+    "value": "4"
   },
-],
-"redirectUrl": "https://setu.co"
+  "vua":  "999999999@onemoney",
+  "dataRange": {
+      "from": "2020-04-01T00:00:00Z",
+      "to": "2023-01-01T00:00:00Z"
+  },
+  "context": [
+  ]
 }`}
 </CodeBlockWithCopy>
 <Row>
@@ -97,11 +54,17 @@ Read up more about the the `Detail` object <a href="/data/account-aggregator/con
                     content: (
                         <>
                             <h5>Response</h5>
-                            <p>Consent gets created with a unique identifier <code>id</code> with status as <code>PENDING</code>. Redirect your customers to consent manager <code>url</code> to initiate consent review flow.</p>
+                            <p>
+                                Consent gets created with a unique identifier{" "}
+                                <code>id</code> with status as{" "}
+                                <code>PENDING</code>. Redirect your customers to
+                                consent manager <code>url</code> to initiate
+                                consent review flow.
+                            </p>
                             <CodeBlockWithCopy language="json">
-  {`{
+                                {`{
     "id": "60c76fa3-601c-4b9d-ad30-d33c0ebcacf3",
-    "url": "https://fiu-uat.setu.co/consents/webview/60c76fa3-601c-4b9d-ad30-d33c0ebcacf3",
+    "url": "https://fiu-uat.setu.co/consents/v2/webview/60c76fa3-601c-4b9d-ad30-d33c0ebcacf3",
     "status": "PENDING",
     "Detail": {
     "consentStart": "2022-01-06T06:23:51.832Z",
@@ -159,65 +122,69 @@ Read up more about the the `Detail` object <a href="/data/account-aggregator/con
 ],
 "redirectUrl": "https://setu.co"
 }`}
-</CodeBlockWithCopy>
+                            </CodeBlockWithCopy>
                         </>
                     ),
                 },
                 {
                     key: "2",
-                    label: <Badge type="failure">FAIL</Badge>,
+                    label: <Badge type="failure">FAILURE</Badge>,
                     content: (
                         <>
                             <h5>Response</h5>
                             <CodeBlockWithCopy language="json">
-{`{
+                                {`{
   "errorMsg": "string",
   "errorCode": "string",
   "txnid": "string",
   "timestamp": "2023-03-30T08:20:31.367Z",
   "ver": "string"
 }`}
-</CodeBlockWithCopy>
-                           
+                            </CodeBlockWithCopy>
                             <h5>Error codes</h5>
                             <p>A mapping of error codes and messages for the Create consent API</p>
-                            
                             <table>
-  <tr>
-    <th>
-      <strong>Status codes</strong>
-    </th>
-    <th>
-      <strong>Error codes</strong>
-    </th>
-    <th>
-      <strong>Error messages</strong>
-    </th>
-  </tr>
-  <tr>
-    <td>400</td>
-    <td><code>InvalidRequest</code></td>
-    <td>
-      <ul>
-        <li>Invalid request body</li>
-        <li>Invalid response from upstream</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>500</td>
-    <td><code>InternalServerError</code></td>
-    <td>
-      An internal server error has occurred, please try again in some time. You can report this to aa@setu.co
-    </td>
-  </tr>
-</table>
+                                <tr>
+                                    <th>
+                                        <strong>Status codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error messages</strong>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>400</td>
+                                    <td>
+                                        <code>Invalid request</code>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            <li>Invalid request body</li>
+                                            <li>Invalid response from upstream</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>500</td>
+                                    <td>
+                                        <code>InternalServerError</code>
+                                    </td>
+                                    <td>
+                                        An internal server error has occurred, please try again in some
+                                        time. You can report this to aa@setu.co
+                                    </td>
+                                </tr>
+                            </table>
                         </>
                     ),
                 },
             ]}
         ></Tabs>
     </Portion>
+
 </Row>
 
 <hr class="primary" />
@@ -228,39 +195,39 @@ On redirecting your users to `url`, it opens up a Consent Manager that permits c
 
 `https://<fiu-base-url>/consents/webview/<id>`
 
-- `<fiu-base-url>` — This is the base URL provided by Setu.
-- `<id>` — This is the request ID of the consent generated returned after the create consent request.
+-   `<fiu-base-url>` — This is the base URL provided by Setu.
+-   `<id>` — This is the request ID of the consent generated returned after the create consent request.
 
 On getting redirected to the url, your users will be asked to verify their mobile number to further initiate the account fetching process. The mobile verification does a login, or register them with Setu using their mobile number. Setu creates a unique account aggregator handle for every registered customer.
 
 The following steps are handled by Setu’s screens—
 
-- OTP verification on user's mobile number
-- Setu authenticates the user and displays the data request
-- Setu fetches the Financial Information Providers or FIPs
-- User links the FIPs and reviews the request
-- Setu validates and saves consent
-- Setu sends notification to you to confirm consent approval. At this point, consent `status` is APPROVED or REJECTED
+-   OTP verification on user's mobile number
+-   Setu authenticates the user and displays the data request
+-   Setu fetches the Financial Information Providers or FIPs
+-   User links the FIPs and reviews the request
+-   Setu validates and saves consent
+-   Setu sends notification to you to confirm consent approval. At this point, consent `status` is `APPROVED` or `REJECTED`
 
 <Callout type="tip">
-  Use Setu FIP and get access to mock financial data on staging{" "}
+    Use Setu FIP and get access to mock financial data on staging{" "}
 </Callout>
 
 <hr class="primary" />
 
-### Get Consent Status API
+### Get Consent API
 
-Call this API to get the updated status of a consent request by passing its unique `id`.
+Call this API to get the consent details and the updated status of a consent request by passing its unique `id`.
 
 If the consent is approved, the Status in the response will be `ACTIVE`. After this, you can now initiate Data flow for the approved consent request.
 
 <Callout type="highlight">
-  <strong>Additionally</strong>, Setu AA will notify you on the consent status
-  update by sending a webhook notification to the configured endpoint you
-  entered on the Bridge. See more details on{" "}
-  <a href="/data/account-aggregator/api-integration/notifications">
-    Consent Notifications
-  </a>
+    <strong>Additionally</strong>, Setu AA will notify you on the consent status
+    update by sending a webhook notification to the configured endpoint you
+    entered on the Bridge. See more details on{" "}
+    <a href="/data/account-aggregator/api-integration/notifications">
+        Consent Notifications
+    </a>
 </Callout>{" "}
 
 <br />
@@ -277,81 +244,95 @@ If the consent is approved, the Status in the response will be `ACTIVE`. After t
                     label: <Badge type="success">SUCCESS</Badge>,
                     content: (
                         <>
-                            
-                            
                             <h5>Response</h5>
                             <CodeBlockWithCopy language="json">
-  {`{
-    "id": "60c76fa3-601c-4b9d-ad30-d33c0ebcacf3",
-    "url": "https://fiu-uat.setu.co/consents/webview/60c76fa3-601c-4b9d-ad30-d33c0ebcacf3",
+{`{
+    "url": "https://fiu-uat.setu.co/consents/v2/webview/e082b325-2692-47cd-88cf-875068df9051",
+    "status": "PENDING",
+    "context": [],
+    "vua": "999999999@onemoney",
+    "consentStart": "2023-04-04T07:10:41.165Z",
+    "consentExpiry": "2023-08-02T12:40:41.165Z",
+    "traceId": "26b8bc4c-5d33-43a1-a58f-be5d4d0acbd0"
+}
+}`}
+                            </CodeBlockWithCopy>
+                            <p>
+                                {" "}
+                                If query param <code>expanded=true</code> is included
+                                in the request
+                            </p>
+                            <CodeBlockWithCopy language="json">
+{`{
+    "id": "e082b325-2692-47cd-88cf-875068df9051",
+    "url": "https://fiu-uat.setu.co/consents/v2/webview/e082b325-2692-47cd-88cf-875068df9051",
     "status": "PENDING",
     "Detail": {
-    "consentStart": "2022-01-06T06:23:51.832Z",
-    "consentExpiry": "2022-04-23T05:44:53.822Z",
-    "Customer": {
-        "id": "9999999999@onemoney" // {mobile_number@onemoney}
-    },
-    "FIDataRange": {
-        "from": "2021-04-01T00:00:00Z",
-        "to": "2021-10-01T00:00:00Z"
-    },
-    "consentMode": "STORE",
-    "consentTypes": [
-        "TRANSACTIONS",
-        "PROFILE",
-        "SUMMARY"
-    ],
-    "fetchType": "PERIODIC",
-    "Frequency": {
-        "value": 30,
-        "unit": "MONTH"
-    },
-    "DataFilter": [
-        {
-            "type": "TRANSACTIONAMOUNT",
-            "value": "5000",
-            "operator": ">="
-        }
-    ],
-    "DataLife": {
-        "value": 1,
-        "unit": "MONTH"
-    },
-    "DataConsumer": {
-        "id": "setu-fiu-id"
-    },
-    "Purpose": {
-        "Category": {
-            "type": "string"
+        "Frequency": {
+            "unit": "MONTH",
+            "value": 30.0
         },
-        "code": "101",
-        "text": "Loan underwriting",
-        "refUri": "https://api.rebit.org.in/aa/purpose/101.xml"
+        "Customer": {
+            "id": "999999999@onemoney"
+        },
+        "FIDataRange": {
+            "from": "2020-04-01T00:00:00.000Z",
+            "to": "2023-01-01T00:00:00.000Z"
+        },
+        "DataConsumer": {
+            "id": "setu-fiu-id"
+        },
+        "Accounts": [],
+        "Purpose": {
+            "Category": {
+                "type": "string"
+            },
+            "code": "101",
+            "text": "Loan underwriting",
+            "refUri": "https://api.rebit.org.in/aa/purpose/101.xml"
+        },
+        "consentStart": "2023-03-30T12:09:39.557Z",
+        "DataLife": {
+            "unit": "MONTH",
+            "value": 1.0
+        },
+        "consentMode": "STORE",
+        "DataFilter": [
+            {
+                "type": "TRANSACTIONAMOUNT",
+                "value": "5000",
+                "operator": ">="
+            }
+        ],
+        "fiTypes": [
+            "DEPOSIT"
+        ],
+        "consentTypes": [
+            "TRANSACTIONS",
+            "PROFILE",
+            "SUMMARY"
+        ],
+        "consentExpiry": "2023-04-23T05:44:53.822Z",
+        "fetchType": "PERIODIC"
     },
-    "fiTypes": [
-        "DEPOSIT"
-    ]
-},
-"context": 
-[
-  {
-    "key": "accounttype",
-    "value": "CURRENT"
-  },
-],
-"redirectUrl": "https://setu.co"
+    "redirectUrl": "https://setu.co",
+    "context": [],
+    "Usage": {
+        "count": "0",
+        "lastUsed": null
+    },
+    "traceId": "1-642bca7b-2009609f266ad58459976e64"
+}
 }`}
-</CodeBlockWithCopy>
+                            </CodeBlockWithCopy>
                         </>
                     ),
                 },
                 {
                     key: "2",
-                    label: <Badge type="failure">FAIL</Badge>,
+                    label: <Badge type="failure">FAILURE</Badge>,
                     content: (
                         <>
-                            
-                            
                             <h5>Response</h5>
                             <CodeBlockWithCopy language="json">
 {`{
@@ -361,55 +342,61 @@ If the consent is approved, the Status in the response will be `ACTIVE`. After t
   "timestamp": "2023-03-30T08:20:31.367Z",
   "ver": "string"
 }`}
-</CodeBlockWithCopy>
-                            
+                            </CodeBlockWithCopy>
                             <h5>Error codes</h5>
                             <p>A mapping of error codes and messages</p>
-                            
                             <table>
-  <tr>
-    <th>
-      <strong>Status codes</strong>
-    </th>
-    <th>
-      <strong>Error codes</strong>
-    </th>
-    <th>
-      <strong>Error messages</strong>
-    </th>
-  </tr>
-  <tr>
-    <td>404</td>
-    <td><code>NotFound</code></td>
-    <td>
-      <ul>
-        <li>Consent not found</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>400</td>
-    <td><code>InvalidRequest</code></td>
-    <td>
-      <ul>
-        <li>Consent has expired</li>
-        <li> Invalid response from upstream</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>500</td>
-    <td><code>InternalServerError</code></td>
-    <td>
-      An internal server error has occurred, please try again in some time. You can report this to aa@setu.co
-    </td>
-  </tr>
-</table>
+                                <tr>
+                                    <th>
+                                        <strong>Status codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error messages</strong>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>404</td>
+                                    <td>
+                                        <code>NotFound</code>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            <li>Consent not found</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>400</td>
+                                    <td>
+                                        <code>Invalid request</code>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            <li>Consent has expired</li>
+                                            <li>{" "} Invalid response from upstream</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>500</td>
+                                    <td>
+                                        <code>InternalServerError</code>
+                                    </td>
+                                    <td>
+                                        An internal server error has occurred, please try again in some
+                                        time. You can report this to aa@setu.co
+                                    </td>
+                                </tr>
+                            </table>
                         </>
                     ),
                 },
             ]}
         ></Tabs>
     </Portion>
+
 </Row>
 <WasPageHelpful />
