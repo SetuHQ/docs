@@ -14,7 +14,7 @@ Get users' consent before you can start pulling their financial data with Setu A
     - the purpose of requesting the data
     - the frequency of data fetch
 
-- Once a consent is created, you will receive a unique `id` with status = `PENDING`, along with a `url` where you can **redirect your customer to consent manager screens**, to review the data request. Here, the user may approve or reject the request. Read more about Consent Manager [here.](https://staging.docs.setu.co/data/account-aggregator/consent-manager)
+- Once a consent is created, you will receive a unique `id` with status = `PENDING`, along with a `url` where you can **redirect your customer to consent manager screens**, to review the data request. Here, the user may approve or reject the request
 
 2. **Consent Request status**—You can track the consent status with Get Consent Status API, alternatively Setu will notify you when the user has acted upon the consent request. See [Notifications](/data/account-aggregator/api-integration/notifications) to configure your notification endpoint.
 
@@ -188,18 +188,6 @@ The following steps are handled by Setu’s screens—
   Use Setu FIP and get access to mock financial data on staging{" "}
 </Callout>
 
-<br />
-
-**Test this flow as FIU developer**
-
-Only for testing this flow, replace the placeholders in the consent manager URL—`https://<fiu-base-url>/consents/webview/<id>?redirect_url={yourRedirectURL}`. Visit the URL to approve consent.
-
-<Callout type="tip">
-  This URL is optional when testing as an FIU developer.
-</Callout>
-
-<br />
-
 <hr class="primary" />
 
 ### Get Consent Status API
@@ -222,10 +210,19 @@ If the consent is approved, the Status in the response will be `ACTIVE`. After t
 ###### Request
 
 <CodeBlockWithCopy language="json">{` GET /consents/:id `}</CodeBlockWithCopy>
-
-###### Response
-
-<CodeBlockWithCopy language="json">
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            
+                            
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
   {`{
     "url": "https://fiu-uat.setu.co/v2/consents/webview/73633c01-d14d-4dbb-8a82-d82e53df5920",
     "status": "PENDING",
@@ -237,5 +234,54 @@ If the consent is approved, the Status in the response will be `ACTIVE`. After t
 }
 }`}
 </CodeBlockWithCopy>
-
+                            
+                            <h5>Error codes</h5>
+                            <p>A mapping of error codes and messages</p>
+                            
+                            <table>
+  <tr>
+    <th>
+      <strong>Status codes</strong>
+    </th>
+    <th>
+      <strong>Error codes</strong>
+    </th>
+    <th>
+      <strong>Error messages</strong>
+    </th>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><code>NotFound</code></td>
+    <td>
+      <ul>
+        <li>Consent not found</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>400</td>
+    <td><code>InvalidRequest</code></td>
+    <td>
+      <ul>
+        <li>Consent has expired</li>
+        <li> Invalid response from upstream</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>500</td>
+    <td><code>InternalServerError</code></td>
+    <td>
+      An internal server error has occurred, please try again in some time. You can report this to aa@setu.co
+    </td>
+  </tr>
+</table>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
 <WasPageHelpful />
