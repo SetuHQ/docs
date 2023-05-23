@@ -15,6 +15,71 @@
         }
     ],
     "paths": {
+        "https://orgservice-k8s-dev.setu.co/v1/users/login": {
+            "post": {
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "client",
+                        "required": true,
+                        "description": "",
+                        "schema": {
+                            "type": "string",
+                            "enum":["bridge"]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenAPIResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BAD_REQUEST"
+                    }
+                },
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenAPIRequest"
+                            }
+                        }
+                    }
+                },
+                "summary": "Get Token"
+            }
+        },
+        "/v2/fips": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "OK",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/FIPResponse"
+                      }
+                    }
+                  }
+                },
+                "400": {
+                  "$ref": "#/components/responses/BAD_REQUEST"
+                }
+              },
+              "summary": "Get FIPs list",
+              "tags": [
+                "FIP APIs"
+              ]
+            }
+          },
         "/v2/consents": {
             "post": {
                 "parameters": [
@@ -287,7 +352,11 @@
         {
             "name": "FI data fetch APIs",
             "description": "APIs for FI data flow"
-        }
+        },
+        {
+            "name": "FIP APIs",
+            "description": "APIs to fetch Financial Information Providers data in the Account Aggregator ecosystem"
+          }
     ],
     "openapi": "3.0.2",
     "components": {
@@ -359,6 +428,22 @@
                         "description": "Category name of the Purpose code"
                     }
                 }
+            },
+            "TokenAPIResponse": {
+                "type": "object",
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "description": "Bearer token"
+                    },
+                    "refresh_token": {
+                        "type": "string",
+                        "description": "Bearer token"
+                    }
+                },
+                "required": [
+                    "access_token"
+                ]
             },
             "ConsentDetailPurpose": {
                 "type": "object",
@@ -501,6 +586,30 @@
                 "required": [
                     "key",
                     "value"
+                ]
+            },
+            "TokenAPIRequest": {
+                "type": "object",
+                "properties": {
+                    "client_id": {
+                        "type": "string",
+                        "description": "client_id obtained from bridge"
+                    },
+                    "grant_type": {
+                        "type": "string",
+                        "enum": [
+                            "client_credentials"
+                        ]
+                    },
+                    "client_secret": {
+                        "type": "string",
+                        "description": "cleint secret obtained from bridge"
+                    }
+                },
+                "required": [
+                    "client_id",
+                    "grant_type",
+                    "client_secret"
                 ]
             },
             "ConsentDruartion": {
@@ -855,6 +964,88 @@
                     "lastUsed"
                 ]
             },
+            "FIPResponseObject": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the FIP"
+                  },
+                  "fipId": {
+                    "type": "string",
+                    "description": "ID of the FIP"
+                  },
+                  "fiTypes": {
+                    "type": "array",
+                    "x-minimum": 1,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "DEPOSIT",
+                        "TERM_DEPOSIT",
+                        "RECCURING_DEPOSIT",
+                        "SIP",
+                        "CP",
+                        "GOVT_SECURITIES",
+                        "EQUITIES",
+                        "BONDS",
+                        "DEBENTURES",
+                        "MUTUAL_FUNDS",
+                        "ETF",
+                        "IDR",
+                        "CIS",
+                        "AIF",
+                        "INSURANCE_POLICIES",
+                        "NPS",
+                        "INVIT",
+                        "REIT",
+                        "OTHER"
+                      ],
+                      "description": "List of financial information types."
+                    }
+                  },
+                  "institutionType": {
+                    "enum": [
+                      "BANK",
+                      "NBFC",
+                      "CRA",
+                      "RTA",
+                      "DEPOSITORY",
+                      "INSURER",
+                      "PENSION_SCHEME",
+                      "MUTUAL_FUND",
+                      "TAX_AUTHORITY"
+                    ],
+                    "description": "Type of FIP"
+                  },
+                  "status": {
+                    "enum": [
+                      "ACTIVE",
+                      "INACTIVE",
+                      "TEMPORARILY_INACTIVE"
+                    ],
+                    "description": "Current status of the FIP"
+                  }
+                },
+                "required": [
+                  "fiTypes",
+                  "fipId",
+                  "institutionType",
+                  "name",
+                  "status"
+                ]
+              },
+              "FIPResponse": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/FIPResponseObject"
+                    }
+                  }
+                }
+              },
             "ConsentResponseV2": {
                 "type": "object",
                 "properties": {
