@@ -25,7 +25,7 @@ Call this API to create a data session against the approved `consentId`.
 Specify the format in which you wish to receive the decrypted financial data, this can be **xml** or **json**.
 
 <Callout type="tip">
-    Make sure that values of <code>DataRange</code> array in the body, matches
+    Make sure that values of <code>dataRange</code> array in the body, matches
     or is within the <code>FIDataRange</code> specified in the Create consent
     request API.
 </Callout>
@@ -36,20 +36,21 @@ Specify the format in which you wish to receive the decrypted financial data, th
     {`POST /sessions
 {
     "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6",
-    "DataRange": {
+    "dataRange": {
         "from": "2016-12-06T11:39:57.153Z",
         "to": "2021-12-31T14:25:33.440Z"
     },
     "format": "json"
 }`}
 </CodeBlockWithCopy>
+
 <Row>
     <Portion desktopSpan="whole">
         <Tabs
             tabs={[
                 {
                     key: "1",
-                    label: <Badge type="success">Success</Badge>,
+                    label: <Badge type="success">SUCCESS</Badge>,
                     content: (
                         <>
                             <h5>Response</h5>
@@ -63,15 +64,16 @@ Specify the format in which you wish to receive the decrypted financial data, th
                             </p>
                             <CodeBlockWithCopy language="json">
                                 {`{
-    "status": "PENDING",
     "format": "json",
-    "Payload": null,
-    "id": "378ec65c-f558-49fc-89ea-e880c2cf88b3",
-    "DataRange": {
-        "from": "2021-04-01T00:00Z",
-        "to": "2021-09-30T00:00Z"
+    "fips": null,
+    "dataRange": {
+        "to": "2021-06-30T16:30:16.363Z",
+        "from": "2021-05-30T11:39:57.154Z"
     },
-    "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6"
+    "id": "f608b1c5-60cb-445d-8355-76a9cc053535",
+    "status": "PENDING",
+    "consentId": "c8b03bc3-6b6c-45e2-a604-6f7ec4541e57",
+    "traceId": "1-646c4a4c-34b8663b0f1238aa04412e89"
 }`}
                             </CodeBlockWithCopy>
                         </>
@@ -79,7 +81,7 @@ Specify the format in which you wish to receive the decrypted financial data, th
                 },
                 {
                     key: "2",
-                    label: <Badge type="failure">Fail</Badge>,
+                    label: <Badge type="failure">FAIL</Badge>,
                     content: (
                         <>
                             <h5>Response</h5>
@@ -92,10 +94,8 @@ Specify the format in which you wish to receive the decrypted financial data, th
   "ver": "string"
 }`}
                             </CodeBlockWithCopy>
-
                             <h5>Error codes</h5>
                             <p>A mapping of error codes and messages</p>
-
                             <table>
                                 <tr>
                                     <th>
@@ -136,9 +136,8 @@ Specify the format in which you wish to receive the decrypted financial data, th
                                         <code>InternalServerError</code>
                                     </td>
                                     <td>
-                                        An internal server error has occurred,
-                                        please try again in some time. You can
-                                        report this to aa@setu.co
+                                        An internal server error has occurred, please try again in some
+                                        time. You can report this to aa@setu.co
                                     </td>
                                 </tr>
                             </table>
@@ -148,6 +147,7 @@ Specify the format in which you wish to receive the decrypted financial data, th
             ]}
         ></Tabs>
     </Portion>
+
 </Row>
 
 <hr class="primary" />
@@ -160,7 +160,7 @@ The notification URL you have configured with Setu will be used to notify you wh
 
 If you request for multiple FI types, you will receive all the FI data from end-user's linked accounts in an array.
 
-<CodeBlockWithCopy language="json">{`GET /sessions/:id`}</CodeBlockWithCopy>
+<CodeBlockWithCopy language="bash">{`GET /sessions/:id`}</CodeBlockWithCopy>
 
 ##### Response
 
@@ -170,7 +170,7 @@ If you request for multiple FI types, you will receive all the FI data from end-
             tabs={[
                 {
                     key: "1",
-                    label: <Badge type="success">Success</Badge>,
+                    label: <Badge type="success">SUCCESS</Badge>,
                     content: (
                         <>
                             
@@ -266,17 +266,15 @@ The payload contains Profile, Summary and Transactions as requested in Create co
   },
   "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6"
 }`}
-</CodeBlockWithCopy>
+                        </CodeBlockWithCopy>
                         </>
                     ),
                 },
                 {
                     key: "2",
-                    label: <Badge type="failure">Fail</Badge>,
+                    label: <Badge type="failure">FAIL</Badge>,
                     content: (
                         <>
-                            
-                            
                             <h5>Response</h5>
                             <CodeBlockWithCopy language="json">
 {`{
@@ -286,49 +284,48 @@ The payload contains Profile, Summary and Transactions as requested in Create co
   "timestamp": "2023-03-30T08:20:31.367Z",
   "ver": "string"
 }`}
-</CodeBlockWithCopy>
-                            
+                            </CodeBlockWithCopy>
                             <h5>Error codes</h5>
                             <p>A mapping of error codes and messages</p>
-                            
                             <table>
-  <tr>
-    <th>
-      <strong>Status codes</strong>
-    </th>
-    <th>
-      <strong>Error codes</strong>
-    </th>
-    <th>
-      <strong>Error messages</strong>
-    </th>
-  </tr>
-  <tr>
-    <td>404</td>
-    <td><code>NotFound</code></td>
-    <td>
-      <ul>
-        <li>Consent not found</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>400</td>
-    <td><code>Invalid request</code></td>
-    <td>
-      <ul>
-        <li>Invalid request body</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>500</td>
-    <td><code>InternalServerError</code></td>
-    <td>
-      An internal server error has occurred, please try again in some time. You can report this to aa@setu.co
-    </td>
-  </tr>
-</table>
+                                <tr>
+                                    <th>
+                                        <strong>Status codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error messages</strong>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>404</td>
+                                    <td><code>NotFound</code></td>
+                                    <td>
+                                        <ul>
+                                            <li>Consent not found</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>400</td>
+                                    <td><code>Invalid request</code></td>
+                                    <td>
+                                        <ul>
+                                            <li>Invalid request body</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>500</td>
+                                    <td><code>InternalServerError</code></td>
+                                    <td>
+                                        An internal server error has occurred, please try again in some
+                                        time. You can report this to aa@setu.co
+                                    </td>
+                                </tr>
+                            </table>
                         </>
                     ),
                 },
