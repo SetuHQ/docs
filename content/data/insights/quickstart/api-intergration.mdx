@@ -29,8 +29,7 @@ Call this API to create an FI data block for the user data you would like to fee
 Send the financial data as payload in the body. The payload should be same as the data provided by the FIP. The payload is validated against the <a href="https://api.rebit.org.in/schema" target="_blank">ReBIT schema</a>.
 
 <CodeBlockWithCopy language="json">
-  {`POST /v1/fiData
-  
+  {`POST /v1/fiData 
 {
   account: {
     profile: {
@@ -201,15 +200,18 @@ Call this API to get a list of all FI data blocks created by you.
 
 #### Create Insight report
 
-Call this API to generate an Insight report from a list of FI data blocks, using a template configured for the user.
+Call this API to generate an Insights report based on the FI data block created earlier. Each FI data block is identified by it's `dataId`.  Pass the `templateId` obtained from template creation step, which will determine the ouput insights parameters that will be present in the report.
 
 ###### Request
 
 Send the list of FI data block IDs and the template ID as the payload.
 
+<Callout type="warning">Currently, only one <code>dataId</code> is supported in the request body.</Callout>
+<br />
+
+
 <CodeBlockWithCopy language="json">
 {`POST /v1/insight
-
 {
   "templateId": "4777db7e-e604-4c0c-a410-51be9d17d00b",
   "dataIds": [
@@ -230,8 +232,7 @@ Send the list of FI data block IDs and the template ID as the payload.
       content: (
         <>
           <p>
-            A <code>reportId</code> is returned along with the status of the Insights generation job.
-            The <code>reportId</code> can be used to get insights. A notification will be posted after successful generation of insights.
+            A <code>reportId</code> is returned along with the status of the Insights generation job. A notification will be posted after successful generation of insights. See <a href="/data/insights/notifications" target="_blank">notifications</a>.<br /><br />  The <code>reportId</code> also can be used fetch the Insights report using <b>Get Insight report</b> API, if the report status is <code>Success</code>.
           </p>
           <CodeBlockWithCopy language="json">
             {`{
@@ -267,7 +268,7 @@ Send the list of FI data block IDs and the template ID as the payload.
 
 #### Get Insight report
 
-Call this API to get the generated insights under the report.
+Call this API to fetch the Insights report. Pass the `reportId` as a URL parameter, which was returned in the response body of **Create Insight report** API.
 
 ###### Request
 
