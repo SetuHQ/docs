@@ -101,9 +101,23 @@ Example:
 In case of Account Aggregator, if you see the product folder,
 
 -   the files in the root correspond to version `v2` as it is the default version.
--   there is a folder `v1` which corresponds to the older version documentation.
+-   there is a folder `v1` which corresponds to the older version documentation. Put all the `v1` documentation into this folder.
 
-In future if there is a new version, `v1.5` which is not a default version,
+```bash
+.
+├── ...
+├── account-aggregator
+│   ├── overview.mdx
+│   ├── quickstart.mdx
+│   ├── v1
+│   │   ├── overview.mdx
+│   │   ├── quickstart.mdx
+│   │   └── ...
+│   └── ...
+└── ...
+```
+
+In future if there is a new version, `v1.5`, which is not a default version,
 
 We need to add a folder `v1.5` and add contents of that version into it.
 
@@ -120,6 +134,18 @@ In case of Account Aggregator, in api-references folder,
 
 -   `account-aggregator.json` corresponds to the default version `v2`
 -   `account-aggregator_v1.json` corresponds to a version other than default version, `v1`
+
+```bash
+.
+├── ...
+├── api-references
+│   ├── data
+│   │   ├── account-aggregator.json
+│   │   ├── account-aggregator_v1.json
+│   │   └── ...
+│   └── ...
+└── ...
+```
 
 In future if there is a new version, `v1.5` which is not a default version,
 
