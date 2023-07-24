@@ -25,7 +25,7 @@ Call this API to create a data session against the approved `consentId`.
 Specify the format in which you wish to receive the decrypted financial data, this can be **xml** or **json**.
 
 <Callout type="tip">
-    Make sure that values of <code>DataRange</code> array in the body, matches
+    Make sure that values of <code>dataRange</code> array in the body, matches
     or is within the <code>FIDataRange</code> specified in the Create consent
     request API.
 </Callout>
@@ -36,13 +36,14 @@ Specify the format in which you wish to receive the decrypted financial data, th
     {`POST /sessions
 {
     "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6",
-    "DataRange": {
+    "dataRange": {
         "from": "2016-12-06T11:39:57.153Z",
         "to": "2021-12-31T14:25:33.440Z"
     },
     "format": "json"
 }`}
 </CodeBlockWithCopy>
+
 <Row>
     <Portion desktopSpan="whole">
         <Tabs
@@ -52,23 +53,29 @@ Specify the format in which you wish to receive the decrypted financial data, th
                     label: <Badge type="success">SUCCESS</Badge>,
                     content: (
                         <>
-                            
-                            
                             <h5>Response</h5>
-                            <p>This initiates a data session with a <code>id</code>, that uniquely identifies this data request. Setu will also notify you when the FIP is ready to share the data you requested and you can use the <code>id</code> to fetch the data with the next API.</p>
+                            <p>
+                                This initiates a data session with a{" "}
+                                <code>id</code>, that uniquely identifies this
+                                data request. Setu will also notify you when the
+                                FIP is ready to share the data you requested and
+                                you can use the <code>id</code> to fetch the
+                                data with the next API.
+                            </p>
                             <CodeBlockWithCopy language="json">
-    {`{
-    "status": "PENDING",
+                                {`{
     "format": "json",
-    "Payload": null,
-    "id": "378ec65c-f558-49fc-89ea-e880c2cf88b3",
-    "DataRange": {
-        "from": "2021-04-01T00:00Z",
-        "to": "2021-09-30T00:00Z"
+    "fips": null,
+    "dataRange": {
+        "to": "2021-06-30T16:30:16.363Z",
+        "from": "2021-05-30T11:39:57.154Z"
     },
-    "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6"
+    "id": "f608b1c5-60cb-445d-8355-76a9cc053535",
+    "status": "PENDING",
+    "consentId": "c8b03bc3-6b6c-45e2-a604-6f7ec4541e57",
+    "traceId": "1-646c4a4c-34b8663b0f1238aa04412e89"
 }`}
-</CodeBlockWithCopy>
+                            </CodeBlockWithCopy>
                         </>
                     ),
                 },
@@ -77,66 +84,70 @@ Specify the format in which you wish to receive the decrypted financial data, th
                     label: <Badge type="failure">FAIL</Badge>,
                     content: (
                         <>
-                            
-                            
                             <h5>Response</h5>
                             <CodeBlockWithCopy language="json">
-{`{
+                                {`{
   "errorMsg": "string",
   "errorCode": "string",
   "txnid": "string",
   "timestamp": "2023-03-30T08:20:31.367Z",
   "ver": "string"
 }`}
-</CodeBlockWithCopy>
-                            
+                            </CodeBlockWithCopy>
                             <h5>Error codes</h5>
                             <p>A mapping of error codes and messages</p>
-                            
                             <table>
-  <tr>
-    <th>
-      <strong>Status codes</strong>
-    </th>
-    <th>
-      <strong>Error codes</strong>
-    </th>
-    <th>
-      <strong>Error messages</strong>
-    </th>
-  </tr>
-  <tr>
-    <td>404</td>
-    <td><code>NotFound</code></td>
-    <td>
-      <ul>
-        <li>Consent not found</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>400</td>
-    <td><code>InvalidRequest</code></td>
-    <td>
-      <ul>
-        <li>Invalid request body</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>500</td>
-    <td><code>InternalServerError</code></td>
-    <td>
-      An internal server error has occurred, please try again in some time. You can report this to aa@setu.co
-    </td>
-  </tr>
-</table>
+                                <tr>
+                                    <th>
+                                        <strong>Status codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error messages</strong>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>404</td>
+                                    <td>
+                                        <code>NotFound</code>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            <li>Consent not found</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>400</td>
+                                    <td>
+                                        <code>Invalid request</code>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            <li>Invalid request body</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>500</td>
+                                    <td>
+                                        <code>InternalServerError</code>
+                                    </td>
+                                    <td>
+                                        An internal server error has occurred, please try again in some
+                                        time. You can report this to aa@setu.co
+                                    </td>
+                                </tr>
+                            </table>
                         </>
                     ),
                 },
             ]}
         ></Tabs>
     </Portion>
+
 </Row>
 
 <hr class="primary" />
@@ -149,13 +160,9 @@ The notification URL you have configured with Setu will be used to notify you wh
 
 If you request for multiple FI types, you will receive all the FI data from end-user's linked accounts in an array.
 
-<CodeBlockWithCopy language="json">{`GET /sessions/:id`}</CodeBlockWithCopy>
+<CodeBlockWithCopy language="bash">{`GET /sessions/:id`}</CodeBlockWithCopy>
 
 ##### Response
-
-
-
-
 
 <Row>
     <Portion desktopSpan="whole">
@@ -176,77 +183,90 @@ If you request for multiple FI types, you will receive all the FI data from end-
 -   `PENDING` which signifies that some FIP FI data fetches are completed and some are still pending for the requested session.
 
 The payload contains Profile, Summary and Transactions as requested in Create consent request.
+
 </p>
                             <CodeBlockWithCopy language="json">
     {`{
-    "status": "COMPLETED",
-    "format": "json", 
-    "Payload": [
+  "status": "PARTIAL",
+  "format": "json",
+  "fips": [
+    {
+      "accounts": [
         {
-            "data": [
-                {
-                    "decryptedFI": {
-                        "account": {
-                            "linkedAccRef": "b2329f47-0a6f-4131-adb5-9ef7b4c1ca6a",
-                            "maskedAccNumber": "XXXXXX4373",
-                            "type": "deposit",
-                            "version": "1.1",
-                            "profile": {
-                                "holders": {
-                                    "type": "SINGLE",
-                                    "holder": {
-                                        "address": "8/1190, 5th Cross, 3rd Main, 7th Block, Jayanagar, Bangalore - 560011",
-                                        "ckycCompliance": "true",
-                                        "dob": "1947-08-15",
-                                        "email": "mail@mail.com",
-                                        "landline": "",
-                                        "mobile": "8569884373",
-                                        "name": "Akshay Kumar",
-                                        "nominee": "REGISTERED",
-                                        "pan": "AAAAA0000A"
-                                    }
-                                }
-                            },
-                            "summary": {
-                                "currentBalance": "101666.33",
-                                "currency": "INR",
-                                "branch": "Jayanagar 4th Block",
-                                "balanceDateTime": "2020-06-22T07:50:00+00:00",
-                                "currentODLimit": "0",
-                                "drawingLimit": "0",
-                                "exchgeRate": " ",
-                                "facility": "OD",
-                                "ifscCode": "ICIC0001124",
-                                "micrCode": "500240246",
-                                "openingDate": "2004-08-06",
-                                "status": "ACTIVE",
-                                "type": "SAVINGS",
-                                "Pending": {
-                                    "transactionType": "DEBIT",
-                                    "amount": "0"
-                                }
-                            },
-                            "transactions": {
-                                "startDate": "2021-04-01",
-                                "endDate": "2021-09-30"
-                            }
-                        }
-                    },
-                    "linkRefNumber": "b2329f47-0a6f-4131-adb5-9ef7b4c1ca6a",
-                    "maskedAccNumber": "XXXXXX4373"
+          "data": {
+            "account": {
+              "linkedAccRef": "b2329f47-0a6f-4131-adb5-9ef7b4c1ca6a",
+              "maskedAccNumber": "XXXXXX4373",
+              "type": "deposit",
+              "version": "1.1",
+              "profile": {
+                "holders": {
+                  "type": "SINGLE",
+                  "holder": {
+                    "address": "8/1190, 5th Cross, 3rd Main, 7th Block, Jayanagar, Bangalore - 560011",
+                    "ckycCompliance": "true",
+                    "dob": "1947-08-15",
+                    "email": "mail@mail.com",
+                    "landline": "",
+                    "mobile": "8569884373",
+                    "name": "Akshay Kumar",
+                    "nominee": "REGISTERED",
+                    "pan": "AAAAA0000A"
+                  }
                 }
-            ],
-            "fipID": "Setu-FIP"
+              },
+              "summary": {
+                "currentBalance": "101666.33",
+                "currency": "INR",
+                "branch": "Jayanagar 4th Block",
+                "balanceDateTime": "2020-06-22T07:50:00+00:00",
+                "currentODLimit": "0",
+                "drawingLimit": "0",
+                "exchgeRate": " ",
+                "facility": "OD",
+                "ifscCode": "ICIC0001124",
+                "micrCode": "500240246",
+                "openingDate": "2004-08-06",
+                "status": "ACTIVE",
+                "type": "SAVINGS",
+                "Pending": {
+                  "transactionType": "DEBIT",
+                  "amount": "0"
+                }
+              },
+              "transactions": {
+                "startDate": "2021-04-01",
+                "endDate": "2021-09-30"
+              }
+            }
+          },
+          "linkRefNumber": "b2329f47-0a6f-4131-adb5-9ef7b4c1ca6a",
+          "maskedAccNumber": "XXXXXX4373",
+          "status": "DELIVERED"
         }
-    ],
-    "id": "378ec65c-f558-49fc-89ea-e880c2cf88b3",
-    "DataRange": {
-        "from": "2021-04-01T00:00Z",
-        "to": "2021-09-30T00:00Z"
+      ],
+      "fipID": "Setu-FIP"
     },
-    "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6"
+    {
+      "accounts": [
+        {
+          "linkRefNumber": "b2329f47-0a6f-4131-adb5-9ef7b4c1ca6a",
+          "maskedAccNumber": "XXXXXX4373",
+          "status": "FAILED",
+          "data": null
+        }
+      ],
+      "fipID": "ACME-FIP"
+    }
+  ],
+  "id": "378ec65c-f558-49fc-89ea-e880c2cf88b3",
+  "dataRange": {
+    "from": "2021-04-01T00:00Z",
+    "to": "2021-09-30T00:00Z"
+  },
+  "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6"
 }`}
-</CodeBlockWithCopy>
+                        </CodeBlockWithCopy>
                         </>
                     ),
                 },
@@ -255,8 +275,6 @@ The payload contains Profile, Summary and Transactions as requested in Create co
                     label: <Badge type="failure">FAIL</Badge>,
                     content: (
                         <>
-                            
-                            
                             <h5>Response</h5>
                             <CodeBlockWithCopy language="json">
 {`{
@@ -266,49 +284,48 @@ The payload contains Profile, Summary and Transactions as requested in Create co
   "timestamp": "2023-03-30T08:20:31.367Z",
   "ver": "string"
 }`}
-</CodeBlockWithCopy>
-                            
+                            </CodeBlockWithCopy>
                             <h5>Error codes</h5>
                             <p>A mapping of error codes and messages</p>
-                            
                             <table>
-  <tr>
-    <th>
-      <strong>Status codes</strong>
-    </th>
-    <th>
-      <strong>Error codes</strong>
-    </th>
-    <th>
-      <strong>Error messages</strong>
-    </th>
-  </tr>
-  <tr>
-    <td>404</td>
-    <td><code>NotFound</code></td>
-    <td>
-      <ul>
-        <li>Consent not found</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>400</td>
-    <td><code>InvalidRequest</code></td>
-    <td>
-      <ul>
-        <li>Invalid request body</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>500</td>
-    <td><code>InternalServerError</code></td>
-    <td>
-      An internal server error has occurred, please try again in some time. You can report this to aa@setu.co
-    </td>
-  </tr>
-</table>
+                                <tr>
+                                    <th>
+                                        <strong>Status codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error messages</strong>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>404</td>
+                                    <td><code>NotFound</code></td>
+                                    <td>
+                                        <ul>
+                                            <li>Consent not found</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>400</td>
+                                    <td><code>Invalid request</code></td>
+                                    <td>
+                                        <ul>
+                                            <li>Invalid request body</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>500</td>
+                                    <td><code>InternalServerError</code></td>
+                                    <td>
+                                        An internal server error has occurred, please try again in some
+                                        time. You can report this to aa@setu.co
+                                    </td>
+                                </tr>
+                            </table>
                         </>
                     ),
                 },
