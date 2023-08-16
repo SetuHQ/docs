@@ -1,0 +1,209 @@
+---
+sidebar_title: Notifications
+page_title: UPI Deeplinks Failure Notifications
+order: 7
+visible_in_sidebar: false
+---
+
+
+## Failure Notifications
+
+#### Outgoing event alerts sent by Setu to partners.
+
+Currently, there is only one event `BILL_SETTLEMENT_STATUS`, which triggers a failure notification.
+
+<hr class="primary" />
+
+### Bill fulfilment status
+
+After Setu receives a callback from the bank for a particular payment, we send a `PAYMENT_SUCCESSFUL` or `PAYMENT_FAILED` notification to the merchant.
+
+<br />
+
+#### Payment failed notification
+
+A payment can fail for multiple reasons as explained below:
+
+| **Status Code** | **Reason**                                               | **Description**                                                | **Next Steps for Merchants**                                  |
+|-------------|------------------------------------------------------|------------------------------------------------------------|---------------------------------------------------------|
+| U30         | DEBIT HAS BEEN FAILED                               | The customer's debit attempt failed.                      | Inform the customer and ask them to try again or use a different payment method.              |
+| U09         | REQAUTH TIME OUT FOR PAY                            | Payment authorization took too long.                     | Ask the customer to try again. If it continues, reach out to Setu support.                    |
+| U90         | REMITTER BANK DEEMED HIGH RESPONSE TIME CHECK DECLINE | The customer's bank is taking too long to respond.       | Ask the customer to contact their bank or try a different payment method.                     |
+| U67         | DEBIT TIMEOUT                                       | The debit process took too long.                         | Ask the customer to try again or use a different payment method.                                 |
+| U88         | CONNECTION TIMEOUT IN REQPAY CREDIT                | Connection timed out during the credit request process. | Try processing the transaction again. If the issue persists, contact Setu support.             |
+| U16         | RISK THRESHOLD EXCEEDED                            | The transaction exceeds the risk threshold.              | Review the transaction for potential issues or ask the customer to use a different payment method. |
+| U28         | REMITTER BANK NOT AVAILABLE                        | The customer's bank is unavailable.                     | Inform the customer and suggest trying again later or using a different bank or payment method. |
+| XQ          | Transaction not permitted to cardholder (beneficiary) | This transaction isn't permitted for the beneficiary.  | Inform the customer and suggest using a different payment method.                                 |
+| U85         | CONNECTION TIMEOUT IN REQPAY DEBIT                | Connection timed out during the debit request process.  | Try processing the transaction again. If the issue persists, contact Setu support.             |
+| HS3         | HSM communication error                            | A communication error occurred with the security module. | Retry the transaction or contact Setu support if the problem persists.                           |
+| U66         | DEVICE FINGERPRINT MISMATCH                       | Device fingerprint mismatch detected.                  | Inform the customer, ask them to verify their device, and retry the transaction.                 |
+| U91         | BENEFICIARY BANK DEEMED HIGH RESPONSE TIME CHECK DECLINE | Beneficiary bank response time is too high.      | Inform the customer and suggest they contact their bank or use a different payment method.       |
+| U03         | NET DEBIT CAP IS EXCEEDED                         | The total debit amount exceeded the set limit.          | Ask the customer to try a different payment method or contact their bank.                          |
+| U54         | TRANSACTION ID OR AMOUNT IN CREDENTIAL BLOCK DOES NOT MATCH WITH THAT IN REQPAY | Transaction details mismatch.                   | Verify the transaction details and retry, or contact Setu support if needed.                     |
+| U86         | REMITTER BANK THROTTLING DECLINE                  | The customer's bank declined due to throttling.        | Inform the customer and ask them to contact their bank or use a different payment method.        |
+| XK          | REQUESTED FUNCTION NOT SUPPORTED (BENEFICIARY)    | The requested function is not supported for the beneficiary. | Ask the customer to try a different payment method.       |
+| U14         | ENCRYPTION ERROR                                  | An encryption error occurred in the transaction.       | Retry the transaction or contact Setu support if the problem persists.                           |
+| XC          | INVALID TRANSACTION OR IF MEMBER IS NOT ABLE TO FIND ANY APPROPRIATE RESPONSE CODE (BENEFICIARY) | Invalid transaction or response code issue. | Contact Setu support for assistance.                     |
+| U47         | REQUEST DEBIT IS NOT FOUND                        | The debit request was not found.                      | Retry the transaction or contact Setu support if needed.                                              |
+| BT          | ACQUIRER/BENEFICIARY UNAVAILABLE(TIMEOUT)         | Receiver/beneficiary is not available, causing a timeout. | Inform the customer and suggest trying again later or using a different payment method.          |
+| 94          | Unknown Error                                     | An unknown error occurred.                            | Retry the transaction or contact Setu support if the problem persists.                           |
+| U53         | PSP REQUEST PAY DEBIT ACKNOWLEDGEMENT NOT RECEIVED | The debit acknowledgement was not received.            | Retry the transaction or contact Setu support if needed.                                            |
+| HS2         | HSM Time out                                      | A timeout occurred with the security module.           | Retry the transaction or contact Setu support if the problem persists.                           |
+| S99         | Graceful decline                                  | The transaction was stopped without a specific reason. | Ask the customer to try a different payment method or contact Setu support if needed.              |
+| U01         | THE REQUEST IS DUPLICATE                          | Duplicate transaction request.                        | Confirm that the transaction was processed only once and contact Setu support if necessary.       |
+
+
+
+#### Sample Failure notifications payload to merchant
+
+##### U30 
+
+<CodeBlockWithCopy language="json">
+    {`
+{
+  "partnerDetails": {
+    "appID": "1115232834412348749",
+    "productInstanceID": "1115232834412348749"
+  },
+  "events": [
+    {
+      "data": {
+        "Reason": "",
+        "amountPaid": {
+          "currencyCode": "INR",
+          "value": 5000
+        },
+        "npciStatusCode": "U30",
+        "npciStatusReason": "DEBIT HAS BEEN FAILED",
+        "payeeVpa": "fortest@kaypay",
+        "payerVpa": "saainithil97@icici",
+        "paymentChannel": "UPI",
+        "paymentReferenceNumber": "9921837467033533",
+        "platformBillID": "1217499640581064416",
+        "setuDescription": "The customer's debit attempt failed.",
+        "status": "PAYMENT_ATTEMPT_FAILED",
+        "transactionDate": "2023-08-03 12:16:12",
+        "transactionId": "615436a8-434c-43db-8a57-dd4cf11dff3e"
+      },
+      "timeStamp": 1691045172577,
+      "type": "PAYMENT_ATTEMPT_FAILED",
+      "id": "e48bdd28-c34f-4237-bebd-ccb37f174b8a"
+    }
+  ]
+}
+    `}
+</CodeBlockWithCopy>
+
+##### S99
+
+<CodeBlockWithCopy language="json">
+    {`
+{
+  "partnerDetails": {
+    "appID": "1115232834412348749",
+    "productInstanceID": "1115232834412348749"
+  },
+  "events": [
+    {
+      "data": {
+        "Reason": "",
+        "amountPaid": {
+          "currencyCode": "INR",
+          "value": 5000
+        },
+        "npciStatusCode": "s99",
+        "npciStatusReason": "Graceful decline",
+        "payeeVpa": "fortest@kaypay",
+        "payerVpa": "saainithil97@icici",
+        "paymentChannel": "UPI",
+        "paymentReferenceNumber": "6871437602433998",
+        "platformBillID": "1217499640581064416",
+        "setuDescription": "The transaction was stopped without a specific reason.",
+        "status": "PAYMENT_ATTEMPT_FAILED",
+        "transactionDate": "2023-08-03 12:40:44",
+        "transactionId": "2658f6e9-1679-41e3-b8c5-674e4623f6dd"
+      },
+      "timeStamp": 1691046644191,
+      "type": "PAYMENT_ATTEMPT_FAILED",
+      "id": "add13478-6a51-419f-b4af-0e31d20ef4e7"
+    }
+  ]
+}
+    `}
+</CodeBlockWithCopy>
+
+##### XC 
+
+<CodeBlockWithCopy language="json">
+    {`
+{
+  "partnerDetails": {
+    "appID": "1115232834412348749",
+    "productInstanceID": "1115232834412348749"
+  },
+  "events": [
+    {
+      "data": {
+        "Reason": "",
+        "amountPaid": {
+          "currencyCode": "INR",
+          "value": 5000
+        },
+        "npciStatusCode": "XC",
+        "npciStatusReason": "INVALID TRANSACTION OR IF MEMBER IS NOT ABLE TO FIND ANY APPROPRIATE RESPONSE CODE (BENEFICIARY)",
+        "payeeVpa": "fortest@kaypay",
+        "payerVpa": "saainithil97@icici",
+        "paymentChannel": "UPI",
+        "paymentReferenceNumber": "4290803635409328",
+        "platformBillID": "1217513191488096029",
+        "setuDescription": "Invalid transaction or response code issue.",
+        "status": "PAYMENT_ATTEMPT_FAILED",
+        "transactionDate": "2023-08-03 13:54:48",
+        "transactionId": "a4a08692-75fb-40a6-adeb-209f9e333ff0"
+      },
+      "timeStamp": 1691051088337,
+      "type": "PAYMENT_ATTEMPT_FAILED",
+      "id": "83bc24d2-f34f-444b-a423-09ec0274bc88"
+    }
+  ]
+}
+    `}
+</CodeBlockWithCopy>
+
+##### 94 
+
+<CodeBlockWithCopy language="json">
+    {`
+{
+  "partnerDetails": {
+    "appID": "1115232834412348749",
+    "productInstanceID": "1115232834412348749"
+  },
+  "events": [
+    {
+      "data": {
+        "Reason": "",
+        "amountPaid": {
+          "currencyCode": "INR",
+          "value": 5000
+        },
+        "npciStatusCode": "94",
+        "npciStatusReason": "Unknown Error",
+        "payeeVpa": "fortest@kaypay",
+        "payerVpa": "saainithil97@icici",
+        "paymentChannel": "UPI",
+        "paymentReferenceNumber": "791801529352535",
+        "platformBillID": "1217513191488096029",
+        "setuDescription": "An unknown error occurred.",
+        "status": "PAYMENT_ATTEMPT_FAILED",
+        "transactionDate": "2023-08-03 13:55:28",
+        "transactionId": "864879c4-71c9-49bd-a286-0dd08f7ac7a5"
+      },
+      "timeStamp": 1691051128577,
+      "type": "PAYMENT_ATTEMPT_FAILED",
+      "id": "894fb3d0-4ba7-4066-9ec9-ce00f402aa10"
+    }
+  ]
+}
+    `}
+</CodeBlockWithCopy>
