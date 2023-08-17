@@ -644,6 +644,256 @@
                     }
                 }
             }
+        },
+        "/v1/insight/pdf": {
+            "post": {
+                "tags": ["Insights"],
+                "summary": "Create Insights",
+                "description": "Call this API with the template-id received from Setu along with a PDF File, to trigger an Report generation job. The created Report will be shared via a notification to the endpoint configured by the FIU. This API will respond with a report-id, which can also be used to fetch the generated Report.",
+                "operationId": "process_pdf_insights_v1_insight_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-product-instance-id",
+                            "type": "string"
+                        },
+                        "name": "x-product-instance-id",
+                        "in": "header"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_process_pdf_insights_v1_insight_post"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReportJobCreateResponse"
+                                },
+                                "examples": {
+                                    "ReportJobCreateResponse": {
+                                        "summary": "ReportJobCreateResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": {
+                                                "reportId": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "AuthenticationErrorResponse": {
+                                        "summary": "AuthenticationErrorResponse",
+                                        "value": {
+                                            "errorCode": "401",
+                                            "errorMsg": "Unable to fetch FIU config",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ValidationErrorResponse": {
+                                        "summary": "ValidationErrorResponse",
+                                        "value": {
+                                            "errorCode": "422",
+                                            "errorMsg": "field required -> bankName",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ServerErrorResponse": {
+                                        "summary": "ServerErrorResponse",
+                                        "value": {
+                                            "errorCode": "500",
+                                            "errorMsg": "Internal Server Error",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "RequestErrorResponse": {
+                                        "summary": "RequestErrorResponse",
+                                        "value": {
+                                            "errorCode": "400",
+                                            "errorMsg": "Empty data_ids input",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "NotFoundResponse": {
+                                        "summary": "NotFoundResponse",
+                                        "value": {
+                                            "errorCode": "404",
+                                            "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/pdf/supported_banks": {
+            "get": {
+                "tags": ["PDF Support"],
+                "summary": "Get Supported Banks for PDF Parsing",
+                "description": "Call this API to get a list of Supported Banks for PDF Parsing.",
+                "operationId": "get_pdf_supported_banks_v1_pdf_supported_banks_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupportedBanksGetResponse"
+                                },
+                                "examples": {
+                                    "SupportedBanksGetResponse": {
+                                        "summary": "SupportedBanksGetResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": [
+                                                "HDFC Bank Ltd",
+                                                "HSBC Ltd",
+                                                "ICICI Bank Ltd."
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ServerErrorResponse": {
+                                        "summary": "ServerErrorResponse",
+                                        "value": {
+                                            "errorCode": "500",
+                                            "errorMsg": "Internal Server Error",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     },
     "components": {
@@ -694,6 +944,53 @@
                         "items": { "type": "string" },
                         "description": "Currently supports only one ID"
                     }
+                }
+            },
+            "Body_process_pdf_insights_v1_insight_post": {
+                "title": "Body_process_pdf_insights_v1_insight_post",
+                "required": ["template_id", "bankName", "applicantName", "dataFile"],
+                "type": "object",
+                "properties": {
+                    "template_id": {
+                        "title": "Template ID for which insights are needed",
+                        "type": "string"
+                    },
+                    "bankName": {
+                        "title": "Name of Bank of associated PDF",
+                        "type": "string",
+                        "description": "Bank name is case sensitive and should be in list pf supported banks. Supported banks can be fetched from /pdf/supported_banks"
+                    },
+                    "applicantName": {
+                        "title": "Name of Account Holder in associated PDF",
+                        "type": "string",
+                        "description": "Can be any place holder string, But it is suggested to provide unique applicant name, to trace references in future in case of repeated usage"
+                    },
+                    "password": {
+                        "title": "Password for reading associated PDF",
+                        "type": "string",
+                        "description": "The field is Optional, but if the PDF document is password protected, then password should be provided for reading the file."
+                    },
+                    "dataFile": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": ["file", "name"],
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Name of file uploaded"
+                                    }
+                                }
+                            }
+                        }
+                      }
                 }
             },
             "DepositData": {
