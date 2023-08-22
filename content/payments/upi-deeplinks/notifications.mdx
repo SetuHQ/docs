@@ -15,7 +15,7 @@ Currently, there are two types of events — `BILL_FULFILMENT_STATUS` and `BILL_
 
 ### Bill fulfilment status
 
-After Setu receives a callback from the bank for a particular payment, we send a `PAYMENT_SUCCESSFUL` or `PAYMENT_FAILED` notification to the merchant.
+After Setu receives a callback from the bank for a particular payment, we send a `PAYMENT_SUCCESSFUL` or `PAYMENT_FAILED`  or  `PAYMENT_ATTEMPT_FAILED` notification to the merchant.
 
 <br />
 
@@ -77,9 +77,50 @@ A payment can fail for multiple reasons as explained below:
 
 <br />
 
-For a more exhaustive list of failure cases and the corresponding NPCI status code <a href="/payments/upi-deeplinks/failure-notification" target="_blank">click here</a>
+<CodeBlockWithCopy language="json">
+    {`
+{
+  "partnerDetails": {
+    "appID": "861023031961584801",
+    "productInstanceID": "861023031961584801"
+  },
+  "events": [
+    {
+      "data": {
+        "Reason": "Amount validation failed",
+        "amountPaid": {
+          "currencyCode": "INR",
+          "value": 200
+        },
+        "billerBillID": "918147077472",
+        "payerVpa": "saainithil97@icici",
+        "platformBillID": "896445757228320073",
+        "receiptId": "774cbd68-0106-4635-b861-986d4a5c9792",
+        "status": "PAYMENT_FAILED",
+        "transactionId": "6917454577784936",
+        "transactionNote": "Payment for 918147077472",
+        "additionalInfo" : {   // same as values defined when creating the link
+          "UUID": "b6b6f173-8649-4b2e-9c22-f78e9195a23e",
+          "tags": "electricity"
+        },
+      },
+      "timeStamp": 1652772555905,
+      "type": "BILL_FULFILMENT_STATUS",
+      "id": "e41d9f2a-eb66-4be0-8dec-f04806656274"
+    }
+  ]
+}
+         `}
+</CodeBlockWithCopy>
 
 <br />
+
+#### Payment attempt failed notification
+
+Merchants receive notifications if a payment attempt fails due to incorrect UPI MPIN, insufficient balance, network errors, or other reasons. The bill created won’t expire, allowing customers to retry the payment. For a detailed list of reasons and descriptions, <a href="/payments/upi-deeplinks/failure-notification" target="_blank">check here</a>.
+
+<br />
+
 <CodeBlockWithCopy language="json">
     {`
 {
@@ -112,7 +153,8 @@ For a more exhaustive list of failure cases and the corresponding NPCI status co
       "id": "e48bdd28-c34f-4237-bebd-ccb37f174b8a"
     }
   ]
-}`}
+}
+`}
 </CodeBlockWithCopy>
 
 <hr class="secondary" />
