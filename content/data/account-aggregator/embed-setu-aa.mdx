@@ -7,9 +7,109 @@ visible_in_sidebar: true
 
 ## Embed Setu screens
 
+### Customising the consent approval UX
+
 Setu’s screens provide a pre-built UI for the consent manager application, where your customer can approve or reject consent requests.
 
-You can theme these screens according to your brand colors and logo. Once you make the Create Consent request, a `url` is returned which can easily be embedded as a webview or be used to redirect from a website. The URL is of the form:
+You can theme these screens according to your brand colors and logo.
+
+#### Account discovery methods
+
+The Account Aggregator ecosystem does not have a native method to truly auto discover accounts of a user. Hence, various methods are implemented to discover accounts, for use in different scenarios.
+
+<table>
+  <tr>
+    <th>Managed by</th>
+    <th>Sub type</th>
+    <th>Suitable for</th>
+    <th>User experience</th>
+  </tr>
+  <tr>
+    <td rowspan="2">
+      <b>Setu managed</b> <br /> FIU does not know the user's bank(s) before AA
+      flow
+    </td>
+    <td>Semi auto discovery</td>
+    <td>When the user is likely to have accounts in popular banks</td>
+    <td>
+      Accounts in top banks are auto discovered. Can fallback to manual
+      discovery, allowing user to select banks manually.
+    </td>
+  </tr>
+  <tr>
+    <td>Manual discovery</td>
+    <td>When the user may or may not have accounts in popular banks</td>
+    <td>User must explicitly choose their banks and discover accounts</td>
+  </tr>
+  <tr>
+    <td>
+      <b>FIU managed</b> <br /> FIU knows the user's bank(s) before AA flow
+    </td>
+    <td>Guided auto discovery</td>
+    <td>
+      <ul>
+        <li>When the FIU wants control over what banks users choose</li>
+        <li>
+          When FIU wants to route users smartly between AA and other backup data
+          sharing methods of their own
+        </li>
+      </ul>
+    </td>
+    <td>Accounts are auto discovered from FIU specified banks (max 6)</td>
+  </tr>
+</table>
+
+<Row>
+  <Portion
+    desktopSpan="8"
+    tabletLandscapeSpan="4"
+    tabletPortraitSpan="12"
+    mobileSpan="12"
+  >
+    {/* <img src="https://storage.googleapis.com/strapi-assets/latest/first_frame_7d2e0263d8/first_frame_7d2e0263d8.png" />
+    <Text align="center" marginTop="none">
+      Setu managed semi auto discovery
+    </Text> */}
+  </Portion>
+  <Portion
+    desktopSpan="8"
+    tabletLandscapeSpan="4"
+    tabletPortraitSpan="12"
+    mobileSpan="12"
+  >
+    {/* <img src="https://storage.googleapis.com/strapi-assets/latest/first_frame_7d2e0263d8/first_frame_7d2e0263d8.png" />
+    <Text align="center">Setu managed manual discovery</Text> */}
+  </Portion>
+  <Portion
+    desktopSpan="8"
+    tabletLandscapeSpan="4"
+    tabletPortraitSpan="12"
+    mobileSpan="12"
+  >
+    {/* <img src="https://storage.googleapis.com/strapi-assets/latest/first_frame_7d2e0263d8/first_frame_7d2e0263d8.png" />
+    <Text align="center">FIU managed guided auto discovery</Text> */}
+  </Portion>
+</Row>
+
+##### FIU managed guided discovery
+
+To implement this discovery method, FIUs must send the list of FIPs (max 6) that should be used for a particular consent, via the <a href="/data/account-aggregator/consent-object#consent-request-object">context</a> property of the consent object.
+
+<Callout type="warning">
+  FIUs must esnure to send only those FIPs with status as <code>active</code>,
+  which can be determined with the{" "}
+  <a href="/data/account-aggregator/api-integration/fip-apis#categories-of-fip-status">
+    Get Active FIPs
+  </a>{" "}
+  API. FIP status should be determined in realtime, before creation of each
+  consent using this API.
+</Callout>
+
+<hr class="primary" />
+
+### Redirection mechanism
+
+Once you make the Create Consent request, a `url` is returned which can easily be embedded as a webview or be used to redirect from a website. The URL is of the form:
 
 `https://< fiu-base-url >/consents/webview/< consent-request-id >`
 
@@ -26,13 +126,17 @@ The redirect URL can be configured separately for each consent request, and woul
 
 Please find the below integration steps to embed Setu’s consent manager screens into your application.
 
-### Website
+<hr class="tertiary" />
+
+#### Website
 
 Redirect your customer to consent manager `url` received after Create Consent request. Once your customer has approved or rejected consent, this final screen in the consent manager will show a button that will redirect your customer to the `redirectUrl` provided by you in the Create consent API.<a href="https://staging.docs.setu.co/data/account-aggregator/api-integration/consent-flow#create-consent-api" target="_blank"></a>
 
 ![](https://storage.googleapis.com/strapi-assets/latest/Screenshot_2022_01_06_at_1_28_54_PM_d76f6260c9/Screenshot_2022_01_06_at_1_28_54_PM_d76f6260c9.png)
 
-### React Native
+<hr class="tertiary" />
+
+#### React Native
 
 For cross-platform apps built using React Native, Setu’s consent manager can be embedded into the app using a web view. This web view loads the consent manager inside your app.
 
