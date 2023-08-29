@@ -822,6 +822,291 @@
                 }
             }
         },
+        "/v1/transaction": {
+            "get": {
+                "tags": ["Categorisation"],
+                "summary": "Get transaction details",
+                "description": "Call this API with the data ids and filters to get transaction wise categorization details.If you want the transactions for a single category or a subcategory you can pass category or subcategory parameters. If you want to paginate the results,  you can pass skip and offset parameters. If you want to get transactions for a specific date range, you can pass from and to parameters.",
+                "operationId": "get_transactions_v1_transaction_get",
+                "parameters": [
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "transaction details for request data blocks and filters",
+                            "type": "array",
+                            "items": {}
+                        },
+                        "name": "dataId",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "get data to this date",
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "get data from this date",
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "category filters",
+                            "type": "array",
+                            "items": {}
+                        },
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "subcategory filters",
+                            "type": "array",
+                            "items": {}
+                        },
+                        "name": "subcategory",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "offset",
+                            "type": "integer",
+                            "default": 0
+                        },
+                        "name": "skip",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "limit",
+                            "type": "integer",
+                            "default": 100
+                        },
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-id",
+                            "type": "string"
+                        },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "x-product-instance-id",
+                            "type": "string"
+                        },
+                        "name": "x-product-instance-id",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TransactionGetResponse"
+                                },
+                                "examples": {
+                                    "TransactionGetResponse": {
+                                        "summary": "TransactionGetResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": {
+                                                "totalCount": 1,
+                                                "dataIdStatus": [
+                                                    {
+                                                        "dataId": "9436c454-e424-47fa-a8b0-406d0a696158",
+                                                        "status": "complete"
+                                                    }
+                                                ],
+                                                "transactions": [
+                                                    {
+                                                        "fiuId": "5f4e38eb-806a-4ed4-84fe-b582c1607728",
+                                                        "dataId": "9436c454-e424-47fa-a8b0-406d0a696158",
+                                                        "narration": "RANDOM FOOD AND BEVERAGES NARATIONS",
+                                                        "amount": "49224.65",
+                                                        "currentBalance": "125549.34",
+                                                        "txnMode": "UPI",
+                                                        "reference": "11111111",
+                                                        "txnId": "11111",
+                                                        "txnType": "DEBIT",
+                                                        "txnValueDate": "2023-08-06",
+                                                        "txnTimestamp": "2023-08-05 13:35:33.000",
+                                                        "categoryL1": "Food & Beverages",
+                                                        "categoryL2": "Food"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "RequestErrorResponse": {
+                                        "summary": "RequestErrorResponse",
+                                        "value": {
+                                            "errorCode": "400",
+                                            "errorMsg": "Empty data_ids input",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "AuthenticationErrorResponse": {
+                                        "summary": "AuthenticationErrorResponse",
+                                        "value": {
+                                            "errorCode": "401",
+                                            "errorMsg": "Unable to fetch FIU config",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "NotFoundResponse": {
+                                        "summary": "NotFoundResponse",
+                                        "value": {
+                                            "errorCode": "404",
+                                            "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ValidationErrorResponse": {
+                                        "summary": "ValidationErrorResponse",
+                                        "value": {
+                                            "errorCode": "422",
+                                            "errorMsg": "field required -> account",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "425": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "RequestErrorResponse": {
+                                        "summary": "RequestErrorResponse",
+                                        "value": {
+                                            "errorCode": "425",
+                                            "errorMsg": "Processing",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ServerErrorResponse": {
+                                        "summary": "ServerErrorResponse",
+                                        "value": {
+                                            "errorCode": "500",
+                                            "errorMsg": "Internal Server Error",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/pdf/supported_banks": {
             "get": {
                 "tags": ["PDF Support"],
@@ -893,294 +1178,6 @@
                     }
                 }
             }
-
-        },
-        "/v1/transaction": {
-          "get": {
-            "tags": [
-              "Categorisation"
-            ],
-            "summary": "Get transaction details",
-            "description": "Call this API with the data ids and filters to get transaction wise categorization details.If you want the transactions for a single category or a subcategory you can pass category or subcategory parameters. If you want to paginate the results,  you can pass skip and offset parameters. If you want to get transactions for a specific date range, you can pass from and to parameters.",
-            "operationId": "get_transactions_v1_transaction_get",
-            "parameters": [
-              {
-                "required": false,
-                "schema": {
-                  "title": "transaction details for request data blocks and filters",
-                  "type": "array",
-                  "items": {}
-                },
-                "name": "dataId",
-                "in": "query"
-              },
-              {
-                "required": false,
-                "schema": {
-                  "title": "get data to this date",
-                  "type": "string",
-                  "format": "date"
-                },
-                "name": "to",
-                "in": "query"
-              },
-              {
-                "required": false,
-                "schema": {
-                  "title": "get data from this date",
-                  "type": "string",
-                  "format": "date"
-                },
-                "name": "from",
-                "in": "query"
-              },
-              {
-                "required": false,
-                "schema": {
-                  "title": "category filters",
-                  "type": "array",
-                  "items": {}
-                },
-                "name": "category",
-                "in": "query"
-              },
-              {
-                "required": false,
-                "schema": {
-                  "title": "subcategory filters",
-                  "type": "array",
-                  "items": {}
-                },
-                "name": "subcategory",
-                "in": "query"
-              },
-              {
-                "required": false,
-                "schema": {
-                  "title": "offset",
-                  "type": "integer",
-                  "default": 0
-                },
-                "name": "skip",
-                "in": "query"
-              },
-              {
-                "required": false,
-                "schema": {
-                  "title": "limit",
-                  "type": "integer",
-                  "default": 100
-                },
-                "name": "limit",
-                "in": "query"
-              },
-              {
-                "required": true,
-                "schema": {
-                  "title": "x-client-id",
-                  "type": "string"
-                },
-                "name": "x-client-id",
-                "in": "header"
-              },
-              {
-                "required": true,
-                "schema": {
-                  "title": "x-client-secret",
-                  "type": "string"
-                },
-                "name": "x-client-secret",
-                "in": "header"
-              },
-              {
-                "required": false,
-                "schema": {
-                  "title": "x-product-instance-id",
-                  "type": "string"
-                },
-                "name": "x-product-instance-id",
-                "in": "header"
-              }
-            ],
-            "responses": {
-              "200": {
-                "description": "Successful Response",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "$ref": "#/components/schemas/TransactionGetResponse"
-                    },
-                    "examples": {
-                      "TransactionGetResponse": {
-                        "summary": "TransactionGetResponse",
-                        "value": {
-                          "status": "Success",
-                          "body": {
-                            "totalCount": 1,
-                            "dataIdStatus": [
-                              {
-                                "dataId": "9436c454-e424-47fa-a8b0-406d0a696158",
-                                "status": "complete"
-                              }
-                            ],
-                            "transactions": [
-                              {
-                                "fiuId": "5f4e38eb-806a-4ed4-84fe-b582c1607728",
-                                "dataId": "9436c454-e424-47fa-a8b0-406d0a696158",
-                                "narration": "RANDOM FOOD AND BEVERAGES NARATIONS",
-                                "amount": "49224.65",
-                                "currentBalance": "125549.34",
-                                "txnMode": "UPI",
-                                "reference": "11111111",
-                                "txnId": "11111",
-                                "txnType": "DEBIT",
-                                "txnValueDate": "2023-08-06",
-                                "txnTimestamp": "2023-08-05 13:35:33.000",
-                                "categoryL1": "Food & Beverages",
-                                "categoryL2": "Food"
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "400": {
-                "description": "Bad Request",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    },
-                    "examples": {
-                      "RequestErrorResponse": {
-                        "summary": "RequestErrorResponse",
-                        "value": {
-                          "errorCode": "400",
-                          "errorMsg": "Empty data_ids input",
-                          "timestamp": "2023-04-18T17:10:12.904153",
-                          "ver": "1",
-                          "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "401": {
-                "description": "Authentication Error",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    },
-                    "examples": {
-                      "AuthenticationErrorResponse": {
-                        "summary": "AuthenticationErrorResponse",
-                        "value": {
-                          "errorCode": "401",
-                          "errorMsg": "Unable to fetch FIU config",
-                          "timestamp": "2023-04-18T17:10:12.904153",
-                          "ver": "1",
-                          "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "404": {
-                "description": "Not Found Error",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    },
-                    "examples": {
-                      "NotFoundResponse": {
-                        "summary": "NotFoundResponse",
-                        "value": {
-                          "errorCode": "404",
-                          "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
-                          "timestamp": "2023-04-18T17:10:12.904153",
-                          "ver": "1",
-                          "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "422": {
-                "description": "Validation Error",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    },
-                    "examples": {
-                      "ValidationErrorResponse": {
-                        "summary": "ValidationErrorResponse",
-                        "value": {
-                          "errorCode": "422",
-                          "errorMsg": "field required -> account",
-                          "timestamp": "2023-04-18T17:10:12.904153",
-                          "ver": "1",
-                          "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "425": {
-                "description": "Bad Request",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    },
-                    "examples": {
-                      "RequestErrorResponse": {
-                        "summary": "RequestErrorResponse",
-                        "value": {
-                          "errorCode": "425",
-                          "errorMsg": "Processing",
-                          "timestamp": "2023-04-18T17:10:12.904153",
-                          "ver": "1",
-                          "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "500": {
-                "description": "Internal Server Error",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    },
-                    "examples": {
-                      "ServerErrorResponse": {
-                        "summary": "ServerErrorResponse",
-                        "value": {
-                          "errorCode": "500",
-                          "errorMsg": "Internal Server Error",
-                          "timestamp": "2023-04-18T17:10:12.904153",
-                          "ver": "1",
-                          "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
         }
     },
     "components": {
@@ -1235,7 +1232,12 @@
             },
             "Body_process_pdf_insights_v1_insight_post": {
                 "title": "Body_process_pdf_insights_v1_insight_post",
-                "required": ["template_id", "bankName", "applicantName", "dataFile"],
+                "required": [
+                    "template_id",
+                    "bankName",
+                    "applicantName",
+                    "dataFile"
+                ],
                 "type": "object",
                 "properties": {
                     "template_id": {
@@ -1277,7 +1279,7 @@
                                 }
                             }
                         }
-                      }
+                    }
                 }
             },
             "DepositData": {
@@ -1604,6 +1606,150 @@
                         "title": "Enddate",
                         "type": "string",
                         "format": "date"
+                    }
+                }
+            },
+            "TransactionGetResponse": {
+                "title": "TransactionGetResponse",
+                "required": ["body"],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "title": "Status",
+                        "type": "string",
+                        "default": "Success"
+                    },
+                    "statusDescription": {
+                        "title": "Statusdescription",
+                        "type": "string"
+                    },
+                    "body": {
+                        "$ref": "#/components/schemas/TransactionResponse"
+                    }
+                }
+            },
+            "TransactionResponse": {
+                "title": "TransactionResponse",
+                "required": ["totalCount", "transactions"],
+                "type": "object",
+                "properties": {
+                    "totalCount": {
+                        "title": "Totalcount",
+                        "type": "integer"
+                    },
+                    "dataIdStatus": {
+                        "title": "Dataidstatus",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TransactionJobStatus"
+                        }
+                    },
+                    "transactions": {
+                        "title": "Transactions",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DepositTransaction"
+                        }
+                    }
+                }
+            },
+            "TransactionJobStatus": {
+                "title": "TransactionJobStatus",
+                "required": ["dataId", "status"],
+                "type": "object",
+                "properties": {
+                    "dataId": {
+                        "title": "Dataid",
+                        "type": "string"
+                    },
+                    "status": {
+                        "title": "Status",
+                        "type": "string"
+                    }
+                }
+            },
+            "DepositTransaction": {
+                "title": "DepositTransaction",
+                "type": "object",
+                "properties": {
+                    "fiuId": {
+                        "title": "Fiuid",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "dataId": {
+                        "title": "Dataid",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "narration": {
+                        "title": "Narration",
+                        "type": "string"
+                    },
+                    "amount": {
+                        "title": "Amount",
+                        "type": "string"
+                    },
+                    "currentBalance": {
+                        "title": "Currentbalance",
+                        "type": "string"
+                    },
+                    "txnMode": {
+                        "title": "Txnmode",
+                        "type": "string"
+                    },
+                    "reference": {
+                        "title": "Reference",
+                        "type": "string"
+                    },
+                    "txnId": {
+                        "title": "Txnid",
+                        "type": "string"
+                    },
+                    "txnType": {
+                        "title": "Txntype",
+                        "type": "string"
+                    },
+                    "txnValueDate": {
+                        "title": "Txnvaluedate",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "txnTimestamp": {
+                        "title": "Txntimestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "categoryL1": {
+                        "title": "Categoryl1",
+                        "type": "string"
+                    },
+                    "categoryL2": {
+                        "title": "Categoryl2",
+                        "type": "string"
+                    }
+                }
+            },
+            "SupportedBanksGetResponse": {
+                "title": "SupportedBanksGetResponse",
+                "required": ["body"],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "title": "Status",
+                        "type": "string",
+                        "default": "Success"
+                    },
+                    "statusDescription": {
+                        "title": "Statusdescription",
+                        "type": "string"
+                    },
+                    "body": {
+                        "title": "Body",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             }
