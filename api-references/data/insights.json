@@ -822,79 +822,6 @@
                 }
             }
         },
-        "/v1/pdf/supported_banks": {
-            "get": {
-                "tags": ["PDF Support"],
-                "summary": "Get Supported Banks for PDF Parsing",
-                "description": "Call this API to get a list of Supported Banks for PDF Parsing.",
-                "operationId": "get_pdf_supported_banks_v1_pdf_supported_banks_get",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SupportedBanksGetResponse"
-                                },
-                                "examples": {
-                                    "SupportedBanksGetResponse": {
-                                        "summary": "SupportedBanksGetResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": [
-                                                "HDFC Bank Ltd",
-                                                "HSBC Ltd",
-                                                "ICICI Bank Ltd."
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
-                                        "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-        },
         "/v1/transaction": {
           "get": {
             "tags": [
@@ -1181,6 +1108,79 @@
               }
             }
           }
+        },
+        "/v1/pdf/supported_banks": {
+            "get": {
+                "tags": ["PDF Support"],
+                "summary": "Get Supported Banks for PDF Parsing",
+                "description": "Call this API to get a list of Supported Banks for PDF Parsing.",
+                "operationId": "get_pdf_supported_banks_v1_pdf_supported_banks_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": { "title": "x-client-id", "type": "string" },
+                        "name": "x-client-id",
+                        "in": "header"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "x-client-secret",
+                            "type": "string"
+                        },
+                        "name": "x-client-secret",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupportedBanksGetResponse"
+                                },
+                                "examples": {
+                                    "SupportedBanksGetResponse": {
+                                        "summary": "SupportedBanksGetResponse",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": [
+                                                "HDFC Bank Ltd",
+                                                "HSBC Ltd",
+                                                "ICICI Bank Ltd."
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ServerErrorResponse": {
+                                        "summary": "ServerErrorResponse",
+                                        "value": {
+                                            "errorCode": "500",
+                                            "errorMsg": "Internal Server Error",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     },
     "components": {
@@ -1606,7 +1606,161 @@
                         "format": "date"
                     }
                 }
-            }
+            },
+            "TransactionGetResponse": {
+                "title": "TransactionGetResponse",
+                "required": [
+                  "body"
+                ],
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "title": "Status",
+                    "type": "string",
+                    "default": "Success"
+                  },
+                  "statusDescription": {
+                    "title": "Statusdescription",
+                    "type": "string"
+                  },
+                  "body": {
+                    "$ref": "#/components/schemas/TransactionResponse"
+                  }
+                }
+              },
+            "TransactionResponse": {
+                "title": "TransactionResponse",
+                "required": [
+                  "totalCount",
+                  "transactions"
+                ],
+                "type": "object",
+                "properties": {
+                  "totalCount": {
+                    "title": "Totalcount",
+                    "type": "integer"
+                  },
+                  "dataIdStatus": {
+                    "title": "Dataidstatus",
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TransactionJobStatus"
+                    }
+                  },
+                  "transactions": {
+                    "title": "Transactions",
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DepositTransaction"
+                    }
+                  }
+                }
+              },
+            "TransactionJobStatus": {
+                "title": "TransactionJobStatus",
+                "required": [
+                  "dataId",
+                  "status"
+                ],
+                "type": "object",
+                "properties": {
+                  "dataId": {
+                    "title": "Dataid",
+                    "type": "string"
+                  },
+                  "status": {
+                    "title": "Status",
+                    "type": "string"
+                  }
+                }
+              },
+            "DepositTransaction": {
+                "title": "DepositTransaction",
+                "type": "object",
+                "properties": {
+                  "fiuId": {
+                    "title": "Fiuid",
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "dataId": {
+                    "title": "Dataid",
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "narration": {
+                    "title": "Narration",
+                    "type": "string"
+                  },
+                  "amount": {
+                    "title": "Amount",
+                    "type": "string"
+                  },
+                  "currentBalance": {
+                    "title": "Currentbalance",
+                    "type": "string"
+                  },
+                  "txnMode": {
+                    "title": "Txnmode",
+                    "type": "string"
+                  },
+                  "reference": {
+                    "title": "Reference",
+                    "type": "string"
+                  },
+                  "txnId": {
+                    "title": "Txnid",
+                    "type": "string"
+                  },
+                  "txnType": {
+                    "title": "Txntype",
+                    "type": "string"
+                  },
+                  "txnValueDate": {
+                    "title": "Txnvaluedate",
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "txnTimestamp": {
+                    "title": "Txntimestamp",
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "categoryL1": {
+                    "title": "Categoryl1",
+                    "type": "string"
+                  },
+                  "categoryL2": {
+                    "title": "Categoryl2",
+                    "type": "string"
+                  }
+                }
+              },
+            "SupportedBanksGetResponse": {
+                "title": "SupportedBanksGetResponse",
+                "required": [
+                  "body"
+                ],
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "title": "Status",
+                    "type": "string",
+                    "default": "Success"
+                  },
+                  "statusDescription": {
+                    "title": "Statusdescription",
+                    "type": "string"
+                  },
+                  "body": {
+                    "title": "Body",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
         }
     }
 }
