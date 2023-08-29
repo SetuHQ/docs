@@ -15,7 +15,7 @@ Currently, there are two types of events — `BILL_FULFILMENT_STATUS` and `BILL_
 
 ### Bill fulfilment status
 
-After Setu receives a callback from the bank for a particular payment, we send a `PAYMENT_SUCCESSFUL` or `PAYMENT_FAILED` notification to the merchant.
+After Setu receives a callback from the bank for a particular payment, we send a `PAYMENT_SUCCESSFUL` or `PAYMENT_FAILED`  or  `PAYMENT_ATTEMPT_FAILED` notification to the merchant.
 
 <br />
 
@@ -76,6 +76,7 @@ A payment can fail for multiple reasons as explained below:
 | `TPV check failed`         | If TPV check by Setu is enabled and account validation fails. Read more about TPV <a href="/payments/upi-deeplinks/refunds#third-party-verification--tpv--refunds" target="_blank">here</a>.                                                                                                      |
 
 <br />
+
 <CodeBlockWithCopy language="json">
     {`
 {
@@ -108,7 +109,52 @@ A payment can fail for multiple reasons as explained below:
       "id": "e41d9f2a-eb66-4be0-8dec-f04806656274"
     }
   ]
-}`}
+}
+         `}
+</CodeBlockWithCopy>
+
+<br />
+
+#### Payment attempt failed notification
+
+Merchants receive notifications if a payment attempt fails due to incorrect UPI MPIN, insufficient balance, network errors, or other reasons. The bill created won’t expire, allowing customers to retry the payment. For a detailed list of reasons and descriptions, <a href="/payments/upi-deeplinks/failure-notification" target="_blank">check here</a>.
+
+<br />
+
+<CodeBlockWithCopy language="json">
+    {`
+{
+  "partnerDetails": {
+    "appID": "1115232834412348749",
+    "productInstanceID": "1115232834412348749"
+  },
+  "events": [
+    {
+      "data": {
+        "Reason": "",
+        "amountPaid": {
+          "currencyCode": "INR",
+          "value": 5000
+        },
+        "npciStatusCode": "U30",
+        "npciStatusReason": "DEBIT HAS BEEN FAILED",
+        "payeeVpa": "fortest@kaypay",
+        "payerVpa": "saainithil97@icici",
+        "paymentChannel": "UPI",
+        "paymentReferenceNumber": "9921837467033533",
+        "platformBillID": "1217499640581064416",
+        "setuDescription": "The customer's debit attempt failed.",
+        "status": "PAYMENT_ATTEMPT_FAILED",
+        "transactionDate": "2023-08-03 12:16:12",
+        "transactionId": "615436a8-434c-43db-8a57-dd4cf11dff3e"
+      },
+      "timeStamp": 1691045172577,
+      "type": "PAYMENT_ATTEMPT_FAILED",
+      "id": "e48bdd28-c34f-4237-bebd-ccb37f174b8a"
+    }
+  ]
+}
+`}
 </CodeBlockWithCopy>
 
 <hr class="secondary" />
