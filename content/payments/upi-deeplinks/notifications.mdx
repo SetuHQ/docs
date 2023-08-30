@@ -15,14 +15,14 @@ Currently, there are two types of events — `BILL_FULFILMENT_STATUS` and `BILL_
 
 ### Bill fulfilment status
 
-After Setu receives a callback from the bank for a particular payment, we send a `PAYMENT_SUCCESSFUL` or `PAYMENT_FAILED`  or  `PAYMENT_ATTEMPT_FAILED` notification to the merchant.
+After Setu receives a callback from the bank for a particular payment, we send a `PAYMENT_SUCCESSFUL` or `PAYMENT_FAILED` or `PAYMENT_ATTEMPT_FAILED` notification to the merchant.
 
 <br />
 
 #### Payment successful notification
 
 <CodeBlockWithCopy language="json">
-    {`
+  {`
 {
   "partnerDetails": {
     "appID": "861023031961584801",
@@ -78,7 +78,7 @@ A payment can fail for multiple reasons as explained below:
 <br />
 
 <CodeBlockWithCopy language="json">
-    {`
+  {`
 {
   "partnerDetails": {
     "appID": "861023031961584801",
@@ -117,12 +117,253 @@ A payment can fail for multiple reasons as explained below:
 
 #### Payment attempt failed notification
 
-Merchants receive notifications if a payment attempt fails due to incorrect UPI MPIN, insufficient balance, network errors, or other reasons. The bill created won’t expire, allowing customers to retry the payment. For a detailed list of reasons and descriptions, <a href="/payments/upi-deeplinks/failure-notification" target="_blank">check here</a>.
+Merchants receive notifications if a payment attempt fails due to incorrect UPI MPIN, insufficient balance, network errors, or other reasons. These failures are indicated by `npciStatusCode` and `npciStatusReason`. Full list of status codes, reasons and descriptions are provided below.
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        List of all payment attempt failed notification statuses
+      </Text>
+    </summary>
+    <table>
+      <tr>
+        <td>
+          <b>NPCI status code</b>
+        </td>
+        <td>
+          <b>NPCI status reason</b>
+        </td>
+        <td>
+          <b>Setu Description</b>
+        </td>
+        <td>
+          <b>Next Steps for merchants</b>
+        </td>
+      </tr>
+      <tr>
+        <td>U30</td>
+        <td>DEBIT HAS BEEN FAILED</td>
+        <td>The customer&#39;s debit attempt failed.</td>
+        <td>
+          Inform the customer and ask them to try again or use a different
+          payment method.
+        </td>
+      </tr>
+      <tr>
+        <td>U09</td>
+        <td>REQAUTH TIME OUT FOR PAY</td>
+        <td>Payment authorization took too long.</td>
+        <td>
+          Ask the customer to try again. If it continues, reach out to Setu
+          support.
+        </td>
+      </tr>
+      <tr>
+        <td>U90</td>
+        <td>REMITTER BANK DEEMED HIGH RESPONSE TIME CHECK DECLINE</td>
+        <td>The customer&#39;s bank is taking too long to respond.</td>
+        <td>
+          Ask the customer to contact their bank or try a different payment
+          method.
+        </td>
+      </tr>
+      <tr>
+        <td>U67</td>
+        <td>DEBIT TIMEOUT</td>
+        <td>The debit process took too long.</td>
+        <td>
+          Ask the customer to try again or use a different payment method.
+        </td>
+      </tr>
+      <tr>
+        <td>U88</td>
+        <td>CONNECTION TIMEOUT IN REQPAY CREDIT</td>
+        <td>Connection timed out during the credit request process.</td>
+        <td>
+          Try processing the transaction again. If the issue persists, contact
+          Setu support.
+        </td>
+      </tr>
+      <tr>
+        <td>U16</td>
+        <td>RISK THRESHOLD EXCEEDED</td>
+        <td>The transaction exceeds the risk threshold.</td>
+        <td>
+          Review the transaction for potential issues or ask the customer to use
+          a different payment method.
+        </td>
+      </tr>
+      <tr>
+        <td>U28</td>
+        <td>REMITTER BANK NOT AVAILABLE</td>
+        <td>The customer&#39;s bank is unavailable.</td>
+        <td>
+          Inform the customer and suggest trying again later or using a
+          different bank or payment method.
+        </td>
+      </tr>
+      <tr>
+        <td>XQ</td>
+        <td>Transaction not permitted to cardholder (beneficiary)</td>
+        <td>This transaction isn&#39;t permitted for the beneficiary.</td>
+        <td>
+          Inform the customer and suggest using a different payment method.
+        </td>
+      </tr>
+      <tr>
+        <td>U85</td>
+        <td>CONNECTION TIMEOUT IN REQPAY DEBIT</td>
+        <td>Connection timed out during the debit request process.</td>
+        <td>
+          Try processing the transaction again. If the issue persists, contact
+          Setu support.
+        </td>
+      </tr>
+      <tr>
+        <td>HS3</td>
+        <td>HSM communication error</td>
+        <td>A communication error occurred with the security module.</td>
+        <td>
+          Retry the transaction or contact Setu support if the problem persists.
+        </td>
+      </tr>
+      <tr>
+        <td>U66</td>
+        <td>DEVICE FINGERPRINT MISMATCH</td>
+        <td>Device fingerprint mismatch detected.</td>
+        <td>
+          Inform the customer, ask them to verify their device, and retry the
+          transaction.
+        </td>
+      </tr>
+      <tr>
+        <td>U91</td>
+        <td>BENEFICIARY BANK DEEMED HIGH RESPONSE TIME CHECK DECLINE</td>
+        <td>Beneficiary bank response time is too high.</td>
+        <td>
+          Inform the customer and suggest they contact their bank or use a
+          different payment method.
+        </td>
+      </tr>
+      <tr>
+        <td>U03</td>
+        <td>NET DEBIT CAP IS EXCEEDED</td>
+        <td>The total debit amount exceeded the set limit.</td>
+        <td>
+          Ask the customer to try a different payment method or contact their
+          bank.
+        </td>
+      </tr>
+      <tr>
+        <td>U54</td>
+        <td>
+          TRANSACTION ID OR AMOUNT IN CREDENTIAL BLOCK DOES NOT MATCH WITH THAT
+          IN REQPAY
+        </td>
+        <td>Transaction details mismatch.</td>
+        <td>
+          Verify the transaction details and retry, or contact Setu support if
+          needed.
+        </td>
+      </tr>
+      <tr>
+        <td>U86</td>
+        <td>REMITTER BANK THROTTLING DECLINE</td>
+        <td>The customer&#39;s bank declined due to throttling.</td>
+        <td>
+          Inform the customer and ask them to contact their bank or use a
+          different payment method.
+        </td>
+      </tr>
+      <tr>
+        <td>XK</td>
+        <td>REQUESTED FUNCTION NOT SUPPORTED (BENEFICIARY)</td>
+        <td>The requested function is not supported for the beneficiary.</td>
+        <td>Ask the customer to try a different payment method.</td>
+      </tr>
+      <tr>
+        <td>U14</td>
+        <td>ENCRYPTION ERROR</td>
+        <td>An encryption error occurred in the transaction.</td>
+        <td>
+          Retry the transaction or contact Setu support if the problem persists.
+        </td>
+      </tr>
+      <tr>
+        <td>XC</td>
+        <td>
+          INVALID TRANSACTION OR IF MEMBER IS NOT ABLE TO FIND ANY APPROPRIATE
+          RESPONSE CODE (BENEFICIARY)
+        </td>
+        <td>Invalid transaction or response code issue.</td>
+        <td>Contact Setu support for assistance.</td>
+      </tr>
+      <tr>
+        <td>U47</td>
+        <td>REQUEST DEBIT IS NOT FOUND</td>
+        <td>The debit request was not found.</td>
+        <td>Retry the transaction or contact Setu support if needed.</td>
+      </tr>
+      <tr>
+        <td>BT</td>
+        <td>ACQUIRER/BENEFICIARY UNAVAILABLE(TIMEOUT)</td>
+        <td>Receiver/beneficiary is not available, causing a timeout.</td>
+        <td>
+          Inform the customer and suggest trying again later or using a
+          different payment method.
+        </td>
+      </tr>
+      <tr>
+        <td>94</td>
+        <td>Unknown Error</td>
+        <td>An unknown error occurred.</td>
+        <td>
+          Retry the transaction or contact Setu support if the problem persists.
+        </td>
+      </tr>
+      <tr>
+        <td>U53</td>
+        <td>PSP REQUEST PAY DEBIT ACKNOWLEDGEMENT NOT RECEIVED</td>
+        <td>The debit acknowledgement was not received.</td>
+        <td>Retry the transaction or contact Setu support if needed.</td>
+      </tr>
+      <tr>
+        <td>HS2</td>
+        <td>HSM Time out</td>
+        <td>A timeout occurred with the security module.</td>
+        <td>
+          Retry the transaction or contact Setu support if the problem persists.
+        </td>
+      </tr>
+      <tr>
+        <td>S99</td>
+        <td>Graceful decline</td>
+        <td>The transaction was stopped without a specific reason.</td>
+        <td>
+          Ask the customer to try a different payment method or contact Setu
+          support if needed.
+        </td>
+      </tr>
+      <tr>
+        <td>U01</td>
+        <td>THE REQUEST IS DUPLICATE</td>
+        <td>Duplicate transaction request.</td>
+        <td>
+          Confirm that the transaction was processed only once and contact Setu
+          support if necessary.
+        </td>
+      </tr>
+    </table>
+  </details>
+</Card>
 
 <br />
 
+The bill created won’t expire, allowing customers to retry the payment.
+
 <CodeBlockWithCopy language="json">
-    {`
+  {`
 {
   "partnerDetails": {
     "appID": "1115232834412348749",
@@ -168,7 +409,7 @@ Merchants receive notifications if a payment attempt fails due to incorrect UPI 
 A `SETTLEMENT_SUCCESSFUL` notification is sent to the merchant after successful payments from Setu to the merchant. This depends on the settlement frequency agreed upon between Setu and the merchant.
 
 <CodeBlockWithCopy language="json">
-    {`{
+  {`{
      "partnerDetails": {
         "appID": "string",  // your unique app ID in Setu system, this is constant
         "productInstanceID": "string"  // your unique product instance ID in Setu system, this is constant
@@ -210,7 +451,7 @@ Refunds are initiated in batch, along with settlements. A batch notification is 
 The refunds array in the notification provides the details of all transactions for which refund is initiated.
 
 <CodeBlockWithCopy language="json">
-    {`{
+  {`{
 	"partnerDetails": {
 		"appID": "799310436687152247",
 		"productInstanceID": "799310436687152247"
