@@ -7,1183 +7,1175 @@
     },
     "servers": [{ "url": "https://di-uat.setu.co/", "variables": {} }],
     "paths": {
-        "/v1/fiData": {
-            "get": {
-                "tags": ["Data ingestion"],
-                "summary": "Get FI Datablocks",
-                "description": "Call this API to get a list of FI Datablocks created by the FIU",
-                "operationId": "get_fi_data_v1_fiData_get",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-product-instance-id",
-                            "type": "string"
-                        },
-                        "name": "x-product-instance-id",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FIDataBlockGetResponse"
-                                },
-                                "examples": {
-                                    "FIDataBlockGetResponse": {
-                                        "summary": "FIDataBlockGetResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": [
-                                                {
-                                                    "dataId": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
-                                                    "fiSchema": "deposit",
-                                                    "expiryDate": "2023-03-11T06:52:36.457745"
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
-                                        "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
-                                        "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
-                                        "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+      "/v1/fiData": {
+        "get": {
+          "tags": ["Data ingestion"],
+          "summary": "Get FI Datablocks",
+          "description": "Call this API to get a list of FI Datablocks created by the FIU",
+          "operationId": "get_fi_data_v1_fiData_get",
+          "parameters": [
+            {
+              "required": true,
+              "schema": { "title": "x-client-id", "type": "string" },
+              "name": "x-client-id",
+              "in": "header"
             },
-            "post": {
-                "tags": ["Data ingestion"],
-                "summary": "Create FIData block (FIU Webhook)",
-                "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent in the future.",
-                "operationId": "create_fi_data_v1_fiData_post",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-product-instance-id",
-                            "type": "string"
-                        },
-                        "name": "x-product-instance-id",
-                        "in": "header"
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "title": "FI Data as defined by ReBIT schema",
-                                "allOf": [
-                                    { "$ref": "#/components/schemas/FIData" }
-                                ]
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FIDataBlockCreateResponse"
-                                },
-                                "examples": {
-                                    "FIDataBlockCreateResponse": {
-                                        "summary": "FIDataBlockCreateResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": {
-                                                "dataId": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
-                                                "fiSchema": "deposit",
-                                                "expiryDate": "2023-03-11T06:52:36.457745"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
-                                        "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
-                                        "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
-                                        "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/insight": {
-            "get": {
-                "tags": ["Insight generation"],
-                "summary": "Get Insights",
-                "description": "Call this API with the report-id to get the created Insights",
-                "operationId": "get_insights_v1_insight_get",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "Report ID for which insights are needed",
-                            "type": "string"
-                        },
-                        "name": "reportId",
-                        "in": "query"
-                    },
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-product-instance-id",
-                            "type": "string"
-                        },
-                        "name": "x-product-instance-id",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "title": "Response 200 Get Insights V1 Insight Get",
-                                    "anyOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ReportJobCreateResponse"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/InsightGetResponse"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "InsightGetResponse": {
-                                        "summary": "InsightGetResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": {
-                                                "name": "Redacted Services",
-                                                "dob": "2006-06-27",
-                                                "email": "redacted@gmail.com",
-                                                "pan": "redacted",
-                                                "ckyc_compliance": false,
-                                                "mobile": 9999912345,
-                                                "bank_branch": "NARKATIAGANJ BH",
-                                                "bank_account_number": "XXXXXXXXXXX1234",
-                                                "bank_account_type": "CURRENT",
-                                                "opening_date": "2019-02-26",
-                                                "closing_balance": 27929.84,
-                                                "end_of_month_balances": {
-                                                    "2021": {
-                                                        "9": 245676.89,
-                                                        "10": 48650.54,
-                                                        "11": 145487.41,
-                                                        "12": 97725.67
-                                                    },
-                                                    "2022": {
-                                                        "1": 9152.09,
-                                                        "2": 5957.19,
-                                                        "3": 545.59,
-                                                        "4": 1282299.18,
-                                                        "5": 134376.04,
-                                                        "6": 84468.46,
-                                                        "7": 135585.11,
-                                                        "8": 3346.11,
-                                                        "9": 268766.7,
-                                                        "10": 50049.84,
-                                                        "11": 27929.84
-                                                    }
-                                                },
-                                                "balances_on_10th": {
-                                                    "2021": { "12": 55387.41 },
-                                                    "2022": {
-                                                        "1": 2426.67,
-                                                        "2": 9629.59,
-                                                        "3": 97487.45,
-                                                        "4": 1641.09,
-                                                        "5": 52517.54,
-                                                        "6": 72084.28,
-                                                        "7": 165864.04,
-                                                        "8": 63465.11,
-                                                        "9": 11226.11,
-                                                        "10": 418535.81,
-                                                        "11": 27929.84
-                                                    }
-                                                },
-                                                "average_end_of_day_balance": 297715.03,
-                                                "maximum_end_of_day_balance": 1818766.7,
-                                                "total_credits": 153,
-                                                "total_credits_value": 44810341.06,
-                                                "total_debits": 473,
-                                                "total_debits_value": 45178088.11,
-                                                "quarterly_salary_average": {
-                                                    "2021": { "4": 15072 }
-                                                },
-                                                "cash_deposit_x_total_credit": {
-                                                    "2021": { "12": 0.0095 },
-                                                    "2022": { "3": 0.0018 }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
-                                        "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
-                                        "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
-                                        "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
             },
-            "post": {
-                "tags": ["Insight generation"],
-                "summary": "Create Insights",
-                "description": "Call this API with the template-id received from Setu along with a list of data-ids, to trigger an Report generation job. The FI Datablocks can belong to multiple bank accounts.The created Report will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to fetch the generated Report.",
-                "operationId": "process_insights_v1_insight_post",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-product-instance-id",
-                            "type": "string"
-                        },
-                        "name": "x-product-instance-id",
-                        "in": "header"
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Body_process_insights_v1_insight_post"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "202": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ReportJobCreateResponse"
-                                },
-                                "examples": {
-                                    "ReportJobCreateResponse": {
-                                        "summary": "ReportJobCreateResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": {
-                                                "reportId": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
-                                        "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
-                                        "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
-                                        "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "RequestErrorResponse": {
-                                        "summary": "RequestErrorResponse",
-                                        "value": {
-                                            "errorCode": "400",
-                                            "errorMsg": "Empty data_ids input",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "NotFoundResponse": {
-                                        "summary": "NotFoundResponse",
-                                        "value": {
-                                            "errorCode": "404",
-                                            "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            {
+              "required": true,
+              "schema": {
+                "title": "x-product-instance-id",
+                "type": "string"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
             }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/FIDataBlockGetResponse"
+                  },
+                  "examples": {
+                    "FIDataBlockGetResponse": {
+                      "summary": "FIDataBlockGetResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": [
+                          {
+                            "dataId": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
+                            "fiSchema": "deposit",
+                            "expiryDate": "2023-03-11T06:52:36.457745"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
-        "/v1/insight/pdf": {
-            "post": {
-                "tags": [
-                "Insight generation"
-                ],
-                "summary": "Create Insights",
-                "description": "Call this API with the template-id received from Setu along with a pdf, to trigger an Report generation job. The created Report will be shared via a notification to the endpoint configured by the FIU. This API will respond with a report-id, which can also be used to fetch the generated Report.",
-                "operationId": "process_pdf_insights_v1_insight_pdf_post",
-                "parameters": [
-                {
-                    "required": true,
-                    "schema": {
-                    "type": "string",
-                    "title": "x-client-id"
-                    },
-                    "name": "x-client-id",
-                    "in": "header"
-                },
-                {
-                    "required": true,
-                    "schema": {
-                    "type": "string",
-                    "title": "x-client-secret"
-                    },
-                    "name": "x-client-secret",
-                    "in": "header"
-                },
-                {
-                    "required": false,
-                    "schema": {
-                    "type": "string",
-                    "title": "x-product-instance-id"
-                    },
-                    "name": "x-product-instance-id",
-                    "in": "header"
-                }
-                ],
-                "requestBody": {
-                "content": {
-                    "multipart/form-data": {
-                    "schema": {
-                        "$ref": "#/components/schemas/Body_process_pdf_insights_v1_insight_pdf_post"
-                    }
-                    }
-                },
-                "required": true
-                },
-                "responses": {
-                "202": {
-                    "description": "Successful Response",
-                    "content": {
-                    "application/json": {
-                        "schema": {
-                        "$ref": "#/components/schemas/ReportJobCreateResponse"
-                        },
-                        "examples": {
-                        "ReportJobCreateResponse": {
-                            "summary": "ReportJobCreateResponse",
-                            "value": {
-                            "status": "Success",
-                            "body": {
-                                "reportId": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d"
-                            }
-                            }
-                        }
-                        }
-                    }
-                    }
-                },
-                "400": {
-                    "description": "Bad Request",
-                    "content": {
-                    "application/json": {
-                        "schema": {
-                        "$ref": "#/components/schemas/ErrorResponse"
-                        },
-                        "examples": {
-                        "RequestErrorResponse": {
-                            "summary": "RequestErrorResponse",
-                            "value": {
-                            "errorCode": "400",
-                            "errorMsg": "Empty data_ids input",
-                            "timestamp": "2023-04-18T17:10:12.904153",
-                            "ver": "1",
-                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                            }
-                        }
-                        }
-                    }
-                    }
-                },
-                "401": {
-                    "description": "Authentication Error",
-                    "content": {
-                    "application/json": {
-                        "schema": {
-                        "$ref": "#/components/schemas/ErrorResponse"
-                        },
-                        "examples": {
-                        "AuthenticationErrorResponse": {
-                            "summary": "AuthenticationErrorResponse",
-                            "value": {
-                            "errorCode": "401",
-                            "errorMsg": "Unable to fetch FIU config",
-                            "timestamp": "2023-04-18T17:10:12.904153",
-                            "ver": "1",
-                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                            }
-                        }
-                        }
-                    }
-                    }
-                },
-                "404": {
-                    "description": "Not Found Error",
-                    "content": {
-                    "application/json": {
-                        "schema": {
-                        "$ref": "#/components/schemas/ErrorResponse"
-                        },
-                        "examples": {
-                        "NotFoundResponse": {
-                            "summary": "NotFoundResponse",
-                            "value": {
-                            "errorCode": "404",
-                            "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
-                            "timestamp": "2023-04-18T17:10:12.904153",
-                            "ver": "1",
-                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                            }
-                        }
-                        }
-                    }
-                    }
-                },
-                "422": {
-                    "description": "Validation Error",
-                    "content": {
-                    "application/json": {
-                        "schema": {
-                        "$ref": "#/components/schemas/ErrorResponse"
-                        },
-                        "examples": {
-                        "ValidationErrorResponse": {
-                            "summary": "ValidationErrorResponse",
-                            "value": {
-                            "errorCode": "422",
-                            "errorMsg": "field required -> account",
-                            "timestamp": "2023-04-18T17:10:12.904153",
-                            "ver": "1",
-                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                            }
-                        }
-                        }
-                    }
-                    }
-                },
-                "500": {
-                    "description": "Internal Server Error",
-                    "content": {
-                    "application/json": {
-                        "schema": {
-                        "$ref": "#/components/schemas/ErrorResponse"
-                        },
-                        "examples": {
-                        "ServerErrorResponse": {
-                            "summary": "ServerErrorResponse",
-                            "value": {
-                            "errorCode": "500",
-                            "errorMsg": "Internal Server Error",
-                            "timestamp": "2023-04-18T17:10:12.904153",
-                            "ver": "1",
-                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                            }
-                        }
-                        }
-                    }
-                    }
-                }
-                }
+        "post": {
+          "tags": ["Data ingestion"],
+          "summary": "Create FIData block (FIU Webhook)",
+          "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent in the future.",
+          "operationId": "create_fi_data_v1_fiData_post",
+          "parameters": [
+            {
+              "required": true,
+              "schema": { "title": "x-client-id", "type": "string" },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-product-instance-id",
+                "type": "string"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
             }
-        },
-        "/v1/transaction": {
-            "get": {
-                "tags": ["Categorisation"],
-                "summary": "Get transaction details",
-                "description": "Call this API with the data ids and filters to get transaction wise categorization details.If you want the transactions for a single category or a subcategory you can pass category or subcategory parameters. If you want to paginate the results,  you can pass skip and offset parameters. If you want to get transactions for a specific date range, you can pass from and to parameters.",
-                "operationId": "get_transactions_v1_transaction_get",
-                "parameters": [
-                    {
-                        "required": false,
-                        "schema": {
-                            "title": "transaction details for request data blocks and filters",
-                            "type": "array",
-                            "items": {}
-                        },
-                        "name": "dataId",
-                        "in": "query"
-                    },
-                    {
-                        "required": false,
-                        "schema": {
-                            "title": "get data to this date",
-                            "type": "string",
-                            "format": "date"
-                        },
-                        "name": "to",
-                        "in": "query"
-                    },
-                    {
-                        "required": false,
-                        "schema": {
-                            "title": "get data from this date",
-                            "type": "string",
-                            "format": "date"
-                        },
-                        "name": "from",
-                        "in": "query"
-                    },
-                    {
-                        "required": false,
-                        "schema": {
-                            "title": "category filters",
-                            "type": "array",
-                            "items": {}
-                        },
-                        "name": "category",
-                        "in": "query"
-                    },
-                    {
-                        "required": false,
-                        "schema": {
-                            "title": "subcategory filters",
-                            "type": "array",
-                            "items": {}
-                        },
-                        "name": "subcategory",
-                        "in": "query"
-                    },
-                    {
-                        "required": false,
-                        "schema": {
-                            "title": "offset",
-                            "type": "integer",
-                            "default": 0
-                        },
-                        "name": "skip",
-                        "in": "query"
-                    },
-                    {
-                        "required": false,
-                        "schema": {
-                            "title": "limit",
-                            "type": "integer",
-                            "default": 100
-                        },
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-id",
-                            "type": "string"
-                        },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    },
-                    {
-                        "required": false,
-                        "schema": {
-                            "title": "x-product-instance-id",
-                            "type": "string"
-                        },
-                        "name": "x-product-instance-id",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TransactionGetResponse"
-                                },
-                                "examples": {
-                                    "TransactionGetResponse": {
-                                        "summary": "TransactionGetResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": {
-                                                "totalCount": 1,
-                                                "dataIdStatus": [
-                                                    {
-                                                        "dataId": "9436c454-e424-47fa-a8b0-406d0a696158",
-                                                        "status": "complete"
-                                                    }
-                                                ],
-                                                "transactions": [
-                                                    {
-                                                        "fiuId": "5f4e38eb-806a-4ed4-84fe-b582c1607728",
-                                                        "dataId": "9436c454-e424-47fa-a8b0-406d0a696158",
-                                                        "narration": "RANDOM FOOD AND BEVERAGES NARATIONS",
-                                                        "amount": "49224.65",
-                                                        "currentBalance": "125549.34",
-                                                        "txnMode": "UPI",
-                                                        "reference": "11111111",
-                                                        "txnId": "11111",
-                                                        "txnType": "DEBIT",
-                                                        "txnValueDate": "2023-08-06",
-                                                        "txnTimestamp": "2023-08-05 13:35:33.000",
-                                                        "categoryL1": "Food & Beverages",
-                                                        "categoryL2": "Food"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "RequestErrorResponse": {
-                                        "summary": "RequestErrorResponse",
-                                        "value": {
-                                            "errorCode": "400",
-                                            "errorMsg": "Empty data_ids input",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
-                                        "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "NotFoundResponse": {
-                                        "summary": "NotFoundResponse",
-                                        "value": {
-                                            "errorCode": "404",
-                                            "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
-                                        "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "425": {
-                        "description": "Bad Request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "RequestErrorResponse": {
-                                        "summary": "RequestErrorResponse",
-                                        "value": {
-                                            "errorCode": "425",
-                                            "errorMsg": "Processing",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
-                                        "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "FI Data as defined by ReBIT schema",
+                  "allOf": [{ "$ref": "#/components/schemas/FIData" }]
                 }
-            }
-        },
-        "/v1/pdf/supported_banks": {
-            "get": {
-                "tags": ["PDF Support"],
-                "summary": "Get Supported Banks for PDF Parsing",
-                "description": "Call this API to get a list of Supported Banks for PDF Parsing.",
-                "operationId": "get_pdf_supported_banks_v1_pdf_supported_banks_get",
-                "parameters": [
-                    {
-                        "required": true,
-                        "schema": { "title": "x-client-id", "type": "string" },
-                        "name": "x-client-id",
-                        "in": "header"
-                    },
-                    {
-                        "required": true,
-                        "schema": {
-                            "title": "x-client-secret",
-                            "type": "string"
-                        },
-                        "name": "x-client-secret",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SupportedBanksGetResponse"
-                                },
-                                "examples": {
-                                    "SupportedBanksGetResponse": {
-                                        "summary": "SupportedBanksGetResponse",
-                                        "value": {
-                                            "status": "Success",
-                                            "body": [
-                                                "HDFC Bank Ltd",
-                                                "HSBC Ltd",
-                                                "ICICI Bank Ltd."
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "201": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/FIDataBlockCreateResponse"
+                  },
+                  "examples": {
+                    "FIDataBlockCreateResponse": {
+                      "summary": "FIDataBlockCreateResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": {
+                          "dataId": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
+                          "fiSchema": "deposit",
+                          "expiryDate": "2023-03-11T06:52:36.457745"
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
-                                        "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                      }
                     }
+                  }
                 }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
             }
+          }
         }
+      },
+      "/v1/insight": {
+        "get": {
+          "tags": ["Insight generation"],
+          "summary": "Get Insights",
+          "description": "Call this API with the report-id to get the created Insights",
+          "operationId": "get_insights_v1_insight_get",
+          "parameters": [
+            {
+              "required": true,
+              "schema": {
+                "title": "Report ID for which insights are needed",
+                "type": "string"
+              },
+              "name": "reportId",
+              "in": "query"
+            },
+            {
+              "required": true,
+              "schema": { "title": "x-client-id", "type": "string" },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-product-instance-id",
+                "type": "string"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "title": "Response 200 Get Insights V1 Insight Get",
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/ReportJobCreateResponse"
+                      },
+                      {
+                        "$ref": "#/components/schemas/InsightGetResponse"
+                      }
+                    ]
+                  },
+                  "examples": {
+                    "InsightGetResponse": {
+                      "summary": "InsightGetResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": {
+                          "name": "Redacted Services",
+                          "dob": "2006-06-27",
+                          "email": "redacted@gmail.com",
+                          "pan": "redacted",
+                          "ckyc_compliance": false,
+                          "mobile": 9999912345,
+                          "bank_branch": "NARKATIAGANJ BH",
+                          "bank_account_number": "XXXXXXXXXXX1234",
+                          "bank_account_type": "CURRENT",
+                          "opening_date": "2019-02-26",
+                          "closing_balance": 27929.84,
+                          "end_of_month_balances": {
+                            "2021": {
+                              "9": 245676.89,
+                              "10": 48650.54,
+                              "11": 145487.41,
+                              "12": 97725.67
+                            },
+                            "2022": {
+                              "1": 9152.09,
+                              "2": 5957.19,
+                              "3": 545.59,
+                              "4": 1282299.18,
+                              "5": 134376.04,
+                              "6": 84468.46,
+                              "7": 135585.11,
+                              "8": 3346.11,
+                              "9": 268766.7,
+                              "10": 50049.84,
+                              "11": 27929.84
+                            }
+                          },
+                          "balances_on_10th": {
+                            "2021": { "12": 55387.41 },
+                            "2022": {
+                              "1": 2426.67,
+                              "2": 9629.59,
+                              "3": 97487.45,
+                              "4": 1641.09,
+                              "5": 52517.54,
+                              "6": 72084.28,
+                              "7": 165864.04,
+                              "8": 63465.11,
+                              "9": 11226.11,
+                              "10": 418535.81,
+                              "11": 27929.84
+                            }
+                          },
+                          "average_end_of_day_balance": 297715.03,
+                          "maximum_end_of_day_balance": 1818766.7,
+                          "total_credits": 153,
+                          "total_credits_value": 44810341.06,
+                          "total_debits": 473,
+                          "total_debits_value": 45178088.11,
+                          "quarterly_salary_average": {
+                            "2021": { "4": 15072 }
+                          },
+                          "cash_deposit_x_total_credit": {
+                            "2021": { "12": 0.0095 },
+                            "2022": { "3": 0.0018 }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "tags": ["Insight generation"],
+          "summary": "Create Insights",
+          "description": "Call this API with the template-id received from Setu along with a list of data-ids, to trigger an Report generation job. The FI Datablocks can belong to multiple bank accounts.The created Report will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to fetch the generated Report.",
+          "operationId": "process_insights_v1_insight_post",
+          "parameters": [
+            {
+              "required": true,
+              "schema": { "title": "x-client-id", "type": "string" },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-product-instance-id",
+                "type": "string"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Body_process_insights_v1_insight_post"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "202": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ReportJobCreateResponse"
+                  },
+                  "examples": {
+                    "ReportJobCreateResponse": {
+                      "summary": "ReportJobCreateResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": {
+                          "reportId": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "RequestErrorResponse": {
+                      "summary": "RequestErrorResponse",
+                      "value": {
+                        "errorCode": "400",
+                        "errorMsg": "Empty data_ids input",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "NotFoundResponse": {
+                      "summary": "NotFoundResponse",
+                      "value": {
+                        "errorCode": "404",
+                        "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/insight/pdf": {
+        "post": {
+          "tags": ["Insight generation"],
+          "summary": "Create Insights",
+          "description": "Call this API with the template-id received from Setu along with a pdf, to trigger an Report generation job. The created Report will be shared via a notification to the endpoint configured by the FIU. This API will respond with a report-id, which can also be used to fetch the generated Report.",
+          "operationId": "process_pdf_insights_v1_insight_pdf_post",
+          "parameters": [
+            {
+              "required": true,
+              "schema": {
+                "type": "string",
+                "title": "x-client-id"
+              },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "type": "string",
+                "title": "x-client-secret"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            },
+            {
+              "required": false,
+              "schema": {
+                "type": "string",
+                "title": "x-product-instance-id"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "$ref": "#/components/schemas/Body_process_pdf_insights_v1_insight_pdf_post"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "202": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ReportJobCreateResponse"
+                  },
+                  "examples": {
+                    "ReportJobCreateResponse": {
+                      "summary": "ReportJobCreateResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": {
+                          "reportId": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "RequestErrorResponse": {
+                      "summary": "RequestErrorResponse",
+                      "value": {
+                        "errorCode": "400",
+                        "errorMsg": "Empty data_ids input",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "NotFoundResponse": {
+                      "summary": "NotFoundResponse",
+                      "value": {
+                        "errorCode": "404",
+                        "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/transaction": {
+        "get": {
+          "tags": ["Categorisation"],
+          "summary": "Get transaction details",
+          "description": "Call this API with the data ids and filters to get transaction wise categorization details.If you want the transactions for a single category or a subcategory you can pass category or subcategory parameters. If you want to paginate the results,  you can pass skip and offset parameters. If you want to get transactions for a specific date range, you can pass from and to parameters.",
+          "operationId": "get_transactions_v1_transaction_get",
+          "parameters": [
+            {
+              "required": false,
+              "schema": {
+                "title": "transaction details for request data blocks and filters",
+                "type": "array",
+                "items": {}
+              },
+              "name": "dataId",
+              "in": "query"
+            },
+            {
+              "required": false,
+              "schema": {
+                "title": "get data to this date",
+                "type": "string",
+                "format": "date"
+              },
+              "name": "to",
+              "in": "query"
+            },
+            {
+              "required": false,
+              "schema": {
+                "title": "get data from this date",
+                "type": "string",
+                "format": "date"
+              },
+              "name": "from",
+              "in": "query"
+            },
+            {
+              "required": false,
+              "schema": {
+                "title": "category filters",
+                "type": "array",
+                "items": {}
+              },
+              "name": "category",
+              "in": "query"
+            },
+            {
+              "required": false,
+              "schema": {
+                "title": "subcategory filters",
+                "type": "array",
+                "items": {}
+              },
+              "name": "subcategory",
+              "in": "query"
+            },
+            {
+              "required": false,
+              "schema": {
+                "title": "offset",
+                "type": "integer",
+                "default": 0
+              },
+              "name": "skip",
+              "in": "query"
+            },
+            {
+              "required": false,
+              "schema": {
+                "title": "limit",
+                "type": "integer",
+                "default": 100
+              },
+              "name": "limit",
+              "in": "query"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-id",
+                "type": "string"
+              },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            },
+            {
+              "required": false,
+              "schema": {
+                "title": "x-product-instance-id",
+                "type": "string"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TransactionGetResponse"
+                  },
+                  "examples": {
+                    "TransactionGetResponse": {
+                      "summary": "TransactionGetResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": {
+                          "totalCount": 1,
+                          "dataIdStatus": [
+                            {
+                              "dataId": "9436c454-e424-47fa-a8b0-406d0a696158",
+                              "status": "complete"
+                            }
+                          ],
+                          "transactions": [
+                            {
+                              "fiuId": "5f4e38eb-806a-4ed4-84fe-b582c1607728",
+                              "dataId": "9436c454-e424-47fa-a8b0-406d0a696158",
+                              "narration": "RANDOM FOOD AND BEVERAGES NARATIONS",
+                              "amount": "49224.65",
+                              "currentBalance": "125549.34",
+                              "txnMode": "UPI",
+                              "reference": "11111111",
+                              "txnId": "11111",
+                              "txnType": "DEBIT",
+                              "txnValueDate": "2023-08-06",
+                              "txnTimestamp": "2023-08-05 13:35:33.000",
+                              "categoryL1": "Food & Beverages",
+                              "categoryL2": "Food"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "RequestErrorResponse": {
+                      "summary": "RequestErrorResponse",
+                      "value": {
+                        "errorCode": "400",
+                        "errorMsg": "Empty data_ids input",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "NotFoundResponse": {
+                      "summary": "NotFoundResponse",
+                      "value": {
+                        "errorCode": "404",
+                        "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "425": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "RequestErrorResponse": {
+                      "summary": "RequestErrorResponse",
+                      "value": {
+                        "errorCode": "425",
+                        "errorMsg": "Processing",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/pdf/supported_banks": {
+        "get": {
+          "tags": ["PDF Support"],
+          "summary": "Get Supported Banks for PDF Parsing",
+          "description": "Call this API to get a list of Supported Banks for PDF Parsing.",
+          "operationId": "get_pdf_supported_banks_v1_pdf_supported_banks_get",
+          "parameters": [
+            {
+              "required": true,
+              "schema": { "title": "x-client-id", "type": "string" },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/SupportedBanksGetResponse"
+                  },
+                  "examples": {
+                    "SupportedBanksGetResponse": {
+                      "summary": "SupportedBanksGetResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": ["HDFC Bank Ltd", "HSBC Ltd", "ICICI Bank Ltd."]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "components": {
         "schemas": {
