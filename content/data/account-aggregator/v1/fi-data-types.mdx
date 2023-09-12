@@ -1,0 +1,2218 @@
+---
+sidebar_title: FI data types
+page_title: Account Aggregator FI data types
+order: 5
+visible_in_sidebar: true
+---
+
+## FI data types
+
+The Account Aggregator(AA) ecosystem supports 23 FI types spread across bank, insurance, pension and investments FI types as discussed below. <br/>
+The schema across all FI types adheres to a set of defined components:
+
+- **Profile** -Gives account holder information like name, date of birth, nominee etc.
+- **Summary** -Summarises the account information like account type, current balance, opening details etc.
+- **Transactions** - Contains list of transactions with details like transaction type, mode, narration among others.
+
+### Testing with Setu FIP
+
+Setu FIP to help you get access to rich mock data for FI type **Deposit** as per the Account Aggregator specifications. More FI types will be available soon.
+
+###### **How to test?**
+
+1. Call Create Consent Request [API](https://staging.docs.setu.co/data/account-aggregator/api-integration/consent-flow)
+2. Open url to initiate consent manager flow
+3. Select and link Setu FIP and approve the consent<br/>
+   - _The approved consent allows you to initiate Data flow with Setu FIP_<br/>
+4. Create a [Data Session](https://staging.docs.setu.co/data/account-aggregator/api-integration/data-apis#create-new-data-session-api) for the approved consent<br/>
+   - _Setu FIP prepares the data as per your consent request_<br/>
+5. Call [Fetch FI Data](https://staging.docs.setu.co/data/account-aggregator/api-integration/data-apis#create-new-data-session-api) and get Deposit FI data from Setu FIP<br/>
+
+<Callout type="highlight">
+  Financial data from Setu FIP is available in <strong>xml</strong> and{" "}
+  <strong>JSON</strong> formats.
+  <br /> Specify the required format as part of Get Data Session API.
+</Callout>
+
+<br />
+
+This page will help you understand the structure of each FI type and what data will be available for you to build on top of. These FI types contain one account per FI type with 15 to 30 transactions spread across 6 months (Jan 1, 2021 to June, 30, 2021).
+We're adding dynamic mock data for more realistic and exhaustive integration testing.
+
+<br />
+
+#### Bank FI Types
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Deposits (DEPOSIT)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "deposit",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": [
+        {
+          "address": "4/1290, 785th Cross, 13rd Main, 7th Block, Bangalore - 569911",
+          "ckycCompliance": "true",
+          "dob": "24-07-1970",
+          "email": "ram.sapan@gmail.com",
+          "landline": "",
+          "mobile": "91729391923",
+          "name": "Ramkrishna Sapan",
+          "nominee": "REGISTERED",
+          "pan": "AAAPL1234C"
+        }
+      ],
+      "type": "Single"
+    }
+  },
+  "summary": {
+    "balanceDateTime": "2021-06-22T13:20:00+05:30",
+    "branch": "Jayanagar 7th Block",
+    "currency": "INR",
+    "currentBalance": "101666.33",
+    "currentODLimit": "0",
+    "drawingLimit": "0",
+    "exchgeRate": "",
+    "facility": "OD",
+    "ifscCode": "APNB0001154",
+    "micrCode": "500245646",
+    "openingDate": "06-08-1999",
+    "pending": {
+      "amount": "0",
+      "transactionType": "DEBIT"
+    },
+    "status": "ACTIVE",
+    "type": "SAVINGS"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amount": "1239",
+        "currentBalance": "62289.25",
+        "mode": "UPI",
+        "narration": "UPI/935314560764/getsimpl/simpl@axisbank/Axis Bank",
+        "reference": "RFN00013383",
+        "transactionTimestamp": "2021-04-01T13:20:14+05:30",
+        "txnId": "M3258741",
+        "type": "DEBIT",
+        "valueDate": "2021-04-01"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Term deposits (TERM_DEPOSIT)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type": "term_deposit",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": [
+        {
+          "address": "4/1290, 785th Cross, 13rd Main, 7th Block, Bangalore - 569911",
+          "ckycCompliance": "true",
+          "dob": "24-07-1970",
+          "email": "ram.sapan@gmail.com",
+          "landline": "",
+          "mobile": "91729391923",
+          "name": "Ramkrishna Sapan",
+          "nominee": "REGISTERED",
+          "pan": "AAAPL1234C"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "accountType": "FIXED",
+    "branch": "Jayanagar 7th Block",
+    "compoundingFrequency": "HALF-YEARLY",
+    "currentValue": "119845.90",
+    "description": "",
+    "ifsc": "APNB0001154",
+    "interestComputation": "COMPOUND",
+    "interestOnMaturity": "",
+    "interestPayout": "HALF-YEARLY",
+    "interestPeriodicPayoutAmount": "",
+    "interestRate": "2",
+    "maturityAmount": "10.0",
+    "maturityDate": "12-11-2021",
+    "openingDate": "06-08-2019",
+    "principalAmount": "109890.98",
+    "recurringAmount": "2453",
+    "recurringDepositDay": "06-08-2019",
+    "tenureDays": "180",
+    "tenureMonths": "6",
+    "tenureYears": "0.5"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amount": "1239",
+        "currentBalance": "62289.25",
+        "mode": "UPI",
+        "narration": "UPI/935314560764/getsimpl/simpl@axisbank/Axis Bank",
+        "reference": "RFN0TD0013383",
+        "transactionTimestamp": "2021-04-01T13:20:14+05:30",
+        "txnId": "TD3258741",
+        "type": "DEBIT",
+        "valueDate": "2021-04-01"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Recurring Deposits (RECURRING_DEPOSIT)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type": "recurring_deposit",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": [
+        {
+          "address": "4/1290, 785th Cross, 13rd Main, 7th Block, Bangalore - 569911",
+          "ckycCompliance": "true",
+          "dob": "24-07-1970",
+          "email": "ram.sapan@gmail.com",
+          "landline": "",
+          "mobile": "91729391923",
+          "name": "Ramkrishna Sapan",
+          "nominee": "REGISTERED",
+          "pan": "AAAPL1234C"
+        }
+      ],
+      "type": "JOINT"
+    }
+  },
+  "summary": {
+    "accountType": "FIXED",
+    "branch": "Jayanagar 7th Block",
+    "compoundingFrequency": "HALF-YEARLY",
+    "currentValue": "119845.90",
+    "description": "",
+    "ifsc": "APNB0001154",
+    "interestComputation": "COMPOUND",
+    "interestOnMaturity": "",
+    "interestPayout": "HALF-YEARLY",
+    "interestPeriodicPayoutAmount": "",
+    "interestRate": "2",
+    "maturityAmount": "10.0",
+    "maturityDate": "12-11-2021",
+    "openingDate": "06-08-2019",
+    "principalAmount": "109890.98",
+    "recurringAmount": "2453",
+    "recurringDepositDay": "06-08-2019",
+    "tenureDays": "180",
+    "tenureMonths": "6",
+    "tenureYears": "0.5"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amount": "1239",
+        "currentBalance": "62289.25",
+        "mode": "UPI",
+        "narration": "UPI/935314560764/getsimpl/simpl@axisbank/Axis Bank",
+        "reference": "RFN0RD0013383",
+        "transactionTimestamp": "2021-04-01T13:20:14+05:30",
+        "txnId": "RD3258741",
+        "type": "DEBIT",
+        "valueDate": "2021-04-01"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Credit card (CREDIT_CARD)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type": "credit_card",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "cards": {
+          "card": [
+            {
+              "cardType": "RUPAY",
+              "issuedDate": "12-04-2006",
+              "maskedCardNumber": "4321-XXXXXXXX-9876",
+              "primary": "YES"
+            }
+          ]
+        },
+        "ckycCompliance": "true",
+        "dob": "24-07-1970",
+        "email": "ram.sapan@gmail.com",
+        "mobile": "91729391923",
+        "name": "Ramkrishna Sapan",
+        "nominee": "REGISTERED",
+        "pan": "AAAPL1234C"
+      }
+    }
+  },
+  "summary": {
+    "availableCredit": "51345",
+    "cashLimit": "20000",
+    "creditLimit": "60000",
+    "currentDue": "3000",
+    "dueDate": "20-06-2021",
+    "financeCharges": "2368",
+    "lastStatementDate": "20-05-2021",
+    "loyaltyPoints": "2450",
+    "minDueAmount": "1346",
+    "previousDueAmount": "7654",
+    "totalDueAmount": "9756"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amount": "1239",
+        "maskedCardNumber": "4321-XXXXXXXX-9876",
+        "mcc": "RFN0RD0013383",
+        "narration": "UPI/935314560764/getsimpl/simpl@axisbank/Axis Bank",
+        "statementDate": "20-04-2021",
+        "txnDate": "2021-04-01T13:20:14+05:30",
+        "txnId": "RD3258741",
+        "txnType": "DEBIT",
+        "valueDate": "2021-04-01"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Certificates of Deposit (CD)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type": "cd",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "Y68HS92S09S",
+        "dob": "24-07-1980",
+        "email": "manisha.34@gmail.com",
+        "mobile": "91729391923",
+        "name": "Manisha Vijayakumar",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T"
+      }
+    }
+  },
+  "summary": {
+    "currentValue": "213000",
+    "holdings": {
+      "holding": {
+        "companyName": "Deposits Registry Ltd.",
+        "description": "",
+        "faceValue": "230000",
+        "isin": "DRL893455",
+        "issueDate": "2021-02-12",
+        "issuerName": "Mukesh Y",
+        "lastTradedDate": "2021-04-12",
+        "lastTradedRate": "2",
+        "maturityDate": "2024-02-12",
+        "scheme": "TERM",
+        "symbol": "",
+        "tenureDays": "120",
+        "tenureMonths": "36",
+        "tenureYears": "3",
+        "yield": "6"
+      },
+      "type": "CD"
+    },
+    "investmentValue": "200000"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "currency": "INR",
+        "isin": "DRL893455",
+        "narration": "",
+        "otherTaxes": "34",
+        "rate": "15000",
+        "stt": "23",
+        "totalCharge": "2450",
+        "tradeValue": "1345",
+        "transactionDateTime": "2021-01-12T13:20:00-05:00",
+        "txnId": "CDR9084JED",
+        "type": "BUY",
+        "units": "1"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Indian Depository Receipts (IDR)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type": "idr",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dob": "24-07-1970",
+        "email": "ram.sapan@gmail.com",
+        "mobile": "91729391923",
+        "name": "Ramkrishna Sapan",
+        "nominee": "REGISTERED",
+        "pan": "AAAPL1234C"
+      }
+    }
+  },
+  "summary": {
+    "currentValue": "23459.0",
+    "investment": {
+      "holdings": {
+        "holding": {
+          "description": "",
+          "investmentDateTime": "2021-04-12T13:20:00-05:00",
+          "isin": "APNDR",
+          "issuerName": "APNA Depository Receipts",
+          "lastTradedPrice": "70",
+          "rate": "6",
+          "units": "30"
+        },
+        "type": "DEMAT"
+      }
+    },
+    "investmentValue": "12000.0"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "companyName": "",
+        "exchange": "BSE",
+        "isin": "INUS-000402625-0",
+        "narration": "",
+        "orderId": "ORD98703245",
+        "otherCharges": "109",
+        "rate": "8",
+        "shareHolerEquityType": "COMMON-STOCK",
+        "symbol": "",
+        "totalCharge": "100",
+        "tradeId": "TIDR76TY90",
+        "tradeValue": "109",
+        "transactionDateTime": "2021-04-12T13:20:00-05:00",
+        "txnId": "M59555532",
+        "type": "BUY",
+        "units": "10"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+#### Insurance FI types
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Insurance Policies (INSURANCE_POLICIES)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "insurance_policies",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": [
+        {
+          "ckycCompliance": "true",
+          "dob": "24-07-1980",
+          "email": "manisha.34@gmail.com",
+          "mobile": "91729391923",
+          "name": "Manisha Vijayakumar",
+          "nominee": "REGISTERED",
+          "pan": "BYHPL1234T",
+          "rank": "1"
+        }
+      ],
+      "type": "JOINT"
+    },
+    "riders": {
+      "rider": [
+        {
+          "policyEndDate": "12-03-2033",
+          "policyStartDate": "12-03-2021",
+          "premiumAmount": "1600000",
+          "riderType": "Waiver of premium",
+          "sumAssured": "1500000",
+          "tenureMonths": "144",
+          "tenureYears": "12"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "contractClauses": {
+      "contractClause": [
+        {
+          "amount": "75000",
+          "conditions": "",
+          "description": "",
+          "exlcusions": "",
+          "subLimit": "",
+          "title": "Children Plan"
+        }
+      ]
+    },
+    "coverAmount": "1300000",
+    "coverType": "BUILDING",
+    "covers": {
+      "cover": [
+        {
+          "amount": "120000",
+          "description": ""
+        }
+      ]
+    },
+    "eiaNumber": "TY67HG5THL",
+    "maturityBenefit": "",
+    "maturityDate": "2004-04-12",
+    "moneyBacks": {
+      "moneyBack": [
+        {
+          "amount": "1000",
+          "date": "12-03-28",
+          "description": ""
+        }
+      ]
+    },
+    "policyName": "APNA Life Insurance",
+    "policyNumber": "APNI789008",
+    "policyStartDate": "12-03-2021",
+    "policyType": "CHILDREN_PLAN",
+    "premiumAmount": "1600000",
+    "premiumFrequency": "HALF_YEARLY",
+    "premiumPaymentMonths": "24",
+    "premiumPaymentYears": "2",
+    "sumAssured": "1500000",
+    "tenureMonths": "144",
+    "tenureYears": "12"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amount": "5000",
+        "narration": "BIL/BPAY/001982030055/BSE ISIP/BSE000000034260 ",
+        "txnDate": "2021-05-09T18:33:56+05:30",
+        "txnId": "M69761383",
+        "type": "BONUS"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Unit Linked Insurance Plan (ULIP)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "ulip",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "type": "JOINT",
+      "holder": {
+        "ckycCompliance": "true",
+        "dob": "24-07-1980",
+        "email": "manisha.34@gmail.com",
+        "mobile": "91729391923",
+        "name": "Manisha Vijayakumar",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T",
+        "dematId": "A8SD39DSD"
+      }
+    },
+    "riders": {
+      "rider": {
+        "riderType": "Waiver of premium",
+        "sumAssured": "1000",
+        "tenureYears": "2",
+        "tenureMonths": "24",
+        "policyStartDate": "2021-01-12",
+        "policyEndDate": "2023-01-12",
+        "premiumAmount": "200000",
+        "description": ""
+      }
+    }
+  },
+  "summary": {
+    "type": "HEALTH",
+    "productName": "HEALTH INSURANCE",
+    "productDescription": "",
+    "sumAssured": "209000",
+    "tenureYears": "2",
+    "tenureMonths": "24",
+    "premiumAmount": "100",
+    "policyStartDate": "2021-01-12",
+    "policyMaturityDate": "2023-01-12",
+    "premiumFrequency": "HALF_YEARLY",
+    "premiumPaymentYears": "1",
+    "premiumPaymentMonths": "12",
+    "nextPremiumDueDate": "2021-01-12",
+    "holdings": {
+      "holding": {
+        "name": "APNA Insurance",
+        "type": "BALANCED",
+        "units": "2",
+        "cost": "200",
+        "nav": "",
+        "allocationPercentage": "4",
+        "premiumAllocation": "5",
+        "currentValue": "2090",
+        "description": ""
+      }
+    }
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "txnDate": "2021-01-09T18:33:56+05:30",
+        "txnId": "M69761383",
+        "fundName": "",
+        "units": "2",
+        "nav": "10",
+        "navDate": "2021-04-12",
+        "cost": "1000",
+        "premium": "200",
+        "premiumAllocationCharge": "20",
+        "otherCharges": "10",
+        "type": "CHANGES_IN_MATURITY_DATE",
+        "narration": ""
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+#### Pension FI types
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Employee Provident Fund (EPF)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "epf",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dob": "24-07-1989",
+        "email": "gpatel.1234@gmail.com",
+        "mobile": "91729391923",
+        "name": "Gurmeet Patel",
+        "nominee": "REGISTERED",
+        "pan": "BTHPL6749C"
+      }
+    }
+  },
+  "summary": {
+    "currentBalance": "280000",
+    "employeeBalance": "100000",
+    "employerBalance": "200000",
+    "establishmentId": "ISI-PS-23943",
+    "establishmentName": "Public Services Ltd.",
+    "openingDate": "2011-01-12",
+    "totalBalance": "300300"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "employeeDepositAmount": "1239",
+        "employeeWithdrawalAmount": "500",
+        "employerDepositAmount": "1000",
+        "employerWithdrawalAmount": "100",
+        "narration": "UPI/935314560764/getsimpl/simpl@axisbank/Axis Bank",
+        "pensionFundAmount": "62289.25",
+        "txnDate": "2021-04-01T13:20:14+05:30",
+        "txnId": "M3258741",
+        "type": "ADJUSTMENT"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Public Provident Fund (PPF)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "ppf",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": [
+        {
+          "ckycCompliance": "true",
+          "dob": "24-07-1985",
+          "email": "avinash.mishra@gmail.com",
+          "mobile": "91729391923",
+          "name": "Avinash Mishra",
+          "nominee": "REGISTERED",
+          "pan": "AAAPL6789C"
+        }
+      ],
+      "type": "JOINT"
+    }
+  },
+  "summary": {
+    "branchAddr": "",
+    "currenBalance": "1000000",
+    "ifscCode": "APNB0001154",
+    "maturityDate": "2021-12-12",
+    "micrCode": "500245646",
+    "openingDate": "2021-01-01",
+    "status": "ACTIVE"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amount": "1239",
+        "balance": "62289.25",
+        "narration": "UPI/935314560764/getsimpl/simpl@axisbank/Axis Bank",
+        "txnDate": "2021-04-01T13:20:14+05:30",
+        "txnId": "M3258741",
+        "type": "DEPOSIT",
+        "valueDate": "2021-04-01"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+#### Investment FI types
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Mutual Funds (MUTUAL_FUNDS)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "mutual_funds",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "address": "8/1492, 765th Cross, 12th Main, 18th Block, Bangalore - 569911",
+        "ckycCompliance": "true",
+        "dob": "24-07-1980",
+        "email": "manisha.34@gmail.com",
+        "landline": "",
+        "mobile": "91729391923",
+        "name": "Manisha Vijayakumar",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T"
+      }
+    }
+  },
+  "summary": {
+    "currentValue": "156000",
+    "investmentValue": "130000",
+    "investment": {
+      "holdings": {
+        "holding": [
+          {
+            "FatcaStatus": "YES",
+            "amc": "Apna Mutual Funds",
+            "amfiCode": "APFMST123",
+            "closingUnits": "26",
+            "dividendType": "Cash",
+            "folioNo": "876",
+            "isin": "INUS-000402625-0",
+            "lienUnits": "15",
+            "lockingUnits": "12",
+            "mode": "SIP",
+            "nav": "512",
+            "rate": "469",
+            "registrar": "CAMS",
+            "schemeCode": "APMFST",
+            "ucc": "APMF",
+            "units": "21"
+          }
+        ]
+      }
+    }
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amc": "Apna Mutual Funds",
+        "amfiCode": "",
+        "amount": "",
+        "closingUnits": "",
+        "executionDate": "2002-09-24",
+        "fundType": "EQUITY",
+        "isin": "INUS-000402625-0",
+        "lienUnits": "",
+        "lock-inDays": "",
+        "lock-inFlag": "",
+        "mode": "DEMAT",
+        "narration": "",
+        "nav": "",
+        "navDate": "2020-09-24",
+        "orderDate": "2002-09-24",
+        "registrar": "CAMS",
+        "schemeCategory": "AGGRESSIVE_HYBRID_FUND",
+        "schemeCode": "APMFST",
+        "schemeOption": "REINVEST",
+        "schemePlan": "DIRECT",
+        "schemeTypes": "DEBT_SCHEMES",
+        "txnId": "M6328NDS",
+        "type": "BUY",
+        "ucc": ""
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Bonds (BONDS)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "bonds",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "Y68HS92S09S",
+        "dob": "24-07-1980",
+        "email": "manisha.34@gmail.com",
+        "mobile": "91729391923",
+        "name": "Manisha Vijayakumar",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T"
+      }
+    }
+  },
+  "summary": {
+    "currentValue": "205000",
+    "holdings": {
+      "holding": {
+        "accruedInterestAmount": "4",
+        "autionDate": "2021-04-30",
+        "compoundingFrequency": "HALF_YEARLY",
+        "coupanComputation": "COMPOUND",
+        "coupanPaymentDate": "2021-04-12",
+        "couponRate": "6",
+        "creditRating": "615",
+        "creditRatingAgency": "CIBIL",
+        "description": "",
+        "faceValue": "19",
+        "interestOnMaturity": "3",
+        "interestPayout": "HALF_YEARLY",
+        "isin": "DGRL893455",
+        "issueDate": "2021-01-12",
+        "issueRate": "",
+        "issuerName": "Mukesh G",
+        "lastTradedDate": "2021-03-12",
+        "lastTradedRate": "6",
+        "maturityDate": "2021-12-12",
+        "principleAmount": "200000",
+        "scheme": "FIXED_INTEREST_RATE",
+        "symbol": "",
+        "taxable": "true",
+        "tenureDays": "120",
+        "tenureMoths": "36",
+        "tenureYears": "3",
+        "units": "34"
+      }
+    },
+    "investmentValue": "200000"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "currency": "INR",
+        "isin": "DRL893455",
+        "narration": "",
+        "otherTaxes": "34",
+        "rate": "15000",
+        "totalCharge": "2450",
+        "tradeValue": "1345",
+        "transactionDateTime": "2021-01-12T13:20:00-05:00",
+        "txnId": "CDR9084JED",
+        "type": "BUY",
+        "units": "1"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Debentures (DEBENTURES)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "debentures",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "Y68HS92S09S",
+        "dob": "24-07-1985",
+        "email": "sushila_rama.90@gmail.com",
+        "mobile": "91729391923",
+        "name": "Sushila Rama",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T"
+      }
+    }
+  },
+  "summary": {
+    "currentValue": "205000",
+    "holdings": {
+      "holding": {
+        "coupon": "",
+        "creditRating": "615",
+        "description": "",
+        "faceValue": "19",
+        "fixedIncomePortfolio": "",
+        "isin": "DGRL893455",
+        "issueDate": "2021-01-12",
+        "issuerName": "Mukesh G",
+        "lastTradedDate": "2021-04-12",
+        "lastTradedRate": "2",
+        "maturityDate": "2024-02-12",
+        "principleAmount": "200000",
+        "symbol": "",
+        "taxable": "YES",
+        "tenureDays": "120",
+        "tenureMoths": "36",
+        "tenureYears": "3",
+        "units": "34",
+        "yield": "6"
+      }
+    },
+    "investmentValue": "200000"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "currency": "INR",
+        "isin": "DRL893455",
+        "otherTaxes": "34",
+        "rate": "15000",
+        "totalCharge": "2450",
+        "tradeValue": "1345",
+        "transactionDateTime": "2021-01-12T13:20:00-05:00",
+        "txnId": "CDR9084JED",
+        "type": "BUY",
+        "units": "1"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Exchange Traded funds (ETF)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "etf",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "Y68HS92S09S",
+        "dob": "24-07-1985",
+        "email": "sushila_rama.90@gmail.com",
+        "mobile": "91729391923",
+        "name": "Sushila Rama",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T"
+      }
+    }
+  },
+  "summary": {
+    "investmentValue": "200000",
+    "currentValue": "250000",
+    "investment": {
+      "holdings": {
+        "holding": {
+          "folioNo": "876",
+          "dematId": "Y68HS92S09S",
+          "schemeName": "FIXED_INTEREST",
+          "dpId": "DP786TYH",
+          "units": "30",
+          "isin": "INUS-000402625-0",
+          "mode": "DEMAT",
+          "rate": "20",
+          "nav": "",
+          "lastNavDate": "2021-04-12",
+          "symbol": "",
+          "description": ""
+        }
+      }
+    }
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "txnId": "HY63944T6",
+        "isin": "INUS-000402625-0",
+        "transactionDateTime": "2021-01-12T13:20:00-05:00",
+        "units": "20",
+        "amount": "3000.0",
+        "schemeName": "FIXED_INTEREST",
+        "dpId": "DP786TYH",
+        "schemeMinLotSize": "",
+        "faceValueofUnits": "40.0",
+        "nav": "",
+        "type": "BUY",
+        "orderDate": "2021-01-12",
+        "executionDate": "2021-01-12",
+        "mode": "DEMAT",
+        "narration": "",
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        National Pension System (NPS)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "nps",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "pranId": "Y68HS92S09S",
+        "dob": "24-07-1985",
+        "email": "sushila_rama.90@gmail.com",
+        "mobile": "91729391923",
+        "name": "Sushila Rama",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T"
+      }
+    }
+  },
+  "summary": {
+    "currentValue": "150000",
+    "tier1NAVDate": "2021-01-12",
+    "tier2NAVDate": "",
+    "debtAssetValue": "100000",
+    "equityAssetValue": "10000",
+    "otherAssetValue": "400000",
+    "openingDate": "2021-01-12",
+    "status": "ACTIVE",
+    "tier1Status": "ACTIVE",
+    "tier2Status": "INACTIVE",
+    "schemeChoices": {
+      "schemeChoice": [
+        {
+          "allocationPercent": "9",
+          "pfmId": "PTRG5665DS",
+          "pfmName": "FELIX FM Ltd.",
+          "schemeId": "FPRT78092",
+          "schemeName": "INTEREST"
+        }
+      ]
+    },
+    "holdings": {
+      "tier1Holdings": {
+        "schemePreferenceType": "ACTIVE",
+        "freeUnits": "20",
+        "investmentCost": "200000",
+        "investmentValue": "180000",
+        "tier1Holding": [
+          {
+            "amount": "100",
+            "amountInTransition": "2000",
+            "blockedUnits": "20",
+            "freeUnits": "30",
+            "nav": "",
+            "schemeId": "FPRT78092",
+            "schemeName": "INTEREST",
+            "totalUnits": "300",
+            "totalValueOfScheme": "350000"
+          }
+        ]
+      },
+      "tier2Holdings": {
+        "schemePreferenceType": "INACTIVE",
+        "freeUnits": "",
+        "investmentCost": "",
+        "investmentValue": "",
+        "tier2Holding": {
+          "amount": "",
+          "amountInTransition": "",
+          "blockedUnits": "",
+          "freeUnits": "",
+          "nav": "",
+          "schemeId": "",
+          "schemeName": "",
+          "totalUnits": "",
+          "totalValueOfScheme": ""
+        }
+      }
+    }
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "tier1SchemeTransactions": {
+      "tier1SchemeTransaction": [
+        {
+          "txnId": "NSD7HS93MSD",
+          "txnDate": "2021-01-12",
+          "type": "ADJUSTMENT",
+          "narration": "",
+          "schemeId": "FPRT78092",
+          "schemeName": "INTEREST",
+          "allocationPercent": "8",
+          "amount": "1000",
+          "nav": "",
+          "units": "10",
+          "cumulativeUnits": "14"
+        },
+        .....
+      ]
+    },
+    "tier2SchemeTransactions": {
+      "tier2SchemeTransaction": {
+        "txnId": "",
+        "txnDate": "",
+        "type": "",
+        "schemeId": "",
+        "schemeName": "",
+        "narration": "",
+        "allocationPercent": "",
+        "amount": "",
+        "nav": "",
+        "units": "",
+        "cumulativeUnits": ""
+      }
+    },
+    "tier1InvestmentTransactions": {
+      "tier1InvestmentTransaction": [
+        {
+          "txnId": "AW8934HA0A",
+          "txnDate": "2021-01-12",
+          "type": "CONTRIBUTION",
+          "narration": "",
+          "subscriberContribution": "200",
+          "employerContribution": "200",
+          "totalContribution": "400"
+        },
+        .....
+      ]
+    },
+    "tier2InvestmentTransactions": {
+      "tier2InvestmentTransaction": {
+        "txnId": "",
+        "txnDate": "",
+        "type": "",
+        "narration": "",
+        "subscriberContribution": "",
+        "employerContribution": "0",
+        "totalContribution": ""
+      }
+    }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Government Securities (GOVT_SECURITIES)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "govt_securities",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "Y68HS92S09S",
+        "dob": "24-07-1980",
+        "email": "manisha.34@gmail.com",
+        "mobile": "91729391923",
+        "name": "Manisha Vijayakumar",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T"
+      }
+    }
+  },
+  "summary": {
+    "currentValue": "205000",
+    "holdings": {
+      "holding": {
+        "accruedInterestAmount": "4",
+        "autionDate": "2021-04-30",
+        "compoundingFrequency": "HALF_YEARLY",
+        "coupanComputation": "COMPOUND",
+        "coupanPaymentDate": "2021-04-12",
+        "couponRate": "6",
+        "creditRating": "615",
+        "creditRatingAgency": "CIBIL",
+        "description": "",
+        "faceValue": "19",
+        "interestOnMaturity": "3",
+        "interestPayout": "HALF_YEARLY",
+        "isin": "DGRL893455",
+        "issueDate": "2021-01-12",
+        "issueRate": "",
+        "issuerName": "Mukesh G",
+        "lastTradedDate": "2021-03-12",
+        "lastTradedRate": "6",
+        "maturityDate": "2021-12-12",
+        "principleAmount": "200000",
+        "scheme": "FIXED_INTEREST_RATE",
+        "symbol": "",
+        "taxable": "true",
+        "tenureDays": "120",
+        "tenureMoths": "36",
+        "tenureYears": "3",
+        "units": "34"
+      }
+    },
+    "investmentValue": "200000"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "currency": "INR",
+        "isin": "DRL893455",
+        "narration": "",
+        "otherTaxes": "34",
+        "rate": "15000",
+        "totalCharge": "2450",
+        "tradeValue": "1345",
+        "transactionDateTime": "2021-01-12T13:20:00-05:00",
+        "txnId": "CDR9084JED",
+        "type": "BUY",
+        "units": "1"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Commercial Paper (CP)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "cp",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "Y68HS92S09S",
+        "dob": "24-07-1980",
+        "email": "manisha.34@gmail.com",
+        "mobile": "91729391923",
+        "name": "Manisha Vijayakumar",
+        "nominee": "REGISTERED",
+        "pan": "BYHPL1234T"
+      }
+    }
+  },
+  "summary": {
+    "currentValue": "205000",
+    "investment": {
+      "holdings": {
+        "holding": {
+          "auctionDate": "2004-04-30",
+          "creditRating": "615",
+          "creditRatingAgency": "CIBIL",
+          "currentValue": "205000",
+          "description": "",
+          "faceValue": "19",
+          "investmentValue": "200000",
+          "isin": "DGRL893455",
+          "issueDate": "2021-01-12",
+          "issuerName": "Mukesh G",
+          "maturityDate": "2021-12-12",
+          "principleAmount": "200000",
+          "scheme": "FIXED_INTEREST_RATE",
+          "symbol": "",
+          "tenureDays": "120",
+          "tenureMoths": "36",
+          "tenureYears": "3",
+          "units": "34"
+        }
+      }
+    },
+    "investmentValue": "200000"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "currency": "INR",
+        "isin": "DRL893455",
+        "narration": "",
+        "otherTaxes": "34",
+        "rate": "15000",
+        "totalCharge": "2450",
+        "tradeValue": "1345",
+        "transactionDateTime": "2021-01-12T13:20:00-05:00",
+        "txnId": "CDR9084JED",
+        "type": "BUY",
+        "units": "1"
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Real Estate Investment Trusts (REIT)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "reit",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "Y68HS92S09S",
+        "dob": "24-07-1985",
+        "email": "n.chopra123@gmail.com",
+        "mobile": "91729391923",
+        "name": "Neeraj Chopra",
+        "nominee": "REGISTERED",
+        "pan": "BTYOL1234T"
+      },
+      "type": "JOINT"
+    }
+  },
+  "summary": {
+    "currentValue": "20.0",
+    "investment": {
+      "holdings": {
+        "holding": {
+          "description": "",
+          "investmentDateTime": "2004-04-12T13:20:00-05:00",
+          "isin": "",
+          "issuerName": "",
+          "lastClosingRate": "234.09",
+          "nomineeStatus": "REGISTERED",
+          "rate": "20.0",
+          "totalNumberUnits": "10"
+        }
+      }
+    },
+    "investmentValue": "10.0"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "exchange": "",
+        "isin": "",
+        "issuerName": "",
+        "narration": "",
+        "numUnitsTransacted": "10",
+        "otherCharges": "10.0",
+        "price": "100",
+        "symbol": "",
+        "totalCharge": "200.0",
+        "tradeValue": "230.05",
+        "transactionDateTime": "2021-04-12T13:20:00-05:00",
+        "transactionDescription": "",
+        "txnId": "",
+        "unitsType": ""
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Infrastructure Investment Trusts (INVIT)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "invit",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "Y68HS92S09S",
+        "dob": "24-07-1985",
+        "email": "n.chopra123@gmail.com",
+        "mobile": "91729391923",
+        "name": "Neeraj Chopra",
+        "nominee": "REGISTERED",
+        "pan": "BTYOL1234T"
+      }
+    }
+  },
+  "summary": {
+    "investment": {
+      "holdings": {
+        "holding": {
+          "description": "",
+          "investmentDateTime": "2017-12-31T16:20:00-04:00",
+          "isin": "",
+          "issuerName": "",
+          "lastClosingRate": "234.09",
+          "rate": "20.0",
+          "totalNumberUnits": "10"
+        }
+      }
+    },
+    "currentValue": "20.0",
+    "investmentValue": "10.0"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "exchange": "",
+        "isin": "",
+        "issuerName": "",
+        "numUnitsTransacted": "10",
+        "otherCharges": "10.0",
+        "price": "100",
+        "symbol": "",
+        "totalCharge": "200.0",
+        "tradeValue": "230.05",
+        "transactionDateTime": "2017-12-31T16:20:00-04:00",
+        "transactionDescription": "",
+        "txnId": "",
+        "unitsType": ""
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Alternate Investment Funds (AIF)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "aif",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": {
+        "ckycCompliance": "true",
+        "dematId": "",
+        "dob": "2002-09-24",
+        "email": "qwgmail.com",
+        "mobile": "91729391923",
+        "name": "",
+        "nominee": "NOT-REGISTERED",
+        "pan": "AAAPL1234C"
+      }
+    }
+  },
+  "summary": {
+     "currentValue": "20.0",
+    "investment": {
+      "holdings": {
+        "holding": {
+          "description": "",
+          "holdingPeriod": "",
+          "issuerName": "",
+          "lastValuationDate": "2002-09-24",
+          "mtmOnLastValuation": "200",
+          "purchaseDate": "2002-09-24",
+          "purchasePrice": "20.0",
+          "typeOfSecurity": "LISTED-EQUITY",
+          "valuationMethodology": ""
+        }
+      }
+    },
+    "investmentValue": "10.0",
+    "totalNumUnitsIssued": "20"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "fundFeesPaymentAmount": "10.0",
+        "fundFeesPaymentDate": "2002-09-24",
+        "investmentDateTime": "2004-04-12T13:20:00-05:00",
+        "investmentValue": "20.0",
+        "nameofAsset": "",
+        "narration": "",
+        "paymentInvestorAmount": "40.0",
+        "paymentInvestorDate": "2002-09-24",
+        "reInvestmentDate": "2002-09-24",
+        "reInvestmentValue": "30.0",
+        "redemptionDate": "2002-09-24",
+        "redemptionValue": "23.0",
+        "taxPaidDate": "2002-09-24",
+        "taxPaidValue": "20.0",
+        "txnId": ""
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Systematic Investment Plan (SIP)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "sip",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holders": {
+      "holder": [
+        {
+          "ckycCompliance": "true",
+          "dematId": "Y68HS92S09S",
+          "dob": "24-07-1980",
+          "email": "manisha.34@gmail.com",
+          "mobile": "91729391923",
+          "name": "Manisha Vijayakumar",
+          "nominee": "REGISTERED",
+          "pan": "BYHPL1234T"
+        }
+      ],
+      "type": "JOINT"
+    }
+  },
+  "summary": {
+    "currentValue": "76880",
+    "folioNo": "876",
+    "holdings": {
+      "holding": {
+        "amc": "Apna Mutual Funds",
+        "amfiCode": "APFMST123",
+        "amount": "3000",
+        "ceasedDate": "",
+        "completeInstalments": "500",
+        "creationDate": "2021-01-12",
+        "devidentType": "",
+        "email": "manisha.34@gmail.com",
+        "folioNo": "876",
+        "frequency": "10",
+        "holder1Name": "Manisha Vijayakumar",
+        "holder2Name": "",
+        "holdingType": "SOLE",
+        "instalmentDay": "45",
+        "isin": "INUS-000402625-0",
+        "lastInstalmentDate": "2021-04-12",
+        "modificationDate": "",
+        "nav": "",
+        "nextInstalmentDate": "2021-06-12",
+        "nominee": "OTHERS",
+        "pendingInstalments": "450",
+        "registrar": "CAMS",
+        "schemeCode": "APMFST",
+        "ucc": "APMF",
+        "units": "10",
+        "value": "20"
+      }
+    },
+    "investmentValue": "100000",
+    "investments": {
+      "investment": {
+        "endDate": "2021-12-12",
+        "startDate": "2021-01-12",
+        "type": "SOLE"
+      },
+      "issueDate": "2021-01-12",
+      "maturityDate": "2021-12-12",
+      "type": "SOLE"
+    }
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amc": "",
+        "amfiCode": "",
+        "amount": "200",
+        "cost": "600",
+        "folioNo": "",
+        "isin": "",
+        "narration": "",
+        "nav": "",
+        "scheme": "",
+        "stt": "",
+        "txnDate": "2021-04-12T13:20:00-05:00",
+        "txnId": "",
+        "type": "BUY",
+        "ucc": "",
+        "units": ""
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Equity Shares (EQUITIES)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "equities",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": [
+        {
+          "ckycCompliance": "true",
+          "dematId": "Y68HS92S09S",
+          "dob": "24-07-1985",
+          "email": "sushila_rama.90@gmail.com",
+          "mobile": "91729391923",
+          "name": "Sushila Rama",
+          "nominee": "REGISTERED",
+          "pan": "BYHPL1234T"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "investment": {
+      "holdings": {
+        "holding": {
+          "description": "",
+          "investmentDateTime": "2004-04-12T13:20:00-05:00",
+          "isin": "",
+          "issuerName": "",
+          "lastTradedPrice": "",
+          "rate": "",
+          "units": ""
+        },
+        "type": "DEMAT"
+      }
+    },
+    "currentValue": "20.0",
+    "investmentValue": "10.0"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "companyName": "",
+        "equityCategory": "CURRENCY_DERIVATIVES",
+        "exchange": "BSE",
+        "instrumentType": "OPTIONS",
+        "isin": "",
+        "narration": "",
+        "optionType": "CALL",
+        "orderId": "",
+        "otherCharges": "",
+        "rate": "",
+        "shareHolderEquityType": "",
+        "strikePrice": "700",
+        "symbol": "",
+        "totalCharge": "",
+        "tradeValue": "",
+        "transactionDateTime": "2004-04-12T13:20:00-05:00",
+        "txnId": "",
+        "type": "BUY",
+        "units": ""
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Collective Investment Schemes (CIS)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "type" : "cis",
+  "masked_account_number": "XXXXXXX123",
+  "link_ref_number": "123456789",
+  "profile": {
+    "holders": {
+      "holder": [
+        {
+          "ckycCompliance": "true",
+          "dematId": "Y68HS92S09S",
+          "dob": "24-07-1985",
+          "email": "n.chopra123@gmail.com",
+          "mobile": "91729391923",
+          "name": "Neeraj Chopra",
+          "nominee": "REGISTERED",
+          "pan": "BTYOL1234T"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "currentValue": "130000.0",
+    "investment": {
+      "holdings": {
+        "holding": {
+          "closingUnits": "12",
+          "folioNo": "876",
+          "isin": "INUS-000402625-0",
+          "mode": "DEMAT",
+          "nav": "72",
+          "rate": "6",
+          "ucc": "",
+          "units": "10"
+        }
+      }
+    },
+    "investmentValue": "100000.0"
+  },
+  "transactions": {
+    "endDate": "",
+    "startDate": "",
+    "transaction": [
+      {
+        "amount": "200",
+        "closingUnits": "12",
+        "dividendType": "INTERIM-DIVIDENT",
+        "executionDate": "2021-01-04",
+        "isin": "INUS-000402625-0",
+        "mode": "DEMAT",
+        "narration": "",
+        "nav": "150",
+        "navDate": "2021-01-04",
+        "orderDate": "2021-01-04",
+        "schemeCode": "YSUDH83BS",
+        "transactionDateTime": "2021-01-04T13:20:00-05:00",
+        "txnId": "I3BSDFPS76",
+        "type": "AMALGAMATION",
+        "ucc": ""
+      },
+      .......
+    ]
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+#### GST FI types
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Goods and Services Tax (GST)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">
+      {`{
+  "Account": {
+    "maskedGstinNumber": "maskedGstinNumber1",
+    "version": "1.0.0",
+    "linkedAccRef": "linkedAccRef1",
+    "type": "gstr1_3b",
+    "Profile": {
+      "BusinessDetails": {
+        "lgnm": "Anupam Mukherjee",
+        "apprvdt": "2017-09-30",
+        "iscmp": "Yes",
+        "dty": "Normal",
+        "sts": "Active",
+        "trdnm": "Packaging",
+        "CategoryList": {
+          "cat": [
+            "Suppliers making supplies referred to in clause (b) of paragraph 6 of Schedule II",
+            "Others"
+          ]
+        }
+      },
+      "PlaceofBusiness": {
+        "Address": {
+          "bno": "31/1",
+          "flno": "III",
+          "bnm": "Venu Building",
+          "st": "Krishna Reddy Layout",
+          "loc": "Phase-II",
+          "stcd": "Karnataka",
+          "dst": "Mysore",
+          "pncd": "560100",
+          "NatureOfBusinessList": {
+            "ntr": ["BONDED_WAREHOUSE", "FACTORY_OR_MANUFACTURING", "INPUT_SERVICE_DISTRIBUTOR"]
+          }
+        }
+      }
+    },
+    "Transactions": {
+      "strdt": "2023-01-01",
+      "endt": "2023-05-31",
+      "Gstr1Details": {
+        "gstr1": {
+          "ret_prd": "042021",
+          "dof": "01-JAN-2021",
+          "status": "PROCESSED",
+          "filingFrequency": "MONTHLY",
+          "b2b_dtls": {
+            "b2b": {
+              "ctin": "01AABCE2207R1Z5",
+              "inum": "S008400",
+              "idt": "24-11-2016",
+              "val": "729248.16",
+              "pos": "06",
+              "rchrg": "N",
+              "inv_typ": "R",
+              "opd": "2016-12",
+              "srctyp": "e-Invoice",
+              "irn": "897ADG56RTY78956HYUG90BNHHIJK453GFTD99845672FDHHHSHGFH4567FG56TR",
+              "irngendate": "24-12-2019",
+              "diff_percent": "0.65",
+              "itm_det": {
+                "itm": {
+                  "txval": "10000",
+                  "iamt": "325",
+                  "camt": "0",
+                  "samt": "0",
+                  "csamt": "10"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Gstr3bDetails": {
+        "gstr3b": {
+          "ret_prd": "072016",
+          "dof": "01-JAN-2021",
+          "status": "PROCESSED",
+          "filingFrequency": "MONTHLY",
+          "sup_details": {
+            "osup_det": {
+              "txval": "250",
+              "iamt": "100",
+              "camt": "200",
+              "samt": "300",
+              "csamt": "400"
+            },
+            "osup_zero": {
+              "txval": "250",
+              "iamt": "100",
+              "csamt": "400"
+            },
+            "osup_nil_exmp": {
+              "txval": "250"
+            },
+            "isup_rev": {
+              "txval": "250",
+              "iamt": "100",
+              "camt": "200",
+              "samt": "300",
+              "csamt": "400"
+            },
+            "osup_nongst": {
+              "txval": "250"
+            }
+          },
+          "sup_inter": {
+            "unreg_details_list": {
+              "unreg_details": [
+                {
+                  "txval": "250",
+                  "iamt": "200",
+                  "pos": "07"
+                },
+                {
+                  "txval": "250",
+                  "iamt": "200",
+                  "pos": "07"
+                }
+              ]
+            },
+            "comp_details_list": {
+              "comp_details": [
+                {
+                  "txval": "250",
+                  "iamt": "200",
+                  "pos": "07"
+                },
+                {
+                  "txval": "250",
+                  "iamt": "200",
+                  "pos": "07"
+                }
+              ]
+            },
+            "uin_details_list": {
+              "uin_details": [
+                {
+                  "txval": "250",
+                  "iamt": "200",
+                  "pos": "07"
+                },
+                {
+                  "txval": "250",
+                  "iamt": "200",
+                  "pos": "07"
+                }
+              ]
+            }
+          },
+          "eco_dtls": {
+            "eco_sup": {
+              "txval": "250",
+              "iamt": "100",
+              "camt": "200",
+              "samt": "300",
+              "csamt": "400"
+            },
+            "eco_reg_sup": {
+              "txval": "250"
+            }
+          },
+          "itc_elg": {
+            "itc_avl_list": {
+              "itc_avl": [
+                {
+                  "type": "IMPG",
+                  "iamt": "136.53",
+                  "camt": "274",
+                  "samt": "162.99",
+                  "csamt": "103"
+                },
+                {
+                  "type": "ISRC",
+                  "iamt": "136.53",
+                  "camt": "274",
+                  "samt": "162.99",
+                  "csamt": "103"
+                }
+              ]
+            },
+            "itc_rev_list": {
+              "itc_rev": [
+                {
+                  "type": "RUL",
+                  "iamt": "136.53",
+                  "camt": "274",
+                  "samt": "162.99",
+                  "csamt": "103"
+                },
+                {
+                  "type": "OTH",
+                  "iamt": "136.53",
+                  "camt": "274",
+                  "samt": "162.99",
+                  "csamt": "103"
+                }
+              ]
+            },
+            "itc_net": {
+              "iamt": "136.53",
+              "camt": "274",
+              "samt": "162.99",
+              "csamt": "103"
+            }
+          },
+          "intr_ltfee": {
+            "intr_details_list": {
+              "intr_details": [
+                {
+                  "iamt": "136.53",
+                  "camt": "274",
+                  "samt": "162.99"
+                },
+                {
+                  "iamt": "136.53",
+                  "camt": "274",
+                  "samt": "162.99"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}`}
+    </CodeBlockWithCopy>
+  </details>
+</Card>
+
+<WasPageHelpful />

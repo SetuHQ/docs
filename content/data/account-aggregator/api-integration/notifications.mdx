@@ -15,8 +15,8 @@ To **get started quickly**, you can setup a mock API endpoint using <a href="htt
 
 ###### Types of notifications
 
--   **Consent notification**—notification triggered for the events that occur in consent flow
--   **FI notification**—notification triggered for the events that occur in data flow
+- **Consent notification**—notification triggered for the events that occur in consent flow
+- **FI notification**—notification triggered for the events that occur in data flow
 
 Note: Webhooks retries will be added in future iterations.
 
@@ -24,35 +24,42 @@ Note: Webhooks retries will be added in future iterations.
 
 #### Consent notification
 
-This notification is used to communicate the updated status of the consent.
+This notification is used to communicate the updated status of the consent. We do not send notification for consent status `PENDING`.
 
-**Types of consent status**
+| ** Consent status** | **Explanation**                                            |
+| ------------------- | ---------------------------------------------------------- |
+| `PENDING`           | The consent has been and customer action is awaited        |
+| `ACTIVE`            | Customer has approved the consent                          |
+| `REJECTED`          | Customer has rejected consent                              |
+| `REVOKED`           | Customer has revoked consent which was previously approved |
+| `PAUSED`            | Customer has paused a previously approved consent          |
+| `EXPIRED`           | The consent has expired                                    |
 
--   `ACTIVE`-Customer has approved consent
--   `REJECTED`-Customer has rejected consent
--   `REVOKED`-Customer revoked consent for an existing approved consent
--   `PAUSED`-Customer paused consent for an existing approved consent
--   `EXPIRED`-Consent request has expired
-
-We do not send notification for consent status `PENDING`, this is when consent is just created.
-
-###### Consent Notification Payload
+###### Consent notification Payload
 
 Setu will post this payload to your notification endpoint whenever there is a change in consent status.
 
 <CodeBlockWithCopy language="json">
-    {`{
-  "type": "CONSENT_STATUS_UPDATE",
-  "timestamp": 2018-12-06T11:39:57.153Z,
-  "consentId": d4f40bd9-a22f-4408-a622-4e8a1e4fbda6,
-  "success": true,
+  {`{
   "data": {
-    "status": "ACTIVE", 
-    "Detail": {                            
-                        // consent details object
-                   }
+    "status": "ACTIVE",
+    "detail": {
+      "accounts": [
+        {
+          "maskedAccNumber": "XXXXXXXX6053",
+          "accType": "CURRENT",
+          "fipId": "setu-fip",
+          "fiType": "DEPOSIT",
+          "linkRefNumber": "e4b27e62-e41a-42c0-a5b3-0a5542b25ddf"
+        }
+      ]
+    }
   },
-  "error": error
+  "timestamp": "2023-04-03T09:14:43.323Z",
+  "success": true,
+  "type": "CONSENT_STATUS_UPDATE",
+  "error": null,
+  "consentId": "c16cc10e-eae3-4277-96e1-64c0ed21c53e"
 }`}
 </CodeBlockWithCopy>
 
@@ -60,66 +67,60 @@ Setu will post this payload to your notification endpoint whenever there is a ch
 
 #### FI notification
 
-The Financial Information (FI) notification is used to communicate the data session status you requested for, in Create Data Session API and the FI status of users’ linked FIPs. This is indicated using two status present in the FI notification payload.
+The Financial Information (FI) notification is used to communicate the data session status created by you using the **Create Data Session** API. Whenever each FIP in the data session responds with an update, this notification will be sent to the webhook endpoint configured by you.
 
-The FI notification payload contains two status
+The FI notification payload contains two statuses—
 
-**Data Session Status** – returns updated status of the data session; determines whether to initiate Fetch API Data API
+- Individual account FI status
+- Combined data session status
 
--   `PENDING`- FI data session is active
--   `COMPLETED`- All requested FIP(s) have status as `READY`
--   `EXPIRED`- Data session had expired and no data fetch can happen for the dataSessionId
--   `PARTIAL` - Some FIPs are ready with the data while a few others have failed. Ready data can still be fetched. <ReadMore />
--   `FAILED`- Data Session request failed, retry creating a new session
+| **Individual account FI status** | **Explanation**                                   |
+| -------------------------------- | ------------------------------------------------- |
+| `PENDING`                        | FIP has received the account data request         |
+| `READY`                          | FIP is ready with the requested account data      |
+| `DELIVERED`                      | FIP has delivered the requested account data      |
+| `TIMEOUT`                        | The account data request to the FIP has timed out |
+| `DENIED`                         | FIP has denied sharing the requested account data |
 
-**FIStatus** - return status of the FIP(s) linked to the data session
+<br />
 
--   `READY` - FIP is ready with requested data
--   `DENIED` - FIP has denied data sharing
--   `PENDING` - FIP received the data session request
--   `DELIVERED` - FIP has delivered the requested data
--   `TIMEOUT` - Request to FIP has timed out
+| **Combined data session status** | **Individual account FI status**                                                                                                                                                                                                             |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PENDING`                        | Individual account FI status of all accounts in the data session are in `PENDING` status. Data fetch for this data session cannot be initiated yet.                                                                                          |
+| `PARTIAL`                        | One or more accounts have individual FI account status as `READY` but the remaining have status as `PENDING`/`FAILED`/`TIMEOUT`. Data fetch for this data session can be initiated. However, only data from `READY` accounts can be fetched. |
+| `COMPLETED`                      | Individual account FI status of all accounts is `READY`. Data fetch can be initiated for this data session.                                                                                                                                  |
+| `EXPIRED`                        | Data session has expired, irrespective of individual account FI statuses. No further fetches can happen for this data session.                                                                                                               |
+| `FAILED`                         | Data session has failed, irrespective of individual account FI statuses. Retry by creating a new data session.                                                                                                                               |
 
-Fetch FI Data API should be called only when these conditions are satified:
-
--   Data Session status is `PENDING`, `PARTIAL` or `COMPLETED` (all FIPs are ready)
--   FIStatus is `READY`.
+<br />
 
 ###### FI Notification Payload
 
-Setu will notify you whenever the FIP (Financial Information Provider) responds with updated status. The following payload will be posted on your configured webhook endpoint.
-
 <CodeBlockWithCopy language="json">
-    {`{
-  "type": "SESSION_STATUS_UPDATE",
-  "timestamp": "2018-12-06T11:39:57.153Z",
-  "consentId": "d4f40bd9-a22f-4408-a622-4e8a1e4fbda6",
-  "dataSessionId": "378ec65c-f558-49fc-89ea-e880c2cf88b3",
-  "success": true,
+  {`{
   "data": {
-    "status": "PENDING",
-    "format": "json", // json or xml
-    "DataRange": {
-      "from": "2018-12-06T11:39:57.153Z",
-      "to": "2021-12-31T14:25:33.440Z"
-    },
+    "status": "COMPLETED", // combined data session status
     "fips": [
       {
-        "fipID": "FIP-1",
-        "Accounts": [
+        "accounts": [
           {
-            "linkRefNumber": "XXXX-XXXX-XXXX",
-            "FIStatus": "READY",
-            "description": ""
+            "FIStatus": "READY", // individual account FI status
+            "description": "fi status description not found from FIP",
+            "linkRefNumber": "e4b27e62-e41a-42c0-a5b3-0a5542b25ddf"
           }
-        ]
+        ],
+        "fipID": "setu-fip"
       }
     ],
-    "error": {
-      "code": "",
-      "message": ""
-    }
-  }`}
+    "format": "json"
+  },
+  "timestamp": "2023-04-03T09:20:53.424Z",
+  "dataSessionId": "32d40afc-4795-495d-8ca4-d817d730e5b5",
+  "success": true,
+  "type": "SESSION_STATUS_UPDATE",
+  "error": null,
+  "consentId": "c16cc10e-eae3-4277-96e1-64c0ed21c53e"
+}`}
 </CodeBlockWithCopy>
 
 <WasPageHelpful />

@@ -7,14 +7,17 @@ visible_in_sidebar: false
 
 ## API Polling
 
-<Callout type="error">This set of APIs has been deprecated. It is recommended to use <a href="/payments/billpay/api-integration">these APIs</a> instead.</Callout>
-<br/>
+<Callout type="error">
+    This set of APIs has been deprecated. It is recommended to use{" "}
+    <a href="/payments/billpay/api-integration">these APIs</a> instead.
+</Callout>
+<br />
 
 BillPay COU APIs are asynchronous and require a polling mechanism to retrieve results. The duration for the intervals between polling and end states are documented below.
 
 <Callout type="warning">
-  We strongly recommend using a persistent queue like RabbitMQ to process these
-  APIs.
+    We strongly recommend using a persistent queue like RabbitMQ to process
+    these APIs.
 </Callout>
 
 <hr class="primary" />
@@ -24,20 +27,20 @@ BillPay COU APIs are asynchronous and require a polling mechanism to retrieve re
 These APIs are mandatory to consume, and asynchronous and dependent on each other. The APIs that require polling logic—
 
 <Row>
-  <Portion desktopSpan="6">
-    <b>Bill fetch APIs</b>
-    <div>
-      <code>bill-fetch-request</code> and <code>get-fetched-bill</code>
-    </div>
-    <br />
-    <b>Bill payment APIs</b>
-    <div>
-      <code>make-payment</code> and <code>get-payment-status</code>
-    </div>
-  </Portion>
-  <Portion desktopSpan="18">
-    <img src="https://storage.googleapis.com/strapi-assets/latest/flowchart_api_polling_6bb86ad1b7/flowchart_api_polling_6bb86ad1b7.png" />
-  </Portion>
+    <Portion desktopSpan="6">
+        <b>Bill fetch APIs</b>
+        <div>
+            <code>bill-fetch-request</code> and <code>get-fetched-bill</code>
+        </div>
+        <br />
+        <b>Bill payment APIs</b>
+        <div>
+            <code>make-payment</code> and <code>get-payment-status</code>
+        </div>
+    </Portion>
+    <Portion desktopSpan="18">
+        <img src="https://storage.googleapis.com/strapi-assets/latest/flowchart_api_polling_6bb86ad1b7/flowchart_api_polling_6bb86ad1b7.png" />
+    </Portion>
 </Row>
 
 <hr class="primary" />
@@ -50,22 +53,22 @@ The `context` from the response for `bill-fetch-request` has to be passed as the
 
 The `get-fetched-bill` API must be called 5 secs after a successful `bill-fetch-request`—
 
-- If the `fetchAPIStatus`, from response of `get-fetched-bill`, is `Acknowledged` it means that the request is still processing. You'll need to re-hit the `get-fetched-bill` with the same context again after 5 secs and wait for `fetchAPIStatus` to become `Active`.
-- If the `fetchAPIStatus` does not become `Active` after retrying the same for 1 minute you can terminate the bill fetch and display an error.
+-   If the `fetchAPIStatus`, from response of `get-fetched-bill`, is `Acknowledged` it means that the request is still processing. You'll need to re-hit the `get-fetched-bill` with the same context again after 5 secs and wait for `fetchAPIStatus` to become `Active`.
+-   If the `fetchAPIStatus` does not become `Active` after retrying the same for 1 minute you can terminate the bill fetch and display an error.
 
 <Callout type="tip">
-  If either <code>bill-fetch-request</code> or <code>get-fetched-bill</code> has
-  an error/timeout and does NOT give a response, you can retry the APIs with the
-  same request body.
+    If either <code>bill-fetch-request</code> or <code>get-fetched-bill</code>{" "}
+    has an error/timeout and does NOT give a response, you can retry the APIs
+    with the same request body.
 </Callout>
-<br/>
+<br />
 
 If `fetchAPIStatus`, from `get-fetched-bill` response is—
 
-- `Acknowledged`—The request is still processing. Retry after 5 secs.
-- `Cancelled`—The request has finished processing but there was an error. You can display the provided error message.
-- `Rejected`—The request finished processing but there was an error. You can display the provided error message.
-- `Active`—The request has finished processing successfully. You can display the bill and redirect the user to payment screens.
+-   `Acknowledged`—The request is still processing. Retry after 5 secs.
+-   `Cancelled`—The request has finished processing but there was an error. You can display the provided error message.
+-   `Rejected`—The request finished processing but there was an error. You can display the provided error message.
+-   `Active`—The request has finished processing successfully. You can display the bill and redirect the user to payment screens.
 
 <hr class="primary" />
 
@@ -77,26 +80,26 @@ The `context` from the response of `get-fetched-bill` has to be passed as the re
 
 The `get-payment-status` API must be called 5 secs after a successful `make-payment` call—
 
-- If the status from the response of `get-payment-status` is `Execution Awaited` it means the request is still processing. You'll need to re-hit `get-payment-status` with the same context again after 5 secs and wait for status to become `Settled` or `Cancelled` or `Rejected`.
-- If the `status` does not go into an end state after retrying the same for 5 minutes, you can retry the `get-payment-status` with the same context again once every 5 minutes till it goes to an end state.
-  If the end state is not `Settled` or `Cancelled` or `Rejected` even after 1 day, please contact us at <a href="">support@setu.co</a>.
+-   If the status from the response of `get-payment-status` is `Execution Awaited` it means the request is still processing. You'll need to re-hit `get-payment-status` with the same context again after 5 secs and wait for status to become `Settled` or `Cancelled` or `Rejected`.
+-   If the `status` does not go into an end state after retrying the same for 5 minutes, you can retry the `get-payment-status` with the same context again once every 5 minutes till it goes to an end state.
+    If the end state is not `Settled` or `Cancelled` or `Rejected` even after 1 day, please contact us at <a href="https://setu.co/support" target="_blank">Setu Support</a>.
 
 <Callout type="tip">
-  If the <code>make-payment</code> API errors/timeouts and does NOT give a
-  response you can pass the <code>context</code> used in the{" "}
-  <code>make-payment</code> request body as the <code>context</code> for{" "}
-  <code>get-payment-status</code> request.
-  <br />
-  <br />
-  This will help you identify if the payment in question has been registered with
-  the BBPS system.
+    If the <code>make-payment</code> API errors/timeouts and does NOT give a
+    response you can pass the <code>context</code> used in the{" "}
+    <code>make-payment</code> request body as the <code>context</code> for{" "}
+    <code>get-payment-status</code> request.
+    <br />
+    <br />
+    This will help you identify if the payment in question has been registered with
+    the BBPS system.
 </Callout>
 
 <br />
 
 <Callout type="error">
-  Never call the <code>make-payment</code> API multiple times for the same context as it
-  may result in your account getting debitted multiple times.
+    Never call the <code>make-payment</code> API multiple times for the same
+    context as it may result in your account getting debitted multiple times.
 </Callout>
 
 <br />
@@ -105,7 +108,7 @@ If the `get-payment-status` API errors/times out and does not give a response yo
 
 If `status`, obtained in the response of `get-payment-status` is—
 
-- `Execution Awaited`—The request is still processing. Please retry after 5 secs.
-- `Cancelled`—The request has finished processing but there was an error. You can display the provided error message.
-- `Rejected`—The request has finished processing but there was an error. You can display the provided error message.
-- `Settled`—The request has finished processing successfully. You can display the receipt for your user.
+-   `Execution Awaited`—The request is still processing. Please retry after 5 secs.
+-   `Cancelled`—The request has finished processing but there was an error. You can display the provided error message.
+-   `Rejected`—The request has finished processing but there was an error. You can display the provided error message.
+-   `Settled`—The request has finished processing successfully. You can display the receipt for your user.

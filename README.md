@@ -60,3 +60,93 @@ You can find API reference spec files for [Setu docs](https://docs.setu.co) in `
 You can now use Setu's pre-built editor to preview API references. [Visit the preview page](https://docs.setu.co/content-preview), copy your content and generate an API reference preview.
 
 > Currently this only works for JSON files. Support for YAML is WIP and should be available soon.
+
+# Versioning
+
+To add versions to any product in our docs, these steps need to be followed:
+
+## Update endpoints.json
+
+Go to `endpoints.json`, add the following key-value pairs inside the product object
+
+-   `versions` - an array of strings with the all the possible versions
+-   `default_version` - a version string which denotes the default version to load on docs
+
+Example:
+
+```json
+{
+    "name": "Account Aggregator",
+    "path": "account-aggregator",
+    "order": 4,
+    "versions": ["v1", "v2"],
+    "default_version": "v2",
+    "visible_in_sidebar": true
+}
+```
+
+In future if there is a new version, `v1.5` which is not a default version,
+
+We need to add `v1.5` to the versions array
+
+## Update content
+
+To update content for a product based on the versions,
+
+-   Existing content in the root of product folder corresponds to the default version documentation. You can make changes to it.
+-   Create a new folder with older version and add content of previous version
+
+Example:
+
+In case of Account Aggregator, if you see the product folder,
+
+-   the files in the root correspond to version `v2` as it is the default version.
+-   there is a folder `v1` which corresponds to the older version documentation. Put all the `v1` documentation into this folder.
+
+```bash
+.
+├── ...
+├── account-aggregator
+│   ├── overview.mdx
+│   ├── quickstart.mdx
+│   ├── v1
+│   │   ├── overview.mdx
+│   │   ├── quickstart.mdx
+│   │   └── ...
+│   └── ...
+└── ...
+```
+
+In future if there is a new version, `v1.5`, which is not a default version,
+
+We need to add a folder `v1.5` and add contents of that version into it.
+
+## Update API Reference
+
+To update API references based on versions,
+
+-   In API reference folder, `{product}.json` corresponds to the default version mentioned
+-   Create a new file with name in the format, `{product}_{version}.json`. Here `version` denotes the verion other other than `default_version`
+
+Example:
+
+In case of Account Aggregator, in api-references folder,
+
+-   `account-aggregator.json` corresponds to the default version `v2`
+-   `account-aggregator_v1.json` corresponds to a version other than default version, `v1`
+
+```bash
+.
+├── ...
+├── api-references
+│   ├── data
+│   │   ├── account-aggregator.json
+│   │   ├── account-aggregator_v1.json
+│   │   └── ...
+│   └── ...
+└── ...
+```
+
+In future if there is a new version, `v1.5` which is not a default version,
+
+We need to add a file `account-aggregator_v1.5.json` and add API reference into it
