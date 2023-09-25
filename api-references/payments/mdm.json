@@ -1,0 +1,1067 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BBPS API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://plan-mdm.setu.co/api/v1",
+      "description": "Plan MDM Server"
+    }
+  ],
+  "paths": {
+    "/billpayment": {
+      "post": {
+        "summary": "Bill Payment Request",
+        "description": "Endpoint to submit a bill payment request.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "BillPaymentRequest": {
+                    "$ref": "#/components/schemas/BillPaymentRequest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillPaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bill-validation": {
+      "post": {
+        "summary": "Submit a Bill Validation Request",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillValidationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillValidationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BillPaymentRequest": {
+        "type": "object",
+        "properties": {
+          "Head": {
+            "$ref": "#/components/schemas/headType"
+          },
+          "Analytics": {
+            "$ref": "#/components/schemas/analyticsType"
+          },
+          "Txn": {
+            "$ref": "#/components/schemas/txnType"
+          },
+          "Customer": {
+            "$ref": "#/components/schemas/customerDtlsType"
+          },
+          "Agent": {
+            "$ref": "#/components/schemas/agentType"
+          },
+          "BillDetails": {
+            "$ref": "#/components/schemas/billDetailsType"
+          },
+          "PlanDetails": {
+            "$ref": "#/components/schemas/planDetailsType"
+          },
+          "BillerResponse": {
+            "$ref": "#/components/schemas/billerResponseType"
+          },
+          "AdditionalInfo": {
+            "$ref": "#/components/schemas/additionalInfoType"
+          },
+          "PaymentMethod": {
+            "$ref": "#/components/schemas/pmtMtdType"
+          },
+          "Amount": {
+            "$ref": "#/components/schemas/amountType"
+          },
+          "PaymentInformation": {
+            "$ref": "#/components/schemas/pymntInfType"
+          }
+        }
+      },
+      "BillPaymentResponse": {
+        "type": "object",
+        "properties": {
+          "Head": {
+            "$ref": "#/components/schemas/headType"
+          },
+          "Reason": {
+            "$ref": "#/components/schemas/reasonType"
+          },
+          "Txn": {
+            "$ref": "#/components/schemas/txnType"
+          },
+          "BillDetails": {
+            "$ref": "#/components/schemas/billDetailsType"
+          },
+          "BillerResponse": {
+            "$ref": "#/components/schemas/billerResponseType"
+          },
+          "BillerPlanResponse": {
+            "$ref": "#/components/schemas/billerPlanResponseType"
+          },
+          "AdditionalInfo": {
+            "$ref": "#/components/schemas/additionalInfoType"
+          }
+        }
+      },
+      "BillValidationRequest": {
+        "type": "object",
+        "properties": {
+          "Head": {
+            "$ref": "#/components/schemas/headType"
+          },
+          "Agent": {
+            "$ref": "#/components/schemas/agentType"
+          },
+          "BillDetails": {
+            "$ref": "#/components/schemas/billDetailsType"
+          }
+        }
+      },
+      "BillValidationResponse": {
+        "type": "object",
+        "properties": {
+          "Head": {
+            "$ref": "#/components/schemas/headType"
+          },
+          "Reason": {
+            "$ref": "#/components/schemas/reasonType"
+          },
+          "BillerPlanResponse": {
+            "$ref": "#/components/schemas/billerPlanResponseType"
+          },
+          "AdditionalInfo": {
+            "$ref": "#/components/schemas/additionalInfoType"
+          }
+        }
+      },
+      "analyticsType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        },
+        "required": [
+          "Tag"
+        ]
+      },
+      "BillerFetchResponse": {
+        "type": "object",
+        "properties": {
+          "Head": {
+            "$ref": "#/components/schemas/headType"
+          },
+          "biller": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Biller"
+            }
+          },
+          "searchResult": {
+            "$ref": "#/components/schemas/SearchResult"
+          }
+        }
+      },
+      "Biller": {
+        "type": "object",
+        "properties": {
+          "billerId": {
+            "type": "string"
+          },
+          "billerName": {
+            "type": "string"
+          },
+          "billerAliasName": {
+            "type": "string"
+          },
+          "billerCategoryName": {
+            "type": "string"
+          },
+          "billerMode": {
+            "type": "string"
+          },
+          "billerResponseType": {
+            "type": "string"
+          },
+          "billerAcceptsAdhoc": {
+            "type": "boolean"
+          },
+          "parentBiller": {
+            "type": "boolean"
+          },
+          "parentBillerId": {
+            "type": "string"
+          },
+          "billerOwnerShp": {
+            "type": "string"
+          },
+          "billerCoverage": {
+            "type": "string"
+          },
+          "fetchRequirement": {
+            "$ref": "#/components/schemas/FetchRequirement"
+          },
+          "paymentAmountExactness": {
+            "type": "string"
+          },
+          "supportBillValidation": {
+            "type": "string"
+          },
+          "billerEffctvFrom": {
+            "type": "string"
+          },
+          "billerEffctvTo": {
+            "type": "string"
+          },
+          "billerTempDeactivationStart": {
+            "type": "string"
+          },
+          "billerTempDeactivationEnd": {
+            "type": "string"
+          },
+          "billerPaymentModes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentModeLimit"
+            }
+          },
+          "billerPaymentChannels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentChannelLimit"
+            }
+          },
+          "billerCustomerParams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamConfig"
+            }
+          },
+          "customerParamGroups": {
+            "$ref": "#/components/schemas/CustomerParamGroups"
+          },
+          "billerResponseParams": {
+            "$ref": "#/components/schemas/BillerResponseParams"
+          },
+          "billerPlanResponseParams": {
+            "$ref": "#/components/schemas/BillerPlanResponseParams"
+          },
+          "billerAdditionalInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamConfig"
+            }
+          },
+          "billerAdditionalInfoPayment": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamConfig"
+            }
+          },
+          "interchangeFeeConf": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InterchangeFeeConf"
+            }
+          },
+          "interchangeFee": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InterchangeFee"
+            }
+          },
+          "Status": {
+            "type": "string"
+          },
+          "billerDescription": {
+            "type": "string"
+          },
+          "supportDeemed": {
+            "type": "string"
+          },
+          "supportPendingStatus": {
+            "type": "string"
+          },
+          "billerTimeOut": {
+            "type": "string"
+          },
+          "planMdmRequirement": {
+            "$ref": "#/components/schemas/PlanMDMRequirement"
+          },
+          "planAdditionalInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamConfig"
+            }
+          }
+        }
+      },
+      "PaymentModeLimit": {
+        "type": "object",
+        "properties": {
+          "paymentMode": {
+            "type": "string"
+          },
+          "maxLimit": {
+            "type": "integer"
+          },
+          "minLimit": {
+            "type": "integer"
+          },
+          "supportPendingStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentChannelLimit": {
+        "type": "object",
+        "properties": {
+          "paymentChannel": {
+            "type": "string"
+          },
+          "maxLimit": {
+            "type": "integer"
+          },
+          "minLimit": {
+            "type": "integer"
+          },
+          "supportPendingStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "ParamConfig": {
+        "type": "object",
+        "properties": {
+          "paramName": {
+            "type": "string"
+          },
+          "dataType": {
+            "$ref": "#/components/schemas/DataType"
+          },
+          "optional": {
+            "type": "boolean"
+          },
+          "minLength": {
+            "type": "integer"
+          },
+          "maxLength": {
+            "type": "integer"
+          },
+          "regex": {
+            "type": "string"
+          },
+          "values": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "boolean"
+          },
+          "unique": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DataType": {
+        "type": "string",
+        "enum": [
+          "NUMERIC",
+          "ALPHANUMERIC"
+        ]
+      },
+      "BillerResponseParams": {
+        "type": "object",
+        "properties": {
+          "params": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamConfig"
+            }
+          },
+          "amountOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AmountOption"
+            }
+          }
+        }
+      },
+      "BillerPlanResponseParams": {
+        "type": "object",
+        "properties": {
+          "params": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamConfig"
+            }
+          },
+          "amountOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AmountOption"
+            }
+          }
+        }
+      },
+      "CustomerParamGroups": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            }
+          }
+        }
+      },
+      "Group": {
+        "type": "object",
+        "properties": {
+          "param": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "input": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AmountOption": {
+        "type": "object",
+        "properties": {
+          "amountBreakupSet": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InterchangeFeeConf": {
+        "type": "object",
+        "properties": {
+          "mti": {
+            "type": "string"
+          },
+          "paymentMode": {
+            "type": "string"
+          },
+          "paymentChannel": {
+            "type": "string"
+          },
+          "responseCode": {
+            "type": "string"
+          },
+          "fees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "defaultFee": {
+            "type": "boolean"
+          },
+          "effctvFrom": {
+            "type": "string"
+          },
+          "effctvTo": {
+            "type": "string"
+          }
+        }
+      },
+      "InterchangeFee": {
+        "type": "object",
+        "properties": {
+          "feeCode": {
+            "type": "string"
+          },
+          "feeDesc": {
+            "type": "string"
+          },
+          "feeDirection": {
+            "$ref": "#/components/schemas/InterchangeFeeDirection"
+          },
+          "interchangeFeeDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InterchangeFeeDetailsType"
+            }
+          }
+        }
+      },
+      "InterchangeFeeDetailsType": {
+        "type": "object",
+        "properties": {
+          "tranAmtRangeMax": {
+            "type": "integer"
+          },
+          "tranAmtRangeMin": {
+            "type": "integer"
+          },
+          "percentFee": {
+            "type": "number"
+          },
+          "flatFee": {
+            "type": "number"
+          },
+          "effctvFrom": {
+            "type": "string"
+          },
+          "effctvTo": {
+            "type": "string"
+          }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string"
+          }
+        }
+      },
+      "InterchangeFeeDirection": {
+        "type": "string",
+        "enum": [
+          "B2C",
+          "C2B"
+        ]
+      },
+      "FetchRequirement": {
+        "type": "string",
+        "enum": [
+          "MANDATORY",
+          "OPTIONAL",
+          "NOT_SUPPORTED"
+        ]
+      },
+      "PlanMDMRequirement": {
+        "type": "string",
+        "enum": [
+          "MANDATORY",
+          "OPTIONAL",
+          "CONDITIONAL",
+          "NOT_SUPPORTED"
+        ]
+      },
+      "custIdentityConstant": {
+        "type": "string",
+        "enum": [
+          "EMAIL",
+          "PAN",
+          "AADHAAR"
+        ]
+      },
+      "transactionType": {
+        "type": "string",
+        "enum": [
+          "FORWARD TYPE REQUEST",
+          "REVERSAL TYPE REQUEST",
+          "FORWARD TYPE RESPONSE",
+          "REVERSAL TYPE RESPONSE"
+        ]
+      },
+      "deviceTagNameType": {
+        "type": "string",
+        "enum": [
+          "MOBILE",
+          "GEOCODE",
+          "POSTAL_CODE",
+          "IP",
+          "INITIATING_CHANNEL",
+          "TERMINAL_ID",
+          "IMEI",
+          "IFSC",
+          "MAC",
+          "OS",
+          "APP"
+        ]
+      },
+      "initiatingChannelType": {
+        "type": "string",
+        "enum": [
+          "INT",
+          "MOB",
+          "POS",
+          "KIOSK",
+          "MPOS",
+          "ATM",
+          "BNKBRNCH"
+        ]
+      },
+      "qckPayType": {
+        "type": "string",
+        "enum": [
+          "Yes",
+          "No"
+        ]
+      },
+      "spltPayType": {
+        "type": "string",
+        "enum": [
+          "Yes",
+          "No"
+        ]
+      },
+      "offUsPayType": {
+        "type": "string",
+        "enum": [
+          "Yes",
+          "No"
+        ]
+      },
+      "planType": {
+        "type": "string",
+        "enum": [
+          "NEW",
+          "EXISTING",
+          "RECOMMENDED",
+          "CURATED",
+          "ACTIVATED"
+        ]
+      },
+      "siTxnType": {
+        "type": "string",
+        "enum": [
+          "Yes",
+          "No"
+        ]
+      },
+      "analyticsFetchTypeInstance": {
+        "type": "string",
+        "enum": [
+          "FETCHREQUESTSTART",
+          "FETCHREQUESTEND"
+        ]
+      },
+      "analyticsPaymentTypeInstance": {
+        "type": "string",
+        "enum": [
+          "PAYREQUESTSTART",
+          "PAYREQUESTEND"
+        ]
+      },
+      "headType": {
+        "type": "object",
+        "properties": {
+          "ver": {
+            "type": "string"
+          },
+          "ts": {
+            "type": "string"
+          },
+          "origInst": {
+            "type": "string"
+          },
+          "refId": {
+            "type": "string"
+          },
+          "origRefId": {
+            "type": "string"
+          },
+          "siTxn": {
+            "$ref": "#/components/schemas/siTxnType"
+          }
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "format": "string",
+            "description": "The name of the analytics tag."
+          },
+          "value": {
+            "type": "string",
+            "format": "string",
+            "description": "The value associated with the analytics tag."
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
+      "riskScoresType": {
+        "type": "object",
+        "properties": {
+          "Score": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "txnType": {
+        "type": "object",
+        "properties": {
+          "RiskScores": {
+            "$ref": "#/components/schemas/riskScoresType"
+          },
+          "ts": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "msgId": {
+            "type": "string"
+          },
+          "txnReferenceId": {
+            "type": "string"
+          },
+          "xchangeId": {
+            "type": "string"
+          },
+          "directBillChannel": {
+            "$ref": "#/components/schemas/directBillChannelType"
+          },
+          "directBillContentId": {
+            "type": "string"
+          },
+          "paymentRefId": {
+            "type": "string"
+          }
+        }
+      },
+      "directBillChannelType": {
+        "type": "string",
+        "enum": [
+          "L1QR",
+          "L2QR",
+          "L3QR",
+          "L1PL",
+          "L2PL",
+          "L3PL"
+        ]
+      },
+      "customerDtlsType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "mobile": {
+            "type": "string"
+          }
+        }
+      },
+      "deviceType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        }
+      },
+      "agentType": {
+        "type": "object",
+        "properties": {
+          "Device": {
+            "$ref": "#/components/schemas/deviceType"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "billerType": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "customerParamsType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        }
+      },
+      "planInfoType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "type": {
+            "$ref": "#/components/schemas/planType"
+          }
+        }
+      },
+      "planDetailsType": {
+        "type": "object",
+        "properties": {
+          "PlanDetail": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/planDetailType"
+            }
+          }
+        }
+      },
+      "planDetailType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "type": {
+            "$ref": "#/components/schemas/planType"
+          },
+          "Id": {
+            "type": "string"
+          }
+        }
+      },
+      "billDetailsType": {
+        "type": "object",
+        "properties": {
+          "Biller": {
+            "$ref": "#/components/schemas/billerType"
+          },
+          "CustomerParams": {
+            "$ref": "#/components/schemas/customerParamsType"
+          }
+        }
+      },
+      "billerResponseType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "custConvFee": {
+            "type": "string"
+          },
+          "billDate": {
+            "type": "string"
+          },
+          "billNumber": {
+            "type": "string"
+          },
+          "billPeriod": {
+            "type": "string"
+          }
+        }
+      },
+      "billerPlanResponseType": {
+        "type": "object",
+        "properties": {
+          "PlanInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/planInfoType"
+            }
+          }
+        }
+      },
+      "reasonType": {
+        "type": "object",
+        "properties": {
+          "approvalRefNum": {
+            "type": "string"
+          },
+          "responseCode": {
+            "type": "string"
+          },
+          "responseReason": {
+            "type": "string"
+          },
+          "complianceRespCd": {
+            "type": "string"
+          },
+          "complianceReason": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalInfoType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        }
+      },
+      "pmtMtdType": {
+        "type": "object",
+        "properties": {
+          "quickPay": {
+            "$ref": "#/components/schemas/qckPayType"
+          },
+          "splitPay": {
+            "$ref": "#/components/schemas/spltPayType"
+          },
+          "OFFUSPay": {
+            "$ref": "#/components/schemas/offUsPayType"
+          },
+          "paymentMode": {
+            "type": "string"
+          }
+        }
+      },
+      "amtType": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string"
+          },
+          "custConvFee": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "COUcustConvFee": {
+            "type": "string"
+          }
+        }
+      },
+      "amountType": {
+        "type": "object",
+        "properties": {
+          "Amt": {
+            "$ref": "#/components/schemas/amtType"
+          },
+          "SplitPayAmount": {
+            "type": "string"
+          },
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        }
+      },
+      "pymntInfType": {
+        "type": "object",
+        "properties": {
+          "Tag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        }
+      },
+      "errorMessage": {
+        "type": "object",
+        "properties": {
+          "errorCd": {
+            "type": "string"
+          },
+          "errorDtl": {
+            "type": "string"
+          }
+        }
+      },
+      "search": {
+        "type": "object",
+        "properties": {
+          "billerId": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
