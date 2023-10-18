@@ -446,12 +446,14 @@ As seen above, once a consent is approved, FIUs need to create a data session, l
 
 Auto-Fetch data feature aims to absorb this complexity from the FIUs. With Auto-Fetch data feature enabled, the process will look like this—
 
-- Consent is approved by the customer.
-- Setu creates a data session automatically.
-- Setu listens to FI notifications and manages retries.
-- Once the combined data session status is `PARTIAL` or `COMPLETED`, Setu fetches the FI data and sends it to the FIU.
-  - For one time consents, Auto-Fetch data executes only once, right after the consent is approved.
-  - For recurring consents, Auto-Fetch data can fetch data periodically. Set up the frequency of Auto-Fetch data in your configuration on the Bridge.
+1. Consent is approved by the customer.
+2. Setu creates a data session automatically.
+3. Setu listens to FI notifications and manages retries.
+4. Once the combined data session status is `PARTIAL` or `COMPLETED`, Setu fetches the FI data and sends it to the FIU.
+   - For one time consents, Auto-Fetch executes only once, right after the consent is approved.
+   - For recurring consents, Auto-Fetch can fetch data periodically. Set up the frequency of Auto-Fetch data in your configuration on the Bridge.
+
+<img src="https://storage.googleapis.com/strapi-assets/latest/auto-fetch-workflow/auto-fetch-workflow.png" />
 
 <Callout type="tip">
   Auto-Fetch can be set up on Bridge, under Step 1 of your product
@@ -464,5 +466,126 @@ Auto-Fetch data feature aims to absorb this complexity from the FIUs. With Auto-
   When Auto-Fetch is enabled, it will automatically fetch data for all approved
   consents and you will be automatically charged for successful fetches.
 </Callout>
+
+<br />
+<br />
+
+##### Auto fetch notification payload
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <CodeBlockWithCopy language="json">
+{`POST /your-webhook-endpoint
+{
+  "type": "FI_DATA_READY",
+  "consentId": "58180119-15bc-454f-83bb-192efda9321b",
+  "dataRange": {
+    "from": "2023-07-25T11:27:01.069Z",
+    "to": "2023-07-25T11:28:00.648Z"
+  },
+  "fiData": [
+    {
+      "fipID": "setu-fip",
+      "data": [
+        {
+          "linkRefNumber": "4b4cc8fb-89eb-41c3-bc64-fec2497d5454",
+          "maskedAccNumber": "XXXXXXXX7561",
+          "decryptedFI": {
+            "account": {
+              "linkedAccRef": "4b4cc8fb-89eb-41c3-bc64-fec2497d5454",
+              "maskedAccNumber": "XXXXXXXX7561",
+              "type": "deposit",
+              "version": "1.1",
+              "profile": {
+                "holders": {
+                  "type": "SINGLE",
+                  "holder": [
+                    {
+                      "address": "758, Das Nagar Bikaner 455148",
+                      "ckycCompliance": "false",
+                      "dob": "1983-09-08",
+                      "email": "buchzain@setu-dummy.com",
+                      "mobile": "3536459776",
+                      "name": "Tushar Balakrishnan",
+                      "nominee": "REGISTERED",
+                      "pan": "SMPXE2207K"
+                    }
+                  ]
+                }
+              },
+              "transactions": {
+                "startDate": "2020-04-01T00:00:00.000Z",
+                "endDate": "2023-01-01T00:00:00.000Z",
+                "transaction": [
+                  {
+                    "amount": "33834.65",
+                    "currentBalance": "489971.1",
+                    "mode": "UPI",
+                    "narration": "UPI/CR/457233689286/Gatik Yohannan/CZBR/64321752",
+                    "reference": "966712146",
+                    "transactionTimestamp": "2020-05-08T11:05:29+00:00",
+                    "txnId": "EUCE23840883221703",
+                    "type": "CREDIT",
+                    "valueDate": "2020-05-09T11:05:29+00:00"
+                  },
+                  {
+                    "amount": "16480.04",
+                    "currentBalance": "408905.24",
+                    "mode": "UPI",
+                    "narration": "UPI/CR/988357930370/Dhruv Desai/RZJF/85716960",
+                    "reference": "510260839",
+                    "transactionTimestamp": "2020-12-16T21:49:14+00:00",
+                    "txnId": "ZJGE96715479740775",
+                    "type": "CREDIT",
+                    "valueDate": "2020-12-17T21:49:14+00:00"
+                  }
+                  //more transactions
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL</Badge>,
+                    content: (
+                        <>
+                            <CodeBlockWithCopy language="json">
+{`POST /your-webhook-endpoint
+{
+    "type": "FI_DATA_FAILURE",
+    "timestamp": "2023-08-28T17:12:51.521Z",
+    "consentId": "af43608a-ed6e-4c65-9745-0386ba5fd91b",
+    "success": true,
+    "data": null,
+    "error": {
+        "code": "DataFetchFailure",
+        "message": "Failed to fetch data after multiple retry attempts due to upstream errors"
+    }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+
+</Row>
 
 <WasPageHelpful />
