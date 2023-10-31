@@ -1,0 +1,214 @@
+---
+sidebar_title: API Integration
+page_title: Aadhaar OKYC Redundancy API Integration
+order: 1
+visible_in_sidebar: true
+---
+
+## Aadhaar OKYC Redundancy API Integration
+
+The following guide describes the redundancy implementation of our Aadhaar OKYC APIs. Due to intermittent issues on our supply partner's end, we have introduced an Aadhaar Redundancy 
+API, which uses either supply partner to perform Aadhaar Verification and fetch a user's Aadhaar details, depending on uptimes. 
+You will need the following 2 APIs—
+
+-   **Create Aadhaar Verification Request**—This lets you initiate a verification request.
+-   **GET Aadhaar Verification Details**—This lets you check the status associated with the verification request, and if complete, fetch the verification details.
+
+Here are the URLs you would need for this integration—
+
+-   Sandbox—`https://dg-sandbox.setu.co`
+-   Production—`https://dg.setu.co`
+-   Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+    -   `x-client-id`
+    -   `x-client-secret`
+    -   `x-product-instance-id`
+
+<hr class="primary" />
+
+### Create Aadhaar verification request
+
+Call this API to initiate Aadhaar Verification for your end customer. A quick explanation of the request params—
+
+-   `redirectUrl` Endpoint to which your end customer will be redirected to, post completion of verification flow.
+
+<br />
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Your
+                                Aadhaar Verification request was created successfully
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/aadhaar/verify
+ 
+{
+    "redirectUrl": "https://setu.co"
+} `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>
+                                You get an <code>id</code> associated with the
+                                Aadhaar verification request, which you can use to check
+                                verification status in the <code>Get Aadhaar Verification Details</code> API.
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "id": "be896113-6ad1-4741-80e3-56e67e794959",
+    "status": "pending",
+    "url": "https://dg.setu.co/digilocker/login/be896113-6ad1-4741-80e3-56e67e794959?path=L2Y3ZDdjOTk2LWEzNmQtNDQ0Mi1iMTliLTY3MDQ5NTE5Mjc0Yy8=",
+    "validUpto": "2023-11-15T06:52:01+05:30",
+    "traceId": "1-6540a411-48c3a26c1442b1580f6e6bf9"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
+
+### Get Aadhaar Verification Details
+
+Call this API to fetch the details and status of the Aadhaar Verification request. A quick explanation of the query params—
+
+-   `request_id` The `id` returned in the `Create Aadhaar Verification request` response
+
+<br />
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`GET  /api/aadhaar/verify/:request_id`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>
+                                In case <code>status</code> is still pending.
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "id": "be896113-6ad1-4741-80e3-56e67e794959",
+    "status": "pending",
+    "url": "https://dg.setu.co/digilocker/login/be896113-6ad1-4741-80e3-56e67e794959?path=L2Y3ZDdjOTk2LWEzNmQtNDQ0Mi1iMTliLTY3MDQ5NTE5Mjc0Yy8=",
+    "validUpto": "2023-11-15T06:52:01+05:30",
+    "traceId": "1-6540a411-48c3a26c1442b1580f6e6bf9"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "200",
+                    content: (
+                        <>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`GET  /api/aadhaar/verify/:request_id`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>
+                                If <code>status</code> is complete.
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`
+{ 
+  "aadhaar_data": { 
+        "address": { 
+              "careOf": "S/O: Rakesh Sharma", 
+              "country": "India", 
+              "district": "Bangalore", 
+              "house": "# 90 1 Cross", 
+              "landmark": "Near Talkies", 
+              "locality": "Nagarabhavi", 
+              "pin": "560072", 
+              "postOffice": "Nagarbhavi", 
+              "state": "Karnataka", 
+              "street": "Nagarbhavi 1st Main Road", 
+              "subDistrict": "Bangalore North", 
+              "vtc": "Bangalore North" 
+        }, 
+        "dateOfBirth": "23-05-1990", 
+        "email": "550fa5fd91eee3f29f6361a8c89aa9713d4d38811d1a5", 
+        "gender": "M", 
+        "generatedAt": "20210419145604802", 
+        "maskedNumber": "xxxx-xxxx-8832", 
+        "name": "Suresh Sharma", 
+        "phone": "09c91184c1d610282d661dd63d257e3b44446853fb1388c9d5b", 
+        "photo": "/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKD==", 
+        "verified": { 
+              "email": false, 
+              "phone": false, 
+              "signature": true 
+        }, 
+        "xml": { 
+            "fileUrl": "https://dg-esign-uat.s3.amazonaws.com/testFolder/sample.zip", 
+            "shareCode": "1111",         // will be null value in case of digilocker verification
+            "validUntil": "Tue, 27 Jul 2021 12:16:27 GMT" 
+        },
+       },
+      "traceId": "1-6540a411-48c3a26c1442b1580f6e6bf9"
+      "status": "complete", 
+      "id": "be896113-6ad1-4741-80e3-56e67e794959"
+} 
+`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
+                    label: "500",
+                    content: (
+                        <>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`GET  /api/aadhaar/verify/:request_id`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>
+                                Internal Server Error.
+                            </p>
+                            <CodeBlockWithCopy language="json">
+{`{
+    "error": 
+        {
+            "code": "internal_server_error", 
+            "detail": "Something went wrong, please try again.", 
+            "traceId": "1-6540b2f5-7576e9986b0b59ac02f4f831"
+        }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                }
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
