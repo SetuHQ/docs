@@ -1,0 +1,610 @@
+---
+sidebar_title: API integration
+page_title: RPD API integration
+order: 2
+visible_in_sidebar: false
+---
+
+# API Integration
+
+Below is a quick summary of the APIs you need to start integrating with for bank verification using Reverse Penny Drop (RPD).
+
+Here are the few things you would need for this integration—
+
+-   Sandbox — `https://dg-sandbox.setu.co`
+-   Production — `https://dg.setu.co`
+-   Headers — `x-client-id` and `x-client-secret` (Contact Setu for providing the credentials required to successfully call Setu APIs)
+-   Webhook endpoint: You need to create a [webhook url](#notifications---webhooks) on your server. Once configured, Setu will send notifications to that URL.
+
+<Callout type="tip">
+    To get started quickly, you can setup a mock API endpoint using{" "}
+    <a href="https://beeceptor.com/" target="_blank">
+        Beeceptor
+    </a>
+    . This will help you understand the notification flow before you start to
+    implement it on your server.
+</Callout>
+
+<hr class="primary" />
+
+#### Create reverse penny drop request
+
+Send a `POST` request to the `/api/verify/ban/reverse` endpoint to create a reverse penny drop request.
+Optionally you can pass `additionalData` with header `Content-Type` as `application/json`.
+
+`additionalData` should be simple key-value pairs (string value only).
+E.g:
+
+<CodeBlockWithCopy language="json">
+    {`
+    "additionalData": {
+        "key1": "value1",
+        "key2": "value2"
+    }
+  `}
+</CodeBlockWithCopy>
+
+<Callout type="warning">
+  You can expect this `additionalData` as part of a JSON body when we notify you
+  with bank account verification details over webhook, or when you use our{" "}
+  <code>GET</code> details API.
+</Callout>
+<br />
+
+If successful, you will get a JSON response. Two of the fields in the response would be
+
+-   `upiLink`, a UPI intent link starting with `upi://`
+-   `shortUrl`, a link starting with `https://` and an image with a QR code
+
+We recommend showing the QR code on desktop devices so that a user can use their phone to scan QR and pay. For mobile phones, it's recommended to use the UPI intent link to pay on the same device.
+
+-   If you want PSP specific link. Read the <a target="_blank" href="/data/bav/reverse-penny-drop/quickstart#faqs">FAQ</a>.
+
+<Callout type="tip">
+    Notify your user, that they should pay from the account they want to use on
+    your platform (if their primary account has to be verified for such usage).
+</Callout>
+<br />
+
+<Callout type="warning">
+    Once payment is done, the payment link expires, and cannot be reused again.
+    The link can also expire if your customer hasn't paid in 24hrs—in this case
+    you will be notified of the status of the request, which will be{" "}
+    <b>BAV_REVERSE_PENNY_DROP_EXPIRED</b>.
+</Callout>
+<br />
+
+<b>Types of statuses</b>
+
+-   `BAV_REVERSE_PENNY_DROP_CREATED`, if request was created successfully.
+-   `BAV_REVERSE_PENNY_DROP_FAILED`, something went wrong. A payment should not be attempted with this request id.
+-   `BAV_REVERSE_PENNY_DROP_EXPIRED`, upon expiry of payment link for customer. No payments can be done with expired links. The expiry is triggered as per the specified `validUpto` field or within 24 hours, whichever comes first.
+-   `BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL`, when your user has successfully paid, and Setu’s banking partner has sent a credit alert with bank account details.
+-   `BAV_REVERSE_PENNY_DROP_PAYMENT_FAILED`, when an issue occurs during payment by your user or at Setu’s banking partner’s end. The payment, if made, will be auto-refunded.
+
+<Callout type="warning">
+    In some cases when our banking partner doesn't send us credit alerts the
+    status still may show as <code>BAV_REVERSE_PENNY_DROP_CREATED</code>.
+</Callout>
+
+<br />
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "201",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">CREATED</Badge> RPD
+                                request created.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/verify/ban/reverse
+ 
+{
+    "additionalData": { // optional
+        "key1": "value1",
+        "key2": "value2"
+    }
+}
+ `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "id": "1b740e7a-5a81-4b88-ad43-110a08935286",
+    "shortUrl": "https://sandbox.bills.pe/wh9kk4mwuktg",
+    "status": "BAV_REVERSE_PENNY_DROP_CREATED",
+    "traceId": "1-640f227f-784ece1c005e4f9e653947ca",
+    "upiBillId": "1114053970646533628",
+    "upiLink": "upi://pay?pa=bauvatest@kaypay&pn=BauvaTest&am=1.00&tr=1114053970646533628&tn=Account%20Verification&cu=INR&mode=04",
+    "validUpto": "2023-03-13T13:20:52.277688"
+} `}
+                            </CodeBlockWithCopy>
+                            <Callout type="tip">
+                                Note: This 'id' is your 'requestId'. Please use
+                                this 'requestId' for rest the API reference.
+                            </Callout>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "400",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">BAD REQUEST</Badge>{" "}
+                                additionalData should be simple key-value pairs
+                                (string value only)
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/verify/ban/reverse
+ 
+{
+    "additionalData": { 
+        "key1":  {
+            "nested_key1": "nested_value1"
+        }
+    }
+}
+ `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "error": {
+        "code": "bad_request",
+        "detail": "Please refer to our docs to send an appropriate request",
+        "traceId": "..."
+    }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
+                    label: "500",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">
+                                    INTERNAL SERVER ERROR
+                                </Badge>{" "}
+                                Internal service error or upstream service
+                                failure while processing request
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/verify/ban/reverse
+ 
+{
+    "additionalData": { // optional
+        "key1": "value1",
+        "key2": "value2"
+    }
+}
+ `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "error": {
+      "code": "internal_server_error", // or upstream_service_error
+      "detail": "Internal Server Error. Please reach out to support along with the traceId.",
+      "traceId": "..."
+    }
+} `}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
+<hr class="tertiary" />
+
+#### Mock payment
+
+This API lets you test the end to end flow without an actual payment. This will send a webhook to the callback URL you have configured with us.
+
+<Callout type="warning">
+    Use this API only on sandbox/UAT. This endpoint is disabled on{" "}
+    <b>production</b> environment.
+</Callout>
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCSS</Badge>{" "}
+                                Successfully Mocked. If you already configured
+                                webhook url, you should receive a webhook.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/verify/ban/reverse/mock_payment/:requestId
+                                
+{
+    "paymentStatus": "successful" // or 'expired'. Default = 'successful'
+}
+                                
+                                `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "success": true,
+    "traceId": "1-640f2285-2b2b250015fb3d3a6939db8b"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "400",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">
+                                    BAD REQUEST
+                                </Badge>{"Invalid request payload"}
+                                
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/verify/ban/reverse/mock_payment/:requestId
+{
+    "paymentStatus": "xyz" 
+}`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "error": {
+        "code": "invalid_payload",
+        "detail": "paymentStatus should be 'expired' or 'successful'",
+        "traceId": "9841613c-c16a-4685-a6a3-3717ee8f9b4a"
+    }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
+                    label: "500",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">
+                                    INTERNAL SERVER ERROR
+                                </Badge>{" "}
+                                Internal service error or upstream service
+                                failure while processing request
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/verify/ban/reverse/mock_payment/:requestId`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "error": {
+      "code": "internal_server_error", // or upstream_service_error
+      "detail": "Internal Server Error. Please reach out to support along with the traceId.",
+      "traceId": "..."
+    }
+} `}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
+<hr class="tertiary" />
+
+#### Notifications / Webhooks
+
+Below are the summary of the notifications which need to be processed on your server by exposing an endpoint for Setu to send an HTTP POST request.
+
+These notifications/webhooks are sent by Setu when the end user makes a payment and when banking partners send bank account details of the end user.
+
+<Callout type="tip">
+    Please send back HTTP 200 status code if the request sent was processed
+    correctly to avoid receiving multiple notifications for the same payment
+    event. Response body is ignored.
+</Callout>
+
+<hr className="tertiary" />
+
+_Please note that `accountType` can be `BANK_ACCOUNT`, `PPI` or `UNKNOWN`_
+
+-   `PPI`, if the payment happened from a PPI (Pre Paid Instrument) account and not a valid bank account
+-   `BANK_ACCOUNT`, if the payment happened from a valid bank account and the IFSC is in the RBI database
+-   `UNKNOWN`, if the payment happened from a bank account who's IFSC is not in the RBI database
+
+<Callout type="tip">
+    If the bank account is classified as PPI, then it is for sure a PPI
+    instrument and for majority of the use cases consider it an invalid bank
+    account since money movement doesn't happen when trying to deposit an amount
+    through IMPS/NEFT/RTGS. There can be PPI instruments which come up as
+    `UNKNOWN`, please notify us at support@setu.co.
+</Callout>
+
+<hr className="tertiary" />
+
+_`bankAccountType` is an optional data field, you may not receive the value always. (Please contact with Setu team to know more about this feature.)_
+_The value can be `SAVINGS`, `CURRENT`, `NRO`, `NRE`_
+
+<hr className="tertiary" />
+
+##### Examples of webhook payload:
+
+<Text size="small" weight="600">
+    Example 1
+</Text>
+
+<Card padding="nano" shape="rounded" marginBottom="micro">
+  <details>
+    <summary>
+        In case of successful bank verification
+    </summary>
+    <hr className="tertiary" />
+    <CodeBlockWithCopy language="json">{`
+{
+    "event"     : "RPD_VERIFICATION_UPDATE", 	
+    "timeStamp" : "2021-11-12T00:12:29+05:30",
+    "data"        : {
+        "rpd" : {
+            "success"   : true,
+            "id"        : "7097e53a-ba29-48a2-983d-878433b4f33e", // the RPD request id
+            "upiBillId" : "907442106379798024",
+            "data"      : {
+                "bankAccountName"   : "Eve",
+                "bankAccountIfsc"   : "SBIN0000001",
+                "bankAccountNumber" : "48097036412",
+                "payerVpa"          : "test@upi"
+                "accountType"       : "BANK_ACCOUNT", // or UNKNOWN or PPI
+                "bankAccountType"   :  "SAVINGS" // Optional, can be null
+                "ifscCrossCheck"    : true,
+                "ifscDetails"       : {
+                    "address": "EXPRESS TOWERS,GROUND FLOOR,NARIMAN POINT,MUMBAI 400021",
+                    "branch": "Development Bank of Singapore IMPS",
+                    "center": "MUMBAI",
+                    "city": "MUMBAI",
+                    "contact": "+912266388888",
+                    "district": "MUMBAI",
+                    "imps": "true",
+                    "iso3166": "IN-MH",
+                    "micr": "400641002",
+                    "name": "Development Bank of Singapore",
+                    "neft": "true",
+                    "rtgs": "true",
+                    "state": "MAHARASHTRA",
+                    "swift": "",
+                    "upi": "true"
+                }
+            }
+            "additionalData": { // if you have specified while creating RPD request 
+            "key1" : "value1",
+            "key2" : "value2"
+            }
+        }
+    }
+    "traceId"   : "7097e53a-baq9-4122-9d3d-8s8433b4f33e",
+}
+  `}
+</CodeBlockWithCopy>
+
+  </details>
+</Card>
+
+<Text size="small" weight="600">
+    Example 2
+</Text>
+
+<Card padding="nano" shape="rounded" marginBottom="micro">
+  <details>
+    <summary>
+        In case of failed bank verification
+    </summary>
+    <hr className="tertiary" />
+    <CodeBlockWithCopy language="json">{`
+{
+    "event"     : "RPD_VERIFICATION_UPDATE", 	
+    "traceId"   : "7097e53a-baq9-4122-9d3d-8s8433b4f33e",
+    "timeStamp" : "2021-11-12T00:12:29+05:30",
+    "data"      : {
+        "rpd" : {
+            "success"   : false,
+            "id"        : "7097e53a-ba29-48a2-983d-878433b4f33e",
+            "upiBillId" : "907442106379798024",
+            "data"      : null,
+            "error"     : {
+                "code"   : "BAV_REVERSE_PENNY_DROP_EXPIRED",  // or BAV_REVERSE_PENNY_DROP_FAILED
+                "detail" : "Expired or failed"
+            },
+        }
+    }
+}
+  `}
+</CodeBlockWithCopy>
+
+  </details>
+</Card>
+
+<hr class="tertiary" />
+
+#### Get Details API
+
+This is an optional API. This API lets you know the bank verification status.
+
+<Callout type="tip">
+    Note: It should not be used for polling but only for specific use cases. For
+    example: if you're not receiving successful webhook for a customer and want
+    to know if the customer has made the INR 1 payment for bank verification or
+    not.
+</Callout>
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <>
+                                <p>
+                                    <Badge type="success">Success</Badge> Bank
+                                    verification status and bank details (if
+                                    available).
+                                </p>
+                                <hr className="tertiary" />
+                                <h5>Request</h5>
+                                <CodeBlockWithCopy language="json">
+                                    {`GET  /api/verify/ban/reverse/:requestId`}
+                                </CodeBlockWithCopy>
+                                <hr className="tertiary" />
+                                <h5>Response</h5>
+                                <CodeBlockWithCopy language="json">
+                                    {`{
+    "status": "BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL", // or, BAV_REVERSE_PENNY_DROP_CREATED, BAV_REVERSE_PENNY_DROP_EXPIRED, BAV_REVERSE_PENNY_DROP_PAYMENT_FAILED
+    "data": { // if status is BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL, otherwise null
+        "accountType": "BANK_ACCOUNT",
+        "bankAccountType":  "SAVINGS" // Optional, can be null
+        "bankAccountIfsc": "SBIN0000539",
+        "bankAccountName": "Noresh",
+        "bankAccountNumber": "9009120939129",
+        "ifscCrossCheck": true,
+        "ifscDetails": {
+            "address": "M V ROAD ANDHERI E MUMBAI MAHARASHTRA",
+            "branch": "ANDHERI (EAST)",
+            "center": "GREATER BOMBAY",
+            "city": "MUMBAI",
+            "contact": "",
+            "district": "GREATER BOMBAY",
+            "imps": "true",
+            "iso3166": "IN-MH",
+            "micr": "400002002",
+            "name": "State Bank of India",
+            "neft": "true",
+            "rtgs": "true",
+            "state": "MAHARASHTRA",
+            "swift": "",
+            "upi": "true"
+        },
+        "payerVpa": "customer@vpa"
+    },
+    "id": "1b740e7a-5a81-4b88-ad43-110a08935286",
+    "shortUrl": "https://sandbox.bills.pe/wh9kk4mwuktg",
+    "upiBillId": "1114053970646533628",
+    "upiLink": "upi://pay?pa=bauvatest@kaypay&pn=BauvaTest&am=1.00&tr=1114053970646533628&tn=Account%20Verification&cu=INR&mode=04",
+    "validUpto": "2023-03-13T13:20:52.277688"
+    "traceId": "1-640f228a-4dded97e470971343adae3da",
+    "additionalData": {
+        "key1": "value1"
+        "key2": "value2"
+    },
+}`}
+                                </CodeBlockWithCopy>
+                            </>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "404",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">NOT FOUND</Badge> Request
+                                id not found.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`GET  /api/verify/ban/reverse/:requestId`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "error": {
+    "code": "request_not_found",
+    "detail": "Unable to find the BAV reverse penny drop request.",
+    "traceId": "..."
+  }
+} `}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
+                    label: "500",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="failure">
+                                    INTERNAL SERVER ERROR
+                                </Badge>{" "}
+                                Internal service error or upstream service
+                                failure while processing request
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`GET  /api/verify/ban/reverse/:requestId`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "error": {
+      "code": "internal_server_error", // or upstream_service_error
+      "detail": "Internal Server Error. Please reach out to support along with the traceId.",
+      "traceId": "..."
+    }
+} `}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
