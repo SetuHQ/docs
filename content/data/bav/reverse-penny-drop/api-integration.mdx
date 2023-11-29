@@ -339,8 +339,6 @@ This API lets you test the end to end flow without an actual payment. This will 
 
 Below are the summary of the notifications which need to be processed on your server by exposing an endpoint for Setu to send an HTTP POST request.
 
-These notifications/webhooks are sent by Setu when the end user makes a payment and when banking partners send bank account details of the end user.
-
 <Callout type="tip">
     Please send back HTTP 200 status code if the request sent was processed
     correctly to avoid receiving multiple notifications for the same payment
@@ -349,7 +347,11 @@ These notifications/webhooks are sent by Setu when the end user makes a payment 
 
 <hr className="tertiary" />
 
-_Please note that `accountType` can be `BANK_ACCOUNT`, `PPI` or `UNKNOWN`_
+##### 1. RPD_VERIFICATION_UPDATE Webhook
+
+This webhook is sent when the end user makes a payments.
+
+_`accountType` can be `BANK_ACCOUNT`, `PPI` or `UNKNOWN`_
 
 -   `PPI`, if the payment happened from a PPI (Pre Paid Instrument) account and not a valid bank account
 -   `BANK_ACCOUNT`, if the payment happened from a valid bank account and the IFSC is in the RBI database
@@ -363,14 +365,12 @@ _Please note that `accountType` can be `BANK_ACCOUNT`, `PPI` or `UNKNOWN`_
     `UNKNOWN`, please notify us at support@setu.co.
 </Callout>
 
-<hr className="tertiary" />
 
 _`bankAccountType` is an optional data field, you may not receive the value always. (Please contact with Setu team to know more about this feature.)_
 _The value can be `SAVINGS`, `CURRENT`, `NRO`, `NRE`_
 
-<hr className="tertiary" />
 
-##### Examples of webhook payload:
+###### Examples 
 
 <Text size="small" weight="600">
     Example 1
@@ -462,6 +462,124 @@ _The value can be `SAVINGS`, `CURRENT`, `NRO`, `NRE`_
   `}
 </CodeBlockWithCopy>
 
+  </details>
+</Card>
+
+##### 2. RPD_DEBIT_ATTEMPT_FAILED Webhook
+This webhook is sent when the end user tries to make a payments but the debit fails due to some reason.
+
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+       statusCode of this event can be one of the following:
+    </summary>
+        <table>
+        <tr>
+            <th>statusCode</th>
+            <th>statusDescription</th>
+        </tr>
+        <tr>
+            <td>R01</td>
+            <td>The customer's debit attempt failed.</td>
+        </tr>
+        <tr>
+            <td>R02</td>
+            <td>Payment authorization took too long.</td>
+        </tr>
+        <tr>
+            <td>R03</td>
+            <td>The customer's bank is taking too long to respond.</td>
+        </tr>
+        <tr>
+            <td>R04</td>
+            <td>The debit process took too long.</td>
+        </tr>
+        <tr>
+            <td>R05</td>
+            <td>Connection timed out during the credit request process.</td>
+        </tr>
+        <tr>
+            <td>R06</td>
+            <td>The transaction exceeds the risk threshold.</td>
+        </tr>
+        <tr>
+            <td>R07</td>
+            <td>The customer's bank is unavailable.</td>
+        </tr>
+        <tr>
+            <td>R08</td>
+            <td>This transaction isn't permitted for the beneficiary.</td>
+        </tr>
+        <tr>
+            <td>R09</td>
+            <td>Connection timed out during the debit request process.</td>
+        </tr>
+        <tr>
+            <td>R12</td>
+            <td>Beneficiary bank response time is too high.</td>
+        </tr>
+        <tr>
+            <td>R13</td>
+            <td>The total debit amount exceeded the set limit.</td>
+        </tr>
+        <tr>
+            <td>R14</td>
+            <td>Transaction details mismatch.</td>
+        </tr>
+        <tr>
+            <td>R16</td>
+            <td>The requested function is not supported for the beneficiary.</td>
+        </tr>
+        <tr>
+            <td>R20</td>
+            <td>Receiver/beneficiary is not available, causing a timeout.</td>
+        </tr>
+        <tr>
+            <td>R22</td>
+            <td>The debit acknowledgement was not received.</td>
+        </tr>
+        <tr>
+            <td>R25</td>
+            <td>Duplicate transaction request.</td>
+        </tr>
+        <tr>
+            <td>R100</td>
+            <td>Any other upstream server error.</td>
+        </tr>
+        </table>
+  </details>
+</Card>
+
+
+
+###### Examples
+
+<Text size="small" weight="600">
+    Example 1
+</Text>
+
+<Card padding="nano" shape="rounded" marginBottom="micro">
+  <details>
+    <summary>
+        In case of customer's debit attempt failed
+    </summary>
+    <hr className="tertiary" />
+    <CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "rpd": {
+      "id": "178ce32b-bf43-4797-9423-027d3722df08",
+      "additionalData": null, // customer's own data if they provided
+      "statusCode":  "R01",
+      "statusDescription": "The customer's debit attempt failed." 
+    }
+  },
+  "event": "RPD_DEBIT_ATTEMPT_FAILED",
+  "timeStamp": "2023-08-24T12:59:11.427233"
+}
+  `}
+</CodeBlockWithCopy>
   </details>
 </Card>
 
