@@ -15,31 +15,91 @@ The code snippets provided below deal specifically with how the web view is load
 
 ### Flutter
 
-<CodeBlockWithCopy language="null">
-{`import 'package:url_launcher/url_launcher.dart'; //Package used for handling app links
-import 'package:webview_flutter/webview_flutter.dart'; //Package for webViews in android and iOS
-_launchAppLink(String url) async {
-   try {
-        launch(url);
-    } catch (e) {
-        alertDialog(text: 'App not found', context: context);
-        throw 'Could not launch $url';
+<CodeBlockWithCopy language="java">
+{`
+    import 'package:flutter/material.dart';
+    import 'package:url_launcher/url_launcher_string.dart'; // Package for handling app links
+    import 'package:webview_flutter/webview_flutter.dart';  // Package for handling webview
+    import 'dart:developer' as developer;
+    void main() {
+        runApp(MyApp());
+    }
+    class MyApp extends StatelessWidget {
+        @override
+        Widget build(BuildContext context) {
+            return MaterialApp(
+            home: RpWebPage(
+                link:
+                'https://billpay.setu.co/1234',
+            ), // Replace with the actual link generation logic
+            );
         }
     }
-WebViewController controllerGlobal;
-final webView = WebView(
-  initialUrl: _url,
-  javascriptMode: JavascriptMode.unrestricted,
-  navigationDelegate: (NavigationRequest request) {
-      if (!request.url.contains('.setu.co')) {
-          print('blocking navigation to $request}');
-          _launchAppLink(request.url); //Declared above
-          return NavigationDecision.prevent;
-      }
-      print('allowing navigation to $request');
-      return NavigationDecision.navigate;
-  },
-);`}
+    class RpWebPage extends StatefulWidget {
+        const RpWebPage({super.key, required this.link});
+
+        final String link;
+
+        @override
+        State<RpWebPage> createState() => _RpWebPageState();
+    }
+    class _RpWebPageState extends State<RpWebPage> {
+        late WebViewController controller;
+        bool isButtonClicked = false;
+        @override
+        void initState() {
+            super.initState();
+            controller = WebViewController()
+            ..setJavaScriptMode(JavaScriptMode.unrestricted)
+            ..setNavigationDelegate(NavigationDelegate(
+                onProgress: (progress) {
+                },
+                onPageStarted: (String url) {
+                },
+                onPageFinished: (String url) {
+                },
+                onNavigationRequest: ((NavigationRequest request) {
+                // Handle UPI app specific intents
+                if (isButtonClicked && request.url.contains('upi') || request.url.contains('phonepe')) {
+                    launchUrlString(request.url, mode: LaunchMode.externalApplication);
+                    return NavigationDecision.prevent; // Prevent the WebView from navigating to the UPI intent
+                }
+                return NavigationDecision.navigate; // Allow navigation to other URLs
+                }),
+            ));
+        }
+        void _loadUrl() {
+            setState(() {
+                isButtonClicked = true;
+            });
+            if (controller != null) {
+                controller.loadRequest(Uri.parse(widget.link));
+            }
+        }
+        @override
+        Widget build(BuildContext context) {
+            return Scaffold(
+            appBar: AppBar(
+                title: Text('Bill Payments'),
+            ),
+            body: Column(
+                    children: [
+                        if (!isButtonClicked)
+                            ElevatedButton(
+                            onPressed: _loadUrl,
+                            child: Text('Load app'),
+                            ),
+                        Expanded(
+                            child: isButtonClicked
+                                ? WebViewWidget(controller: controller)
+                                : Container(),
+                        ),
+                    ],
+                ),
+            );
+        }
+    }
+`}
 
 </CodeBlockWithCopy>
 
@@ -77,16 +137,18 @@ Below are the steps to embed the pre-built screens into React Native app,
             <>
             <SafeAreaView style={styles.flexContainer}>
                 <WebView
-                source={{
-                    uri: webviewUri,
-                        }}
-                    startInLoadingState={true}
-                    renderLoading={() => (
-                        <ActivityIndicator color="black" size="large" style={styles.flexContainer} />
-                    )}
-                ref={webviewRef}
-                onNavigationStateChange={onNavigation}
-                style={styles.margin}
+                    source={{
+                        uri: webviewUri,
+                            }}
+                        startInLoadingState={true}
+                        renderLoading={() => (
+                            <ActivityIndicator color="black" size="large" style={styles.flexContainer} />
+                        )}
+                    ref={webviewRef}
+                    onNavigationStateChange={onNavigation}
+                    style={styles.margin}
+                    // Whitelist UPI app specific schemes for handling app specific intents
+                    originWhitelist={['*.setu.co','*://upi/*','phonepe://*']}
                 />
             </SafeAreaView>
             </>
@@ -100,7 +162,8 @@ Below are the steps to embed the pre-built screens into React Native app,
         margin: {
             marginTop: 50,
         },
-    }); `}
+    }); 
+`}
 
 </CodeBlockWithCopy>
 
