@@ -15,87 +15,115 @@ The code snippets provided below deal specifically with how the web view is load
 
 ### Flutter
 
+##### Switch control from your app to Setu
+The link returned by the <a href="/payments/billpay/api-reference/white-label#/category~Link_Generation/operation~EtherealLinkRequest" target="_blank">Create link API</a> should be loaded within the `Webview`. The Webview should have a `WebViewController` attached to it.
+
+The `controller` will need to implement one JavaScript handler - 
+
+- `unload` - Used by the parent app to dismiss the webview
+
+<Callout type="tip">
+    <b>Special use case:</b> This <code>unload</code> function can also be used for dismissing the webview and redirecting a user back to your native app once a bill payment journey is completed (i.e. payment is successful) via a CTA from the Setu webview. Please let our team know if you would like to enable this use case for your app.
+</Callout>
+<br />
+
 <CodeBlockWithCopy language="java">
 {`
-import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher_string.dart'; // Package for handling app links
-import 'package:webview_flutter/webview_flutter.dart';  // Package for handling webview
-import 'dart:developer' as developer;
-void main() {
-    runApp(MyApp());
-}
-class MyApp extends StatelessWidget {
-    @override
-    Widget build(BuildContext context) {
-        return MaterialApp(
-        home: RpWebPage(
-            link: 'https://billpay.setu.co/1234', // Replace with the actual link generation logic
-            ),
-        );
+    import 'package:flutter/material.dart';
+    import 'package:url_launcher/url_launcher_string.dart'; // Package for handling app links
+    import 'package:webview_flutter/webview_flutter.dart';  // Package for handling webview
+    import 'dart:developer' as developer;
+    void main() {
+        runApp(MyApp());
     }
-}
-class RpWebPage extends StatefulWidget {
-    const RpWebPage({super.key, required this.link});
-    final String link;
-    @override
-    State<RpWebPage> createState() => _RpWebPageState();
-}
-class _RpWebPageState extends State<RpWebPage> {
-    late WebViewController controller;
-    bool isButtonClicked = false;
-    @override
-    void initState() {
-        super.initState();
-        controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(NavigationDelegate(
-            onProgress: (progress) {
-            },
-            onPageStarted: (String url) {
-            },
-            onPageFinished: (String url) {
-            },
-            onNavigationRequest: ((NavigationRequest request) {
-            // Handle UPI app specific intents
-            if (isButtonClicked && request.url.contains('upi') || request.url.contains('phonepe')) {
-                launchUrlString(request.url, mode: LaunchMode.externalApplication);
-                return NavigationDecision.prevent; // Prevent the WebView from navigating to the UPI intent
-            }
-            return NavigationDecision.navigate; // Allow navigation to other URLs
-            }),
-        ));
-    }
-    void _loadUrl() {
-        setState(() {
-            isButtonClicked = true;
-        });
-        if (controller != null) {
-            controller.loadRequest(Uri.parse(widget.link));
+    class MyApp extends StatelessWidget {
+        @override
+        Widget build(BuildContext context) {
+            return MaterialApp(
+            home: RpWebPage(
+                link:
+                'https://billpay.setu.co/1234',
+            ), // Replace with the actual link generation logic
+            );
         }
     }
-    @override
-    Widget build(BuildContext context) {
-        return Scaffold(
-        appBar: AppBar(
-            title: Text('Bill Payments'),
-        ),
-        body: Column(
-                children: [
+    class RpWebPage extends StatefulWidget {
+        const RpWebPage({super.key, required this.link});
+        final String link;
+        @override
+        State<RpWebPage> createState() => _RpWebPageState();
+    }
+    class _RpWebPageState extends State<RpWebPage> {
+        late WebViewController controller;
+        bool isButtonClicked = false;
+        @override
+        void initState() {
+            super.initState();
+            controller = WebViewController()
+            ..setJavaScriptMode(JavaScriptMode.unrestricted)
+            ..setNavigationDelegate(NavigationDelegate(
+                onProgress: (progress) {
+                },
+                onPageStarted: (String url) {
+                },
+                onPageFinished: (String url) {
+                },
+                onNavigationRequest: ((NavigationRequest request) {
+                // Handle UPI app specific intents
+                if (isButtonClicked && request.url.contains('upi') || request.url.contains('phonepe')) {
+                    launchUrlString(request.url, mode: LaunchMode.externalApplication);
+                    return NavigationDecision.prevent; // Prevent the WebView from navigating to the UPI intent
+                }
+                return NavigationDecision.navigate; // Allow navigation to other URLs
+                }),
+            ));
+        }
+        void _loadUrl() {
+            setState(() {
+                isButtonClicked = true;
+            });
+            if (controller != null) {
+                controller.loadRequest(Uri.parse(widget.link));
+            }
+        }
+        @override
+        Widget build(BuildContext context) {
+            return Scaffold(
+                appBar: AppBar(
+                    title: Text('Bill Payments'),
+                ),
+                body: Column(
+                    children: [
                     if (!isButtonClicked)
                         ElevatedButton(
-                        onPressed: _loadUrl,
-                        child: Text('Load app'),
+                            onPressed: _loadUrl,
+                            child: Text('Load webview'),
                         ),
                     Expanded(
                         child: isButtonClicked
-                            ? WebViewWidget(controller: controller)
+                            ? InAppWebView(
+                                initialUrlRequest:
+                                    URLRequest(url: WebUri.uri(Uri.parse(widget.link))),
+                                onWebViewCreated: (InAppWebViewController controller) {
+                                    webView = controller;
+                                },
+                                onLoadStop: (controller, url) async {
+                                    // Method to unload webview
+                                    controller.addJavaScriptHandler(
+                                        handlerName: 'unload',
+                                        callback: (args) async {
+                                            // logic to close webview and return to app
+                                        },
+                                    );
+                                },
+                            )
                             : Container(),
                     ),
-                ],
-            ),
-        );
+                    ],
+                ),
+            );
+        }
     }
-}
 `}
 
 </CodeBlockWithCopy>
