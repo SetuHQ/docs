@@ -5,6 +5,10 @@ Monorepo of content and API reference of [Setu docs](https://docs.setu.co)
 -   [Content](#content)
 -   [API References](#api-references)
 
+# Activity
+
+![Alt](https://repobeats.axiom.co/api/embed/eae4f5c23cae4d52f5102a1647a384211911e043.svg "Repobeats analytics image")
+
 # Content
 
 You can find content for [Setu docs](https://docs.setu.co) in `/content` folder
