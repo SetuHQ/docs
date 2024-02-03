@@ -16,9 +16,9 @@ The code snippets provided below deal specifically with how the web view is load
 ### Flutter
 
 ##### Switch control from your app to Setu
-The link returned by the <a href="/payments/billpay/api-reference/white-label#/category~Link_Generation/operation~EtherealLinkRequest" target="_blank">Create link API</a> should be loaded within the `Webview`. The Webview should have a `WebViewController` attached to it.
+The link returned by the <a href="/payments/billpay/api-reference/white-label#/category~Link_Generation/operation~EtherealLinkRequest" target="_blank">Create link API</a> should be loaded within a webview. Our sample below uses the [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) plugin for webviews. Feel free to use a plugin as per your requirements.
 
-The `controller` will need to implement one JavaScript handler - 
+The webview `controller` will need to implement one JavaScript handler - 
 
 - `unload` - Used by the parent app to dismiss the webview
 
@@ -27,23 +27,36 @@ The `controller` will need to implement one JavaScript handler -
 </Callout>
 <br />
 
+Make sure you are handling these functionalities in your webview for a seamless user experience:
+
+- If you are integrating with our default UPI payment option, the webview needs to handle UPI app specific intents using a `shouldOverrideUrlLoading` (or a similar function as per your webview plugin). This function is used to handle UPI app specific schemes and open the UPI app. 
+
+- For downloading and saving transaction receipts from the webview, the webview will need to handle a `onDownloadStartRequest` (or a similar function as per your webview plugin). Our sample below uses the [flutter_downloader](https://pub.dev/packages/flutter_downloader) and [path_provider](https://pub.dev/packages/path_provider) plugins for downloading and saving transaction receipts. Please follow the plugin specific documentation for implementation. Make sure you have added necessary permissions in your `AndroidManifest.xml` and `Info.plist` files for downloading and saving files.
+
 <CodeBlockWithCopy language="java">
 {`
+    import 'dart:io';
+    import 'dart:isolate';
+    import 'dart:ui';
     import 'package:flutter/material.dart';
-    import 'package:url_launcher/url_launcher_string.dart'; // Package for handling app links
-    import 'package:webview_flutter/webview_flutter.dart';  // Package for handling webview
-    import 'dart:developer' as developer;
-    void main() {
-        runApp(MyApp());
+    import 'package:url_launcher/url_launcher.dart';
+    import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+    import 'package:flutter_downloader/flutter_downloader.dart';
+    import 'package:path_provider/path_provider.dart';
+    Future main() async {
+        WidgetsFlutterBinding.ensureInitialized();
+        await FlutterDownloader.initialize(
+            debug: true, // optional: set false to disable printing logs to console
+        );
+        runApp(new MyApp());
     }
     class MyApp extends StatelessWidget {
         @override
         Widget build(BuildContext context) {
             return MaterialApp(
-            home: RpWebPage(
-                link:
-                'https://billpay.setu.co/1234',
-            ), // Replace with the actual link generation logic
+                home: RpWebPage(
+                    link: 'https://billpay.setu.co/1234',
+                ), // Replace with the actual URL
             );
         }
     }
@@ -54,37 +67,16 @@ The `controller` will need to implement one JavaScript handler -
         State<RpWebPage> createState() => _RpWebPageState();
     }
     class _RpWebPageState extends State<RpWebPage> {
-        late WebViewController controller;
+        late InAppWebViewController webView;
         bool isButtonClicked = false;
         @override
         void initState() {
             super.initState();
-            controller = WebViewController()
-            ..setJavaScriptMode(JavaScriptMode.unrestricted)
-            ..setNavigationDelegate(NavigationDelegate(
-                onProgress: (progress) {
-                },
-                onPageStarted: (String url) {
-                },
-                onPageFinished: (String url) {
-                },
-                onNavigationRequest: ((NavigationRequest request) {
-                // Handle UPI app specific intents
-                if (isButtonClicked && request.url.contains('upi') || request.url.contains('phonepe')) {
-                    launchUrlString(request.url, mode: LaunchMode.externalApplication);
-                    return NavigationDecision.prevent; // Prevent the WebView from navigating to the UPI intent
-                }
-                return NavigationDecision.navigate; // Allow navigation to other URLs
-                }),
-            ));
         }
         void _loadUrl() {
             setState(() {
                 isButtonClicked = true;
             });
-            if (controller != null) {
-                controller.loadRequest(Uri.parse(widget.link));
-            }
         }
         @override
         Widget build(BuildContext context) {
@@ -102,13 +94,15 @@ The `controller` will need to implement one JavaScript handler -
                     Expanded(
                         child: isButtonClicked
                             ? InAppWebView(
-                                initialUrlRequest:
-                                    URLRequest(url: WebUri.uri(Uri.parse(widget.link))),
+                                initialSettings: InAppWebViewSettings(
+                                    allowFileAccess: true,
+                                    allowFileAccessFromFileURLs: true
+                                ),
+                                initialUrlRequest: URLRequest(url: WebUri.uri(Uri.parse(widget.link))),
                                 onWebViewCreated: (InAppWebViewController controller) {
                                     webView = controller;
                                 },
                                 onLoadStop: (controller, url) async {
-                                    // Method to unload webview
                                     controller.addJavaScriptHandler(
                                         handlerName: 'unload',
                                         callback: (args) async {
@@ -116,9 +110,43 @@ The `controller` will need to implement one JavaScript handler -
                                         },
                                     );
                                 },
+                                // Handle opening UPI apps from UPI app specific intents
+                                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                                    final uri = navigationAction.request.url!;
+                                    if (["phonepe", "upi"].contains(uri.scheme) ||
+                                        uri.toString().contains("upi")) {
+                                        if (await canLaunchUrl(uri)) {
+                                            // Launch the App
+                                            await launchUrl(
+                                                uri,
+                                            );
+                                            // and cancel the request
+                                            return NavigationActionPolicy.CANCEL;
+                                        }
+                                    }
+                                    return NavigationActionPolicy.ALLOW;
+                                },
+                                // Handle downloading the receipt
+                                onDownloadStartRequest: (controller, request) async {
+                                    print("onDownloadStart $request");
+                                    final dir = Platform.isAndroid
+                                        ? (await getExternalStorageDirectory())?.path
+                                        : (await getApplicationDocumentsDirectory()).uri.path;
+                                    print("saving in $dir");
+                                    final taskId = await FlutterDownloader.enqueue(
+                                        url: request.url.toString(),
+                                        savedDir: dir!,
+                                        showNotification: true, // show download progress in status bar (for Android)
+                                        openFileFromNotification: true, // click on notification to open downloaded file (for Android)
+                                        saveInPublicStorage: true,
+                                        allowCellular: true
+                                    );
+                                    // Open the downloaded file
+                                    await FlutterDownloader.open(taskId: taskId!);
+                                },
                             )
                             : Container(),
-                    ),
+                        ),
                     ],
                 ),
             );
@@ -159,25 +187,31 @@ Below are the steps to embed the pre-built screens into React Native app,
             let url = navState.url;
         };
         return (
-            <>
             <SafeAreaView style={styles.flexContainer}>
                 <WebView
-                    source={{
-                        uri: webviewUri,
-                            }}
-                        startInLoadingState={true}
-                        renderLoading={() => (
-                            <ActivityIndicator color="black" size="large" style={styles.flexContainer} />
-                        )}
+                    source={{ uri: 'https://billpay.setu.co/1234' }} // Replace with the actual URL
+                    startInLoadingState={true}
+                    renderLoading={() => (
+                        <ActivityIndicator color="black" size="large" style={styles.flexContainer} />
+                    )}
                     ref={webviewRef}
                     onNavigationStateChange={onNavigation}
                     style={styles.margin}
                     // Whitelist UPI app specific schemes for handling app specific intents
                     originWhitelist={['*.setu.co','*://upi/*','phonepe://*']}
+                    mixedContentMode="always"
+                    allowFileAccess
+                    allowFileAccessFromFileURLs
+                    allowUniversalAccessFromFileURLs
+                    javaScriptEnabled
+                    nestedScrollEnabled // optional: in case you are loading WebView inside a ScrollView
+                    scrollEnabled 
+                    onFileDownload={(event) => {
+                        // Handle downloading the receipt (iOS only)
+                    }}
                 />
             </SafeAreaView>
-            </>
-            );
+        );
     }
     // Styles
     const styles = StyleSheet.create({
