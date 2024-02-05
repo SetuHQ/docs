@@ -63,6 +63,40 @@ Setu will post this payload to your notification endpoint whenever there is a ch
 }`}
 </CodeBlockWithCopy>
 
+In cases where the user **cancels** the consent before login, or **rejects** the consent after login, an error code and error message will be included in the notification payload.
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "success": false,
+  "error": {
+    "code": "UserCancelled",
+    "message": "cancel_not_understand"
+  },
+  "data": null,
+  "consentId": "72cb6cb8-c248-4b88-9282-18262fbdfbc2",
+  "notificationId": "66d5fef5-d5f3-48f6-afe7-1e82ac952ecb",
+  "timestamp": "2024-01-29T07:28:24.547Z",
+  "type": "CONSENT_STATUS_UPDATE"
+}`}
+</CodeBlockWithCopy>
+
+###### Consent error codes
+Mapping of error code, error message and it's meaning:
+
+| **Error Code** | **Error Message** | **Meaning** |
+| :--- | :--- | :--- |
+| `UserCancelled` | `cancel_not_understand` | I do not understand what is happening |
+| `UserCancelled` | `cancel_will_share_later` | I will share my data later |
+| `UserCancelled` | `cancel_not_want_to_share` | I do not want to share my data with FIU |
+| `UserRejected` | `reject_not_understand` | I do not understand why my data is being requested |
+| `UserRejected` | `reject_not_want_to_share` | I do not want to share my data with FIU |
+| `UserRejected` | `reject_accounts_not_found` | I could not find my accounts |
+| `UserRejected` | `reject_other` | For other reasons |
+
+<br />
+
+Please note that if user cancels the consent before login, this keeps the consent in `PENDING` state and same consent link can be used again. 
+
 <hr class="primary" />
 
 #### FI notification
