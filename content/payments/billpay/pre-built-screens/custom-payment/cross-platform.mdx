@@ -1,0 +1,205 @@
+---
+sidebar_title: Cross platform
+page_title: BBPS Billpay cross-platform integration for custom payment
+order: 3
+visible_in_sidebar: true
+---
+
+## Cross platform integration with your own payment gateway
+
+<Callout type="tip">
+    This quickstart explains how to integrate when you opt for your own payment
+    gateway. Use{" "}
+    <a href="/payments/billpay/quickstart/cross-platforn" target="_blank">
+        this guide
+    </a>{" "}
+    for Setu’s default UPI payment option.
+</Callout>
+
+<br />
+
+In case you are using a cross platform solution—like **Flutter, React Native, Ionic**—for your Android and iOS apps, you can refer to the code snippets provided below for a custom payment integration. The integration process remains the same, but changes as per the language you use.
+
+The code snippets provided below deal specifically with how the web view is loaded and dismissed within your Android/iOS app. Usage of the Create Link API will remain unaffected.
+
+### Flutter
+
+#### Step 1 - Implement webview in your app
+
+The following steps need to be taken for webview integration—
+
+1. Get link from the backend
+2. Open the link in `InAppWebView` and attach a `WebViewController`
+3. Execute payment flow and redirect back to the `InWebView` post payment
+
+##### Switch control from your app to Setu
+
+The link returned by the <a href="/payments/billpay/api-reference/white-label#/category~Link_Generation/operation~EtherealLinkRequest" target="_blank">Create link API</a> should be loaded within the Webview. Our sample below uses the [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview) plugin for webviews. Feel free to use a plugin as per your requirements.
+
+The `controller` will need to implement two JavaScript handlers - 
+
+- `initiatePayment` - Used to initiate payment & transfer control from Setu webview to the flutter application.
+- `unload` - Used by the parent app to dismiss the webview
+
+<Callout type="tip">
+    <b>Special use case:</b> This <code>unload</code> function can also be used for dismissing the webview and redirecting a user back to your native app once a bill payment journey is completed (i.e. payment is successful) via a CTA from the Setu webview. Please let our team know if you would like to enable this use case for your app.
+</Callout>
+<br />
+
+<Callout type="warning">
+ <b>Note:</b> For downloading and saving transaction receipts from the webview, the webview will need to handle a <code>onDownloadStartRequest</code> (or a similar function as per your webview plugin). Our sample below uses the <a href="https://pub.dev/packages/flutter_downloader">flutter_downloader</a> and <a href="https://pub.dev/packages/path_provider">path_provider</a> plugins for downloading and saving transaction receipts. Please follow the plugin specific documentation for implementation. Make sure you have added necessary permissions in your <code>AndroidManifest.xml</code> and <code>Info.plist</code> files for downloading and saving files.
+</Callout>
+<br />
+
+<CodeBlockWithCopy language="java">
+{`
+    import 'dart:io';
+    import 'dart:isolate';
+    import 'dart:ui';
+    import 'package:flutter/material.dart';
+    import 'package:url_launcher/url_launcher.dart';
+    import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+    import 'package:flutter_downloader/flutter_downloader.dart';
+    import 'package:path_provider/path_provider.dart';
+    Future main() async {
+        WidgetsFlutterBinding.ensureInitialized();
+        await FlutterDownloader.initialize(
+            debug: true, // optional: set false to disable printing logs to console
+        );
+        runApp(new MyApp());
+    }
+    class MyApp extends StatelessWidget {
+        @override
+        Widget build(BuildContext context) {
+            return MaterialApp(
+                home: RpWebPage(
+                    link: 'https://billpay.setu.co/1234',
+                ), // Replace with the actual URL
+            );
+        }
+    }
+    class RpWebPage extends StatefulWidget {
+        const RpWebPage({super.key, required this.link});
+        final String link;
+        @override
+        State<RpWebPage> createState() => _RpWebPageState();
+    }
+    class _RpWebPageState extends State<RpWebPage> {
+        late InAppWebViewController webView;
+        bool isButtonClicked = false;
+        @override
+        void initState() {
+            super.initState();
+        }
+        void _loadUrl() {
+            setState(() {
+                isButtonClicked = true;
+            });
+        }
+        @override
+        Widget build(BuildContext context) {
+            return Scaffold(
+                appBar: AppBar(
+                    title: Text('Bill Payments'),
+                ),
+                body: Column(
+                    children: [
+                    if (!isButtonClicked)
+                        ElevatedButton(
+                            onPressed: _loadUrl,
+                            child: Text('Load webview'),
+                        ),
+                    Expanded(
+                        child: isButtonClicked
+                            ? InAppWebView(
+                                initialSettings: InAppWebViewSettings(
+                                    allowFileAccess: true,
+                                    allowFileAccessFromFileURLs: true
+                                ),
+                                initialUrlRequest: URLRequest(url: WebUri.uri(Uri.parse(widget.link))),
+                                onWebViewCreated: (InAppWebViewController controller) {
+                                    webView = controller;
+                                },
+                                onLoadStop: (controller, url) async {
+                                    controller.addJavaScriptHandler(
+                                        handlerName: 'initiatePayment',
+                                        callback: (args) async {
+                                            print('Received from WebView: $args');
+                                            var paymentData = args[0];
+                                            print('Payment data: $paymentData');
+                                            // add your custom payment logic here
+                                        },
+                                    );
+                                    controller.addJavaScriptHandler(
+                                        handlerName: 'unload',
+                                        callback: (args) async {
+                                            // logic to close webview and return to app
+                                        },
+                                    );
+                                },
+                                // Handle downloading the receipt
+                                onDownloadStartRequest: (controller, request) async {
+                                    print("onDownloadStart $request");
+                                    final dir = Platform.isAndroid
+                                        ? (await getExternalStorageDirectory())?.path
+                                        : (await getApplicationDocumentsDirectory()).uri.path;
+                                    print("saving in $dir");
+                                    final taskId = await FlutterDownloader.enqueue(
+                                        url: request.url.toString(),
+                                        savedDir: dir!,
+                                        showNotification: true, // show download progress in status bar (for Android)
+                                        openFileFromNotification: true, // click on notification to open downloaded file (for Android)
+                                        saveInPublicStorage: true,
+                                        allowCellular: true
+                                    );
+                                    // Open the downloaded file
+                                    await FlutterDownloader.open(taskId: taskId!);
+                                },
+                            )
+                            : Container(),
+                        ),
+                    ],
+                ),
+            );
+        }
+    }
+`}
+</CodeBlockWithCopy>
+
+##### Handle payment flow
+
+The `initiatePayment` method in the `controller` takes an object param with the following fields
+
+- `orderId` on the Setu COU System. It always starts with `COUWL`. Example— `COUWLZ7pFtTgr9LtO`
+- `amount` to be paid by the customer. Example — `3522.20`
+- `callback` URL which needs to be loaded in the webview once the payment is completed. Example —`https://billpay.setu.co/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
+- `beneVpa` to which amount is to be transferred—this is relevant only if you can transfer in real time using UPI rails.
+- `remarks` used to communicate information between mobile app and webview
+- `mobileNumber` the customer mobile number used for the payment
+
+When initiate_payment case is called by the webview, your app needs to do the following—
+
+1. Remove the webview
+2. Initiate the payment flow
+3. Send Setu the webhook event for payment—this need not be done for UPI transfers in real time
+4. Once payment is executed, load the webview again with the callback URL
+
+<hr class="primary" />
+
+#### Step 2 — Optionally configure webhook
+
+You may optionally want to listen to user events—like successful or failed bill fetch, bill payment status and more—through webhooks. Refer to <a href="/payments/billpay/user-events" target="_blank">this guide</a> for more information.
+
+<hr class="primary" />
+
+#### Step 3 — Get Production credentials and go live
+
+Once you are done testing your integration, ensure that all KYC and legal agreements are submitted. Contact Setu for getting enabled on production.
+
+<hr class="primary" />
+
+<Callout type="tip">
+  We are updating the docs for custom payment based integration for other cross platform frameworks like <code>React native</code> Please bear with us for a while.
+</Callout>
+
+<WasPageHelpful />

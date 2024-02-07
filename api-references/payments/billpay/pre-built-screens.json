@@ -2,7 +2,7 @@
     "schemes": ["https"],
     "swagger": "2.0",
     "info": {
-        "title": "Setu Collect for Business - White label solution",
+        "title": "Setu Billpay - White label solution",
         "x-logo": {
             "url": "https://setu-customer-success.s3.ap-south-1.amazonaws.com/icons/setu-logo-dp-on-tp.svg",
             "altText": "Setu logo"
@@ -15,11 +15,6 @@
     "paths": {
         "/ethereal/link": {
             "post": {
-                "security": [
-                    {
-                        "bbps": ["bbps:partner", "cou:wl"]
-                    }
-                ],
                 "description": "WL link create request API",
                 "consumes": ["application/json"],
                 "produces": ["application/json"],
@@ -31,7 +26,15 @@
                         "name": "X-PARTNER-ID",
                         "in": "header",
                         "required": true,
-                        "type": "integer"
+                        "type": "string"
+                    },
+                    {
+                        "description": "Authorization Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "example": "Bearer ey5Tbsd82ms....."
                     },
                     {
                         "name": "EtherealLinkCreateRequest",
@@ -94,73 +97,27 @@
                 }
             }
         },
-        "/health": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Ok",
-                        "schema": {
-                            "$ref": "#/definitions/healthResponseParam"
-                        }
-                    }
-                },
-                "description": "Health check",
-                "produces": ["application/json"],
-                "tags": ["Health"],
-                "operationId": "getHealth",
-                "parameters": [
-                    {
-                        "name": "maintaince",
-                        "in": "header",
-                        "type": "boolean"
-                    }
-                ]
-            }
-        },
-        "/customPaymentResponse": {
+        "/": {
             "post": {
+                "description": "Get Token API",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "operationId": "GetToken",
                 "parameters": [
                     {
-                        "schema": {
-                            "$ref": "#/definitions/couCustomPaymentWebhook"
-                        },
-                        "name": "CouCustomPaymentWebhook",
+                        "name": "TokenAPIRequest",
                         "in": "body",
-                        "required": true
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TokenAPIRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "headers": {
-                            "X-XSS-Protection": {
-                                "type": "string",
-                                "description": "X Xss Protection"
-                            },
-                            "Cache-Control": {
-                                "type": "string",
-                                "description": "Cache control"
-                            },
-                            "Content-Security-Policy": {
-                                "type": "string",
-                                "description": "Content security policy"
-                            },
-                            "Pragma": {
-                                "type": "string",
-                                "description": "Pragma"
-                            },
-                            "Strict-Transport-Security": {
-                                "description": "Strict transport security",
-                                "type": "string"
-                            },
-                            "X-Content-Type-Options": {
-                                "description": "X Content type options",
-                                "type": "string"
-                            },
-                            "X-Frame-Options": {
-                                "description": "X Frame options",
-                                "type": "string"
-                            }
+                        "schema": {
+                            "$ref": "#/definitions/getTokenResponse"
                         }
                     },
                     "400": {
@@ -170,17 +127,12 @@
                         }
                     },
                     "500": {
-                        "description": "Bad request",
                         "schema": {
                             "$ref": "#/definitions/genericErrorResponse"
-                        }
+                        },
+                        "description": "Bad request"
                     }
-                },
-                "description": "Custom payment webhook API",
-                "consumes": ["application/json"],
-                "produces": ["application/json"],
-                "tags": ["CustomPaymentWebhook"],
-                "operationId": "CouCustomPaymentWebhook"
+                }
             }
         }
     },
@@ -296,6 +248,27 @@
             },
             "x-go-name": "EtherealSessionValidateResponse",
             "x-omitempty": true
+        },
+        "getTokenResponse": {
+            "type": "object",
+            "properties": {
+                "expiresIn": {
+                    "type": "integer",
+                    "example": 300
+                },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJSUzI1NiIs....."
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": "true"
+                },
+                "traceId": {
+                    "type": "string",
+                    "example": "C3SFG0O6N88R6UI7EQ"
+                }
+            }
         },
         "genericErrorResponse": {
             "type": "object",
@@ -2190,34 +2163,83 @@
                 }
             }
         },
+        "TokenAPIRequest": {
+            "type": "object",
+            "x-go-name": "TokenAPIRequest",
+            "x-omitempty": true,
+            "properties": {
+                "clientID": {
+                    "type": "string",
+                    "description": "client_id obtained from bridge",
+                    "example": "client_id"
+                },
+                "secret": {
+                    "type": "string",
+                    "description": "client secret obtained from bridge",
+                    "example": "client_secret"
+                }
+            },
+            "required": ["clientID", "secret"]
+        },
         "etherealLinkCreateRequest": {
             "required": ["orgId"],
             "properties": {
-                "categoryName": {
+                "orgId": {
                     "type": "string",
-                    "example": "9082718673"
+                    "example": "122337203685477",
+                    "description": "ID assigned to your organisation as provided by Setu."
                 },
                 "mobileNumber": {
                     "type": "string",
-                    "example": "9082718673"
-                },
-                "orgId": {
-                    "type": "string",
-                    "example": 122337203685477
+                    "example": "9082718673",
+                    "description": "Mobile number of the user for which the link is generated. If no value is sent, there is a mobile number and OTP flow invoked to validate the user. All transactions and complaints are listed for a given mobile number."
                 },
                 "redirectTo": {
                     "type": "string",
-                    "example": "9082718673"
+                    "enum": ["transactions", "disputes"],
+                    "example": "transactions",
+                    "description": "Specific page user needs to be redirected to. If left blank, link opens to the homepage."
+                },
+                "billerId": {
+                    "type": "string",
+                    "example": "BESCOM000KAR01",
+                    "description": "If redirected to a particular bill - pass this value."
+                },
+                "categoryName": {
+                    "type": "string",
+                    "enum": [
+                        "Electricity",
+                        "Piped Gas",
+                        "Water",
+                        "LPG",
+                        "Mobile postpaid",
+                        "Landline postpaid",
+                        "Broadband postpaid",
+                        "DTH",
+                        "FASTag Recharge",
+                        "Loan Repayment",
+                        "Recurring Deposits",
+                        "Credit Card",
+                        "Mutual Fund",
+                        "Insurance",
+                        "Cable",
+                        "Housing Society",
+                        "Education",
+                        "Hospital & Pathology",
+                        "Clubs & Associations",
+                        "Rental",
+                        "Subscriptions",
+                        "Municipal Taxes"
+                    ],
+                    "example": "Electricity",
+                    "description": "The category of the biller passed in the billerId field."
                 },
                 "billParams": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/billParameterItem"
-                    }
-                },
-                "billerId": {
-                    "type": "string",
-                    "example": "9082718673"
+                    },
+                    "description": "To be used if the Agent wishes to redirect the user to a specific bill page."
                 }
             },
             "x-go-name": "EtherealLinkCreateRequest",
@@ -2801,27 +2823,49 @@
             "properties": {
                 "paymentStatus": {
                     "type": "string",
+                    "enum": ["SUCCESS", "FAILURE"],
+                    "description": "Status of the payment collection",
                     "example": "SUCCESS"
                 },
                 "transactionId": {
                     "type": "string",
-                    "example": "ORDID12345"
+                    "example": "ORDID12345",
+                    "description": "Unique transaction ID created by the Agent for this payment collection. Defined by Agent - minimum 10 chars and maximum 36 chars"
                 },
                 "amount": {
                     "type": "string",
-                    "example": "SUCCESS"
+                    "example": "100",
+                    "description": "Amount collected in rupees"
                 },
                 "orderId": {
                     "type": "string",
-                    "example": "ORDID12345"
+                    "example": "COUWLje9V7wWs9N3w",
+                    "description": "Unique transaction ID created by Setu when initiating the payment request."
                 },
                 "paymentDateTime": {
                     "type": "string",
-                    "example": "ORDID12345"
+                    "example": "2023-08-01 17:33:32",
+                    "description": "Timestamp of the payment in UTC (YYYY-MM-DD HH:MM:SS)"
                 },
                 "paymentMode": {
                     "type": "string",
-                    "example": "ORDID12345"
+                    "example": "UPI",
+                    "description": "Mode of payment collection",
+                    "enum": [
+                        "CASH",
+                        "INTERNET BANKING",
+                        "CREDIT CARD",
+                        "DEBIT CARD",
+                        "PREPAID CARD",
+                        "IMPS",
+                        "NEFT",
+                        "UPI",
+                        "WALLET",
+                        "AEPS",
+                        "ACCOUNT TRANSFER",
+                        "Bharat QR",
+                        "USSD"
+                    ]
                 }
             },
             "x-go-name": "CouCustomPaymentWebhook",
@@ -2908,17 +2952,6 @@
             },
             "x-go-name": "HealthResponseParam",
             "x-omitempty": true
-        }
-    },
-    "securityDefinitions": {
-        "bbps": {
-            "type": "oauth2",
-            "flow": "application",
-            "tokenUrl": "https://qa-kabini-coudc.setu.co/api/v1/",
-            "scopes": {
-                "cou:wl": "Allow WL to make partner requests, custom payment orders, axis upi orders",
-                "bbps:partner": "Allow partner flows"
-            }
         }
     }
 }
