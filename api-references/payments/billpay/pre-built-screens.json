@@ -1,2957 +1,2996 @@
 {
-    "schemes": ["https"],
-    "swagger": "2.0",
-    "info": {
-        "title": "Setu Billpay - White label solution",
-        "x-logo": {
-            "url": "https://setu-customer-success.s3.ap-south-1.amazonaws.com/icons/setu-logo-dp-on-tp.svg",
-            "altText": "Setu logo"
-        },
-        "version": "0.5.0",
-        "description": "Enable easy BBPS bill payments in your App"
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Setu Billpay - White label solution",
+    "description": "Enable easy BBPS bill payments in your App",
+    "version": "0.5.0",
+    "x-logo": {
+      "url": "https://setu-customer-success.s3.ap-south-1.amazonaws.com/icons/setu-logo-dp-on-tp.svg",
+      "altText": "Setu logo"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://qa-coudc.setu.co/api/v1",
+      "description": "UAT"
     },
-    "host": "qa-coudc.setu.co",
-    "basePath": "/api/v1",
-    "paths": {
-        "/ethereal/link": {
-            "post": {
-                "description": "WL link create request API",
-                "consumes": ["application/json"],
-                "produces": ["application/json"],
-                "tags": ["Link Generation"],
-                "operationId": "EtherealLinkRequest",
-                "parameters": [
-                    {
-                        "description": "Partner ID",
-                        "name": "X-PARTNER-ID",
-                        "in": "header",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "description": "Authorization Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true,
-                        "type": "string",
-                        "example": "Bearer ey5Tbsd82ms....."
-                    },
-                    {
-                        "name": "EtherealLinkCreateRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/etherealLinkCreateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/etherealLinkCreateResponse"
-                        },
-                        "headers": {
-                            "Cache-Control": {
-                                "type": "string",
-                                "description": "Cache control"
-                            },
-                            "Content-Security-Policy": {
-                                "type": "string",
-                                "description": "Content security policy"
-                            },
-                            "Pragma": {
-                                "description": "Pragma",
-                                "type": "string"
-                            },
-                            "Strict-Transport-Security": {
-                                "type": "string",
-                                "description": "Strict transport security"
-                            },
-                            "X-Content-Type-Options": {
-                                "type": "string",
-                                "description": "X Content type options"
-                            },
-                            "X-Frame-Options": {
-                                "type": "string",
-                                "description": "X Frame options"
-                            },
-                            "X-XSS-Protection": {
-                                "type": "string",
-                                "description": "X Xss Protection"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/genericErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "schema": {
-                            "$ref": "#/definitions/genericErrorResponse"
-                        },
-                        "description": "Bad request"
-                    }
-                }
+    {
+      "url": "https://coudc.setu.co/api/v1",
+      "description": "Production"
+    }
+  ],
+  "paths": {
+    "/ethereal/link": {
+      "post": {
+        "tags": ["Link Generation"],
+        "description": "WL link create request API",
+        "operationId": "EtherealLinkRequest",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Authorization Bearer token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/etherealLinkCreateRequest"
+              }
+            }
+          },
+          "required": true
         },
-        "/": {
-            "post": {
-                "description": "Get Token API",
-                "consumes": ["application/json"],
-                "produces": ["application/json"],
-                "operationId": "GetToken",
-                "parameters": [
-                    {
-                        "name": "TokenAPIRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/TokenAPIRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/getTokenResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/genericErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "schema": {
-                            "$ref": "#/definitions/genericErrorResponse"
-                        },
-                        "description": "Bad request"
-                    }
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
                 }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/etherealLinkCreateResponse"
+                }
+              }
             }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "EtherealLinkCreateRequest"
+      }
+    },
+    "/": {
+      "post": {
+        "tags": ["Token API"],
+        "description": "Get Token API",
+        "operationId": "GetToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenAPIRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/getTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "TokenAPIRequest"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "billerAdditionalInfoItem": {
+        "required": ["dataType", "optional", "paramName"],
+        "type": "object",
+        "properties": {
+          "dataType": {
+            "type": "string",
+            "example": "ALPHANUMERIC",
+            "enum": ["ALPHANUMERIC", "NUMERIC"]
+          },
+          "optional": {
+            "type": "boolean",
+            "example": false
+          },
+          "paramName": {
+            "type": "string",
+            "example": "Package Duration"
+          }
         }
-    },
-    "definitions": {
-        "billerAdditionalInfoItem": {
-            "type": "object",
-            "required": ["paramName", "dataType", "optional"],
-            "properties": {
-                "dataType": {
-                    "type": "string",
-                    "enum": ["ALPHANUMERIC", "NUMERIC"],
-                    "example": "ALPHANUMERIC"
-                },
-                "optional": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "paramName": {
-                    "type": "string",
-                    "example": "Package Duration"
-                }
-            }
-        },
-        "etherealLoginValidateRequest": {
-            "required": ["orgId", "sessionId", "mobileNumber", "refId", "otp"],
-            "properties": {
-                "mobileNumber": {
-                    "type": "string",
-                    "example": "mobileNumber"
-                },
-                "orgId": {
-                    "example": "orgId",
-                    "type": "string"
-                },
-                "otp": {
-                    "type": "string",
-                    "example": "otp"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "refId"
-                },
-                "sessionId": {
-                    "type": "string",
-                    "example": "sessionId"
-                }
-            },
-            "x-go-name": "EtherealLoginValidateRequest",
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "etherealSessionValidateResponse": {
-            "type": "object",
-            "required": ["success", "traceId"],
-            "properties": {
-                "mobileNumber": {
-                    "type": "string",
-                    "example": "mobileNumber"
-                },
-                "orgConfigs": {
-                    "items": {
-                        "$ref": "#/definitions/etherealOrgConfigurationItem"
-                    },
-                    "type": "array"
-                },
-                "partnerId": {
-                    "type": "string",
-                    "example": "partnerId"
-                },
-                "secret": {
-                    "example": "secret",
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "isAnonymous": {
-                    "type": "boolean",
-                    "example": "isAnonymous"
-                },
-                "orgId": {
-                    "type": "string",
-                    "example": "orgId"
-                },
-                "redirectTo": {
-                    "type": "object",
-                    "properties": {
-                        "billParams": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/billParameterItem"
-                            }
-                        },
-                        "billerId": {
-                            "type": "string",
-                            "example": "9082718673"
-                        },
-                        "categoryName": {
-                            "type": "string",
-                            "example": "9082718673"
-                        },
-                        "redirectTo": {
-                            "type": "string",
-                            "example": "9082718673"
-                        }
-                    }
-                }
-            },
-            "x-go-name": "EtherealSessionValidateResponse",
-            "x-omitempty": true
-        },
-        "getTokenResponse": {
-            "type": "object",
-            "properties": {
-                "expiresIn": {
-                    "type": "integer",
-                    "example": 300
-                },
-                "token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJSUzI1NiIs....."
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": "true"
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            }
-        },
-        "genericErrorResponse": {
-            "type": "object",
-            "required": ["success", "traceId", "error"],
-            "properties": {
-                "error": {
-                    "$ref": "#/definitions/errorMessage"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            }
-        },
-        "status": {
+      },
+      "etherealLoginValidateRequest": {
+        "required": ["mobileNumber", "orgId", "otp", "refId", "sessionId"],
+        "type": "object",
+        "properties": {
+          "mobileNumber": {
             "type": "string",
-            "enum": ["Processing", "Success", "Failure"],
-            "example": "Success"
-        },
-        "wrappedRefId": {
-            "required": ["refId"],
-            "properties": {
-                "refId": {
-                    "type": "string",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                }
-            },
-            "type": "object"
-        },
-        "genericRefIdResponse": {
-            "type": "object",
-            "required": ["success", "data", "traceId"],
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/wrappedRefId"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10461713"
-                }
-            }
-        },
-        "billParameters": {
-            "items": {
-                "$ref": "#/definitions/billParameterItem"
-            },
-            "description": "The bill params for fetching the bill",
-            "type": "array"
-        },
-        "complaintStatus": {
-            "example": "ASSIGNED",
-            "description": "BBPS Complaint status",
+            "example": "mobileNumber"
+          },
+          "orgId": {
             "type": "string",
-            "enum": [
-                "INITIALIZED",
-                "ASSIGNED",
-                "RE_ASSIGNED",
-                "ASSIGNED_TO_BOU",
-                "ASSIGNED_TO_COU",
-                "ASSIGNED_TO_OU",
-                "ESCALATED",
-                "RESOLVED",
-                "UNRESOLVED"
-            ]
+            "example": "orgId"
+          },
+          "otp": {
+            "type": "string",
+            "example": "otp"
+          },
+          "refId": {
+            "type": "string",
+            "example": "refId"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "sessionId"
+          }
         },
-        "couCustomOrderCreateRequest": {
-            "type": "object",
-            "required": [
-                "sessionId",
-                "orgId",
-                "amount",
-                "postPaymentUrl",
-                "mobileNumber",
-                "agentMobileNumber",
-                "isDirectBill"
-            ],
-            "properties": {
-                "allowedPaymentMethods": {
-                    "example": "collect123",
-                    "type": "string"
-                },
-                "amount": {
-                    "example": "100",
-                    "type": "string"
-                },
-                "mobileNumber": {
-                    "type": "string",
-                    "example": "collect123"
-                },
-                "orgId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "sessionId": {
-                    "example": "000",
-                    "type": "string"
-                },
-                "agentMobileNumber": {
-                    "type": "string",
-                    "example": "collect123"
-                },
-                "billRefId": {
-                    "type": "string",
-                    "example": "1196687215019689511"
-                },
-                "isDirectBill": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "postPaymentUrl": {
-                    "type": "string",
-                    "example": "collect123"
-                }
-            },
-            "x-go-name": "CouCustomOrderCreateRequest",
-            "x-omitempty": true
-        },
-        "couRZPOrderStatusRequest": {
-            "type": "object",
-            "required": ["refId"],
-            "properties": {
-                "refId": {
-                    "type": "string",
-                    "example": "000"
-                }
-            },
-            "x-go-name": "CouRZPOrderStatusRequest",
-            "x-omitempty": true
-        },
-        "couRZPPaymentWebhook": {
-            "x-go-name": "CouRZPPaymentWebhook",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["account_id", "event", "payload"],
-            "properties": {
-                "data": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "event": {
-                    "type": "string",
-                    "example": "merchant123@axisbank"
-                },
-                "payload": {
-                    "type": "object",
-                    "required": ["payment"],
-                    "properties": {
-                        "payment": {
-                            "type": "object",
-                            "required": ["entity"],
-                            "properties": {
-                                "entity": {
-                                    "type": "object",
-                                    "required": [
-                                        "id",
-                                        "orderId",
-                                        "status",
-                                        "amount"
-                                    ],
-                                    "properties": {
-                                        "orderId": {
-                                            "type": "string",
-                                            "example": "000"
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "example": "000"
-                                        },
-                                        "amount": {
-                                            "type": "integer",
-                                            "example": 100
-                                        },
-                                        "id": {
-                                            "type": "string",
-                                            "example": "000"
-                                        },
-                                        "method": {
-                                            "type": "string",
-                                            "example": "000"
-                                        },
-                                        "notes": {
-                                            "type": "object",
-                                            "required": ["address"],
-                                            "properties": {
-                                                "address": {
-                                                    "type": "string",
-                                                    "example": "000"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "account_id": {
-                    "example": "SUCCESS",
-                    "type": "string"
-                }
-            }
-        },
-        "etherealConfigurationGetResponse": {
-            "type": "object",
-            "required": ["configs", "result", "traceId"],
-            "properties": {
-                "configs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/etherealOrgConfigurationItem"
-                    }
-                },
-                "error": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            },
-            "x-go-name": "EtherealConfigurationGetResponse",
-            "x-omitempty": true
-        },
-        "etherealSessionValidateRequest": {
-            "type": "object",
-            "required": ["sessionId"],
-            "properties": {
-                "sessionId": {
-                    "type": "string",
-                    "example": "sessionId"
-                }
-            },
-            "x-go-name": "EtherealSessionValidateRequest",
-            "x-omitempty": true
-        },
-        "autofetchBulkResponse": {
-            "properties": {
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "error": {
-                                "type": "string",
-                                "x-nullable": true
-                            },
-                            "hash": {
-                                "type": "string",
-                                "x-nullable": true,
-                                "example": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a"
-                            }
-                        }
-                    }
-                }
-            },
-            "type": "object",
-            "required": ["success", "traceId"]
-        },
-        "couUPIOrderStatusRequest": {
-            "required": ["refId", "merchId", "merchChannelId", "mobileNumber"],
-            "properties": {
-                "merchChannelId": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                },
-                "merchId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "mobileNumber": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "000"
-                }
-            },
-            "x-go-name": "CouUPIOrderStatusRequest",
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "etherealConfigurationCreateResponse": {
-            "type": "object",
-            "required": ["result", "traceId"],
-            "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "result": {
-                    "items": {
-                        "type": "object",
-                        "required": ["configId"],
-                        "properties": {
-                            "success": {
-                                "type": "boolean",
-                                "example": true
-                            },
-                            "configId": {
-                                "type": "string",
-                                "example": "000"
-                            }
-                        }
-                    },
-                    "type": "array"
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            },
-            "x-go-name": "EtherealConfigurationCreateResponse",
-            "x-omitempty": true
-        },
-        "additionalInfoLineItem": {
-            "type": "object",
-            "required": ["name", "value"],
-            "properties": {
-                "name": {
-                    "example": "Line item 1",
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string",
-                    "example": "Value 1"
-                }
-            }
-        },
-        "bbpsFailureReason": {
-            "required": ["code", "message"],
-            "properties": {
-                "code": {
-                    "type": "string",
-                    "example": "ERR004"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "customer not found"
-                },
-                "type": {
-                    "type": "string",
-                    "enum": ["FUND_TRANSFER", "BBPS", "APP"]
-                }
-            },
-            "type": "object"
-        },
-        "billParameterItem": {
-            "type": "object",
-            "required": ["name", "value"],
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "example": "Loan Number",
-                    "description": "The display name of the parameter. This has to match what is sent in fields."
-                },
-                "value": {
-                    "description": "The value of the customer parameter",
-                    "type": "string",
-                    "example": "1895159"
-                }
-            }
-        },
-        "couRZPOrderCreateResponse": {
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["refId", "orderId", "status", "key"],
-            "properties": {
-                "key": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                },
-                "orderId": {
-                    "example": "000",
-                    "type": "string"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                }
-            },
-            "x-go-name": "CouRZPOrderCreateResponse"
-        },
-        "listAutofetchSubscriptionsResponse": {
-            "required": ["success", "traceId"],
-            "properties": {
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "data": {
-                    "type": "object",
-                    "properties": {
-                        "subscriptions": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/autofetchSubscription"
-                            }
-                        }
-                    }
-                },
-                "success": {
-                    "example": true,
-                    "type": "boolean"
-                }
-            },
-            "type": "object"
-        },
-        "paymentParameters": {
-            "description": "Additional Payment Parameters",
+        "x-go-name": "EtherealLoginValidateRequest",
+        "x-omitempty": true
+      },
+      "etherealSessionValidateResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "mobileNumber": {
+            "type": "string",
+            "example": "mobileNumber"
+          },
+          "orgConfigs": {
             "type": "array",
             "items": {
-                "$ref": "#/definitions/paymentParameterItem"
+              "$ref": "#/components/schemas/etherealOrgConfigurationItem"
             }
-        },
-        "txnLineItem": {
+          },
+          "partnerId": {
+            "type": "string",
+            "example": "partnerId"
+          },
+          "secret": {
+            "type": "string",
+            "example": "secret"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "isAnonymous": {
+            "type": "boolean",
+            "example": false
+          },
+          "orgId": {
+            "type": "string",
+            "example": "orgId"
+          },
+          "redirectTo": {
             "type": "object",
             "properties": {
-                "amount": {
-                    "type": "integer",
-                    "example": 120000
-                },
-                "biller": {
-                    "$ref": "#/definitions/billerDetails"
-                },
-                "billerId": {
-                    "description": "The biller ID on BBPS",
-                    "type": "string",
-                    "example": "MAHI00000NATIC"
-                },
-                "customerParams": {
-                    "$ref": "#/definitions/billParameters"
-                },
-                "partnerRefId": {
-                    "type": "string",
-                    "example": "AX30910192192192192"
-                },
-                "refundStatus": {
-                    "$ref": "#/definitions/txnRefundStatus"
-                },
-                "transactionId": {
-                    "example": "AX30910192192192192",
-                    "description": "Setu BillPay Transaction ID.",
-                    "type": "string"
-                },
-                "customerMobileNumber": {
-                    "$ref": "#/definitions/mobile"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                },
-                "status": {
-                    "$ref": "#/definitions/txnStatus"
-                },
-                "timestamp": {
-                    "description": "Timestamp provided by partner while making payment request.",
-                    "type": "string",
-                    "format": "date-time",
-                    "example": "2020-12-12T13:12:00+05:30"
+              "billParams": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/billParameterItem"
                 }
+              },
+              "billerId": {
+                "type": "string",
+                "example": "9082718673"
+              },
+              "categoryName": {
+                "type": "string",
+                "example": "9082718673"
+              },
+              "redirectTo": {
+                "type": "string",
+                "example": "9082718673"
+              }
             }
+          }
         },
-        "billPaymentResponseData": {
+        "x-go-name": "EtherealSessionValidateResponse",
+        "x-omitempty": true
+      },
+      "getTokenResponse": {
+        "type": "object",
+        "properties": {
+          "expiresIn": {
+            "type": "integer",
+            "example": 300
+          },
+          "token": {
+            "type": "string",
+            "example": "eyJhbGciOiJSUzI1NiIs....."
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        }
+      },
+      "genericErrorResponse": {
+        "required": ["error", "success", "traceId"],
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/errorMessage"
+          },
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        }
+      },
+      "status": {
+        "type": "string",
+        "example": "Success",
+        "enum": ["Processing", "Success", "Failure"]
+      },
+      "wrappedRefId": {
+        "required": ["refId"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+          }
+        }
+      },
+      "genericRefIdResponse": {
+        "required": ["data", "success", "traceId"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/wrappedRefId"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10461713"
+          }
+        }
+      },
+      "billParameters": {
+        "type": "array",
+        "description": "The bill params for fetching the bill",
+        "items": {
+          "$ref": "#/components/schemas/billParameterItem"
+        }
+      },
+      "complaintStatus": {
+        "type": "string",
+        "description": "BBPS Complaint status",
+        "example": "ASSIGNED",
+        "enum": [
+          "INITIALIZED",
+          "ASSIGNED",
+          "RE_ASSIGNED",
+          "ASSIGNED_TO_BOU",
+          "ASSIGNED_TO_COU",
+          "ASSIGNED_TO_OU",
+          "ESCALATED",
+          "RESOLVED",
+          "UNRESOLVED"
+        ]
+      },
+      "couCustomOrderCreateRequest": {
+        "required": [
+          "agentMobileNumber",
+          "amount",
+          "isDirectBill",
+          "mobileNumber",
+          "orgId",
+          "postPaymentUrl",
+          "sessionId"
+        ],
+        "type": "object",
+        "properties": {
+          "allowedPaymentMethods": {
+            "type": "string",
+            "example": "collect123"
+          },
+          "amount": {
+            "type": "string",
+            "example": "100"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "example": "collect123"
+          },
+          "orgId": {
+            "type": "string",
+            "example": "000"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "000"
+          },
+          "agentMobileNumber": {
+            "type": "string",
+            "example": "collect123"
+          },
+          "billRefId": {
+            "type": "string",
+            "example": "1196687215019689511"
+          },
+          "isDirectBill": {
+            "type": "boolean",
+            "example": false
+          },
+          "postPaymentUrl": {
+            "type": "string",
+            "example": "collect123"
+          }
+        },
+        "x-go-name": "CouCustomOrderCreateRequest",
+        "x-omitempty": true
+      },
+      "couRZPOrderStatusRequest": {
+        "required": ["refId"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "000"
+          }
+        },
+        "x-go-name": "CouRZPOrderStatusRequest",
+        "x-omitempty": true
+      },
+      "couRZPPaymentWebhook": {
+        "required": ["account_id", "event", "payload"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "example": "000"
+          },
+          "event": {
+            "type": "string",
+            "example": "merchant123@axisbank"
+          },
+          "payload": {
+            "required": ["payment"],
             "type": "object",
-            "required": ["refId", "status"],
             "properties": {
-                "additionalInfo": {
-                    "$ref": "#/definitions/billAdditionalInfo"
-                },
-                "billerId": {
-                    "example": "MAHI00000NATIC",
-                    "description": "The biller ID on BBPS",
-                    "type": "string"
-                },
-                "paymentDetails": {
-                    "$ref": "#/definitions/paymentDetails"
-                },
-                "transactionId": {
-                    "type": "string",
-                    "example": "AX30910192192192192"
-                },
-                "billerRefId": {
-                    "type": "string",
-                    "example": "ZA6291A177"
-                },
-                "failureReason": {
-                    "$ref": "#/definitions/bbpsFailureReason"
-                },
-                "lastPaidDate": {
-                    "type": "string",
-                    "format": "date-time",
-                    "x-nullable": true,
-                    "example": "2020-12-12T13:12:00+05:30"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                },
-                "refundStatus": {
-                    "$ref": "#/definitions/txnRefundStatus"
-                },
-                "status": {
-                    "$ref": "#/definitions/status"
-                }
-            }
-        },
-        "couCustomRefundCreateRequest": {
-            "x-go-name": "CouCustomRefundCreateRequest",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["refId", "amount"],
-            "properties": {
-                "amount": {
-                    "example": "ORDID12345",
-                    "type": "string"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                }
-            }
-        },
-        "txnRefundStatus": {
-            "enum": ["Required", "Requested", "Processed"],
-            "example": "Required",
-            "type": "string"
-        },
-        "etherealOrganisationCreateRequest": {
-            "type": "object",
-            "required": ["name"],
-            "properties": {
-                "agentInsitutionId": {
-                    "type": "string",
-                    "example": "12345"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "000"
-                }
-            },
-            "x-go-name": "EtherealOrganisationCreateRequest",
-            "x-omitempty": true
-        },
-        "billFetchResponseData": {
-            "required": ["refId", "status"],
-            "properties": {
-                "autoFetchHash": {
-                    "example": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a",
-                    "type": "string"
-                },
-                "bill": {
-                    "$ref": "#/definitions/billData"
-                },
-                "bills": {
-                    "x-omitempty": true,
-                    "description": "Multiple bills in case of response from B2B biller",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/billData"
-                    }
-                },
-                "exactness": {
-                    "type": "string",
-                    "example": "EXACT/EXACT_UP/EXACT_DOWN/ADHOC"
-                },
-                "failureReason": {
-                    "$ref": "#/definitions/bbpsFailureReason"
-                },
-                "isCached": {
-                    "type": "boolean",
-                    "x-nullable": true,
-                    "example": false
-                },
-                "paymentLimits": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/paymentModeSpec"
-                    },
-                    "x-omitempty": true
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                },
-                "additionalInfo": {
-                    "$ref": "#/definitions/billAdditionalInfo"
-                },
-                "billerRefId": {
-                    "type": "string",
-                    "example": "7f16a032e514"
-                },
-                "lastPaidDate": {
-                    "format": "date-time",
-                    "x-nullable": true,
-                    "example": "2020-12-12T13:12:00+05:30",
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/status"
-                }
-            }
-        },
-        "billerApiType": {
-            "enum": ["BILL_FETCH", "BILL_VALIDATE", "BILL_DIRECT"],
-            "example": "BILL_FETCH",
-            "type": "string"
-        },
-        "billerListResponse": {
-            "required": ["success", "traceId"],
-            "properties": {
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "data": {
+              "payment": {
+                "required": ["entity"],
+                "type": "object",
+                "properties": {
+                  "entity": {
+                    "required": ["amount", "id", "orderId", "status"],
                     "type": "object",
-                    "required": ["billers"],
                     "properties": {
-                        "billers": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/billerDetails"
-                            }
-                        },
-                        "nextPage": {
-                            "type": "string",
-                            "example": "/api/bbps/billers?search=Aditya&CategoryCode=Loan+Repayment&CategoryCode=Insurance&after=ABCC00000PTNNS"
-                        },
-                        "total": {
-                            "type": "integer",
-                            "example": 3000
-                        }
-                    }
-                },
-                "error": {
-                    "$ref": "#/definitions/errorMessage"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        },
-        "couAgentBillFetchResponse": {
-            "required": ["data", "success", "traceId"],
-            "properties": {
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "autofetch_hash": {
-                    "type": "string",
-                    "example": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a"
-                },
-                "data": {
-                    "$ref": "#/definitions/billFetchResponseData"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            },
-            "x-go-name": "CouAgentBillFetchResponse",
-            "type": "object"
-        },
-        "couAgentBillPaymentRequest": {
-            "properties": {
-                "do-ift-status-check": {
-                    "example": false,
-                    "description": "When debug is enabled, do-ift-status-check will do status check of internal fund transfer.",
-                    "type": "boolean"
-                },
-                "dummyMsgId": {
-                    "x-nullable": true,
-                    "description": "On debug, this is msgId NEGATIVE 10",
-                    "type": "string"
-                },
-                "headTimestamp": {
-                    "description": "On debug, this value is used as head timestamp NEGATIVE 5",
-                    "type": "string",
-                    "x-nullable": true
-                },
-                "invalidCustomerTagValue": {
-                    "description": "On debug, pass invalid customer tag value NEGATIVE 15",
-                    "type": "boolean",
-                    "x-nullable": true
-                },
-                "skipFetch": {
-                    "description": "On debug, skip fetch request before payment, NEGATIVE - 27,",
-                    "type": "boolean",
-                    "x-nullable": true
-                },
-                "agent": {
-                    "$ref": "#/definitions/agentDetails"
-                },
-                "bills": {
-                    "example": "Selection on bills in case of B2B",
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {
-                        "$ref": "#/definitions/bill"
-                    }
-                },
-                "dummyTransactionRefId": {
-                    "example": "dummy-transaction-id",
-                    "description": "When debug is enabled, this dummy-transaction-id is used as the transaction id. This allows us to test arbitrary length refId test cases.",
-                    "type": "string"
-                },
-                "transactionProvider": {
-                    "description": "On debug, this is the transaction provider NEGATIVE 14",
-                    "type": "string",
-                    "x-nullable": true
-                },
-                "dummyBillerId": {
-                    "description": "On debug, this is the billerId NEGATIVE 13",
-                    "type": "string",
-                    "x-nullable": true
-                },
-                "biller": {
-                    "$ref": "#/definitions/autofetchBillerCustomerParamsBiller"
-                },
-                "dummy-npci-pool-branch-id": {
-                    "type": "string",
-                    "example": "",
-                    "description": "When debug is enabled, replaces npci pool branch id"
-                },
-                "dummyAgentId": {
-                    "description": "On debug, this is the agent id NEGATIVE 12",
-                    "type": "string",
-                    "x-nullable": true
-                },
-                "invalidPaymentInformation": {
-                    "description": "On debug, this value is sent in payment information NEGATIVE - 4",
-                    "type": "string",
-                    "x-nullable": true
-                },
-                "skipPaymentResponseAck": {
-                    "description": "When debug is enabled, skip the final acknowledgement. This allows us to test \"Elimination of Reversal\". The details on which case to skip ack is sent via \"eliminationOfReversalDetails\"",
-                    "type": "boolean",
-                    "example": false
-                },
-                "dummy-npci-pool-bank-id": {
-                    "type": "string",
-                    "example": "",
-                    "description": "When debug is enabled, replaces npci pool bank id"
-                },
-                "fail-fund-transfer-count": {
-                    "description": "When debug is enabled, this fails fund transfer for count times",
-                    "type": "integer",
-                    "example": 0
-                },
-                "invalidCustomerTagKey": {
-                    "description": "On debug, invalid customer params will be sent NEGATIVE 7",
-                    "type": "boolean",
-                    "x-nullable": true
-                },
-                "timeout-npci-request": {
-                    "description": "When debug is enabled, this timeouts the npci request",
-                    "type": "boolean",
-                    "example": false
-                },
-                "timeout-npci-request-delay": {
-                    "example": false,
-                    "description": "When debug is enabled, this timesout the NPCI request. This actually hits the NPCI request in a delayed approach. The delay time in seconds.",
-                    "type": "integer"
-                },
-                "debug": {
-                    "description": "When a non-direct payment is being made, refId of fetch/validate is used to populate customer and biller data. When `debug` field is set to `true`, passed customer, biller or agent details will be replace the fetch/validate data. This allows us to run test cases that require diff details from initial fetch/validate request.",
-                    "type": "boolean",
-                    "example": false
-                },
-                "dummyAmount": {
-                    "description": "On debug, this is the final amount NEGATIVE 11, 22",
-                    "type": "integer",
-                    "x-nullable": true
-                },
-                "skip-npci-heartbeat": {
-                    "description": "When debug is enabled, skips the npci heartbeat check before issuing payment request",
-                    "type": "boolean",
-                    "example": false
-                },
-                "skip-npci-response": {
-                    "description": "When debug is enabled, skip-npci-response won't process NPCI response.",
-                    "type": "boolean",
-                    "example": false
-                },
-                "skipBillerResponse": {
-                    "description": "On debug, don't send biller response on fetch req NEGATIVE 21",
-                    "type": "boolean",
-                    "x-nullable": true
-                },
-                "headVersion": {
-                    "type": "string",
-                    "x-nullable": true,
-                    "description": "On debug, this head version is used. NEGATIVE - 1"
-                },
-                "ouid": {
-                    "type": "string",
-                    "x-nullable": true,
-                    "description": "On debug, this is payment ouid NEGATIVE 6"
-                },
-                "customer": {
-                    "$ref": "#/definitions/customerDetails"
-                },
-                "dummy-npci-pool-account-number": {
-                    "example": "",
-                    "description": "When debug is enabled, replaces npci pool account number",
-                    "type": "string"
-                },
-                "passBlankPaymentInformation": {
-                    "description": "On debug, pass blank payment information NEGATIVE - 26",
-                    "type": "boolean",
-                    "x-nullable": true
-                },
-                "paymentDetails": {
-                    "$ref": "#/definitions/paymentDetails"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                }
-            },
-            "x-go-name": "CouAgentBillPaymentRequest",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["paymentDetails"]
-        },
-        "couCustomRefundCreateResponse": {
-            "x-go-name": "CouCustomRefundCreateResponse",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["status"],
-            "properties": {
-                "status": {
-                    "example": "SUCCESS",
-                    "type": "string"
-                }
-            }
-        },
-        "etherealLoginCreateResponse": {
-            "x-go-name": "EtherealLoginCreateResponse",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["success", "traceId"],
-            "properties": {
-                "refId": {
-                    "example": "refId",
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            }
-        },
-        "paymentMode": {
-            "enum": [
-                "Internet Banking",
-                "Debit Card",
-                "Credit Card",
-                "Prepaid Card",
-                "IMPS",
-                "Cash",
-                "UPI",
-                "Wallet",
-                "NEFT",
-                "AEPS",
-                "Account Transfer",
-                "Bharat QR",
-                "USSD"
-            ],
-            "example": "Internet Banking",
-            "type": "string"
-        },
-        "bill": {
-            "required": ["billNumber", "amount"],
-            "properties": {
-                "amount": {
-                    "description": "Amount in Paise",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 10000
-                },
-                "billNumber": {
-                    "type": "string",
-                    "example": "B1234567"
-                }
-            },
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "billAdditionalInfo": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/additionalInfoLineItem"
-            },
-            "x-go-name": "BillAdditionalInfo"
-        },
-        "couUPIPaymentWebhook": {
-            "type": "object",
-            "required": ["data"],
-            "properties": {
-                "data": {
-                    "type": "string",
-                    "example": "000"
-                }
-            },
-            "x-go-name": "CouUPIPaymentWebhook",
-            "x-omitempty": true
-        },
-        "disableAutofetchResponse": {
-            "type": "object",
-            "required": ["success", "traceId"],
-            "properties": {
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            }
-        },
-        "etherealConfigurationItem": {
-            "type": "object",
-            "required": ["name", "value"],
-            "properties": {
-                "name": {
-                    "description": "The display name of the configuration",
-                    "type": "string",
-                    "example": "Loan Number"
-                },
-                "value": {
-                    "description": "The value of the configuration",
-                    "type": "string",
-                    "example": "1895159"
-                }
-            }
-        },
-        "etherealLoginValidateResponse": {
-            "required": ["success", "traceId"],
-            "properties": {
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "example": "C3SFG0O6N88R6UI7EQ",
-                    "type": "string"
-                }
-            },
-            "x-go-name": "EtherealLoginValidateResponse",
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "paymentChannel": {
-            "enum": [
-                "INT",
-                "INTB",
-                "MOB",
-                "BNKBRNCH",
-                "BSC",
-                "AGT",
-                "KIOSK",
-                "ATM",
-                "MOBB",
-                "POS",
-                "MPOS"
-            ],
-            "example": "INT",
-            "description": "This is the initiating channel.\n1. `AGT`: Offline agent.\n2. `BNKBRNCH`: Bank branch.\n3. `BSC`: Business correspondent\n4. `MOB`: Mobile application\n5. `INT`: Internet portal\n6. `INTB`: Internet banking\n7. `MOBB`: Mobile banking\n8. `ATM`: ATM\n9. `KIOSK`: KIOSK\n",
-            "type": "string"
-        },
-        "fetchedBillsListResponse": {
-            "required": ["success", "traceId"],
-            "properties": {
-                "data": {
-                    "type": "object",
-                    "required": ["bills"],
-                    "properties": {
-                        "bills": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/billFetchResponseData"
-                            }
-                        },
-                        "nextPage": {
-                            "type": "string",
-                            "example": "/api/v1/bbps/fetched-bills?autoFetchHash=xyz&after=ABCC00000PTNNS&limit=5"
-                        },
-                        "total": {
-                            "type": "integer",
-                            "example": 3000
-                        }
-                    }
-                },
-                "error": {
-                    "$ref": "#/definitions/errorMessage"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            },
-            "x-go-name": "FetchedBillsListResponse"
-        },
-        "billerDetails": {
-            "required": [
-                "id",
-                "name",
-                "categoryName",
-                "exactness",
-                "payWithoutFetchAllowed",
-                "fetchApiType",
-                "customerParams",
-                "paymentModes",
-                "paymentChannels",
-                "supportsPendingStatus"
-            ],
-            "properties": {
-                "paymentChannels": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/paymentChannelSpec"
-                    }
-                },
-                "supportsPendingStatus": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "billerAdditionalInfo": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/billerAdditionalInfoItem"
-                    }
-                },
-                "categoryName": {
-                    "type": "string",
-                    "example": "loan-repayment"
-                },
-                "logo": {
-                    "type": "string",
-                    "example": "logo"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Aditya Birla Sun Life Insurance"
-                },
-                "tags": {
-                    "type": "string",
-                    "example": "tags"
-                },
-                "city": {
-                    "example": "city",
-                    "type": "string"
-                },
-                "coverage": {
-                    "type": "string",
-                    "example": "IND"
-                },
-                "modifiedAt": {
-                    "x-omitempty": false,
-                    "example": "2021-11-12T13:37:04.572+05:30",
-                    "type": "string",
-                    "format": "date-time",
-                    "x-nullable": true
-                },
-                "plans": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/planItem"
-                    }
-                },
-                "state": {
-                    "example": "state",
-                    "type": "string"
-                },
-                "subCategoryName": {
-                    "type": "string",
-                    "example": "DAIRY"
-                },
-                "customerParams": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/customerParamSpec"
-                    }
-                },
-                "exactness": {
-                    "type": "string",
-                    "example": "ANY/EXACT/EXACT_DOWN/EXACT_UP"
-                },
-                "pincode": {
-                    "type": "string",
-                    "example": "pincode"
-                },
-                "fetchApiType": {
-                    "$ref": "#/definitions/billerApiType"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "ADIT00000NAT0T"
-                },
-                "payWithoutFetchAllowed": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "paymentModes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/paymentModeSpec"
-                    }
-                },
-                "billerAdditionalInfoPayment": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/billerAdditionalInfoItem"
-                    }
-                },
-                "createdAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "x-nullable": true,
-                    "x-omitempty": false,
-                    "example": "2021-11-12T13:37:04.572+05:30"
-                },
-                "customerParamsGroups": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/customerParamsGroupItem"
-                    }
-                }
-            },
-            "x-go-name": "CouBillerDetails"
-        },
-        "couCustomOrderCreateResponse": {
-            "x-go-name": "CouCustomOrderCreateResponse",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["refId", "status", "link"],
-            "properties": {
-                "link": {
-                    "example": "ORDID12345",
-                    "type": "string"
-                },
-                "refId": {
-                    "example": "ORDID12345",
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                }
-            }
-        },
-        "couRZPOrderCreateRequest": {
-            "type": "object",
-            "required": ["amount", "orgId", "sessionId", "isDirectBill"],
-            "properties": {
-                "amount": {
-                    "type": "string",
-                    "example": "100"
-                },
-                "billRefId": {
-                    "type": "string",
-                    "example": "1196687215019689511"
-                },
-                "isDirectBill": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "orgId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "sessionId": {
-                    "type": "string",
-                    "example": "000"
-                }
-            },
-            "x-go-name": "CouRZPOrderCreateRequest",
-            "x-omitempty": true
-        },
-        "couUPIOrderCreateRequest": {
-            "type": "object",
-            "required": [
-                "merchChanId",
-                "creditVpa",
-                "amount",
-                "orgId",
-                "sessionId",
-                "isDirectBill"
-            ],
-            "properties": {
-                "isDirectBill": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "merchChanId": {
-                    "type": "string",
-                    "example": "collect123"
-                },
-                "orgId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "sessionId": {
-                    "example": "000",
-                    "type": "string"
-                },
-                "amount": {
-                    "type": "string",
-                    "example": "100"
-                },
-                "billRefId": {
-                    "type": "string",
-                    "example": "1196687215019689511"
-                },
-                "creditVpa": {
-                    "example": "merchant123@axisbank",
-                    "type": "string"
-                }
-            },
-            "x-go-name": "CouUPIOrderCreateRequest",
-            "x-omitempty": true
-        },
-        "disputeResponseData": {
-            "type": "object",
-            "required": [
-                "refId",
-                "disputeId",
-                "status",
-                "assignedTo",
-                "remarks"
-            ],
-            "properties": {
-                "assignedTo": {
-                    "type": "string",
-                    "example": "ICICI BOU"
-                },
-                "disputeId": {
-                    "type": "string",
-                    "example": "OP0121046567755"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                },
-                "remarks": {
-                    "type": "string",
-                    "example": "Resolved in favour of Biller"
-                },
-                "status": {
-                    "$ref": "#/definitions/complaintStatus"
-                }
-            },
-            "x-go-name": "DisputeResponseData"
-        },
-        "etherealOrganisationCreateResponse": {
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["success", "traceId"],
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "example": "name"
-                },
-                "orgId": {
-                    "type": "string",
-                    "example": "123456"
-                },
-                "success": {
-                    "example": true,
-                    "type": "boolean"
-                },
-                "traceId": {
-                    "example": "C3SFG0O6N88R6UI7EQ",
-                    "type": "string"
-                }
-            },
-            "x-go-name": "EtherealOrganisationCreateResponse"
-        },
-        "etherealUserCreateResponse": {
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["success", "traceId"],
-            "properties": {
-                "password": {
-                    "example": "password",
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "userId": {
-                    "type": "string",
-                    "example": "12345"
-                }
-            },
-            "x-go-name": "EtherealUserCreateResponse"
-        },
-        "paymentModeSpec": {
-            "type": "object",
-            "required": [
-                "paymentMode",
-                "maxLimit",
-                "minLimit",
-                "supportsPendingStatus"
-            ],
-            "properties": {
-                "maxLimit": {
-                    "type": "integer",
-                    "example": 500000000
-                },
-                "minLimit": {
-                    "type": "integer",
-                    "example": 10100
-                },
-                "paymentMode": {
-                    "$ref": "#/definitions/paymentMode"
-                },
-                "supportsPendingStatus": {
-                    "type": "boolean",
-                    "example": false
-                }
-            }
-        },
-        "paymentParameterItem": {
-            "type": "object",
-            "required": ["name", "value"],
-            "properties": {
-                "name": {
-                    "description": "The display name of the parameter. This has to match what is sent in fields.",
-                    "type": "string",
-                    "example": "Early Payment Amount"
-                },
-                "value": {
-                    "description": "The value of the payment parameter",
-                    "type": "string",
-                    "example": 100
-                }
-            }
-        },
-        "transactionsResponse": {
-            "type": "object",
-            "required": ["data", "success", "traceId"],
-            "properties": {
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "data": {
-                    "$ref": "#/definitions/txnResponseData"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            },
-            "x-go-name": "TransactionsResponse",
-            "x-omitempty": true
-        },
-        "couCustomOrderStatusResponse": {
-            "required": [
-                "refId",
-                "status",
-                "amount",
-                "paymentMode",
-                "transactionId",
-                "datetime"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                },
-                "datetime": {
-                    "example": "ORDID12345",
-                    "type": "string"
-                },
-                "paymentMode": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                },
-                "transactionId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                }
-            },
-            "x-go-name": "CouCustomOrderStatusResponse",
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "couUPIRefundCreateRequest": {
-            "type": "object",
-            "required": [
-                "refId",
-                "merchId",
-                "merchChanId",
-                "mobileNumber",
-                "reason",
-                "sId"
-            ],
-            "properties": {
-                "merchChanId": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                },
-                "merchId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "mobileNumber": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                },
-                "reason": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                },
-                "refId": {
-                    "example": "ORDID12345",
-                    "type": "string"
-                },
-                "sId": {
-                    "example": "ORDID12345",
-                    "type": "string"
-                }
-            },
-            "x-go-name": "CouUPIRefundCreateRequest",
-            "x-omitempty": true
-        },
-        "couUPIRefundStatusResponse": {
-            "x-go-name": "CouUPIRefundStatusResponse",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["refId", "responseCode", "status"],
-            "properties": {
-                "refId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                },
-                "responseCode": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                }
-            }
-        },
-        "planItem": {
-            "type": "object",
-            "required": [
-                "id",
-                "amount",
-                "description",
-                "status",
-                "categoryType"
-            ],
-            "properties": {
-                "categorySubType": {
-                    "example": {
-                        "subType": "1 Month"
-                    },
-                    "description": "Plan sub category as defined by the Biller.",
-                    "type": "object",
-                    "minProperties": 1,
-                    "x-omitempty": true
-                },
-                "effectiveFrom": {
-                    "format": "date",
-                    "x-nullable": true,
-                    "x-omitempty": false,
-                    "example": "2017-07-21",
-                    "description": "Effective from date of corresponding Plan.",
-                    "type": "string"
-                },
-                "status": {
-                    "description": "Effective to date of corresponding Plan.",
-                    "type": "string",
-                    "enum": ["ACTIVE", "DEACTIVATED"],
-                    "example": "ACTIVE"
-                },
-                "additionalInfo": {
-                    "description": "Plan Additional information details provided by the Biller.",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
+                      "orderId": {
+                        "type": "string",
+                        "example": "000"
+                      },
+                      "status": {
+                        "type": "string",
+                        "example": "000"
+                      },
+                      "amount": {
+                        "type": "integer",
+                        "example": 100
+                      },
+                      "id": {
+                        "type": "string",
+                        "example": "000"
+                      },
+                      "method": {
+                        "type": "string",
+                        "example": "000"
+                      },
+                      "notes": {
+                        "required": ["address"],
                         "type": "object",
                         "properties": {
-                            "paramName": {
-                                "type": "string",
-                                "example": "Plan Additional information parameter name."
-                            },
-                            "paramValue": {
-                                "type": "string",
-                                "example": "Plan Additional information parameter value."
-                            }
-                        },
-                        "x-go-name": "PlanAdditionalInfoItem",
-                        "example": {
-                            "paramName": "Mobile Number",
-                            "paramValue": "Text"
+                          "address": {
+                            "type": "string",
+                            "example": "000"
+                          }
                         }
-                    },
-                    "x-omitempty": true,
-                    "example": [
-                        {
-                            "paramName": "Mobile Number",
-                            "paramValue": "Text"
-                        }
-                    ]
-                },
-                "amount": {
-                    "type": "string",
-                    "example": 22,
-                    "description": "Plan amount in rupees as defined by the Biller."
-                },
-                "categoryType": {
-                    "description": "Plan category as defined by the Biller.",
-                    "type": "string",
-                    "example": "VIP"
-                },
-                "description": {
-                    "description": "Plan description as defined by the Biller.",
-                    "type": "string",
-                    "example": "Unlimited Live Sports"
-                },
-                "effectiveTo": {
-                    "x-nullable": true,
-                    "x-omitempty": false,
-                    "example": "2020-08-21",
-                    "description": "Effective to date of corresponding Plan.",
-                    "type": "string",
-                    "format": "date"
-                },
-                "id": {
-                    "description": "Plan ID",
-                    "type": "string",
-                    "example": 1
+                      }
+                    }
+                  }
                 }
+              }
             }
-        },
-        "txnStatus": {
+          },
+          "account_id": {
             "type": "string",
-            "enum": ["Processing", "Success", "Error"],
-            "example": "Success"
+            "example": "SUCCESS"
+          }
         },
-        "etherealUserCreateRequest": {
-            "type": "object",
-            "required": ["orgId"],
-            "properties": {
-                "orgId": {
-                    "type": "string",
-                    "example": "000"
-                }
-            },
-            "x-go-name": "EtherealUserCreateRequest",
-            "x-omitempty": true
-        },
-        "autofetchBillerCustomerParams": {
-            "properties": {
-                "biller": {
-                    "$ref": "#/definitions/autofetchBillerCustomerParamsBiller"
-                },
-                "customer": {
-                    "$ref": "#/definitions/customerDetails"
-                }
-            },
-            "type": "object"
-        },
-        "autofetchBillerCustomerParamsBiller": {
-            "type": "object",
-            "required": ["id"],
-            "properties": {
-                "id": {
-                    "description": "The biller ID on BBPS",
-                    "type": "string",
-                    "example": "MAHI00000NATIC"
-                }
-            },
-            "x-go-gen-location": "models",
-            "x-go-name": "BillerDetails"
-        },
-        "couAgentBillFetchRequest": {
-            "type": "object",
-            "required": ["customer", "agent", "biller"],
-            "properties": {
-                "patch-due-date": {
-                    "description": "On debug, use this as the bill fetch due date.",
-                    "type": "string",
-                    "format": "date",
-                    "x-nullable": true
-                },
-                "agent": {
-                    "$ref": "#/definitions/agentDetails"
-                },
-                "allowFetchForAdhocBillers": {
-                    "description": "On debug, make fetch for payment only billers NEGATIVE 20",
-                    "type": "boolean",
-                    "x-nullable": true
-                },
-                "customer": {
-                    "$ref": "#/definitions/customerDetails"
-                },
-                "forceFetch": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "autoFetch": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "biller": {
-                    "$ref": "#/definitions/autofetchBillerCustomerParamsBiller"
-                },
-                "debug": {
-                    "description": "When `true`, param validation is disabled",
-                    "type": "boolean",
-                    "example": false
-                },
-                "patch-bill-date": {
-                    "description": "On debug, use this as the bill fetch bill date.",
-                    "type": "string",
-                    "format": "date",
-                    "x-nullable": true
-                }
-            },
-            "x-go-name": "CouAgentBillFetchRequest",
-            "x-omitempty": true
-        },
-        "couAgentDisputeResponse": {
-            "type": "object",
-            "required": ["success", "traceId"],
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/disputeResponseData"
-                },
-                "success": {
-                    "example": true,
-                    "type": "boolean"
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            },
-            "x-go-name": "CouAgentDisputeResponse",
-            "x-omitempty": true
-        },
-        "couCustomOrderStatusRequest": {
-            "properties": {
-                "refId": {
-                    "type": "string",
-                    "example": "000"
-                }
-            },
-            "x-go-name": "CouCustomOrderStatusRequest",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["refId"]
-        },
-        "couUPIRefundCreateResponse": {
-            "properties": {
-                "refId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                },
-                "responseCode": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "status": {
-                    "example": "SUCCESS",
-                    "type": "string"
-                }
-            },
-            "x-go-name": "CouUPIRefundCreateResponse",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["refId", "responseCode", "status"]
-        },
-        "customerDetails": {
-            "type": "object",
-            "required": ["mobile", "billParameters"],
-            "properties": {
-                "billParameters": {
-                    "$ref": "#/definitions/billParameters"
-                },
-                "mobile": {
-                    "$ref": "#/definitions/mobile"
-                }
+        "x-go-name": "CouRZPPaymentWebhook",
+        "x-omitempty": true
+      },
+      "etherealConfigurationGetResponse": {
+        "required": ["configs", "traceId"],
+        "type": "object",
+        "properties": {
+          "configs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/etherealOrgConfigurationItem"
             }
+          },
+          "error": {
+            "type": "string",
+            "example": "000"
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
         },
-        "paymentChannelSpec": {
-            "type": "object",
-            "required": [
-                "paymentChannel",
-                "maxLimit",
-                "minLimit",
-                "supportsPendingStatus"
-            ],
-            "properties": {
-                "supportsPendingStatus": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "maxLimit": {
-                    "type": "integer",
-                    "example": 500000000
-                },
-                "minLimit": {
-                    "type": "integer",
-                    "example": 10100
-                },
-                "paymentChannel": {
-                    "$ref": "#/definitions/paymentChannel"
-                }
-            }
+        "x-go-name": "EtherealConfigurationGetResponse",
+        "x-omitempty": true
+      },
+      "etherealSessionValidateRequest": {
+        "required": ["sessionId"],
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "example": "sessionId"
+          }
         },
-        "paymentDetails": {
-            "type": "object",
-            "required": ["mode", "paymentRefId", "amount", "timestamp"],
-            "properties": {
-                "paymentRefId": {
-                    "type": "string",
-                    "maxLength": 35,
-                    "minLength": 6,
-                    "example": "BD019181220291"
-                },
-                "timestamp": {
-                    "type": "string",
-                    "format": "date-time",
-                    "minLength": 1,
-                    "example": "2020-12-12T13:12:00+05:30"
-                },
-                "COUcustConvFee": {
-                    "example": 10,
-                    "type": "integer",
-                    "x-nullable": true
-                },
-                "amount": {
-                    "description": "Amount in Paise",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 10000
-                },
-                "currency": {
-                    "example": 356,
-                    "type": "integer",
-                    "x-nullable": true
-                },
-                "custConvFee": {
-                    "type": "integer",
-                    "x-nullable": true,
-                    "example": 59
-                },
-                "mode": {
-                    "$ref": "#/definitions/paymentMode"
-                },
-                "paymentParams": {
-                    "$ref": "#/definitions/paymentParameters"
-                }
-            }
-        },
-        "refIdBasedRequest": {
-            "x-go-name": "RefIdBasedRequest",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["refId"],
-            "properties": {
-                "refId": {
-                    "example": "LNMSQQR4RKT7X1UGPY7JGUV454PL9T2C689",
-                    "type": "string"
-                }
-            }
-        },
-        "autofetchSubscription": {
-            "type": "object",
-            "required": ["hash", "isActive"],
-            "properties": {
-                "lastFetchDate": {
-                    "type": "string",
-                    "format": "date",
-                    "x-nullable": true,
-                    "example": "2017-07-21"
-                },
-                "additionalInfo": {
-                    "$ref": "#/definitions/billAdditionalInfo"
-                },
-                "bill": {
-                    "$ref": "#/definitions/billData"
-                },
-                "biller": {
-                    "$ref": "#/definitions/billerDetails"
-                },
-                "billerRefId": {
-                    "example": "7f16a032e514",
-                    "type": "string"
-                },
-                "customer": {
-                    "$ref": "#/definitions/customerDetails"
+        "x-go-name": "EtherealSessionValidateRequest",
+        "x-omitempty": true
+      },
+      "autofetchBulkResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "nullable": true
                 },
                 "hash": {
-                    "type": "string",
-                    "example": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a"
-                },
-                "isActive": {
-                    "type": "boolean",
-                    "example": true
+                  "type": "string",
+                  "nullable": true,
+                  "example": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a"
                 }
+              }
             }
+          }
+        }
+      },
+      "couUPIOrderStatusRequest": {
+        "required": ["merchChannelId", "merchId", "mobileNumber", "refId"],
+        "type": "object",
+        "properties": {
+          "merchChannelId": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "merchId": {
+            "type": "string",
+            "example": "000"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "refId": {
+            "type": "string",
+            "example": "000"
+          }
         },
-        "disputeListResponse": {
-            "required": ["success", "traceId"],
-            "properties": {
-                "data": {
-                    "type": "object",
-                    "required": ["disputes"],
-                    "properties": {
-                        "disputes": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/disputeListItem"
-                            }
-                        },
-                        "nextPage": {
-                            "type": "string",
-                            "example": "/api/bbps/billers?search=Aditya&CategoryCode=Loan+Repayment&CategoryCode=Insurance&after=ABCC00000PTNNS"
-                        },
-                        "total": {
-                            "type": "integer",
-                            "example": 3000
-                        }
-                    }
-                },
-                "error": {
-                    "$ref": "#/definitions/errorMessage"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            }
-        },
-        "TokenAPIRequest": {
-            "type": "object",
-            "x-go-name": "TokenAPIRequest",
-            "x-omitempty": true,
-            "properties": {
-                "clientID": {
-                    "type": "string",
-                    "description": "client_id obtained from bridge",
-                    "example": "client_id"
-                },
-                "secret": {
-                    "type": "string",
-                    "description": "client secret obtained from bridge",
-                    "example": "client_secret"
-                }
-            },
-            "required": ["clientID", "secret"]
-        },
-        "etherealLinkCreateRequest": {
-            "required": ["orgId"],
-            "properties": {
-                "orgId": {
-                    "type": "string",
-                    "example": "122337203685477",
-                    "description": "ID assigned to your organisation as provided by Setu."
-                },
-                "mobileNumber": {
-                    "type": "string",
-                    "example": "9082718673",
-                    "description": "Mobile number of the user for which the link is generated. If no value is sent, there is a mobile number and OTP flow invoked to validate the user. All transactions and complaints are listed for a given mobile number."
-                },
-                "redirectTo": {
-                    "type": "string",
-                    "enum": ["transactions", "disputes"],
-                    "example": "transactions",
-                    "description": "Specific page user needs to be redirected to. If left blank, link opens to the homepage."
-                },
-                "billerId": {
-                    "type": "string",
-                    "example": "BESCOM000KAR01",
-                    "description": "If redirected to a particular bill - pass this value."
-                },
-                "categoryName": {
-                    "type": "string",
-                    "enum": [
-                        "Electricity",
-                        "Piped Gas",
-                        "Water",
-                        "LPG",
-                        "Mobile postpaid",
-                        "Landline postpaid",
-                        "Broadband postpaid",
-                        "DTH",
-                        "FASTag Recharge",
-                        "Loan Repayment",
-                        "Recurring Deposits",
-                        "Credit Card",
-                        "Mutual Fund",
-                        "Insurance",
-                        "Cable",
-                        "Housing Society",
-                        "Education",
-                        "Hospital & Pathology",
-                        "Clubs & Associations",
-                        "Rental",
-                        "Subscriptions",
-                        "Municipal Taxes"
-                    ],
-                    "example": "Electricity",
-                    "description": "The category of the biller passed in the billerId field."
-                },
-                "billParams": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/billParameterItem"
-                    },
-                    "description": "To be used if the Agent wishes to redirect the user to a specific bill page."
-                }
-            },
-            "x-go-name": "EtherealLinkCreateRequest",
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "etherealLoginCreateRequest": {
-            "required": ["orgId", "sessionId", "mobileNumber"],
-            "properties": {
-                "mobileNumber": {
-                    "type": "string",
-                    "example": "mobileNumber"
-                },
-                "orgId": {
-                    "type": "string",
-                    "example": "orgId"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "refId"
-                },
-                "sessionId": {
-                    "type": "string",
-                    "example": "sessionId"
-                }
-            },
-            "x-go-name": "EtherealLoginCreateRequest",
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "couUPIOrderCreateResponse": {
-            "type": "object",
-            "required": ["responseCode", "status", "refId", "upiLink"],
-            "properties": {
-                "refId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                },
-                "responseCode": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                },
-                "upiLink": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                }
-            },
-            "x-go-name": "CouUPIOrderCreateResponse",
-            "x-omitempty": true
-        },
-        "customerParamsGroupItem": {
+        "x-go-name": "CouUPIOrderStatusRequest",
+        "x-omitempty": true
+      },
+      "etherealConfigurationCreateResponse": {
+        "required": ["result", "traceId"],
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "000"
+          },
+          "result": {
             "type": "array",
             "items": {
-                "type": "string",
-                "example": "Param 1"
-            }
-        },
-        "etherealOrgConfigurationItem": {
-            "type": "object",
-            "required": ["configId", "name", "value"],
-            "properties": {
-                "value": {
-                    "type": "string",
-                    "example": "#ffa80h"
+              "required": ["configId"],
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
                 },
                 "configId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "PRIMARY_COLOUR"
+                  "type": "string",
+                  "example": "000"
                 }
-            },
-            "x-go-name": "EtherealOrgConfigurationItem",
-            "x-omitempty": true
-        },
-        "mobile": {
+              }
+            }
+          },
+          "traceId": {
             "type": "string",
-            "maxLength": 20,
-            "minLength": 6,
-            "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
-            "example": "9481773053",
-            "description": "Mobile number with 6, 10 and 20 digits are valid."
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
         },
-        "txnResponseData": {
-            "type": "object",
-            "properties": {
-                "transactions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/txnLineItem"
-                    }
-                },
-                "nextPage": {
-                    "type": "string",
-                    "example": "/api/bbps/billers?search=Aditya&CategoryCode=Loan+Repayment&CategoryCode=Insurance&after=ABCC00000PTNNS"
-                }
-            }
-        },
-        "etherealBulkCreateResponse": {
-            "required": ["data", "success", "traceId"],
-            "properties": {
-                "data": {
-                    "type": "object",
-                    "properties": {
-                        "link": {
-                            "type": "string",
-                            "x-omitempty": true
-                        },
-                        "status": {
-                            "$ref": "#/definitions/status"
-                        }
-                    }
-                },
-                "success": {
-                    "example": true,
-                    "type": "boolean"
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            },
-            "x-go-name": "EtherealBulkCreateResponse",
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "agentDetails": {
-            "type": "object",
-            "required": ["id", "channel"],
-            "properties": {
-                "mac": {
-                    "example": "48-4D-7E-CB-DB-6F",
-                    "description": "Mandatory if channel is `INT`, `INTB`. Not required for others.",
-                    "type": "string",
-                    "format": "mac"
-                },
-                "terminalId": {
-                    "description": "Mandatory if channel is `ATM`, `AGT`, `KIOSK` and `BSC` . Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
-                    "type": "string",
-                    "example": "6000011234"
-                },
-                "geocode": {
-                    "description": "Mandatory if channel is `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
-                    "type": "string",
-                    "example": "19.0139,72.8254"
-                },
-                "id": {
-                    "description": "The ID of the agent initiating the BBPS transaction.",
-                    "type": "string",
-                    "example": "AX01AI06512391457204"
-                },
-                "ifsc": {
-                    "example": "ICIC0000152",
-                    "description": "Mandatory if channel is `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
-                    "type": "string"
-                },
-                "imei": {
-                    "example": "123456789012345",
-                    "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others.",
-                    "type": "string"
-                },
-                "ip": {
-                    "example": "124.170.23.24",
-                    "description": "Mandatory if channel is `INT`, `INTB`. Not required for others.",
-                    "type": "string",
-                    "format": "ipv4"
-                },
-                "mobile": {
-                    "$ref": "#/definitions/mobile"
-                },
-                "app": {
-                    "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others.",
-                    "type": "string",
-                    "example": "SmartPay"
-                },
-                "channel": {
-                    "$ref": "#/definitions/paymentChannel"
-                },
-                "os": {
-                    "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others.",
-                    "type": "string",
-                    "enum": ["iOS", "Android"],
-                    "example": "iOS"
-                },
-                "postalCode": {
-                    "description": "Mandatory if channel is  `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
-                    "type": "string",
-                    "pattern": "^[1-9][0-9]{5}$",
-                    "example": "600001"
-                }
-            }
-        },
-        "billData": {
-            "type": "object",
-            "required": [
-                "customerName",
-                "amount",
-                "dueDate",
-                "billDate",
-                "billNumber",
-                "billPeriod"
-            ],
-            "properties": {
-                "billDate": {
-                    "type": "string",
-                    "format": "date",
-                    "example": "2021-01-02"
-                },
-                "billNumber": {
-                    "type": "string",
-                    "example": "1232332"
-                },
-                "billPeriod": {
-                    "type": "string",
-                    "example": "ONETIME|DAILY|WEEKLY|BIMONTHLY|MONTHLY|QUARTERLY|HALFYEARLY|YEARLY|ASPRESENTED"
-                },
-                "customerName": {
-                    "type": "string",
-                    "example": "Manoj Chekuri"
-                },
-                "dueDate": {
-                    "type": "string",
-                    "format": "date",
-                    "example": "2021-09-24"
-                },
-                "amount": {
-                    "example": 120000,
-                    "type": "integer"
-                }
-            },
-            "x-go-name": "BillData"
-        },
-        "categoryListItem": {
-            "type": "object",
-            "properties": {
-                "billerCount": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Loan Repayment"
-                }
-            }
-        },
-        "couRZPRefundCreateResponse": {
-            "required": ["refId", "status"],
-            "properties": {
-                "refId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "status": {
-                    "example": "ORDID12345",
-                    "type": "string"
-                }
-            },
-            "x-go-name": "CouRZPRefundCreateResponse",
-            "x-omitempty": true,
-            "type": "object"
-        },
-        "couUPIOrderStatusResponse": {
-            "type": "object",
-            "required": ["refId", "status"],
-            "properties": {
-                "amount": {
-                    "type": "string",
-                    "example": "merchant123@axisbank"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                },
-                "txnId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                }
-            },
-            "x-go-name": "CouUPIOrderStatusResponse",
-            "x-omitempty": true
-        },
-        "disputeListItem": {
-            "type": "object",
-            "properties": {
-                "biller": {
-                    "$ref": "#/definitions/billerDetails"
-                },
-                "billerId": {
-                    "type": "string",
-                    "example": "MAHI00000NATIC",
-                    "description": "The biller ID on BBPS"
-                },
-                "responseCode": {
-                    "type": "string",
-                    "example": "ADIT00000NATRA"
-                },
-                "customerMobileNumber": {
-                    "$ref": "#/definitions/mobile"
-                },
-                "remarks": {
-                    "type": "string",
-                    "example": "ADIT00000NATRA"
-                },
-                "responseReason": {
-                    "type": "string",
-                    "example": "ADIT00000NATRA"
-                },
-                "transactionId": {
-                    "description": "Setu BillPay Transaction ID.",
-                    "type": "string",
-                    "example": "AX30910192192192192"
-                },
-                "transaction": {
-                    "$ref": "#/definitions/txnLineItem"
-                },
-                "assigned": {
-                    "example": "ADIT00000NATRA",
-                    "type": "string"
-                },
-                "complaintId": {
-                    "type": "string",
-                    "example": "Loan Repayment"
-                },
-                "complaintStatus": {
-                    "$ref": "#/definitions/complaintStatus"
-                },
-                "partnerRefId": {
-                    "type": "string",
-                    "example": "AX30910192192192192"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "Loan Repayment"
-                },
-                "createdAt": {
-                    "format": "date-time",
-                    "example": "2020-12-12T13:12:00+05:30",
-                    "description": "Dispute's creation timestamp",
-                    "type": "string"
-                },
-                "lastModifiedAt": {
-                    "description": "Dispute's last modified timestamp",
-                    "type": "string",
-                    "format": "date-time",
-                    "example": "2020-12-12T13:12:00+05:30"
-                }
-            }
-        },
-        "errorMessage": {
-            "type": "object",
-            "required": ["code", "message"],
-            "properties": {
-                "code": {
-                    "type": "string",
-                    "example": "validation-error"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Input is invalid"
-                }
-            }
-        },
-        "etherealLinkCreateResponse": {
-            "type": "object",
-            "required": ["success", "traceId"],
-            "properties": {
-                "link": {
-                    "type": "string",
-                    "example": "link"
-                },
-                "sessionId": {
-                    "example": "sessionId",
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                }
-            },
-            "x-go-name": "EtherealLinkCreateResponse",
-            "x-omitempty": true
-        },
-        "categoriesListResponse": {
-            "required": ["success", "traceId"],
-            "properties": {
-                "error": {
-                    "$ref": "#/definitions/errorMessage"
-                },
-                "success": {
-                    "example": true,
-                    "type": "boolean"
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "data": {
-                    "required": ["categories"],
-                    "properties": {
-                        "categories": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/categoryListItem"
-                            }
-                        }
-                    },
-                    "type": "object"
-                }
-            }
-        },
-        "couRZPRefundCreateRequest": {
-            "x-go-name": "CouRZPRefundCreateRequest",
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["refId"],
-            "properties": {
-                "amount": {
-                    "type": "integer",
-                    "example": 100
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                }
-            }
-        },
-        "customerParamSpec": {
-            "type": "object",
-            "required": [
-                "paramName",
-                "dataType",
-                "optional",
-                "maxLength",
-                "minLength",
-                "visibility",
-                "regex",
-                "values"
-            ],
-            "properties": {
-                "minLength": {
-                    "type": "integer",
-                    "example": 7
-                },
-                "optional": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "paramName": {
-                    "type": "string",
-                    "example": "Loan Account Number"
-                },
-                "regex": {
-                    "type": "string",
-                    "example": "^[a-zA-Z0-9]{7,15}"
-                },
-                "values": {
-                    "type": "string",
-                    "enum": ["CHOICE1", "CHOICE2", "CHOICE3"]
-                },
-                "visibility": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "dataType": {
-                    "type": "string",
-                    "example": "ALPHANUMERIC"
-                },
-                "maxLength": {
-                    "example": 15,
-                    "type": "integer"
-                }
-            }
-        },
-        "autofetchSubscriptionBulk": {
-            "type": "object",
-            "properties": {
-                "agent": {
-                    "$ref": "#/definitions/agentDetails"
-                },
-                "entries": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "billerCustomerParams": {
-                                "$ref": "#/definitions/autofetchBillerCustomerParams"
-                            },
-                            "nextFetchDate": {
-                                "type": "string",
-                                "format": "date",
-                                "x-nullable": true,
-                                "example": "2017-07-21"
-                            },
-                            "transactionId": {
-                                "description": "Setu BillPay Transaction ID.",
-                                "type": "string",
-                                "x-nullable": true,
-                                "example": "AX30910192192192192"
-                            }
-                        }
-                    }
-                },
-                "type": {
-                    "description": "Registration type. - `PARAMS` - `billerCustomerParams` will be checked for bill parameters. - `PARAMS` - `transactionId` will be used to fetch bill parameters.",
-                    "type": "string",
-                    "enum": ["PARAMS", "TRANSACTION_ID"]
-                }
-            }
-        },
-        "couAgentBillPaymentResponse": {
-            "type": "object",
-            "required": ["data", "success", "traceId"],
-            "properties": {
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "C3SFG0O6N88R6UI7EQ"
-                },
-                "data": {
-                    "$ref": "#/definitions/billPaymentResponseData"
-                }
-            },
-            "x-go-name": "CouAgentBillPaymentResponse",
-            "x-omitempty": true
-        },
-        "couAgentDisputeRequest": {
-            "x-omitempty": true,
-            "type": "object",
-            "required": ["txnReferenceId", "disputeType", "description"],
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "example": "Test Transaction Based Complaint"
-                },
-                "disputeType": {
-                    "type": "string",
-                    "enum": [
-                        "account-not-updated",
-                        "double-payment",
-                        "paid-to-wrong-account",
-                        "others",
-                        "amount-deducted-biller-credited-no-transaction-id",
-                        "amount-deducted-biller-not-credited-no-transaction-id",
-                        "amount-deducted-multiple-times"
-                    ]
-                },
-                "txnReferenceId": {
-                    "type": "string",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                }
-            },
-            "x-go-name": "CouAgentDisputeRequest"
-        },
-        "couCustomPaymentWebhook": {
-            "type": "object",
-            "required": [
-                "orderId",
-                "paymentStatus",
-                "amount",
-                "paymentMode",
-                "transactionId",
-                "paymentDateTime"
-            ],
-            "properties": {
-                "paymentStatus": {
-                    "type": "string",
-                    "enum": ["SUCCESS", "FAILURE"],
-                    "description": "Status of the payment collection",
-                    "example": "SUCCESS"
-                },
-                "transactionId": {
-                    "type": "string",
-                    "example": "ORDID12345",
-                    "description": "Unique transaction ID created by the Agent for this payment collection. Defined by Agent - minimum 10 chars and maximum 36 chars"
-                },
-                "amount": {
-                    "type": "string",
-                    "example": "100",
-                    "description": "Amount collected in rupees"
-                },
-                "orderId": {
-                    "type": "string",
-                    "example": "COUWLje9V7wWs9N3w",
-                    "description": "Unique transaction ID created by Setu when initiating the payment request."
-                },
-                "paymentDateTime": {
-                    "type": "string",
-                    "example": "2023-08-01 17:33:32",
-                    "description": "Timestamp of the payment in UTC (YYYY-MM-DD HH:MM:SS)"
-                },
-                "paymentMode": {
-                    "type": "string",
-                    "example": "UPI",
-                    "description": "Mode of payment collection",
-                    "enum": [
-                        "CASH",
-                        "INTERNET BANKING",
-                        "CREDIT CARD",
-                        "DEBIT CARD",
-                        "PREPAID CARD",
-                        "IMPS",
-                        "NEFT",
-                        "UPI",
-                        "WALLET",
-                        "AEPS",
-                        "ACCOUNT TRANSFER",
-                        "Bharat QR",
-                        "USSD"
-                    ]
-                }
-            },
-            "x-go-name": "CouCustomPaymentWebhook",
-            "x-omitempty": true
-        },
-        "couRZPOrderStatusResponse": {
-            "type": "object",
-            "required": ["status"],
-            "properties": {
-                "paymentId": {
-                    "type": "string",
-                    "example": "merchant123@axisbank"
-                },
-                "paymentMode": {
-                    "type": "string",
-                    "example": "merchant123@axisbank"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                },
-                "amount": {
-                    "type": "string",
-                    "example": "merchant123@axisbank"
-                }
-            },
-            "x-go-name": "CouRZPOrderStatusResponse",
-            "x-omitempty": true
-        },
-        "couUPIRefundStatusRequest": {
-            "type": "object",
-            "required": ["refId", "merchId", "merchChanId"],
-            "properties": {
-                "merchChanId": {
-                    "example": "SUCCESS",
-                    "type": "string"
-                },
-                "merchId": {
-                    "type": "string",
-                    "example": "000"
-                },
-                "refId": {
-                    "type": "string",
-                    "example": "000"
-                }
-            },
-            "x-go-name": "CouUPIRefundStatusRequest",
-            "x-omitempty": true
-        },
-        "etherealConfigurationCreateRequest": {
-            "type": "object",
-            "required": ["orgId", "configs"],
-            "properties": {
-                "configs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/etherealConfigurationItem"
-                    }
-                },
-                "orgId": {
-                    "type": "string",
-                    "example": 122337203685477
-                }
-            },
-            "x-go-name": "EtherealConfigurationCreateRequest",
-            "x-omitempty": true
-        },
-        "healthResponseParam": {
-            "type": "object",
-            "required": ["environment", "server", "version"],
-            "properties": {
-                "version": {
-                    "type": "string",
-                    "example": "db42717a829da9d3061e4f409f3c0ee9935b72a5"
-                },
-                "environment": {
-                    "type": "string",
-                    "example": "PROD"
-                },
-                "server": {
-                    "example": "mistborn",
-                    "type": "string"
-                }
-            },
-            "x-go-name": "HealthResponseParam",
-            "x-omitempty": true
+        "x-go-name": "EtherealConfigurationCreateResponse",
+        "x-omitempty": true
+      },
+      "additionalInfoLineItem": {
+        "required": ["name", "value"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Line item 1"
+          },
+          "value": {
+            "type": "string",
+            "example": "Value 1"
+          }
         }
+      },
+      "bbpsFailureReason": {
+        "required": ["code", "message"],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "ERR004"
+          },
+          "message": {
+            "type": "string",
+            "example": "customer not found"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["FUND_TRANSFER", "BBPS", "APP"]
+          }
+        }
+      },
+      "billParameterItem": {
+        "required": ["name", "value"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The display name of the parameter. This has to match what is sent in fields.",
+            "example": "Loan Number"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the customer parameter",
+            "example": "1895159"
+          }
+        }
+      },
+      "couRZPOrderCreateResponse": {
+        "required": ["key", "orderId", "refId", "status"],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "orderId": {
+            "type": "string",
+            "example": "000"
+          },
+          "refId": {
+            "type": "string",
+            "example": "000"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          }
+        },
+        "x-omitempty": true,
+        "x-go-name": "CouRZPOrderCreateResponse"
+      },
+      "listAutofetchSubscriptionsResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "subscriptions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/autofetchSubscription"
+                }
+              }
+            }
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "paymentParameters": {
+        "type": "array",
+        "description": "Additional Payment Parameters",
+        "items": {
+          "$ref": "#/components/schemas/paymentParameterItem"
+        }
+      },
+      "txnLineItem": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "example": 120000
+          },
+          "biller": {
+            "$ref": "#/components/schemas/billerDetails"
+          },
+          "billerId": {
+            "type": "string",
+            "description": "The biller ID on BBPS",
+            "example": "MAHI00000NATIC"
+          },
+          "customerParams": {
+            "$ref": "#/components/schemas/billParameters"
+          },
+          "partnerRefId": {
+            "type": "string",
+            "example": "AX30910192192192192"
+          },
+          "refundStatus": {
+            "$ref": "#/components/schemas/txnRefundStatus"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "Setu BillPay Transaction ID.",
+            "example": "AX30910192192192192"
+          },
+          "customerMobileNumber": {
+            "$ref": "#/components/schemas/mobile"
+          },
+          "refId": {
+            "type": "string",
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+          },
+          "status": {
+            "$ref": "#/components/schemas/txnStatus"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Timestamp provided by partner while making payment request.",
+            "format": "date-time",
+            "example": "2020-12-12T13:12:00+05:30"
+          }
+        }
+      },
+      "billPaymentResponseData": {
+        "required": ["refId", "status"],
+        "type": "object",
+        "properties": {
+          "additionalInfo": {
+            "$ref": "#/components/schemas/billAdditionalInfo"
+          },
+          "billerId": {
+            "type": "string",
+            "description": "The biller ID on BBPS",
+            "example": "MAHI00000NATIC"
+          },
+          "paymentDetails": {
+            "$ref": "#/components/schemas/paymentDetails"
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "AX30910192192192192"
+          },
+          "billerRefId": {
+            "type": "string",
+            "example": "ZA6291A177"
+          },
+          "failureReason": {
+            "$ref": "#/components/schemas/bbpsFailureReason"
+          },
+          "lastPaidDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2020-12-12T13:12:00+05:30"
+          },
+          "refId": {
+            "type": "string",
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+          },
+          "refundStatus": {
+            "$ref": "#/components/schemas/txnRefundStatus"
+          },
+          "status": {
+            "$ref": "#/components/schemas/status"
+          }
+        }
+      },
+      "couCustomRefundCreateRequest": {
+        "required": ["amount", "refId"],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "refId": {
+            "type": "string",
+            "example": "ORDID12345"
+          }
+        },
+        "x-go-name": "CouCustomRefundCreateRequest",
+        "x-omitempty": true
+      },
+      "txnRefundStatus": {
+        "type": "string",
+        "example": "Required",
+        "enum": ["Required", "Requested", "Processed"]
+      },
+      "etherealOrganisationCreateRequest": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "agentInsitutionId": {
+            "type": "string",
+            "example": "12345"
+          },
+          "name": {
+            "type": "string",
+            "example": "000"
+          }
+        },
+        "x-go-name": "EtherealOrganisationCreateRequest",
+        "x-omitempty": true
+      },
+      "billFetchResponseData": {
+        "required": ["refId", "status"],
+        "type": "object",
+        "properties": {
+          "autoFetchHash": {
+            "type": "string",
+            "example": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a"
+          },
+          "bill": {
+            "$ref": "#/components/schemas/billData"
+          },
+          "bills": {
+            "type": "array",
+            "description": "Multiple bills in case of response from B2B biller",
+            "items": {
+              "$ref": "#/components/schemas/billData"
+            },
+            "x-omitempty": true
+          },
+          "exactness": {
+            "type": "string",
+            "example": "EXACT/EXACT_UP/EXACT_DOWN/ADHOC"
+          },
+          "failureReason": {
+            "$ref": "#/components/schemas/bbpsFailureReason"
+          },
+          "isCached": {
+            "type": "boolean",
+            "nullable": true,
+            "example": false
+          },
+          "paymentLimits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/paymentModeSpec"
+            },
+            "x-omitempty": true
+          },
+          "refId": {
+            "type": "string",
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+          },
+          "additionalInfo": {
+            "$ref": "#/components/schemas/billAdditionalInfo"
+          },
+          "billerRefId": {
+            "type": "string",
+            "example": "7f16a032e514"
+          },
+          "lastPaidDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2020-12-12T13:12:00+05:30"
+          },
+          "status": {
+            "$ref": "#/components/schemas/status"
+          }
+        }
+      },
+      "billerApiType": {
+        "type": "string",
+        "example": "BILL_FETCH",
+        "enum": ["BILL_FETCH", "BILL_VALIDATE", "BILL_DIRECT"]
+      },
+      "billerListResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "data": {
+            "required": ["billers"],
+            "type": "object",
+            "properties": {
+              "billers": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/billerDetails"
+                }
+              },
+              "nextPage": {
+                "type": "string",
+                "example": "/api/bbps/billers?search=Aditya&CategoryCode=Loan+Repayment&CategoryCode=Insurance&after=ABCC00000PTNNS"
+              },
+              "total": {
+                "type": "integer",
+                "example": 3000
+              }
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/errorMessage"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "couAgentBillFetchResponse": {
+        "required": ["data", "success", "traceId"],
+        "type": "object",
+        "properties": {
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "autofetch_hash": {
+            "type": "string",
+            "example": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a"
+          },
+          "data": {
+            "$ref": "#/components/schemas/billFetchResponseData"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "x-go-name": "CouAgentBillFetchResponse"
+      },
+      "couAgentBillPaymentRequest": {
+        "required": ["paymentDetails"],
+        "type": "object",
+        "properties": {
+          "do-ift-status-check": {
+            "type": "boolean",
+            "description": "When debug is enabled, do-ift-status-check will do status check of internal fund transfer.",
+            "example": false
+          },
+          "dummyMsgId": {
+            "type": "string",
+            "description": "On debug, this is msgId NEGATIVE 10",
+            "nullable": true
+          },
+          "headTimestamp": {
+            "type": "string",
+            "description": "On debug, this value is used as head timestamp NEGATIVE 5",
+            "nullable": true
+          },
+          "invalidCustomerTagValue": {
+            "type": "boolean",
+            "description": "On debug, pass invalid customer tag value NEGATIVE 15",
+            "nullable": true
+          },
+          "skipFetch": {
+            "type": "boolean",
+            "description": "On debug, skip fetch request before payment, NEGATIVE - 27,",
+            "nullable": true
+          },
+          "agent": {
+            "$ref": "#/components/schemas/agentDetails"
+          },
+          "bills": {
+            "uniqueItems": true,
+            "type": "array",
+            "example": "Selection on bills in case of B2B",
+            "items": {
+              "$ref": "#/components/schemas/bill"
+            }
+          },
+          "dummyTransactionRefId": {
+            "type": "string",
+            "description": "When debug is enabled, this dummy-transaction-id is used as the transaction id. This allows us to test arbitrary length refId test cases.",
+            "example": "dummy-transaction-id"
+          },
+          "transactionProvider": {
+            "type": "string",
+            "description": "On debug, this is the transaction provider NEGATIVE 14",
+            "nullable": true
+          },
+          "dummyBillerId": {
+            "type": "string",
+            "description": "On debug, this is the billerId NEGATIVE 13",
+            "nullable": true
+          },
+          "biller": {
+            "$ref": "#/components/schemas/autofetchBillerCustomerParamsBiller"
+          },
+          "dummy-npci-pool-branch-id": {
+            "type": "string",
+            "description": "When debug is enabled, replaces npci pool branch id",
+            "example": ""
+          },
+          "dummyAgentId": {
+            "type": "string",
+            "description": "On debug, this is the agent id NEGATIVE 12",
+            "nullable": true
+          },
+          "invalidPaymentInformation": {
+            "type": "string",
+            "description": "On debug, this value is sent in payment information NEGATIVE - 4",
+            "nullable": true
+          },
+          "skipPaymentResponseAck": {
+            "type": "boolean",
+            "description": "When debug is enabled, skip the final acknowledgement. This allows us to test \"Elimination of Reversal\". The details on which case to skip ack is sent via \"eliminationOfReversalDetails\"",
+            "example": false
+          },
+          "dummy-npci-pool-bank-id": {
+            "type": "string",
+            "description": "When debug is enabled, replaces npci pool bank id",
+            "example": ""
+          },
+          "fail-fund-transfer-count": {
+            "type": "integer",
+            "description": "When debug is enabled, this fails fund transfer for count times",
+            "example": 0
+          },
+          "invalidCustomerTagKey": {
+            "type": "boolean",
+            "description": "On debug, invalid customer params will be sent NEGATIVE 7",
+            "nullable": true
+          },
+          "timeout-npci-request": {
+            "type": "boolean",
+            "description": "When debug is enabled, this timeouts the npci request",
+            "example": false
+          },
+          "timeout-npci-request-delay": {
+            "type": "integer",
+            "description": "When debug is enabled, this timesout the NPCI request. This actually hits the NPCI request in a delayed approach. The delay time in seconds."
+          },
+          "debug": {
+            "type": "boolean",
+            "description": "When a non-direct payment is being made, refId of fetch/validate is used to populate customer and biller data. When `debug` field is set to `true`, passed customer, biller or agent details will be replace the fetch/validate data. This allows us to run test cases that require diff details from initial fetch/validate request.",
+            "example": false
+          },
+          "dummyAmount": {
+            "type": "integer",
+            "description": "On debug, this is the final amount NEGATIVE 11, 22",
+            "nullable": true
+          },
+          "skip-npci-heartbeat": {
+            "type": "boolean",
+            "description": "When debug is enabled, skips the npci heartbeat check before issuing payment request",
+            "example": false
+          },
+          "skip-npci-response": {
+            "type": "boolean",
+            "description": "When debug is enabled, skip-npci-response won't process NPCI response.",
+            "example": false
+          },
+          "skipBillerResponse": {
+            "type": "boolean",
+            "description": "On debug, don't send biller response on fetch req NEGATIVE 21",
+            "nullable": true
+          },
+          "headVersion": {
+            "type": "string",
+            "description": "On debug, this head version is used. NEGATIVE - 1",
+            "nullable": true
+          },
+          "ouid": {
+            "type": "string",
+            "description": "On debug, this is payment ouid NEGATIVE 6",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/customerDetails"
+          },
+          "dummy-npci-pool-account-number": {
+            "type": "string",
+            "description": "When debug is enabled, replaces npci pool account number",
+            "example": ""
+          },
+          "passBlankPaymentInformation": {
+            "type": "boolean",
+            "description": "On debug, pass blank payment information NEGATIVE - 26",
+            "nullable": true
+          },
+          "paymentDetails": {
+            "$ref": "#/components/schemas/paymentDetails"
+          },
+          "refId": {
+            "type": "string",
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+          }
+        },
+        "x-go-name": "CouAgentBillPaymentRequest",
+        "x-omitempty": true
+      },
+      "couCustomRefundCreateResponse": {
+        "required": ["status"],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          }
+        },
+        "x-go-name": "CouCustomRefundCreateResponse",
+        "x-omitempty": true
+      },
+      "etherealLoginCreateResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "refId"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        },
+        "x-go-name": "EtherealLoginCreateResponse",
+        "x-omitempty": true
+      },
+      "paymentMode": {
+        "type": "string",
+        "example": "Internet Banking",
+        "enum": [
+          "Internet Banking",
+          "Debit Card",
+          "Credit Card",
+          "Prepaid Card",
+          "IMPS",
+          "Cash",
+          "UPI",
+          "Wallet",
+          "NEFT",
+          "AEPS",
+          "Account Transfer",
+          "Bharat QR",
+          "USSD"
+        ]
+      },
+      "bill": {
+        "required": ["amount", "billNumber"],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "minimum": 1,
+            "type": "integer",
+            "description": "Amount in Paise",
+            "example": 10000
+          },
+          "billNumber": {
+            "type": "string",
+            "example": "B1234567"
+          }
+        },
+        "x-omitempty": true
+      },
+      "billAdditionalInfo": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/additionalInfoLineItem"
+        },
+        "x-go-name": "BillAdditionalInfo"
+      },
+      "couUPIPaymentWebhook": {
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "example": "000"
+          }
+        },
+        "x-go-name": "CouUPIPaymentWebhook",
+        "x-omitempty": true
+      },
+      "disableAutofetchResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        }
+      },
+      "etherealConfigurationItem": {
+        "required": ["name", "value"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The display name of the configuration",
+            "example": "Loan Number"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the configuration",
+            "example": "1895159"
+          }
+        }
+      },
+      "etherealLoginValidateResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        },
+        "x-go-name": "EtherealLoginValidateResponse",
+        "x-omitempty": true
+      },
+      "paymentChannel": {
+        "type": "string",
+        "description": "This is the initiating channel.\n1. `AGT`: Offline agent.\n2. `BNKBRNCH`: Bank branch.\n3. `BSC`: Business correspondent\n4. `MOB`: Mobile application\n5. `INT`: Internet portal\n6. `INTB`: Internet banking\n7. `MOBB`: Mobile banking\n8. `ATM`: ATM\n9. `KIOSK`: KIOSK\n",
+        "example": "INT",
+        "enum": [
+          "INT",
+          "INTB",
+          "MOB",
+          "BNKBRNCH",
+          "BSC",
+          "AGT",
+          "KIOSK",
+          "ATM",
+          "MOBB",
+          "POS",
+          "MPOS"
+        ]
+      },
+      "fetchedBillsListResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "required": ["bills"],
+            "type": "object",
+            "properties": {
+              "bills": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/billFetchResponseData"
+                }
+              },
+              "nextPage": {
+                "type": "string",
+                "example": "/api/v1/bbps/fetched-bills?autoFetchHash=xyz&after=ABCC00000PTNNS&limit=5"
+              },
+              "total": {
+                "type": "integer",
+                "example": 3000
+              }
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/errorMessage"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        },
+        "x-go-name": "FetchedBillsListResponse"
+      },
+      "billerDetails": {
+        "required": [
+          "categoryName",
+          "customerParams",
+          "exactness",
+          "fetchApiType",
+          "id",
+          "name",
+          "payWithoutFetchAllowed",
+          "paymentChannels",
+          "paymentModes",
+          "supportsPendingStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "paymentChannels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/paymentChannelSpec"
+            }
+          },
+          "supportsPendingStatus": {
+            "type": "boolean",
+            "example": false
+          },
+          "billerAdditionalInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/billerAdditionalInfoItem"
+            }
+          },
+          "categoryName": {
+            "type": "string",
+            "example": "loan-repayment"
+          },
+          "logo": {
+            "type": "string",
+            "example": "logo"
+          },
+          "name": {
+            "type": "string",
+            "example": "Aditya Birla Sun Life Insurance"
+          },
+          "tags": {
+            "type": "string",
+            "example": "tags"
+          },
+          "city": {
+            "type": "string",
+            "example": "city"
+          },
+          "coverage": {
+            "type": "string",
+            "example": "IND"
+          },
+          "modifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2021-11-12T13:37:04.572+05:30",
+            "x-omitempty": false
+          },
+          "plans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/planItem"
+            }
+          },
+          "state": {
+            "type": "string",
+            "example": "state"
+          },
+          "subCategoryName": {
+            "type": "string",
+            "example": "DAIRY"
+          },
+          "customerParams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/customerParamSpec"
+            }
+          },
+          "exactness": {
+            "type": "string",
+            "example": "ANY/EXACT/EXACT_DOWN/EXACT_UP"
+          },
+          "pincode": {
+            "type": "string",
+            "example": "pincode"
+          },
+          "fetchApiType": {
+            "$ref": "#/components/schemas/billerApiType"
+          },
+          "id": {
+            "type": "string",
+            "example": "ADIT00000NAT0T"
+          },
+          "payWithoutFetchAllowed": {
+            "type": "boolean",
+            "example": true
+          },
+          "paymentModes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/paymentModeSpec"
+            }
+          },
+          "billerAdditionalInfoPayment": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/billerAdditionalInfoItem"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2021-11-12T13:37:04.572+05:30",
+            "x-omitempty": false
+          },
+          "customerParamsGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/customerParamsGroupItem"
+            }
+          }
+        },
+        "x-go-name": "CouBillerDetails"
+      },
+      "couCustomOrderCreateResponse": {
+        "required": ["link", "refId", "status"],
+        "type": "object",
+        "properties": {
+          "link": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "refId": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          }
+        },
+        "x-go-name": "CouCustomOrderCreateResponse",
+        "x-omitempty": true
+      },
+      "couRZPOrderCreateRequest": {
+        "required": ["amount", "isDirectBill", "orgId", "sessionId"],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "100"
+          },
+          "billRefId": {
+            "type": "string",
+            "example": "1196687215019689511"
+          },
+          "isDirectBill": {
+            "type": "boolean",
+            "example": false
+          },
+          "orgId": {
+            "type": "string",
+            "example": "000"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "000"
+          }
+        },
+        "x-go-name": "CouRZPOrderCreateRequest",
+        "x-omitempty": true
+      },
+      "couUPIOrderCreateRequest": {
+        "required": [
+          "amount",
+          "creditVpa",
+          "isDirectBill",
+          "merchChanId",
+          "orgId",
+          "sessionId"
+        ],
+        "type": "object",
+        "properties": {
+          "isDirectBill": {
+            "type": "boolean",
+            "example": false
+          },
+          "merchChanId": {
+            "type": "string",
+            "example": "collect123"
+          },
+          "orgId": {
+            "type": "string",
+            "example": "000"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "000"
+          },
+          "amount": {
+            "type": "string",
+            "example": "100"
+          },
+          "billRefId": {
+            "type": "string",
+            "example": "1196687215019689511"
+          },
+          "creditVpa": {
+            "type": "string",
+            "example": "merchant123@axisbank"
+          }
+        },
+        "x-go-name": "CouUPIOrderCreateRequest",
+        "x-omitempty": true
+      },
+      "disputeResponseData": {
+        "required": ["assignedTo", "disputeId", "refId", "remarks", "status"],
+        "type": "object",
+        "properties": {
+          "assignedTo": {
+            "type": "string",
+            "example": "ICICI BOU"
+          },
+          "disputeId": {
+            "type": "string",
+            "example": "OP0121046567755"
+          },
+          "refId": {
+            "type": "string",
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+          },
+          "remarks": {
+            "type": "string",
+            "example": "Resolved in favour of Biller"
+          },
+          "status": {
+            "$ref": "#/components/schemas/complaintStatus"
+          }
+        },
+        "x-go-name": "DisputeResponseData"
+      },
+      "etherealOrganisationCreateResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "name"
+          },
+          "orgId": {
+            "type": "string",
+            "example": "123456"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        },
+        "x-omitempty": true,
+        "x-go-name": "EtherealOrganisationCreateResponse"
+      },
+      "etherealUserCreateResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "userId": {
+            "type": "string",
+            "example": "12345"
+          }
+        },
+        "x-omitempty": true,
+        "x-go-name": "EtherealUserCreateResponse"
+      },
+      "paymentModeSpec": {
+        "required": [
+          "maxLimit",
+          "minLimit",
+          "paymentMode",
+          "supportsPendingStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "maxLimit": {
+            "type": "integer",
+            "example": 500000000
+          },
+          "minLimit": {
+            "type": "integer",
+            "example": 10100
+          },
+          "paymentMode": {
+            "$ref": "#/components/schemas/paymentMode"
+          },
+          "supportsPendingStatus": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "paymentParameterItem": {
+        "required": ["name", "value"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The display name of the parameter. This has to match what is sent in fields.",
+            "example": "Early Payment Amount"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the payment parameter",
+            "example": "100"
+          }
+        }
+      },
+      "transactionsResponse": {
+        "required": ["data", "success", "traceId"],
+        "type": "object",
+        "properties": {
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "data": {
+            "$ref": "#/components/schemas/txnResponseData"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "x-go-name": "TransactionsResponse",
+        "x-omitempty": true
+      },
+      "couCustomOrderStatusResponse": {
+        "required": [
+          "amount",
+          "datetime",
+          "paymentMode",
+          "refId",
+          "status",
+          "transactionId"
+        ],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "datetime": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "paymentMode": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "refId": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "ORDID12345"
+          }
+        },
+        "x-go-name": "CouCustomOrderStatusResponse",
+        "x-omitempty": true
+      },
+      "couUPIRefundCreateRequest": {
+        "required": [
+          "merchChanId",
+          "merchId",
+          "mobileNumber",
+          "reason",
+          "refId",
+          "sId"
+        ],
+        "type": "object",
+        "properties": {
+          "merchChanId": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "merchId": {
+            "type": "string",
+            "example": "000"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "reason": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "refId": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "sId": {
+            "type": "string",
+            "example": "ORDID12345"
+          }
+        },
+        "x-go-name": "CouUPIRefundCreateRequest",
+        "x-omitempty": true
+      },
+      "couUPIRefundStatusResponse": {
+        "required": ["refId", "responseCode", "status"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "responseCode": {
+            "type": "string",
+            "example": "000"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          }
+        },
+        "x-go-name": "CouUPIRefundStatusResponse",
+        "x-omitempty": true
+      },
+      "planItem": {
+        "required": ["amount", "categoryType", "description", "id", "status"],
+        "type": "object",
+        "properties": {
+          "categorySubType": {
+            "type": "object",
+            "properties": {},
+            "description": "Plan sub category as defined by the Biller.",
+            "example": {
+              "subType": "1 Month"
+            },
+            "x-omitempty": true
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "description": "Effective from date of corresponding Plan.",
+            "format": "date",
+            "nullable": true,
+            "example": "2017-07-21",
+            "x-omitempty": false
+          },
+          "status": {
+            "type": "string",
+            "description": "Effective to date of corresponding Plan.",
+            "example": "ACTIVE",
+            "enum": ["ACTIVE", "DEACTIVATED"]
+          },
+          "additionalInfo": {
+            "minItems": 1,
+            "type": "array",
+            "description": "Plan Additional information details provided by the Biller.",
+            "example": [
+              {
+                "paramName": "Mobile Number",
+                "paramValue": "Text"
+              }
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "paramName": {
+                  "type": "string",
+                  "example": "Plan Additional information parameter name."
+                },
+                "paramValue": {
+                  "type": "string",
+                  "example": "Plan Additional information parameter value."
+                }
+              },
+              "example": {
+                "paramName": "Mobile Number",
+                "paramValue": "Text"
+              },
+              "x-go-name": "PlanAdditionalInfoItem"
+            },
+            "x-omitempty": true
+          },
+          "amount": {
+            "type": "string",
+            "description": "Plan amount in rupees as defined by the Biller.",
+            "example": "22"
+          },
+          "categoryType": {
+            "type": "string",
+            "description": "Plan category as defined by the Biller.",
+            "example": "VIP"
+          },
+          "description": {
+            "type": "string",
+            "description": "Plan description as defined by the Biller.",
+            "example": "Unlimited Live Sports"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "description": "Effective to date of corresponding Plan.",
+            "format": "date",
+            "nullable": true,
+            "example": "2020-08-21",
+            "x-omitempty": false
+          },
+          "id": {
+            "type": "string",
+            "description": "Plan ID",
+            "example": "1"
+          }
+        }
+      },
+      "txnStatus": {
+        "type": "string",
+        "example": "Success",
+        "enum": ["Processing", "Success", "Error"]
+      },
+      "etherealUserCreateRequest": {
+        "required": ["orgId"],
+        "type": "object",
+        "properties": {
+          "orgId": {
+            "type": "string",
+            "example": "000"
+          }
+        },
+        "x-go-name": "EtherealUserCreateRequest",
+        "x-omitempty": true
+      },
+      "autofetchBillerCustomerParams": {
+        "type": "object",
+        "properties": {
+          "biller": {
+            "$ref": "#/components/schemas/autofetchBillerCustomerParamsBiller"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/customerDetails"
+          }
+        }
+      },
+      "autofetchBillerCustomerParamsBiller": {
+        "required": ["id"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The biller ID on BBPS",
+            "example": "MAHI00000NATIC"
+          }
+        },
+        "x-go-gen-location": "models",
+        "x-go-name": "BillerDetails"
+      },
+      "couAgentBillFetchRequest": {
+        "required": ["agent", "biller", "customer"],
+        "type": "object",
+        "properties": {
+          "patch-due-date": {
+            "type": "string",
+            "description": "On debug, use this as the bill fetch due date.",
+            "format": "date",
+            "nullable": true
+          },
+          "agent": {
+            "$ref": "#/components/schemas/agentDetails"
+          },
+          "allowFetchForAdhocBillers": {
+            "type": "boolean",
+            "description": "On debug, make fetch for payment only billers NEGATIVE 20",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/customerDetails"
+          },
+          "forceFetch": {
+            "type": "boolean",
+            "example": true
+          },
+          "autoFetch": {
+            "type": "boolean",
+            "example": true
+          },
+          "biller": {
+            "$ref": "#/components/schemas/autofetchBillerCustomerParamsBiller"
+          },
+          "debug": {
+            "type": "boolean",
+            "description": "When `true`, param validation is disabled",
+            "example": false
+          },
+          "patch-bill-date": {
+            "type": "string",
+            "description": "On debug, use this as the bill fetch bill date.",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "x-go-name": "CouAgentBillFetchRequest",
+        "x-omitempty": true
+      },
+      "couAgentDisputeResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/disputeResponseData"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        },
+        "x-go-name": "CouAgentDisputeResponse",
+        "x-omitempty": true
+      },
+      "couCustomOrderStatusRequest": {
+        "required": ["refId"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "000"
+          }
+        },
+        "x-go-name": "CouCustomOrderStatusRequest",
+        "x-omitempty": true
+      },
+      "couUPIRefundCreateResponse": {
+        "required": ["refId", "responseCode", "status"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "responseCode": {
+            "type": "string",
+            "example": "000"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          }
+        },
+        "x-go-name": "CouUPIRefundCreateResponse",
+        "x-omitempty": true
+      },
+      "customerDetails": {
+        "required": ["billParameters", "mobile"],
+        "type": "object",
+        "properties": {
+          "billParameters": {
+            "$ref": "#/components/schemas/billParameters"
+          },
+          "mobile": {
+            "$ref": "#/components/schemas/mobile"
+          }
+        }
+      },
+      "paymentChannelSpec": {
+        "required": [
+          "maxLimit",
+          "minLimit",
+          "paymentChannel",
+          "supportsPendingStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "supportsPendingStatus": {
+            "type": "boolean",
+            "example": false
+          },
+          "maxLimit": {
+            "type": "integer",
+            "example": 500000000
+          },
+          "minLimit": {
+            "type": "integer",
+            "example": 10100
+          },
+          "paymentChannel": {
+            "$ref": "#/components/schemas/paymentChannel"
+          }
+        }
+      },
+      "paymentDetails": {
+        "required": ["amount", "mode", "paymentRefId", "timestamp"],
+        "type": "object",
+        "properties": {
+          "paymentRefId": {
+            "maxLength": 35,
+            "minLength": 6,
+            "type": "string",
+            "example": "BD019181220291"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2020-12-12T13:12:00+05:30"
+          },
+          "COUcustConvFee": {
+            "type": "integer",
+            "nullable": true,
+            "example": 10
+          },
+          "amount": {
+            "minimum": 1,
+            "type": "integer",
+            "description": "Amount in Paise",
+            "example": 10000
+          },
+          "currency": {
+            "type": "integer",
+            "nullable": true,
+            "example": 356
+          },
+          "custConvFee": {
+            "type": "integer",
+            "nullable": true,
+            "example": 59
+          },
+          "mode": {
+            "$ref": "#/components/schemas/paymentMode"
+          },
+          "paymentParams": {
+            "$ref": "#/components/schemas/paymentParameters"
+          }
+        }
+      },
+      "refIdBasedRequest": {
+        "required": ["refId"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "LNMSQQR4RKT7X1UGPY7JGUV454PL9T2C689"
+          }
+        },
+        "x-go-name": "RefIdBasedRequest",
+        "x-omitempty": true
+      },
+      "autofetchSubscription": {
+        "required": ["hash", "isActive"],
+        "type": "object",
+        "properties": {
+          "lastFetchDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "example": "2017-07-21"
+          },
+          "additionalInfo": {
+            "$ref": "#/components/schemas/billAdditionalInfo"
+          },
+          "bill": {
+            "$ref": "#/components/schemas/billData"
+          },
+          "biller": {
+            "$ref": "#/components/schemas/billerDetails"
+          },
+          "billerRefId": {
+            "type": "string",
+            "example": "7f16a032e514"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/customerDetails"
+          },
+          "hash": {
+            "type": "string",
+            "example": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "disputeListResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "required": ["disputes"],
+            "type": "object",
+            "properties": {
+              "disputes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/disputeListItem"
+                }
+              },
+              "nextPage": {
+                "type": "string",
+                "example": "/api/bbps/billers?search=Aditya&CategoryCode=Loan+Repayment&CategoryCode=Insurance&after=ABCC00000PTNNS"
+              },
+              "total": {
+                "type": "integer",
+                "example": 3000
+              }
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/errorMessage"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        }
+      },
+      "TokenAPIRequest": {
+        "required": ["clientID", "secret"],
+        "type": "object",
+        "properties": {
+          "clientID": {
+            "type": "string",
+            "description": "client_id obtained from bridge",
+            "example": "client_id"
+          },
+          "secret": {
+            "type": "string",
+            "description": "client secret obtained from bridge",
+            "example": "client_secret"
+          }
+        },
+        "x-go-name": "TokenAPIRequest",
+        "x-omitempty": true
+      },
+      "etherealLinkCreateRequest": {
+        "required": ["orgId"],
+        "type": "object",
+        "properties": {
+          "orgId": {
+            "type": "string",
+            "description": "ID assigned to your organisation as provided by Setu.",
+            "example": "122337203685477"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "description": "Mobile number of the user for which the link is generated. If no value is sent, there is a mobile number and OTP flow invoked to validate the user. All transactions and complaints are listed for a given mobile number.",
+            "example": "9082718673"
+          },
+          "redirectTo": {
+            "type": "string",
+            "description": "Specific page user needs to be redirected to. If left blank, link opens to the homepage.",
+            "example": "transactions",
+            "enum": ["transactions", "disputes"]
+          },
+          "billerId": {
+            "type": "string",
+            "description": "If redirected to a particular bill - pass this value.",
+            "example": "BESCOM000KAR01"
+          },
+          "categoryName": {
+            "type": "string",
+            "description": "The category of the biller passed in the billerId field.",
+            "example": "Electricity",
+            "enum": [
+              "Electricity",
+              "Piped Gas",
+              "Water",
+              "LPG",
+              "Mobile postpaid",
+              "Landline postpaid",
+              "Broadband postpaid",
+              "DTH",
+              "FASTag Recharge",
+              "Loan Repayment",
+              "Recurring Deposits",
+              "Credit Card",
+              "Mutual Fund",
+              "Insurance",
+              "Cable",
+              "Housing Society",
+              "Education",
+              "Hospital & Pathology",
+              "Clubs & Associations",
+              "Rental",
+              "Subscriptions",
+              "Municipal Taxes"
+            ]
+          },
+          "billParams": {
+            "type": "array",
+            "description": "To be used if the Agent wishes to redirect the user to a specific bill page.",
+            "items": {
+              "$ref": "#/components/schemas/billParameterItem"
+            }
+          }
+        },
+        "x-go-name": "EtherealLinkCreateRequest",
+        "x-omitempty": true
+      },
+      "etherealLoginCreateRequest": {
+        "required": ["mobileNumber", "orgId", "sessionId"],
+        "type": "object",
+        "properties": {
+          "mobileNumber": {
+            "type": "string",
+            "example": "mobileNumber"
+          },
+          "orgId": {
+            "type": "string",
+            "example": "orgId"
+          },
+          "refId": {
+            "type": "string",
+            "example": "refId"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "sessionId"
+          }
+        },
+        "x-go-name": "EtherealLoginCreateRequest",
+        "x-omitempty": true
+      },
+      "couUPIOrderCreateResponse": {
+        "required": ["refId", "responseCode", "status", "upiLink"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "ORDID12345"
+          },
+          "responseCode": {
+            "type": "string",
+            "example": "000"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "upiLink": {
+            "type": "string",
+            "example": "ORDID12345"
+          }
+        },
+        "x-go-name": "CouUPIOrderCreateResponse",
+        "x-omitempty": true
+      },
+      "customerParamsGroupItem": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "Param 1"
+        }
+      },
+      "etherealOrgConfigurationItem": {
+        "required": ["configId", "name", "value"],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "example": "#ffa80h"
+          },
+          "configId": {
+            "type": "string",
+            "example": "000"
+          },
+          "name": {
+            "type": "string",
+            "example": "PRIMARY_COLOUR"
+          }
+        },
+        "x-go-name": "EtherealOrgConfigurationItem",
+        "x-omitempty": true
+      },
+      "mobile": {
+        "maxLength": 20,
+        "minLength": 6,
+        "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
+        "type": "string",
+        "description": "Mobile number with 6, 10 and 20 digits are valid.",
+        "example": "9481773053"
+      },
+      "txnResponseData": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/txnLineItem"
+            }
+          },
+          "nextPage": {
+            "type": "string",
+            "example": "/api/bbps/billers?search=Aditya&CategoryCode=Loan+Repayment&CategoryCode=Insurance&after=ABCC00000PTNNS"
+          }
+        }
+      },
+      "etherealBulkCreateResponse": {
+        "required": ["data", "success", "traceId"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "link": {
+                "type": "string",
+                "x-omitempty": true
+              },
+              "status": {
+                "$ref": "#/components/schemas/status"
+              }
+            }
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        },
+        "x-go-name": "EtherealBulkCreateResponse",
+        "x-omitempty": true
+      },
+      "agentDetails": {
+        "required": ["channel", "id"],
+        "type": "object",
+        "properties": {
+          "mac": {
+            "type": "string",
+            "description": "Mandatory if channel is `INT`, `INTB`. Not required for others.",
+            "format": "mac",
+            "example": "48-4D-7E-CB-DB-6F"
+          },
+          "terminalId": {
+            "type": "string",
+            "description": "Mandatory if channel is `ATM`, `AGT`, `KIOSK` and `BSC` . Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
+            "example": "6000011234"
+          },
+          "geocode": {
+            "type": "string",
+            "description": "Mandatory if channel is `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
+            "example": "19.0139,72.8254"
+          },
+          "id": {
+            "type": "string",
+            "description": "The ID of the agent initiating the BBPS transaction.",
+            "example": "AX01AI06512391457204"
+          },
+          "ifsc": {
+            "type": "string",
+            "description": "Mandatory if channel is `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
+            "example": "ICIC0000152"
+          },
+          "imei": {
+            "type": "string",
+            "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others.",
+            "example": "123456789012345"
+          },
+          "ip": {
+            "type": "string",
+            "description": "Mandatory if channel is `INT`, `INTB`. Not required for others.",
+            "format": "ipv4",
+            "example": "124.170.23.24"
+          },
+          "mobile": {
+            "$ref": "#/components/schemas/mobile"
+          },
+          "app": {
+            "type": "string",
+            "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others.",
+            "example": "SmartPay"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/paymentChannel"
+          },
+          "os": {
+            "type": "string",
+            "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others.",
+            "example": "iOS",
+            "enum": ["iOS", "Android"]
+          },
+          "postalCode": {
+            "pattern": "^[1-9][0-9]{5}$",
+            "type": "string",
+            "description": "Mandatory if channel is  `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
+            "example": "600001"
+          }
+        }
+      },
+      "billData": {
+        "required": [
+          "amount",
+          "billDate",
+          "billNumber",
+          "billPeriod",
+          "customerName",
+          "dueDate"
+        ],
+        "type": "object",
+        "properties": {
+          "billDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2021-01-02"
+          },
+          "billNumber": {
+            "type": "string",
+            "example": "1232332"
+          },
+          "billPeriod": {
+            "type": "string",
+            "example": "ONETIME|DAILY|WEEKLY|BIMONTHLY|MONTHLY|QUARTERLY|HALFYEARLY|YEARLY|ASPRESENTED"
+          },
+          "customerName": {
+            "type": "string",
+            "example": "Manoj Chekuri"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2021-09-24"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 120000
+          }
+        },
+        "x-go-name": "BillData"
+      },
+      "categoryListItem": {
+        "type": "object",
+        "properties": {
+          "billerCount": {
+            "type": "integer",
+            "example": 10
+          },
+          "name": {
+            "type": "string",
+            "example": "Loan Repayment"
+          }
+        }
+      },
+      "couRZPRefundCreateResponse": {
+        "required": ["refId", "status"],
+        "type": "object",
+        "properties": {
+          "refId": {
+            "type": "string",
+            "example": "000"
+          },
+          "status": {
+            "type": "string",
+            "example": "ORDID12345"
+          }
+        },
+        "x-go-name": "CouRZPRefundCreateResponse",
+        "x-omitempty": true
+      },
+      "couUPIOrderStatusResponse": {
+        "required": ["refId", "status"],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "merchant123@axisbank"
+          },
+          "refId": {
+            "type": "string",
+            "example": "000"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "txnId": {
+            "type": "string",
+            "example": "ORDID12345"
+          }
+        },
+        "x-go-name": "CouUPIOrderStatusResponse",
+        "x-omitempty": true
+      },
+      "disputeListItem": {
+        "type": "object",
+        "properties": {
+          "biller": {
+            "$ref": "#/components/schemas/billerDetails"
+          },
+          "billerId": {
+            "type": "string",
+            "description": "The biller ID on BBPS",
+            "example": "MAHI00000NATIC"
+          },
+          "responseCode": {
+            "type": "string",
+            "example": "ADIT00000NATRA"
+          },
+          "customerMobileNumber": {
+            "$ref": "#/components/schemas/mobile"
+          },
+          "remarks": {
+            "type": "string",
+            "example": "ADIT00000NATRA"
+          },
+          "responseReason": {
+            "type": "string",
+            "example": "ADIT00000NATRA"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "Setu BillPay Transaction ID.",
+            "example": "AX30910192192192192"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/txnLineItem"
+          },
+          "assigned": {
+            "type": "string",
+            "example": "ADIT00000NATRA"
+          },
+          "complaintId": {
+            "type": "string",
+            "example": "Loan Repayment"
+          },
+          "complaintStatus": {
+            "$ref": "#/components/schemas/complaintStatus"
+          },
+          "partnerRefId": {
+            "type": "string",
+            "example": "AX30910192192192192"
+          },
+          "refId": {
+            "type": "string",
+            "example": "Loan Repayment"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Dispute's creation timestamp",
+            "format": "date-time",
+            "example": "2020-12-12T13:12:00+05:30"
+          },
+          "lastModifiedAt": {
+            "type": "string",
+            "description": "Dispute's last modified timestamp",
+            "format": "date-time",
+            "example": "2020-12-12T13:12:00+05:30"
+          }
+        }
+      },
+      "errorMessage": {
+        "required": ["code", "message"],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "validation-error"
+          },
+          "message": {
+            "type": "string",
+            "example": "Input is invalid"
+          }
+        }
+      },
+      "etherealLinkCreateResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "link": {
+            "type": "billpay.setu.co/12617771219030",
+            "example": "link"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "12617771219030"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          }
+        },
+        "x-go-name": "EtherealLinkCreateResponse",
+        "x-omitempty": true
+      },
+      "categoriesListResponse": {
+        "required": ["success", "traceId"],
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/errorMessage"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "data": {
+            "required": ["categories"],
+            "type": "object",
+            "properties": {
+              "categories": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/categoryListItem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "couRZPRefundCreateRequest": {
+        "required": ["refId"],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "example": 100
+          },
+          "refId": {
+            "type": "string",
+            "example": "ORDID12345"
+          }
+        },
+        "x-go-name": "CouRZPRefundCreateRequest",
+        "x-omitempty": true
+      },
+      "customerParamSpec": {
+        "required": [
+          "dataType",
+          "maxLength",
+          "minLength",
+          "optional",
+          "paramName",
+          "regex",
+          "values",
+          "visibility"
+        ],
+        "type": "object",
+        "properties": {
+          "minLength": {
+            "type": "integer",
+            "example": 7
+          },
+          "optional": {
+            "type": "boolean",
+            "example": false
+          },
+          "paramName": {
+            "type": "string",
+            "example": "Loan Account Number"
+          },
+          "regex": {
+            "type": "string",
+            "example": "^[a-zA-Z0-9]{7,15}"
+          },
+          "values": {
+            "type": "string",
+            "enum": ["CHOICE1", "CHOICE2", "CHOICE3"]
+          },
+          "visibility": {
+            "type": "boolean",
+            "example": true
+          },
+          "dataType": {
+            "type": "string",
+            "example": "ALPHANUMERIC"
+          },
+          "maxLength": {
+            "type": "integer",
+            "example": 15
+          }
+        }
+      },
+      "autofetchSubscriptionBulk": {
+        "type": "object",
+        "properties": {
+          "agent": {
+            "$ref": "#/components/schemas/agentDetails"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "billerCustomerParams": {
+                  "$ref": "#/components/schemas/autofetchBillerCustomerParams"
+                },
+                "nextFetchDate": {
+                  "type": "string",
+                  "format": "date",
+                  "nullable": true,
+                  "example": "2017-07-21"
+                },
+                "transactionId": {
+                  "type": "string",
+                  "description": "Setu BillPay Transaction ID.",
+                  "nullable": true,
+                  "example": "AX30910192192192192"
+                }
+              }
+            }
+          },
+          "type": {
+            "type": "string",
+            "description": "Registration type. - `PARAMS` - `billerCustomerParams` will be checked for bill parameters. - `PARAMS` - `transactionId` will be used to fetch bill parameters.",
+            "enum": ["PARAMS", "TRANSACTION_ID"]
+          }
+        }
+      },
+      "couAgentBillPaymentResponse": {
+        "required": ["data", "success", "traceId"],
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "traceId": {
+            "type": "string",
+            "example": "C3SFG0O6N88R6UI7EQ"
+          },
+          "data": {
+            "$ref": "#/components/schemas/billPaymentResponseData"
+          }
+        },
+        "x-go-name": "CouAgentBillPaymentResponse",
+        "x-omitempty": true
+      },
+      "couAgentDisputeRequest": {
+        "required": ["description", "disputeType", "txnReferenceId"],
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Test Transaction Based Complaint"
+          },
+          "disputeType": {
+            "type": "string",
+            "enum": [
+              "account-not-updated",
+              "double-payment",
+              "paid-to-wrong-account",
+              "others",
+              "amount-deducted-biller-credited-no-transaction-id",
+              "amount-deducted-biller-not-credited-no-transaction-id",
+              "amount-deducted-multiple-times"
+            ]
+          },
+          "txnReferenceId": {
+            "type": "string",
+            "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+          }
+        },
+        "x-omitempty": true,
+        "x-go-name": "CouAgentDisputeRequest"
+      },
+      "couCustomPaymentWebhook": {
+        "required": [
+          "amount",
+          "orderId",
+          "paymentDateTime",
+          "paymentMode",
+          "paymentStatus",
+          "transactionId"
+        ],
+        "type": "object",
+        "properties": {
+          "paymentStatus": {
+            "type": "string",
+            "description": "Status of the payment collection",
+            "example": "SUCCESS",
+            "enum": ["SUCCESS", "FAILURE"]
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "Unique transaction ID created by the Agent for this payment collection. Defined by Agent - minimum 10 chars and maximum 36 chars",
+            "example": "ORDID12345"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Amount collected in rupees",
+            "example": "100"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Unique transaction ID created by Setu when initiating the payment request.",
+            "example": "COUWLje9V7wWs9N3w"
+          },
+          "paymentDateTime": {
+            "type": "string",
+            "description": "Timestamp of the payment in UTC (YYYY-MM-DD HH:MM:SS)",
+            "example": "2023-08-01 17:33:32"
+          },
+          "paymentMode": {
+            "type": "string",
+            "description": "Mode of payment collection",
+            "example": "UPI",
+            "enum": [
+              "CASH",
+              "INTERNET BANKING",
+              "CREDIT CARD",
+              "DEBIT CARD",
+              "PREPAID CARD",
+              "IMPS",
+              "NEFT",
+              "UPI",
+              "WALLET",
+              "AEPS",
+              "ACCOUNT TRANSFER",
+              "Bharat QR",
+              "USSD"
+            ]
+          }
+        },
+        "x-go-name": "CouCustomPaymentWebhook",
+        "x-omitempty": true
+      },
+      "couRZPOrderStatusResponse": {
+        "required": ["status"],
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "example": "merchant123@axisbank"
+          },
+          "paymentMode": {
+            "type": "string",
+            "example": "merchant123@axisbank"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "amount": {
+            "type": "string",
+            "example": "merchant123@axisbank"
+          }
+        },
+        "x-go-name": "CouRZPOrderStatusResponse",
+        "x-omitempty": true
+      },
+      "couUPIRefundStatusRequest": {
+        "required": ["merchChanId", "merchId", "refId"],
+        "type": "object",
+        "properties": {
+          "merchChanId": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "merchId": {
+            "type": "string",
+            "example": "000"
+          },
+          "refId": {
+            "type": "string",
+            "example": "000"
+          }
+        },
+        "x-go-name": "CouUPIRefundStatusRequest",
+        "x-omitempty": true
+      },
+      "etherealConfigurationCreateRequest": {
+        "required": ["configs", "orgId"],
+        "type": "object",
+        "properties": {
+          "configs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/etherealConfigurationItem"
+            }
+          },
+          "orgId": {
+            "type": "string",
+            "example": "122337203685477"
+          }
+        },
+        "x-go-name": "EtherealConfigurationCreateRequest",
+        "x-omitempty": true
+      },
+      "healthResponseParam": {
+        "required": ["environment", "server", "version"],
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "example": "db42717a829da9d3061e4f409f3c0ee9935b72a5"
+          },
+          "environment": {
+            "type": "string",
+            "example": "PROD"
+          },
+          "server": {
+            "type": "string",
+            "example": "mistborn"
+          }
+        },
+        "x-go-name": "HealthResponseParam",
+        "x-omitempty": true
+      }
     }
+  },
+  "x-original-swagger-version": "2.0"
 }
