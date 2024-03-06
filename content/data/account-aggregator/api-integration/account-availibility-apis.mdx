@@ -1,0 +1,120 @@
+---
+sidebar_title: Account Availibility
+page_title: Account Aggregator Account Availibility
+order: 1
+visible_in_sidebar: true
+---
+
+## Overview
+
+The Account Availability Check API enables Financial Information Users (FIUs) to verify the existence of customer accounts across Account Aggregators Setu’s AA gateway offers using a customer's phone number. This documentation provides guidelines on how to integrate and use the API effectively.
+
+<hr class="primary" />
+
+### Authentication
+
+FIUs must use [Auth Mechanism](/data/account-aggregator/api-reference#/operation~getToken) to obtain an access token for authentication. Include the access token in the Authorization header of each request.
+
+<hr class="primary" />
+
+### Account Availability API
+
+<CodeBlockWithCopy language="json">
+    {`POST /v2/account-availability
+Headers: 
+    Authorization: Bearer <access token>
+    Content-Type: application/json
+    x-product-instance-id: <product instance id>
+Body:
+{
+    "phoneNumber": "9999999999",
+}`}
+</CodeBlockWithCopy>
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "accounts": [
+        {
+            "aa": "onemoney",
+            "vua": "9999999999@onemoney",
+            "status": true
+        },
+        {
+            "aa": "setu-aa",
+            "vua": "9999999999@onemoney",
+            "status": false
+        }
+    ],
+    "traceId": "609fa794-2756-417f-8316-a938a6265c43"
+}
+`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "errorMsg": "string",
+  "errorCode": "string",
+  "traceId": "string",
+}`}
+                            </CodeBlockWithCopy>
+                            <h5>Error codes</h5>
+                            <p>A mapping of error codes and messages for the Create consent API</p>
+                            <table>
+                                <tr>
+                                    <th>
+                                        <strong>Status codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error codes</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Error messages</strong>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>400</td>
+                                    <td>
+                                        <code>InvalidRequest</code>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            <li>Invalid request body</li>
+                                            <li>Invalid response from upstream</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>500</td>
+                                    <td>
+                                        <code>InternalServerError</code>
+                                    </td>
+                                    <td>An internal server error has occurred, please try again in some time. You can report this to aa@setu.co</td>
+                                </tr>
+                            </table>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
+<WasPageHelpful />
