@@ -73,61 +73,80 @@ The above request will return URL based on the input params. Here’s a sample�
 
 ##### Switch control from your app to Setu
 
-The link returned by the API should be loaded within `WKWebView` in a `ViewController` which implements `UIViewController`, and `WKScriptMessageHandler`. The controller must also extend and use a custom `WKNavigationDelegate` class to intercept and download PDF files.
+The link returned by the API should be loaded within a `WKWebView`, facilitated by SwiftUI's `WebView`. `ContentView` controls the main view, which incorporates navigation controls and a custom back button. `WebViewCoordinator` manages navigation actions and delegates for smooth interaction with web content.
 
 If you’re using a cross platform solution—like Flutter, React Native, Ionic—look at the code snippets provided <a href="/payments/billpay/quickstart/cross-platform" target="_blank">here</a>.
 
-The `userContentController` will need to implement one function—
+Here’s a sample code for the same -
 
--   `unload` — Used by the parent app to dismiss the webview
-
-<Callout type="tip">
-    <b>Special use case:</b> This <code>unload</code> function can also be used for dismissing the webview and redirecting a user back to your native app once a bill payment journey is completed (i.e. payment is successful) via a CTA from the Setu webview. Please let our team know if you would like to enable this use case for your app.
-</Callout>
-<br />
-
-<CodeBlockWithCopy language="bash">
-{`// The iOS observer function
-func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-    guard let dict = message.body as ? [String: AnyObject]
-    else {
-        return
+<CodeBlockWithCopy language="jsx">
+    {`
+import SwiftUI
+import WebKit
+struct ContentView: View {
+    var body: some View {
+        NavigationView {
+            WebView(urlString: "https://billpay.setu.co/1234") // Replace with the actual URL
+                .navigationBarItems(leading: WebViewBackButton())
+                .onAppear {
+                    NotificationCenter.default.addObserver(forName: Notification.Name("GoBack"), object: nil, queue: .main) { _ in
+                        WebViewCoordinator.shared.goBack()
+                    }
+                }
+        }
     }
-    let functionToPerform: String = dict["function"] as ? String ?? ""
-    
-    switch functionToPerform {
-        case "unload": closeView()
-        default: break
+}
+struct WebViewBackButton: View {
+    var body: some View {
+        Button(action: {
+            NotificationCenter.default.post(name: Notification.Name("GoBack"), object: nil)
+        }) {
+            Text(Image(systemName: "chevron.left"))
+        }
     }
-}`}
-
-</CodeBlockWithCopy>
-
-The `WKWebviewDownloadHelper` which downloads our PDF file is used as below
-
-<CodeBlockWithCopy language="bash">
-    {`override func viewDidLoad() {
-  super.viewDidLoad()
-  let mimeTypes = [MimeType(type: "pdf", fileExtension: "pdf")]
-  helper = WKWebviewDownloadHelper(webView: webView, mimeTypes: mimeTypes, delegate: self)
-  webView.configuration.userContentController.add(self, name: "ios_observer")
-}`}
-</CodeBlockWithCopy>
-
-`WKWebviewDownloadHelper` is dependent on the custom `WKNavigationDelegate` class
-
-<CodeBlockWithCopy language="bash">
-    {`extension WebViewController: WKWebViewDownloadHelperDelegate {
-  func fileDownloadedAtURL(url: URL) {
-    DispatchQueue.main.async {
-      let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-      activityVC.popoverPresentationController?.sourceView = self.view
-      activityVC.popoverPresentationController?.sourceRect = self.view.frame
-      activityVC.popoverPresentationController?.barButtonItem = self.navigationItem.rightBarButtonItem
-      self.present(activityVC, animated: true, completion: nil)
+}
+class WebViewCoordinator: NSObject, ObservableObject, WKNavigationDelegate {
+    static let shared = WebViewCoordinator()
+    var webView: WKWebView?
+    func goBack() {
+        webView?.goBack()
     }
-  }
-}`}
+    // Handle navigation actions, including opening "upi" or "phonepe" URLs
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if let url = navigationAction.request.url, ["upi", "phonepe"].contains(where: { url.absoluteString.contains($0) }) {
+            UIApplication.shared.open(url)
+            decisionHandler(.cancel)
+        } else {
+            decisionHandler(.allow)
+        }
+    }
+}
+struct WebView: UIViewRepresentable {
+    let urlString: String
+    @EnvironmentObject var coordinator: WebViewCoordinator
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        webView.navigationDelegate = context.coordinator
+        context.coordinator.webView = webView
+        return webView
+    }
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        if let url = URL(string: urlString) {
+            uiView.load(URLRequest(url: url))
+        }
+    }
+    func makeCoordinator() -> WebViewCoordinator {
+        WebViewCoordinator.shared
+    }
+}
+#if DEBUG
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView().environmentObject(WebViewCoordinator.shared)
+    }
+}
+#endif
+    `}
 </CodeBlockWithCopy>
 
 <hr class="tertiary" />
