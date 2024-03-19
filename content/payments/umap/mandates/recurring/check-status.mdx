@@ -1,0 +1,204 @@
+---
+sidebar_title: Check Status
+page_title: UMAP - Mandates - Check Payment Status
+order: 4
+visible_in_sidebar: true
+---
+
+## Check mandate payment status
+
+<Card padding="small" shape="rounded">
+    <a href="/payments/umap/mandates/recurring/execute" target="_blank">
+        Execute Mandate ↗
+    </a>
+    <p>
+        Read about recurring mandate execution, if you haven't already
+    </p>
+</Card>
+
+<hr class="primary"/>
+
+A recurring mandate can have multiple payments associated to it.
+
+The merchant can use **<i>check status API</i>** to check payment status of the last payment associated to the mandate
+and **<i>check status history API</i>** to payment status of the last 5 payments associated to the mandate
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Check status",
+      content: (
+        <Text>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Staging Host</th>
+                        <td>
+                            <code>https://umap-dev-core.setu.co/api/v1</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Method</th>
+                        <td>
+                            <code>GET</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Path</th>
+                        <td>
+                            <code>/merchants/payments/product-instances/&#123;mandateId&#125;/last</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Header</th>
+                        <td>
+                            <code>merchantId</code><br/>
+                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                            Generate this token using <a
+                                href="/payments/upi-deeplinks/resources/oauth"
+                                target="_blank">
+                                OAuth
+                            </a> or <a
+                                href="/payments/upi-deeplinks/resources/jwt"
+                                target="_blank">
+                                JWT
+                            </a>.<br />
+                            <br />
+                            <code>Content-Type</code>—will be <code>application/json</code>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h6>Sample response</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+    "amount": 10000,
+    "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+    "currency": "INR",
+    "customerAccountType": "savings",
+    "customerVpa": "test-auto-tyvmm59i9b@okokaxis",
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "merchantVpa": "test-auto-beibfev2oq@okokaxis",
+    "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "refId": "1240689979139556558",
+    "rrn": "124068997913",
+    "status": "success",
+    "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+    "txnNote": "testpay"
+}`}
+            </CodeBlockWithCopy>
+            <b>In the above response:</b>
+            <ul>
+                <li><code>id</code> is a unique ID that is associated with this mandate payment and can be used to track it later.</li>
+            </ul>
+            <p>To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~payments/operation~payments#fetchLastByProductInstanceId" target="_blank">here</a>.</p>
+        </Text>
+        ),
+    },
+    {
+      key: "tab2",
+      label: "Check status history",
+      content: (
+        <Text>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Staging Host</th>
+                        <td>
+                            <code>https://umap-dev-core.setu.co/api/v1</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Method</th>
+                        <td>
+                            <code>GET</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Path</th>
+                        <td>
+                            <code>/merchants/payments/product-instances/&#123;mandateId&#125;/history</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Header</th>
+                        <td>
+                            <code>merchantId</code><br/>
+                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                            Generate this token using <a
+                                href="/payments/upi-deeplinks/resources/oauth"
+                                target="_blank">
+                                OAuth
+                            </a> or <a
+                                href="/payments/upi-deeplinks/resources/jwt"
+                                target="_blank">
+                                JWT
+                            </a>.<br />
+                            <br />
+                            <code>Content-Type</code>—will be <code>application/json</code>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h6>Sample response</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+  "payments": [
+    {
+      "amount": 10000,
+      "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+      "currency": "INR",
+      "customerAccountType": "savings",
+      "customerVpa": "test-auto-tyvmm59i9b@okokaxis",
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "merchantVpa": "test-auto-beibfev2oq@okokaxis",
+      "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "refId": "1240689979139556558",
+      "requestId": "cjqml1f2e5ocq2mesej0",
+      "rrn": "124068997913",
+      "status": "success",
+      "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+      "txnNote": "testpay"
+    },
+    {
+      "amount": 10000,
+      "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+      "currency": "INR",
+      "customerAccountType": "savings",
+      "customerVpa": "test-auto-tyvmm59i9b@okokaxis",
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "merchantVpa": "test-auto-beibfev2oq@okokaxis",
+      "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "refId": "1240689979139556558",
+      "requestId": "cjqml1f2e5ocq2mesej0",
+      "rrn": "124068997913",
+      "status": "success",
+      "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+      "txnNote": "testpay"
+    }
+  ]
+}`}
+            </CodeBlockWithCopy>
+            <p>To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~payments/operation~payments#fetchHistoryByProductInstanceId" target="_blank">here</a>.</p>
+        </Text>
+      ),
+    },
+  ]}
+/>
+
+
+
+<NextPage
+    info={{
+        description: "Other operations that can be performed on a mandate.  ",
+        slug: "/payments/umap/mandates/generic",
+        title: "Generic Operations",
+    }}
+/>

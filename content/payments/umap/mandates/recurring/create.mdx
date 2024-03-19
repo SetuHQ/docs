@@ -1,0 +1,741 @@
+---
+sidebar_title: Create
+page_title: UMAP - Mandates - Create Recurring Mandate
+order: 1
+visible_in_sidebar: true
+---
+
+## Create Recurring Mandate
+
+There are 2 ways to create a recurring mandate: **Intent based**, **Collect based**
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Intent based",
+      content: (
+        <Text>
+            <p>The process for mandate creation is described in the below diagram:</p>
+            <img
+            src="https://storage.googleapis.com/strapi-assets/latest/intent-based-mandate-create/intent-based-mandate-create.png"
+            alt="Bridge"
+            />
+            <hr class="primary"/>
+            <p>The merchant will have to call the <b><i>create mandate API</i></b> with the correct set of parameters.</p>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Staging Host</th>
+                        <td>
+                            <code>https://umap-dev-core.setu.co/api/v1</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Method</th>
+                        <td>
+                            <code>POST</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Path</th>
+                        <td>
+                            <code>/merchants/mandates</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Header</th>
+                        <td>
+                            <code>merchantId</code><br/>
+                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                            Generate this token using <a
+                                href="/payments/upi-deeplinks/resources/oauth"
+                                target="_blank">
+                                OAuth
+                            </a> or <a
+                                href="/payments/upi-deeplinks/resources/jwt"
+                                target="_blank">
+                                JWT
+                            </a>.<br />
+                            <br />
+                            <code>Content-Type</code>—will be <code>application/json</code>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h6>Sample request</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+    "allowMultipleDebit": false,
+    "amount": 1000,
+    "amountRule": "max",
+    "autoExecute": false,
+    "autoPreNotify": false,
+    "blockFunds": false,
+    "creationMode": "qr",
+    "currency": "INR",
+    "customerRevocable": false,
+    "customerVpa": "ram@axis",
+    "endDate": "02012008",
+    "expireAfter": 120,
+    "firstExecutionAmount": 0,
+    "frequency": "weekly",
+    "initiationMode": "01",
+    "maxAmountLimit": 1000,
+    "merchantReferenceId": "ABC1234789",
+    "merchantVpa": "acme.corp@axis",
+    "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "purpose": "14",
+    "recurrenceRule": "on",
+    "recurrenceValue": 1,
+    "shareToPayee": false,
+    "startDate": "02012006",
+    "transactionNote": "Transaction note"
+}`}
+            </CodeBlockWithCopy>
+            <Card padding="nano" shape="rounded">
+                <details>
+                    <summary>
+                        <Text size="medium" marginBottom="none" paddingRight="medium">Possible values and descriptions of <code>frequency</code>, <code>recurrenceValue</code> and <code>recurrenceRule</code></Text>
+                    </summary>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>frequency</th>
+                                <th>recurrenceValue</th>
+                                <th>recurrenceRule</th>
+                                <th>recurrence schedule</th>
+                            </tr>
+                            <tr>
+                                <td>daily</td>
+                                <td>0</td>
+                                <td>on</td>
+                                <td>daily</td>
+                            </tr>
+                            <tr>
+                                <td>weekly</td>
+                                <td>
+                                    1 - 7<br/>
+                                    {" "}<br/>
+                                    1 represents MONDAY<br/>
+                                    {" "}<br/>
+                                    7 represents SUNDAY
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every week on the weekday represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every week on any one weekday - from MONDAY to the weekday represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every week on any one weekday - from the weekday represented by <code>x</code> to SUNDAY<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>fortnightly</td>
+                                <td>
+                                    1 - 16<br/>
+                                    {" "}<br/>
+                                    1 represents 1st in the first fortnight and 15th in the second fortnight of every month<br/>
+                                    {" "}<br/>
+                                    15 represents 15th in the first fortnight and 30th (or last day of month for February) in the second fortnight of every month<br/>
+                                    {" "}<br/>
+                                    16 represents 15th in the first fortnight and last day in the second fortnight of every month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose that as per the <code>recurrenceValue</code> the first fortnight execution day of month is <code>x</code> and the second fortnight execution day of month is <code>y</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every month on the day of month represented by <code>x</code> and <code>y</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every month on any one day of month - from 1st to <code>x</code> and on any one day of the month - from 16th to <code>y</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every month on any one day of month - from <code>x</code> to 15th of the month and on any one day of the month - from <code>y</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>monthly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every month on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every month on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>bi monthly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every 2nd month on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every 2nd month on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every 2nd month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>quarterly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every 3rd month on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every 3rd month on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every 3rd month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>half yearly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every 6th month on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every 6th month on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every 6th month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>half yearly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every year on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every year on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every year month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </details>
+            </Card>
+            <Callout type="warning">
+                <ul>
+                    <li>The value of <code>creationMode</code> must be <code>qr</code> or <code>intent</code> for creating an intent based mandate.</li>
+                    <li>The value of <code>initiationMode</code> must be <code>01</code> if <code>creationMode</code> is <code>qr</code></li>
+                    <li>The value of <code>initiationMode</code> must be{" "} <code>04</code> if{" "} <code>creationMode</code> is{" "}<code>intent</code></li>
+                </ul>
+            </Callout>
+            <Callout type="note">
+                <ul>
+                    <li>If the value of <code>autoExecute</code> and <code>autoPreNotify</code> is <code>false</code> then the merchant is responsible for triggering the pre debit notification and execution in every recurrence cycle.</li>
+                    <li>If the value of <code>autoExecute</code> and <code>autoPreNotify</code> is <code>true</code> then no merchant intervention is needed and UMAP is responsible for triggering the pre debit notification and execution in every recurrence cycle.</li>
+                </ul>
+            </Callout>
+            <h6>Sample response</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+    "allowMultipleDebit": false,
+    "amount": 1000,
+    "amountRule": "max",
+    "autoExecute": false,
+    "autoPreNotify": false,
+    "blockFunds": false,
+    "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+    "creationMode": "qr",
+    "currency": "INR",
+    "customerRevocable": true,
+    "customerVpa": "ram@axis",
+    "endDate": "02012008",
+    "expireAfter": 120,
+    "firstExecutionAmount": 0,
+    "frequency": "weekly",
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "initiationMode": "01",
+    "intentLink": "upi://mandate?pa=acme.corp@axis&pn=merchant-1&validitystart=02012006&validityend=02012008&am=100.00&amrule=MAX&recur=WEEKLY&recurvalue=1&recurtype=ON&tr=BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR&cu=INR&mc=1234&mode=01&purpose=14&rev=Y&share=N&qrexpire=02012006&block=N&orgid=409214&version=2.0&txnType=CREATE&tid=BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+    "maxAmountLimit": 1000,
+    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "merchantReferenceId": "ABC1234789",
+    "merchantVpa": "acme.corp@axis",
+    "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "purpose": "14",
+    "recurrenceRule": "on",
+    "recurrenceValue": 1,
+    "shareToPayee": false,
+    "startDate": "02012006",
+    "status": "pending",
+    "transactionNote": "Transaction note",
+    "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR"
+}`}
+            </CodeBlockWithCopy>
+            <b>In the above response:</b>
+            <ul>
+                <li>`intentLink` or corresponding qr can be shared directly with customers via a communication channel.</li>
+                <li>`id` is a unique mandate ID that is associated with this mandate and can be used to track it later.</li>
+            </ul>
+            <p>This request to generate a mandate creation intent link / qr is flexible and allows for many use cases. To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#create" target="_blank">here</a>.</p>
+            <ul>
+                <li><b>mandate.initiated</b></li>
+                <li><b>mandate_operation.create.initiated</b></li>
+                <li><b>mandate.live</b> (if mandate creation is successful)</li>
+                <li><b>mandate_operation.create.success</b> (if mandate creation is successful)</li>
+                <li><b>mandate.rejected</b> (if mandate creation fails)</li>
+                <li><b>mandate_operation.create.failed</b> (if mandate creation fails)</li>
+            </ul>
+            <p>Read more about mandate status notifications <a href="/payments/umap/notifications/mandates">here</a> and mandate create operation notifications <a href="/payments/umap/notifications/mandates/create">here</a></p>
+            <p>In addition to the notifications, the merchant can also use <a href="/payments/umap/mandates/recurring/create#check-mandate-status" target="_blank">check mandate status API</a> to check if mandate is <b>LIVE</b></p>
+            <p>Please refer to the Document Reference section for checking the API reference and the notifications.</p>
+        </Text>
+        ),
+    },
+    {
+      key: "tab2",
+      label: "Collect based",
+      content: (
+        <Text>
+            <p>The process for mandate creation is described in the below diagram:</p>
+            <img
+                src="https://storage.googleapis.com/strapi-assets/latest/intent-based-mandate-create/intent-based-mandate-create.png"
+                alt="Bridge"
+            />
+            <p>The merchant will have to call the <b><i>create mandate API</i></b> with the correct set of parameters.</p>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Staging Host</th>
+                        <td>
+                            <code>https://umap-dev-core.setu.co/api/v1</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Method</th>
+                        <td>
+                            <code>POST</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Path</th>
+                        <td>
+                            <code>/merchants/mandates</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Header</th>
+                        <td>
+                            <code>merchantId</code><br/>
+                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                            Generate this token using <a
+                                href="/payments/upi-deeplinks/resources/oauth"
+                                target="_blank">
+                                OAuth
+                            </a> or <a
+                                href="/payments/upi-deeplinks/resources/jwt"
+                                target="_blank">
+                                JWT
+                            </a>.<br />
+                            <br />
+                            <code>Content-Type</code>—will be <code>application/json</code>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h6>Sample request</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+    "allowMultipleDebit": false,
+    "amount": 1000,
+    "amountRule": "max",
+    "autoExecute": false,
+    "autoPreNotify": false,
+    "blockFunds": false,
+    "creationMode": "qr",
+    "currency": "INR",
+    "customerRevocable": false,
+    "customerVpa": "ram@axis",
+    "endDate": "02012008",
+    "expireAfter": 120,
+    "firstExecutionAmount": 0,
+    "frequency": "weekly",
+    "initiationMode": "00",
+    "maxAmountLimit": 1000,
+    "merchantReferenceId": "ABC1234789",
+    "merchantVpa": "acme.corp@axis",
+    "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "purpose": "14",
+    "recurrenceRule": "on",
+    "recurrenceValue": 1,
+    "shareToPayee": false,
+    "startDate": "02012006",
+    "transactionNote": "Transaction note"
+}`}
+            </CodeBlockWithCopy>
+            <Card padding="nano" shape="rounded">
+                <details>
+                    <summary>
+                        <Text size="medium" marginBottom="none" paddingRight="medium">Possible values and descriptions of <code>frequency</code>, <code>recurrenceValue</code> and <code>recurrenceRule</code></Text>
+                    </summary>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>frequency</th>
+                                <th>recurrenceValue</th>
+                                <th>recurrenceRule</th>
+                                <th>recurrence schedule</th>
+                            </tr>
+                            <tr>
+                                <td>daily</td>
+                                <td>0</td>
+                                <td>on</td>
+                                <td>daily</td>
+                            </tr>
+                            <tr>
+                                <td>weekly</td>
+                                <td>
+                                    1 - 7<br/>
+                                    {" "}<br/>
+                                    1 represents MONDAY<br/>
+                                    {" "}<br/>
+                                    7 represents SUNDAY
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every week on the weekday represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every week on any one weekday - from MONDAY to the weekday represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every week on any one weekday - from the weekday represented by <code>x</code> to SUNDAY<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>fortnightly</td>
+                                <td>
+                                    1 - 16<br/>
+                                    {" "}<br/>
+                                    1 represents 1st in the first fortnight and 15th in the second fortnight of every month<br/>
+                                    {" "}<br/>
+                                    15 represents 15th in the first fortnight and 30th (or last day of month for February) in the second fortnight of every month<br/>
+                                    {" "}<br/>
+                                    16 represents 15th in the first fortnight and last day in the second fortnight of every month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose that as per the <code>recurrenceValue</code> the first fortnight execution day of month is <code>x</code> and the second fortnight execution day of month is <code>y</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every month on the day of month represented by <code>x</code> and <code>y</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every month on any one day of month - from 1st to <code>x</code> and on any one day of the month - from 16th to <code>y</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every month on any one day of month - from <code>x</code> to 15th of the month and on any one day of the month - from <code>y</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>monthly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every month on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every month on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>bi monthly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every 2nd month on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every 2nd month on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every 2nd month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>quarterly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every 3rd month on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every 3rd month on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every 3rd month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>half yearly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every 6th month on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every 6th month on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every 6th month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>half yearly</td>
+                                <td>
+                                    1 - 31<br/>
+                                    {" "}<br/>
+                                    1 represents 1st of the month<br/>
+                                    {" "}<br/>
+                                    31 represents 31st of the month<br/>
+                                </td>
+                                <td>on, before, after</td>
+                                <td>
+                                    Suppose <code>recurrenceValue</code> is <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>on</code> then the mandate will be executed every year on the day of month represented by <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>before</code> then the mandate can be executed every year on any one day of month - from 1st to <code>x</code><br/>
+                                    {" "}<br/>
+                                    If <code>recurrenceRule</code> is <code>after</code> then the mandate can be executed every year month on any one day of month - from <code>x</code> to the last day of the month<br/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </details>
+            </Card>
+            <Callout type="warning">
+                <ul>
+                    <li>The value of <code>creationMode</code> must be <code>collect</code> for creating a collect based mandate.</li>
+                    <li>The value of <code>initiationMode</code> must be <code>00</code> if <code>creationMode</code> is <code>collect</code></li>
+                </ul>
+            </Callout>
+            <Callout type="note">
+                <ul>
+                    <li>If the value of <code>autoExecute</code> and <code>autoPreNotify</code> is <code>false</code> then the merchant is responsible for triggering the pre debit notification and execution in every recurrence cycle.</li>
+                    <li>If the value of <code>autoExecute</code> and <code>autoPreNotify</code> is <code>true</code> then no merchant intervention is needed and UMAP is responsible for triggering the pre debit notification and execution in every recurrence cycle.</li>
+                </ul>
+            </Callout>
+            <h6>Sample response</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+  "allowMultipleDebit": false,
+  "amount": 1000,
+  "amountRule": "max",
+  "autoExecute": false,
+  "autoPreNotify": false,
+  "blockFunds": false,
+  "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+  "creationMode": "collect",
+  "currency": "INR",
+  "customerRevocable": true,
+  "customerVpa": "ram@axis",
+  "endDate": "02012008",
+  "expireAfter": 120,
+  "firstExecutionAmount": 0,
+  "frequency": "weekly",
+  "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "initiationMode": "00",
+  "maxAmountLimit": 1000,
+  "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantReferenceId": "ABC1234789",
+  "merchantVpa": "acme.corp@axis",
+  "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "purpose": "14",
+  "recurrenceRule": "on",
+  "recurrenceValue": 1,
+  "shareToPayee": false,
+  "startDate": "02012006",
+  "status": "initiated",
+  "transactionNote": "Transaction note",
+  "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR"
+}`}
+            </CodeBlockWithCopy>
+            <b>In the above response:</b>
+            <ul>
+                <li><code>id</code> is a unique mandate ID that is associated with this mandate and can be used to track it later.</li>
+            </ul>
+            <p>This request to trigger mandate creation via collect flow is flexible and allows for many use cases. To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#create" target="_blank">here</a>.</p>
+            <p>Post this, once the customer clicks on the mandate creation notification and enters the mPIN, the merchant will receive a webhook for following events:</p>
+            <ul>
+                <li><b>mandate.live</b> (if mandate creation is successful)</li>
+                <li><b>mandate_operation.create.success</b> (if mandate creation is successful)</li>
+                <li><b>mandate.rejected</b> (if mandate creation fails)</li>
+                <li><b>mandate_operation.create.failed</b> (if mandate creation fails)</li>
+            </ul>
+            <p>Read more about mandate status notifications <a href="/payments/umap/notifications/mandates">here</a> and mandate create operation notifications <a href="/payments/umap/notifications/mandates/create">here</a></p>
+            <p>In addition to the notifications, the merchant can also use <a href="/payments/umap/mandates/recurring/create#check-mandate-status" target="_blank">check mandate status API</a> to check if mandate is <b>LIVE</b></p>
+            <p>Please refer to the Document Reference section for checking the API reference and the notifications.</p>
+        </Text>
+      ),
+    },
+  ]}
+/>
+
+<hr class="tertiary"/>
+
+#### Check mandate status
+
+In addition to the notifications sent by UMAP, Merchant can use this API to check the status of a mandate.
+
+<table>
+    <tbody>
+        <tr>
+            <th>Staging Host</th>
+            <td>
+                <code>https://umap-dev-core.setu.co/api/v1</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>GET</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>/merchants/mandates/&#123;id&#125;</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Header</th>
+            <td>
+                <code>merchantId</code><br/>
+                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                Generate this token using <a
+                    href="/payments/upi-deeplinks/resources/oauth"
+                    target="_blank">
+                    OAuth
+                </a> or <a
+                    href="/payments/upi-deeplinks/resources/jwt"
+                    target="_blank">
+                    JWT
+                </a>.<br />
+                <br />
+                <code>Content-Type</code>—will be <code>application/json</code>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<h6>Sample response</h6>
+<CodeBlockWithCopy language="json">
+{`{
+    "allowMultipleDebit": false,
+    "amount": 1000,
+    "amountRule": "max",
+    "autoExecute": false,
+    "autoPreNotify": false,
+    "blockFunds": false,
+    "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+    "creationMode": "collect",
+    "currency": "INR",
+    "customerRevocable": true,
+    "customerVpa": "ram@axis",
+    "endDate": "02012008",
+    "expireAfter": 120,
+    "firstExecutionAmount": 0,
+    "frequency": "weekly",
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "initiationMode": "00",
+    "maxAmountLimit": 1000,
+    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "merchantReferenceId": "ABC1234789",
+    "merchantVpa": "acme.corp@axis",
+    "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "purpose": "14",
+    "recurrenceRule": "on",
+    "recurrenceValue": 1,
+    "shareToPayee": false,
+    "startDate": "02012006",
+    "status": "live",
+    "transactionNote": "Transaction note",
+    "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+    "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp"
+}`}
+</CodeBlockWithCopy>
+<b>In the above response:</b>
+<ul>
+    <li><code>id</code> is a unique mandate ID that is associated with this mandate and can be used to track it later.</li>
+    <li><code>umn</code> is a unique mandate identifier that is associated with this mandate and is needed for pre debit notification and execution APIs.</li>
+</ul>
+
+<p>To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#fetchById" target="_blank">here</a>.</p>
+
+<NextPage
+    info={{
+        description: "Send pre debit notification.  ",
+        slug: "/payments/umap/mandates/recurring/pre-debit-notify",
+        title: "Pre debit notification",
+    }}
+/>

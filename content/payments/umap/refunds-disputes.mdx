@@ -7,107 +7,141 @@ visible_in_sidebar: true
 
 ## Refunds & Disputes
 
+<Row>
+    <Portion desktopSpan="half">
+        <Card padding="small" shape="rounded">
+            <a href="/payments/umap/merchant-onboarding" target="_blank">
+                Aggregator Merchant Onboarding ↗
+            </a>
+            <p>
+                If you are an aggregator explore other UMAP products here
+            </p>
+        </Card>
+    </Portion>
+    <Portion desktopSpan="half">
+        <Card padding="small" shape="rounded">
+            <a href="/payments/umap/api-integration/merchants" target="_blank">
+                Merchant API Integration ↗
+            </a>
+            <p>
+                If you are a merchant explore other UMAP products here
+            </p>
+        </Card>
+    </Portion>
+</Row>
+
+<hr class="primary"/>
+
 UMAP empowers merchants with direct API access to issue refunds and contest disputes efficiently, leveraging the NPCI's UDIR framework. This system streamlines communication and resolution processes, ensuring merchants have control and visibility over transaction reversals and customer disputes.
 
-### Refund Statuses
-
-UMAP equips merchants with a straightforward, API-based mechanism to process refunds directly to the customer's bank account originally used for the transaction. This capability not only enhances customer satisfaction through quick and efficient refunds but also streamlines dispute resolution.
-
-#### Refund Initiated
-
-This status marks the beginning of the refund process, where the merchant has successfully submitted a refund request, and it has been forwarded to NPCI for processing.
-
-#### Refund Pending
-
-At this stage, the refund is in process. Refunds are processed in cycles, and the amount to be refunded is temporarily deducted from the merchant's settlement amount. This intermediary state reflects the ongoing processing before final resolution.
-
-#### Refund Successful
-
-This indicates the successful completion of the refund process by NPCI, with the funds being reverted back to the customer's bank account. It signifies the resolution of the refund request in favor of the customer.
-
-#### Refund Failed
-
-If the refund process encounters issues—such as the customer's bank account being inactive or blocked—the refund fails. This status alerts the merchant to the unsuccessful refund attempt, necessitating further action to resolve the issue.
-
-<img
-  src="https://storage.googleapis.com/strapi-assets/latest/refund-statuses/refund-statuses.png"
-  alt="Bridge"
-/>
-
-### Refund Process
-
-#### Issuing Refunds
-
-Merchants can initiate refunds through the create refund API by submitting the details of the original transaction. UMAP coordinates with NPCI to process the refund, ensuring the amount is returned to the customer's account.
-
-<a href="/payments/umap/refunds-disputes/create-refund-api"target="_blank">
-<code>Create Refund API</code> ↗
-</a>
-
-#### Notification Updates
-
-Throughout the refund process, UMAP provides merchants with timely updates regarding the refund status, ensuring transparency and allowing merchants to keep their customers informed.
-
-<img
-  src="https://storage.googleapis.com/strapi-assets/latest/refund-process/refund-process.png"
-  alt="Bridge"
-/>
-
-### Dispute Statuses
-
-UMAP is fully integrated with the National Payments Corporation of India's (NPCI) Unified Dispute & Issue Resolution (UDIR) framework. This integration allows merchants to handle refunds and resolve disputes efficiently, enhancing customer satisfaction while minimizing the risk of chargebacks and false disputes.
-
-#### Dispute Open
-
-The process begins when UMAP informs a merchant of a customer-initiated dispute concerning a transaction. At this stage, the merchant is given a specific timeframe to either contest the dispute or accept it.
-
-#### Dispute In Review
-
-If the merchant opts to contest the dispute, the case moves to the "In Review" status. Here, the merchant is required to submit evidence supporting their position. This evidence is then reviewed and presented to the customer as part of the resolution process.
-
-#### Dispute Won
-
-This status indicates that the merchant has successfully contested the dispute, with the submitted evidence being sufficient to resolve the dispute in their favor. No further action is required from the merchant at this point.
-
-#### Dispute Lost
-
-If the merchant is unable to provide convincing evidence, or if the evidence is deemed insufficient, the dispute is resolved in favor of the customer. The merchant must then refund the disputed amount to the customer.
-
-#### Dispute Closed
-
-This is the conclusive stage of the dispute resolution process. It is reached after a dispute is either won or lost. In cases where the dispute is won by the merchant, this status is automatically assigned without requiring any further action. Conversely, if the dispute is lost, this status is achieved once the disputed amount has been refunded to the customer.
-
-The UMAP platform's seamless integration with the UDIR framework ensures that merchants can provide prompt and efficient resolutions to disputes, safeguarding both their interests and those of their customers.
-
-<img
-  src="https://storage.googleapis.com/strapi-assets/latest/dispute-statuses/dispute-statuses.png"
-  alt="Bridge"
-/>
-
-### Dispute Resolution
-
-Dispute Initiation: Disputes are initiated by customers and communicated to UMAP via NPCI. Upon receiving a dispute notification, UMAP promptly informs the merchant of the dispute details.
-
-<a href="/payments/umap/refunds-disputes/fetch-dispute-api"target="_blank">
-<code>Fetch Dispute API</code> ↗
-</a>
-
-#### Merchant Response
-
-Merchants have the option to either accept or reject the dispute through UMAP:
-
-**Accepting a Dispute:**
-Agreeing to the dispute automatically triggers a refund to the customer for the disputed transaction.
-
-**Rejecting a Dispute:**
-To contest a dispute, merchants must provide transaction evidence, such as an invoice, which UMAP forwards to NPCI for review.
-
-#### Review Outcome
-
-**Merchant Wins:**
-If the review process favors the merchant, the dispute is closed with no refund required.
-
-**Merchant Loses:**
-If the merchant does not prevail, a refund is issued to the customer for the disputed transaction.
-
 This comprehensive approach ensures that merchants can efficiently manage refunds and disputes, offering a streamlined mechanism to resolve customer issues directly and maintain high levels of satisfaction.
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Refunds",
+      content: (
+        <Text>
+            <h4>Refund Process</h4>
+            <img
+                src="https://storage.googleapis.com/strapi-assets/latest/refund-process/refund-process.png"
+                alt="Bridge"
+            />
+            <hr class="primary"/>
+            <h6>Step 1 - issuing refunds</h6>
+            <p>Merchants can initiate refunds through <b>create refund API</b> by submitting the details of the original transaction.</p>
+            <p>UMAP coordinates with NPCI to process the refund, ensuring the amount is returned to the customer's account.</p>
+            <p>Throughout the refund process, UMAP provides merchants with timely updates regarding the refund status, ensuring transparency and allowing merchants to keep their customers informed.</p>
+            <p>UMAP sends notifications to the merchants for the following events:</p>
+            <ul>
+                <li><b>refund.sucess</b> (if refund is successful)</li>
+                <li><b>refund.failed</b> (if refund fails)</li>
+            </ul>
+            <p>Read more about refund status notifications <a href="/payments/umap/notifications/refunds">here</a></p>
+            <hr class="tertiary"/>
+            <h6>Step 2 - check refund status</h6>
+            <p>In addition to the notifications, merchants can use <b>check refund status API</b> to check if a refund is successful</p>
+            <hr class="primary"/>
+            <h4>Refund Statuses</h4>
+            <p>UMAP equips merchants with a straightforward, API-based mechanism to process refunds directly to the customer's bank account originally used for the transaction. This capability not only enhances customer satisfaction through quick and efficient refunds but also streamlines dispute resolution.</p>
+            <h6>Refund Initiated</h6>
+            <p>This status marks the beginning of the refund process, where the merchant has successfully submitted a refund request, and it has been forwarded to NPCI for processing.</p>
+            <h6>Refund Pending</h6>
+            <p>At this stage, the refund is in process. Refunds are processed in cycles, and the amount to be refunded is temporarily deducted from the merchant's settlement amount. This intermediary state reflects the ongoing processing before final resolution.</p>
+            <h6>Refund Successful</h6>
+            <p>This indicates the successful completion of the refund process by NPCI, with the funds being reverted back to the customer's bank account. It signifies the resolution of the refund request in favor of the customer.</p>
+            <h6>Refund Failed</h6>
+            <p>If the refund process encounters issues—such as the customer's bank account being inactive or blocked—the refund fails. This status alerts the merchant to the unsuccessful refund attempt, necessitating further action to resolve the issue.</p>
+            <img
+                src="https://storage.googleapis.com/strapi-assets/latest/refund-statuses/refund-statuses.png"
+                alt="Bridge"
+            />
+            <NextPage
+                info={{
+                    description: "Create refund.  ",
+                    slug: "/payments/umap/refunds-disputes/create-refund-api",
+                    title: "Create Refund",
+                }}
+            />
+        </Text>
+        ),
+    },
+    {
+      key: "tab2",
+      label: "Disputes",
+      content: (
+        <Text>
+            <h4>Dispute Resolution</h4>
+            <p>The UMAP platform's seamless integration with the UDIR framework ensures that merchants can provide prompt and efficient resolutions to disputes, safeguarding both their interests and those of their customers.</p>
+            <hr class="primary"/>
+            <h6>Step 1 - dispute initiation</h6>
+            <p>Disputes are initiated by customers and communicated to UMAP via NPCI.</p>
+            <p>Upon receiving a dispute notification, UMAP promptly informs the merchant of the dispute details.</p>
+            <p>UMAP sends notifications to merchants for the following events:</p>
+            <ul>
+                <li><b>dispute.created</b></li>
+            </ul>
+            <p>Read more about dispute status notifications <a href="/payments/umap/notifications/disputes">here</a></p>
+            <hr class="tertiary"/>
+            <h6>Step 2 - merchant response</h6>
+            <p>Merchants have the option to either accept or reject the dispute through UMAP:</p>
+            <b>Accepting a Dispute:</b>
+            <p>Agreeing to the dispute automatically triggers a refund to the customer for the disputed transaction.</p>
+            <b>Rejecting a Dispute:</b>
+            <p>To contest a dispute, merchants must provide transaction evidence, such as an invoice, which UMAP forwards to NPCI for review.</p>
+            <hr class="tertiary"/>
+            <h6>Step 3 - review outcome</h6>
+            <b>Merchant Wins:</b>
+            <p>If the review process favors the merchant, the dispute is closed with no refund required.</p>
+            <b>Merchant Loses:</b>
+            <p>If the merchant does not prevail, a refund is issued to the customer for the disputed transaction.</p>
+            <hr class="primary"/>
+            <h4>Dispute Statuses</h4>
+            <p>UMAP is fully integrated with the National Payments Corporation of India's (NPCI) Unified Dispute & Issue Resolution (UDIR) framework. This integration allows merchants to handle refunds and resolve disputes efficiently, enhancing customer satisfaction while minimizing the risk of chargebacks and false disputes.</p>
+            <h6>Dispute Open</h6>
+            <p>The process begins when UMAP informs a merchant of a customer-initiated dispute concerning a transaction. At this stage, the merchant is given a specific timeframe to either contest the dispute or accept it.</p>
+            <h6>Dispute In Review</h6>
+            <p>If the merchant opts to contest the dispute, the case moves to the "In Review" status. Here, the merchant is required to submit evidence supporting their position. This evidence is then reviewed and presented to the customer as part of the resolution process.</p>
+            <h6>Dispute Won</h6>
+            <p>This status indicates that the merchant has successfully contested the dispute, with the submitted evidence being sufficient to resolve the dispute in their favor. No further action is required from the merchant at this point.</p>
+            <h6>Dispute Lost</h6>
+            <p>If the merchant is unable to provide convincing evidence, or if the evidence is deemed insufficient, the dispute is resolved in favor of the customer. The merchant must then refund the disputed amount to the customer.</p>
+            <h6>Dispute Closed</h6>
+            <p>This is the conclusive stage of the dispute resolution process. It is reached after a dispute is either won or lost. In cases where the dispute is won by the merchant, this status is automatically assigned without requiring any further action. Conversely, if the dispute is lost, this status is achieved once the disputed amount has been refunded to the customer.</p>
+            <img
+                src="https://storage.googleapis.com/strapi-assets/latest/dispute-statuses/dispute-statuses.png"
+                alt="Bridge"
+            />
+            <NextPage
+                info={{
+                    description: "Fetch dispute.  ",
+                    slug: "/payments/umap/refunds-disputes/fetch-dispute-api",
+                    title: "Fetch Dispute",
+                }}
+            />
+        </Text>
+      ),
+    },
+  ]}
+/>
