@@ -12,8 +12,8 @@ The consent object is the core of the AA framework. When an FIU requires data ab
 Consent object contains the information about all the different types of data the FIU needs, the purpose of the data, and how the FIU plans to use the data and so on.
 
 <Callout type type="warning">
-  As specified in the table below, some parameters have to be passed mandatorily
-  when creating a consent.
+    As specified in the table below, some parameters have to be passed
+    mandatorily when creating a consent.
 </Callout>
 
 <br />
@@ -28,12 +28,12 @@ Consent object contains the information about all the different types of data th
 | `fetchType`                                                   | Enum to specify either `ONETIME` or `PERIODIC` fetch of data.                                                                                                                                                                                                                                                                                                                                                | Yes                                                            |
 | `consentTypes`                                                | Specifies the type of data being requested for, from your user—<br/><li>`PROFILE`—Personal details such as mobile number, date of birth, PAN etc.</li><li>`SUMMARY`—Information like mutual fund summary for total amount invested, current value, number of MFs and more.</li><li>`TRANSACTIONS`—List of records against some financial data—e.g., a bank statement.</li>                                   | Yes                                                            |
 | `fiTypes`                                                     | Specifies the type of financial information being requested for. Possible enums—`DEPOSIT`, `MUTUAL_FUNDS`, `INSURANCE_POLICIES`, `TERM_DEPOSIT`, `RECURRING_DEPOSIT`, `SIP`, `GOVT_SECURITIES`, `EQUITIES`, `BONDS`, `DEBENTURES`, `ETF`, and more. Click <a href="data/account-aggregator/fi-data-types" target="_blank">here</a> to learn more about the data types.                                       | Yes                                                            |
-| `vua`                                                         | Virtual user address (VUA) that identifies your customer when they login to the Account Aggregator. It should be sent in the format of **<customer_mobile_number>@onemoney-aa**                                                                                                                                                                                                                              | Yes                                                            |
+| `vua`                                                         | Virtual user address (VUA) that identifies your customer when they login to the Account Aggregator. It should be sent in the format of **{customer_mobile_number}@onemoney-aa**                                                                                                                                                                                                                              | Yes                                                            |
 | `purpose`                                                     | This is used to indicate the purpose of requesting for data. As per the AA spec, the following codes are supported—<br/><li>`101`—Wealth management service</li><li>`102`—Customer spending patterns, budget or other reportings</li><li>`103`—Aggregated statement</li><li>`104`—Explicit consent to monitor the accounts</li><li>`105`—Explicit one-time consent for accessing data from the accounts</li> | Yes                                                            |
 | `dataRange`                                                   | This is used to specify the `from` and `to` date-time range for querying financial information. It is mandatory only when the `consentTypes` array includes `TRANSACTIONS`.                                                                                                                                                                                                                                  | Mandatory only if `consentTypes` array includes `TRANSACTIONS` |
 | `dataLife`                                                    | This is the time period for which you are allowed to process the data. Choose between `MONTH`, `YEAR`, `DAY`, `INF` as the `unit` and define a numeric `value` alongside. <br /> For more details on the difference between Data life and Data Storage, please see [Sahamati guidelines](https://sahamati.org.in/aa-community-guidelines-v1/storage-of-data/) (see SD001 in the table)                       | Yes                                                            |
 | `frequency` has 2 components—`unit` and `value`               | `unit` can be `HOURLY`, `DAILY`, `MONTHLY`, `YEARLY`. `value` has to be greater than 0.<br/>Additionally the maximum frequency value is defined is `1` request per HOUR. So, no more than `24` requests are allowed per DAY                                                                                                                                                                                  | Yes                                                            |
-| `dataFilter`                                                  | Allows you to specify conditions for filtering the data being fetched. For example, fetch transactions where the `TRANSACTIONAMOUNT` is greater than or equal to INR 20,000. You can use the `type`, `operator` and `value` keys to set the filters.                                                                                                                                                         | No                                                             |
+| `dataFilter`                                                  | Allows you to specify conditions for filtering the data being fetched. For example, fetch transactions where the `TRANSACTIONAMOUNT` is greater than or equal to INR 20,000. You can use the `type`, `operator` like `>, <, <=, >=` and `value` like `5000` keys to set the filters.                                                                                                                         | No                                                             |
 | `redirectUrl`                                                 | Redirect your users back to your application once the consent is reviewed. By default, the redirectURL is https://setu.co/.                                                                                                                                                                                                                                                                                  | Yes                                                            |
 | `context`                                                     | Allows you to specify an FIP OR Account type (Current, Savings, Insurance, etc) as a key value pair for you to be able to customise the accounts fetched on the consent flow. We support the context filters `accounttype` which takes the Key as `accounttype` where values can be `CURRENT` or `SAVINGS` and `fipid` with the `FIP ID` as the value(s).                                                    | No                                                             |
 
@@ -42,7 +42,7 @@ Consent object contains the information about all the different types of data th
 **Filter by account type**
 
 <CodeBlockWithCopy language="json">
-  {`"context": [
+    {`"context": [
     {
       "key": "accounttype",
       "value": "CURRENT"
@@ -53,7 +53,7 @@ Consent object contains the information about all the different types of data th
 **Filter by FIP ids**
 
 <CodeBlockWithCopy language="json">
-  {`"context": [
+    {`"context": [
     {
       "key": "fipId",
       "value": "setu-fip,icici-fip"
@@ -64,7 +64,7 @@ Consent object contains the information about all the different types of data th
 **Filter by excluding FIP ids**
 
 <CodeBlockWithCopy language="json">
-  {`"context": [
+    {`"context": [
     {
       "key": "excludeFipIds",
       "value": "setu-fip,icici-fip"
