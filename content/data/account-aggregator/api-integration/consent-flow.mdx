@@ -11,7 +11,7 @@ Get users' consent before you can start pulling their financial data with Setu A
 
 1.  **Create Consent Request** — This is essentially a one-time data request that your user needs to approve. To know more details about this please visit [Consent Object](/data/account-aggregator/consent-object) page.
 
--   Once a consent is created, you will receive a unique `id` with `status = PENDING`, along with a `url` where you can **redirect your customer to consent manager screens**, to review the data request. Here, the user may approve or reject the request
+- Once a consent is created, you will receive a unique `id` with `status = PENDING`, along with a `url` where you can **redirect your customer to consent manager screens**, to review the data request. Here, the user may approve or reject the request
 
 2. **Consent Request status** — You can track the consent status with Get Consent Status API, alternatively Setu will notify you when the user has acted upon the consent request. See [Notifications](/data/account-aggregator/api-integration/notifications) to configure your notification endpoint.
 
@@ -173,22 +173,22 @@ On redirecting your users to `url`, it opens up a Consent Manager that permits c
 
 `https://<fiu-base-url>/consents/webview/<id>`
 
--   `<fiu-base-url>` — This is the base URL provided by Setu.
--   `<id>` — This is the request ID of the consent generated returned after the create consent request.
+- `<fiu-base-url>` — This is the base URL provided by Setu.
+- `<id>` — This is the request ID of the consent generated returned after the create consent request.
 
 On getting redirected to the url, your users will be asked to verify their mobile number to further initiate the account fetching process. The mobile verification does a login, or register them with Setu using their mobile number. Setu creates a unique account aggregator handle for every registered customer.
 
 The following steps are handled by Setu’s screens—
 
--   OTP verification on user's mobile number
--   Setu authenticates the user and displays the data request
--   Setu fetches the Financial Information Providers or FIPs
--   User links the FIPs and reviews the request
--   Setu validates and saves consent
--   Setu sends notification to you to confirm consent approval. At this point, consent `status` is APPROVED or REJECTED
+- OTP verification on user's mobile number
+- Setu authenticates the user and displays the data request
+- Setu fetches the Financial Information Providers or FIPs
+- User links the FIPs and reviews the request
+- Setu validates and saves consent
+- Setu sends notification to you to confirm consent approval. At this point, consent `status` is APPROVED or REJECTED
 
 <Callout type="tip">
-    Use Setu FIP and get access to mock financial data on staging{" "}
+  Use Setu FIP and get access to mock financial data on staging{" "}
 </Callout>
 
 <hr class="primary" />
@@ -200,12 +200,12 @@ Call this API to get the consent details and the updated status of a consent req
 If the consent is approved, the Status in the response will be `ACTIVE`. After this, you can now initiate Data flow for the approved consent request.
 
 <Callout type="highlight">
-    <strong>Additionally</strong>, Setu AA will notify you on the consent status
-    update by sending a webhook notification to the configured endpoint you
-    entered on the Bridge. See more details on{" "}
-    <a href="/data/account-aggregator/api-integration/notifications">
-        Consent Notifications
-    </a>
+  Additionally, Setu AA will notify you on the consent status update by sending
+  a webhook notification to the configured endpoint you entered on the Bridge.
+  See more details on{" "}
+  <a href="/data/account-aggregator/api-integration/notifications">
+    Consent Notifications
+  </a>
 </Callout>{" "}
 
 <br />
@@ -214,17 +214,17 @@ If the consent is approved, the Status in the response will be `ACTIVE`. After t
 
 <CodeBlockWithCopy language="json">{` GET /consents/:id `}</CodeBlockWithCopy>
 <Row>
-    <Portion desktopSpan="whole">
-        <Tabs
-            tabs={[
-                {
-                    key: "1",
-                    label: <Badge type="success">SUCCESS</Badge>,
-                    content: (
-                        <>
-                            <h5>Response</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`{
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: <Badge type="success">SUCCESS</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
     "url": "https://fiu.setu.co/consents/v2/webview/e082b325-2692-47cd-88cf-875068df9051",
     "status": "PENDING",
     "context": [],
@@ -234,14 +234,13 @@ If the consent is approved, the Status in the response will be `ACTIVE`. After t
     "traceId": "26b8bc4c-5d33-43a1-a58f-be5d4d0acbd0"
 }
 }`}
-                            </CodeBlockWithCopy>
-                            <p>
-                                {" "}
-                                If query param <code>expanded=true</code> is included
-                                in the request
-                            </p>
-                            <CodeBlockWithCopy language="json">
-                                {`{
+              </CodeBlockWithCopy>
+              <p>
+                {" "}
+                If query param <code>expanded=true</code> is included in the request
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{
     "url": "https://fiu.setu.co/v2/consents/webview/73633c01-d14d-4dbb-8a82-d82e53df5920",
     "status": "PENDING",
     "detail": {
@@ -288,82 +287,79 @@ If the consent is approved, the Status in the response will be `ACTIVE`. After t
     },
     "traceId": "74d3032a-597e-40e1-859b-67b035e8a0e0"
 }`}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-                {
-                    key: "2",
-                    label: <Badge type="failure">FAIL</Badge>,
-                    content: (
-                        <>
-                            <h5>Response</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`{
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: <Badge type="failure">FAIL</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
   "errorMsg": "string",
   "errorCode": "string",
   "txnid": "string",
   "timestamp": "2023-03-30T08:20:31.367Z",
   "ver": "string"
 }`}
-                            </CodeBlockWithCopy>
-                            <h5>Error codes</h5>
-                            <p>A mapping of error codes and messages</p>
-                            <table>
-                                <tr>
-                                    <th>
-                                        <strong>Status codes</strong>
-                                    </th>
-                                    <th>
-                                        <strong>Error codes</strong>
-                                    </th>
-                                    <th>
-                                        <strong>Error messages</strong>
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td>404</td>
-                                    <td>
-                                        <code>NotFound</code>
-                                    </td>
-                                    <td>
-                                        <ul>
-                                            <li>Consent not found</li>
-                                        </ul>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>400</td>
-                                    <td>
-                                        <code>Invalid request</code>
-                                    </td>
-                                    <td>
-                                        <ul>
-                                            <li>Consent has expired</li>
-                                            <li>
-                                                Invalid response from upstream
-                                            </li>
-                                        </ul>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>500</td>
-                                    <td>
-                                        <code>InternalServerError</code>
-                                    </td>
-                                    <td>
-                                        An internal server error has occurred,
-                                        please try again in some time. You can
-                                        report this to aa@setu.co
-                                    </td>
-                                </tr>
-                            </table>
-                        </>
-                    ),
-                },
-            ]}
-        />
-    </Portion>
+              </CodeBlockWithCopy>
+              <h5>Error codes</h5>
+              <p>A mapping of error codes and messages</p>
+              <table>
+                <tr>
+                  <th>
+                    <strong>Status codes</strong>
+                  </th>
+                  <th>
+                    <strong>Error codes</strong>
+                  </th>
+                  <th>
+                    <strong>Error messages</strong>
+                  </th>
+                </tr>
+                <tr>
+                  <td>404</td>
+                  <td>
+                    <code>NotFound</code>
+                  </td>
+                  <td>
+                    <ul>
+                      <li>Consent not found</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td>400</td>
+                  <td>
+                    <code>Invalid request</code>
+                  </td>
+                  <td>
+                    <ul>
+                      <li>Consent has expired</li>
+                      <li>Invalid response from upstream</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td>500</td>
+                  <td>
+                    <code>InternalServerError</code>
+                  </td>
+                  <td>
+                    An internal server error has occurred, please try again in
+                    some time. You can report this to aa@setu.co
+                  </td>
+                </tr>
+              </table>
+            </>
+          ),
+        },
+      ]}
+    />
+  </Portion>
 </Row>
 
 <hr class="primary" />
@@ -375,67 +371,67 @@ In the Account Aggregator (AA) ecosystem in India, the Dual Consent feature allo
 This document details the API endpoint, request parameters, and usage examples for implementing the Dual Consent feature.
 
 <Callout type="warning">
-    Currently, the dual consent feature supports merging two consent requests.
-    For more complex scenarios, consider additional consent requests as separate
-    flows.
+  Currently, the dual consent feature supports merging two consent requests. For
+  more complex scenarios, consider additional consent requests as separate
+  flows.
 </Callout>
 
 <br />
 
 ##### Features
 
--   **Single UI Flow**: Merges two consent requests into a single UI flow, displaying the consent parameters of each request in a consolidated manner.
+- **Single UI Flow**: Merges two consent requests into a single UI flow, displaying the consent parameters of each request in a consolidated manner.
 
--   **Optional and Mandatory Consents**: Offers flexibility in making one of the consents optional, while the other remains mandatory, allowing customers to choose which data they are willing to share.
+- **Optional and Mandatory Consents**: Offers flexibility in making one of the consents optional, while the other remains mandatory, allowing customers to choose which data they are willing to share.
 
--   **Unified OTP Authentication**: Simplifies the authentication process by requiring only a single set of OTP authentications for the dual consent flow.
+- **Unified OTP Authentication**: Simplifies the authentication process by requiring only a single set of OTP authentications for the dual consent flow.
 
 <br />
 
 ###### Implementation Guide
 
--   Prepare Consent Requests: Prior to using the Dual Consent API, prepare the individual consent requests as per the standard procedure in the AA ecosystem.
+- Prepare Consent Requests: Prior to using the Dual Consent API, prepare the individual consent requests as per the standard procedure in the AA ecosystem.
 
--   Initiate Dual Consent: Use the provided API endpoint to initiate a dual consent process by specifying which consents are optional and which are mandatory.
+- Initiate Dual Consent: Use the provided API endpoint to initiate a dual consent process by specifying which consents are optional and which are mandatory.
 
--   Handle Responses: On success, direct the customer to the redirectUrl for consent confirmation. Handle errors as per the error response structure.
+- Handle Responses: On success, direct the customer to the redirectUrl for consent confirmation. Handle errors as per the error response structure.
 
--   Follow Up: Monitor the status of consent through the standard consent status APIs to ensure proper data flow post-consent.
+- Follow Up: Monitor the status of consent through the standard consent status APIs to ensure proper data flow post-consent.
 
 For further assistance or to report issues with the Dual Consent API, please contact our developer support team.
 
 ###### Request
 
 <table>
-    <tbody>
-        <tr>
-            <th>Base URL</th>
-            <td>
-                Production: <code>https://fiu-sandbox.setu.co</code>
-                <br />
-                Sandbox: <code>https://fiu-unified.setu.co</code>
-            </td>
-        </tr>
-        <tr>
-            <th>Path</th>
-            <td>
-                <code>/v2/consents/consents/collection</code>
-            </td>
-        </tr>
-        <tr>
-            <th>Method</th>
-            <td>
-                <code>POST</code>
-            </td>
-        </tr>
-        <tr>
-            <th>Headers</th>
-            <td>
-                <code>Content-Type</code>: <code>application/json</code> <br />
-                <code>Authorization</code>: Bearer <code>access_token</code>
-            </td>
-        </tr>
-    </tbody>
+  <tbody>
+    <tr>
+      <th>Base URL</th>
+      <td>
+        Production: <code>https://fiu-sandbox.setu.co</code>
+        <br />
+        Sandbox: <code>https://fiu-unified.setu.co</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Path</th>
+      <td>
+        <code>/v2/consents/consents/collection</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>POST</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Headers</th>
+      <td>
+        <code>Content-Type</code>: <code>application/json</code> <br />
+        <code>Authorization</code>: Bearer <code>access_token</code>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 <br />
@@ -443,17 +439,15 @@ For further assistance or to report issues with the Dual Consent API, please con
 ###### Sample Request body
 
 <CodeBlockWithCopy language="json">
-    {`{
+  {`{
     "optionalConsents": [],
     "mandatoryConsents": ["36c34bbc-9408-454e-a80e-e44f4fc4cdbf"]
 }`}
 </CodeBlockWithCopy>
 
-<Callout type="tip">
-    <strong>
-        At least one consent must be marked as mandatory to initiate the dual
-        consent process.
-    </strong>
+<Callout type="warning">
+  At least one consent must be marked as mandatory to initiate the dual consent
+  process.
 </Callout>
 
 <br />
@@ -461,17 +455,17 @@ For further assistance or to report issues with the Dual Consent API, please con
 ###### Sample Response
 
 <Row>
-    <Portion desktopSpan="whole">
-        <Tabs
-            tabs={[
-                {
-                    key: "1",
-                    label: <Badge type="success">SUCCESS</Badge>,
-                    content: (
-                        <>
-                            <h5>Response</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`{
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: <Badge type="success">SUCCESS</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
     "status": "success",
     "message": "Dual consent initiated successfully.",
     "data": {
@@ -479,28 +473,28 @@ For further assistance or to report issues with the Dual Consent API, please con
         "redirectUrl": "https://example.com/consent/confirmation"
     }
 }`}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-                {
-                    key: "2",
-                    label: <Badge type="failure">FAIL</Badge>,
-                    content: (
-                        <>
-                            <h5>Response</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`{
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: <Badge type="failure">FAIL</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
     "status": "error",
     "message": "Invalid request data."
 }`}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-            ]}
-        />
-    </Portion>
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    />
+  </Portion>
 </Row>
 
 <WasPageHelpful />
