@@ -9,13 +9,13 @@ visible_in_sidebar: true
 
 Get users' consent before you can start pulling their financial data with Setu AA by initiating Consent flow in your application. This flow broadly consists of two parts:
 
-1.  **Create consent request** — This is essentially a one-time data request that your user needs to approve. To know more details about this please visit [Consent Object](/data/account-aggregator/consent-object) page. Once a consent is created, you will receive a unique `id` with `status = PENDING`, along with a `url` where you can **redirect your customer to consent manager screens**, to review the data request. Here, the user may approve or reject the request
+1.  **Create consent request** — This is essentially a one-time data request that your user needs to approve. To know more details about this please visit [Consent Object](/data/account-aggregator/consent-object) page. Once a consent is created, you will receive a unique `id` with `status = PENDING`, along with a `url` where you can **redirect your customer to consent approval screens**, to review the data request. Here, the user may approve or reject the request
 
 2.  **Consent status** — You can track the consent status with Get Consent Status API, alternatively Setu will notify you when the user has acted upon the consent request. See [Notifications](/data/account-aggregator/api-integration/notifications) to configure your notification endpoint.
 
 Here are some more advanced features related to consents, which are explained in detail at the end.
 
-1. **Dual consents** — Merge two consents into a single UI flow, with its own unique dual consent ID.
+1. **Multi consents** — Merge two consents into a single UI flow, with its own unique dual consent ID.
 
 2. **Revoke a consent** — A revoke API for FIUs to withdraw or manually revoke an end users' consent for any purpose or on behalf of the customer
 
@@ -55,8 +55,7 @@ Call this API to create a consent request. The details of the request will be pr
                                 Consent gets created with a unique identifier{" "}
                                 <code>id</code> with status as{" "}
                                 <code>PENDING</code>. Redirect your customers to
-                                consent manager <code>url</code> to initiate
-                                consent review flow.
+                                consent approval flow <code>url</code> to review the consent.
                             </p>
                             <CodeBlockWithCopy language="json">
                                 {`{
@@ -167,7 +166,7 @@ Call this API to create a consent request. The details of the request will be pr
 
 ### Consent review by customer
 
-On redirecting your users to `url`, it opens up a Consent Manager that permits consent approval/rejection. This url can easily be embedded as a webview or be used to redirect from a website. The URL is of the form:
+On redirecting your users to `url`, it opens up a Consent approval flow that permits consent approval/rejection. This url can easily be embedded as a webview or be used to redirect from a website. The URL is of the form:
 
 `https://<fiu-base-url>/consents/webview/<id>`
 
@@ -363,14 +362,13 @@ If the consent is approved, the status in the response will be `ACTIVE`. After t
 
 <hr class="primary" />
 
-### Dual consents
+### Multi consents
 
-In the Account Aggregator (AA) ecosystem in India, the dual consent feature allows Financial Information Users (FIUs) to streamline the process of obtaining consent from customers for data sharing. By merging two separate consent requests into a single flow, FIUs can enhance the user experience, reduce friction, and ensure higher completion rates for consent acquisition.
+In the Account Aggregator (AA) ecosystem in India, the multi consent feature allows Financial Information Users (FIUs) to streamline the process of obtaining consent from customers for data sharing. By merging multiple separate consent requests into a single flow, FIUs can enhance the user experience, reduce friction, and ensure higher completion rates for consent acquisition.
 
 <Callout type="tip">
-  Currently, the dual consent feature supports merging two consent requests. For
-  more complex scenarios, consider additional consent requests as separate
-  flows.
+  Currently, the multi consent feature supports merging only two consents into a
+  multi consent
 </Callout>
 
 <br />
@@ -383,7 +381,7 @@ In the Account Aggregator (AA) ecosystem in India, the dual consent feature allo
 
 - **Optional and mandatory consents** — Offers flexibility in making one of the consents optional, while the other remains mandatory, allowing customers to choose which data they are willing to share.
 
-- **Unified OTP authentication** — Simplifies the authentication process by requiring only a single set of OTP authentications for the dual consent flow.
+- **Unified OTP authentication** — Simplifies the authentication process by requiring only a single set of OTP authentications for the multi consent flow.
 
 <br />
 
@@ -391,11 +389,11 @@ In the Account Aggregator (AA) ecosystem in India, the dual consent feature allo
 
 - Create individual consent requests — Prior to using the Dual consent API, create the individual consent requests as per the standard procedure in the AA ecosystem.
 
-- Create dual consent — Use the provided API endpoint to create a dual consent process by specifying which consents are optional and which are mandatory.
+- Create multi consent — Use the provided API endpoint to create a multi consent process by specifying which consents are optional and which are mandatory.
 
-- Handle responses — On success, direct the customer to the redirectUrl for consent confirmation. Handle errors as per the error response structure.
+- Redirecting the customer to consent approval — On success, direct the customer to the redirectUrl for consent approval.
 
-- Follow up — Monitor the status of consent through the standard consent status APIs to ensure proper data flow post-consent.
+- Get consent status — Monitor the status of each consent through the same **Get Consent API**, that is used for a single consent.
 
 ###### Request
 
@@ -443,7 +441,7 @@ In the Account Aggregator (AA) ecosystem in India, the dual consent feature allo
 </CodeBlockWithCopy>
 
 <Callout type="warning">
-  At least one consent must be marked as mandatory to create a dual consent
+  At least one consent must be marked as mandatory to create a multi consent
 </Callout>
 
 <br />
