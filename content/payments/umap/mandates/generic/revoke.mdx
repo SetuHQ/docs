@@ -1,0 +1,145 @@
+---
+sidebar_title: Revoke
+page_title: UMAP - Mandates - Revoke
+order: 2
+visible_in_sidebar: true
+---
+
+## Revoking a mandate
+
+<Card padding="small" shape="rounded">
+    <a href="/payments/umap/mandates/generic" target="_blank">
+        UPI Autopay Generic Operations ↗
+    </a>
+    <p>
+        Explore other UMAP UPI Autopay generic operations here
+    </p>
+</Card>
+
+<hr class="primary"/>
+
+Revoking a UPI mandate ensures that no further action can be taken on the UPI mandate. This includes updating the mandate, sending pre-debit notifications for the mandate or executing the mandate.
+
+A mandate can be revoked by a merchant or aggregator via collect flow by calling the <b><i>revoke mandate API</i></b> or by the customer from their UPI app.
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Collect based",
+      content: (
+        <Text>
+            The process for revoking a mandate via collect flow is described in the below diagram
+            <img
+                src="https://storage.googleapis.com/strapi-assets/latest/mandate-revoke-merchant/mandate-revoke-merchant.png"
+                alt="Bridge"
+            />
+            The merchant or aggregator will have to call the <b><i>rveoke mandate API</i></b> with the correct set of parameters.
+            {" "}
+            <br></br>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Staging Host</th>
+                        <td>
+                            <code>https://umap-dev-core.setu.co/api/v1</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Method</th>
+                        <td>
+                            <code>PUT</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Path</th>
+                        <td>
+                            <code>/merchants/mandates/&#123;mandateId&#125;/revoke</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Header</th>
+                        <td>
+                            <code>merchantId</code><br/>
+                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                            Generate this token using <a
+                                href="/payments/upi-deeplinks/resources/oauth"
+                                target="_blank">
+                                OAuth
+                            </a> or <a
+                                href="/payments/upi-deeplinks/resources/jwt"
+                                target="_blank">
+                                JWT
+                            </a>.<br />
+                            <br />
+                            <code>Content-Type</code>—will be <code>application/json</code>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h6>Sample request</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+        "expireAfter": 120,
+        "merchantReferenceId": "ABC1234789"
+}`}
+            </CodeBlockWithCopy>
+            <h6>Sample response</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+        "expireAfter": 120,
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "mandateId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "merchantReferenceId": "ABC1234789",
+        "mode": "collect",
+        "status": "initiated",
+        "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+        "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp"
+}`}
+            </CodeBlockWithCopy>
+            To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#revoke" target="_blank">here</a>.
+            <br></br>
+            {" "}
+            <br></br>
+            Post this, once the customer clicks on the revoke mandate notification and enters the mPIN on their UPI app, the merchant will receive webhooks for 2 events <b><i>revoke operation confirmation, mandate status notification.</i></b> 
+            <br></br>
+            {" "}
+            <br></br>
+            Please refer to the Document Reference section for checking the API reference and the notifications.
+        </Text>
+        ),
+    },
+    {
+      key: "tab2",
+      label: "Customer initiated",
+      content: (
+        <Text>
+            The process for revoking a mandate initiated from the customer's UPI app is described in the below diagram
+            <img
+                src="https://storage.googleapis.com/strapi-assets/latest/mandate-revoke/mandate-revoke.png"
+                alt="Bridge"
+            />
+            Post this, once the customer initiates mandate revoke process on their UPI app, the merchant will receive webhooks for 3 events <b><i>revoke operation initiated, revoke operation confirmation, mandate status notification.</i></b> 
+            <br></br>
+            {" "}
+            <br></br>
+            Please refer to the Document Reference section for checking the API reference and the notifications.
+            {" "}
+            <br></br>
+            <Callout type="warning">
+                A <code>single block multi debit mandate</code> can only be revoked via <code>merchant initiated collect flow</code> and not via <code>customer initiated flow</code>
+            </Callout>
+        </Text>
+        ),
+    },
+  ]}
+/>
+
+<NextPage
+    info={{
+        description: "Explore other UMAP UPI Autopay generic operations here",
+        slug: "/payments/umap/mandates/generic",
+        title: "UPI Autopay Generic Operations",
+    }}
+/>

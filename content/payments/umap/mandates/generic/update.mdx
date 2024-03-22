@@ -1,0 +1,224 @@
+---
+sidebar_title: Update
+page_title: UMAP - Mandates - Update
+order: 1
+visible_in_sidebar: true
+---
+
+## Updating a mandate
+
+<Card padding="small" shape="rounded">
+    <a href="/payments/umap/mandates/generic" target="_blank">
+        UPI Autopay Generic Operations ↗
+    </a>
+    <p>
+        Explore other UMAP UPI Autopay generic operations here
+    </p>
+</Card>
+
+<hr class="primary"/>
+
+There are only two updates possible on a UPI mandate
+- Changing the mandate end date
+- Changing the mandate amount
+
+<Callout type="warning">
+    An intent based mandate can only be updated via an intent link / qr and a collect based mandate can only be updated via collect flow
+</Callout>
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Intent based",
+      content: (
+        <Text>
+            The process for updating an intent based mandate is described in the below diagram
+            <img
+                src="https://storage.googleapis.com/strapi-assets/latest/mandate-update-collect/mandate-update-collect.png"
+                alt="Bridge"
+            />
+            The merchant will have to call the <b><i>modify mandate API</i></b> with the correct set of parameters.
+            {" "}
+            <br></br>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Staging Host</th>
+                        <td>
+                            <code>https://umap-dev-core.setu.co/api/v1</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Method</th>
+                        <td>
+                            <code>PUT</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Path</th>
+                        <td>
+                            <code>/merchants/mandates/&#123;mandateId&#125;/modify</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Header</th>
+                        <td>
+                            <code>merchantId</code><br/>
+                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                            Generate this token using <a
+                                href="/payments/upi-deeplinks/resources/oauth"
+                                target="_blank">
+                                OAuth
+                            </a> or <a
+                                href="/payments/upi-deeplinks/resources/jwt"
+                                target="_blank">
+                                JWT
+                            </a>.<br />
+                            <br />
+                            <code>Content-Type</code>—will be <code>application/json</code>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h6>Sample request</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+        "amountLimit": 1000,
+        "endDate": "02012006",
+        "expireAfter": 120,
+        "merchantReferenceId": "ABC1234789"
+}`}
+            </CodeBlockWithCopy>
+            <Callout type="warning">
+                <code>endDate</code> cannot be updated for a <code>single block multi debit mandate</code>
+            </Callout>
+            <h6>Sample response</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+        "amountLimit": 1000,
+        "endDate": "02012006",
+        "expireAfter": 120,
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "intentLink": "upi://mandate?pa=deku040920232@okokaxis&validitystart=31121995&validityend=02012006&am=10.00&amrule=max&recur=one%20time&cu=INR&mc=1234&mode=01&purpose=14&rev=Y&block=N&txnType=UPDATE&umn=SETUS7mxYHK1A6yXhxJsoKM7yxKqC2r0&tid=SETM3Iij4WQrtEUbOUFkTpQp2EpR5wqy5Ou",
+        "mandateId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "merchantReferenceId": "ABC1234789",
+        "mode": "qr",
+        "status": "pending",
+        "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+        "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp"
+}`}
+            </CodeBlockWithCopy>
+            To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#modify" target="_blank">here</a>.
+            <br></br>
+            {" "}
+            <br></br>
+            Post this, once the customer clicks on the intent link / scans the qr code and enters the mPIN, the merchant will receive webhooks for 3 events <b><i>update operation initiated, update operation confirmation, mandate status notification.</i></b> 
+            <br></br>
+            {" "}
+            <br></br>
+            Please refer to the Document Reference section for checking the API reference and the notifications.
+        </Text>
+        ),
+    },
+    {
+      key: "tab2",
+      label: "Collect based",
+      content: (
+        <Text>
+            The process for updating a collect based mandate is described in the below diagram
+            <img
+                src="https://storage.googleapis.com/strapi-assets/latest/mandate-update-intent/mandate-update-intent.png"
+                alt="Bridge"
+            />
+            The merchant will have to call the <b><i>modify mandate API</i></b> with the correct set of parameters.
+            {" "}
+            <br></br>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Staging Host</th>
+                        <td>
+                            <code>https://umap-dev-core.setu.co/api/v1</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Method</th>
+                        <td>
+                            <code>PUT</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Path</th>
+                        <td>
+                            <code>/merchants/mandates/&#123;mandateId&#125;/modify</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Header</th>
+                        <td>
+                            <code>merchantId</code><br/>
+                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                            Generate this token using <a
+                                href="/payments/upi-deeplinks/resources/oauth"
+                                target="_blank">
+                                OAuth
+                            </a> or <a
+                                href="/payments/upi-deeplinks/resources/jwt"
+                                target="_blank">
+                                JWT
+                            </a>.<br />
+                            <br />
+                            <code>Content-Type</code>—will be <code>application/json</code>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <h6>Sample request</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+        "amountLimit": 1000,
+        "endDate": "02012006",
+        "expireAfter": 120,
+        "merchantReferenceId": "ABC1234789"
+}`}
+            </CodeBlockWithCopy>
+            <h6>Sample response</h6>
+            <CodeBlockWithCopy language="json">
+                {`{
+        "amountLimit": 1000,
+        "endDate": "02012006",
+        "expireAfter": 120,
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "mandateId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "merchantReferenceId": "ABC1234789",
+        "mode": "collect",
+        "status": "initiated",
+        "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+        "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp"
+}`}
+            </CodeBlockWithCopy>
+            To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#modify" target="_blank">here</a>.
+            <br></br>
+            {" "}
+            <br></br>
+            Post this, once the customer clicks on the update mandate notification and enters the mPIN on their UPI app, the merchant will receive webhooks for 2 events <b><i>update operation confirmation, mandate status notification.</i></b> 
+            <br></br>
+            {" "}
+            <br></br>
+            Please refer to the Document Reference section for checking the API reference and the notifications.
+        </Text>
+        ),
+    },
+  ]}
+/>
+
+<NextPage
+    info={{
+        description: "Explore other UMAP UPI Autopay generic operations here",
+        slug: "/payments/umap/mandates/generic",
+        title: "UPI Autopay Generic Operations",
+    }}
+/>

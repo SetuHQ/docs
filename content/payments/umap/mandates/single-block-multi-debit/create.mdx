@@ -1,0 +1,161 @@
+---
+sidebar_title: Create
+page_title: UMAP - Mandates - Create Single Block Multi Debit Mandate
+order: 1
+visible_in_sidebar: true
+---
+
+## Create Single Block Multi Debit Mandate
+
+<p>The process for mandate creation is described in the below diagram:</p>
+<img
+src="https://storage.googleapis.com/strapi-assets/latest/intent-based-mandate-create/intent-based-mandate-create.png"
+alt="Bridge"
+/>
+
+<hr class="primary"/>
+
+<p>The merchant will have to call the <b><i>create mandate API</i></b> with the correct set of parameters.</p>
+<table>
+    <tbody>
+        <tr>
+            <th>Staging Host</th>
+            <td>
+                <code>https://umap-dev-core.setu.co/api/v1</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>POST</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>/merchants/mandates</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Header</th>
+            <td>
+                <code>merchantId</code><br/>
+                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                Generate this token using <a
+                href="/payments/upi-deeplinks/resources/oauth"
+                target="_blank">
+                OAuth
+                </a> or <a
+                href="/payments/upi-deeplinks/resources/jwt"
+                target="_blank">
+                JWT
+                </a>.<br />
+                <br />
+                <code>Content-Type</code>—will be <code>application/json</code>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<h6>Sample request</h6>
+
+<CodeBlockWithCopy language="json">
+{`{
+    "allowMultipleDebit": true,
+    "amount": 1000,
+    "amountRule": "max",
+    "autoExecute": false,
+    "autoPreNotify": false,
+    "blockFunds": true,
+    "creationMode": "qr",
+    "currency": "INR",
+    "customerRevocable": false,
+    "customerVpa": "ram@axis",
+    "endDate": "02012008",
+    "expireAfter": 120,
+    "firstExecutionAmount": 0,
+    "frequency": "as presented",
+    "initiationMode": "01",
+    "maxAmountLimit": 1000,
+    "merchantReferenceId": "ABC1234789",
+    "merchantVpa": "acme.corp@axis",
+    "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "purpose": "76",
+    "recurrenceRule": "on",
+    "recurrenceValue": 0,
+    "shareToPayee": false,
+    "startDate": "02012006",
+    "transactionNote": "Transaction note"
+}`}
+</CodeBlockWithCopy>
+
+<Callout type="warning">
+    <ul>
+        <li>The value of <code>frequency</code> must be <code>as presented</code> for creating a single block multi debit mandate.</li>
+        <li>The value of <code>creationMode</code> must be <code>qr</code> or <code>intent</code> for creating a single block multi debit mandate.</li>
+        <li>The value of <code>initiationMode</code> must be <code>01</code> if <code>creationMode</code> is <code>qr</code></li>
+        <li>The value of <code>initiationMode</code> must be <code>04</code> if{" "} <code>creationMode</code> is{" "}<code>intent</code></li>
+        <li>The value of <code>recurrenceRule</code> must be <code>on</code> for creating a single block multi debit mandate.</li>
+        <li>The value of <code>recurrenceValue</code> must be <code>0</code> for creating a single block multi debit mandate.</li>
+        <li>The value of <code>autoExecute</code> and <code>autoPreNotify</code> must be <code>false</code> for creating a single block multi debit mandate.</li>
+        <li>The value of <code>blockFunds</code> and <code>allowMultipleDebit</code> must be <code>true</code> for creating a single block multi debit mandate.</li>
+        <li>The value of <code>purpose</code> must be <code>76</code> for creating a single block multi debit mandate.</li>
+        <li>The value of <code>customerRevocable</code> must be <code>false</code> for creating a single block multi debit mandate.</li>
+    </ul>
+</Callout>
+
+<h6>Sample response</h6>
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "allowMultipleDebit": true,
+  "amount": 1000,
+  "amountRule": "max",
+  "autoExecute": false,
+  "autoPreNotify": false,
+  "blockFunds": true,
+  "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+  "creationMode": "qr",
+  "currency": "INR",
+  "customerRevocable": false,
+  "customerVpa": "ram@axis",
+  "endDate": "02012008",
+  "expireAfter": 120,
+  "firstExecutionAmount": 0,
+  "frequency": "single block multi debit",
+  "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "initiationMode": "01",
+  "intentLink": "upi://mandate?pa=acme.corp@axis&pn=merchant-1&validitystart=02012006&validityend=02012008&am=100.00&amrule=MAX&recur=ASPRESENTED&tr=BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR&cu=INR&mc=1234&mode=01&purpose=76&rev=N&share=N&qrexpire=02012006&block=Y&orgid=409214&version=2.0&txnType=CREATE&tid=BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+  "maxAmountLimit": 1000,
+  "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantReferenceId": "ABC1234789",
+  "merchantVpa": "acme.corp@axis",
+  "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "purpose": "76",
+  "recurrenceRule": "on",
+  "recurrenceValue": 0,
+  "shareToPayee": false,
+  "startDate": "02012006",
+  "status": "pending",
+  "transactionNote": "Transaction note",
+  "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR"
+}`}
+</CodeBlockWithCopy>
+
+<b>In the above response:</b>
+<ul>
+    <li>`intentLink` or corresponding qr can be shared directly with customers via a communication channel.</li>
+    <li>`id` is a unique mandate ID that is associated with this mandate and can be used to track it later.</li>
+</ul>
+
+<p>This request to generate a mandate creation intent link / qr is flexible and allows for many use cases. To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#create" target="_blank">here</a>.</p>
+<p>Post this, once the customer clicks on the intent link / scans the qr code and enters the mPIN, the merchant will receive webhooks for two events <b><i>mandate initiated, mandate registration confirmed.</i></b></p>
+<p>Please refer to the Document Reference section for checking the API reference and the notifications.</p>
+
+<NextPage
+    info={{
+        description: "Execute mandate.  ",
+        slug: "/payments/umap/mandates/single-block-multi-debit/execute",
+        title: "Execute mandate",
+    }}
+/>
