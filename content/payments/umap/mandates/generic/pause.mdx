@@ -20,16 +20,98 @@ visible_in_sidebar: true
 
 Only the end customer has the option of pausing a UPI mandate from their UPI app and there is no merchant intervention required.
 
-When a customer initiates mandate pause from their UPI app, UMAP will send notifications to the merchant for 3 events **<i>pause operation initiated, pause operation confirmation</i>** and **<i>mandate status</i>**. This is depicted in the below diagram
-
+<p>When a customer initiates mandate pause from their UPI app, UMAP will send notifications to the merchant for following events:</p>
+<ul>
+    <li><b>mandate_operation.pause.initiated</b></li>
+    <li><b>mandate.paused</b> (if mandate pause is successful)</li>
+    <li><b>mandate_operation.pause.success</b> (if mandate pause is successful)</li>
+    <li><b>mandate.live</b> (if mandate pause fails)</li>
+    <li><b>mandate_operation.pause.failed</b> (if mandate pause fails)</li>
+</ul>
+<p>Read more about mandate status notifications <a href="/payments/umap/notifications/mandates">here</a> and mandate pause operation notifications <a href="/payments/umap/notifications/mandates/pause">here</a></p>
+<p>The notifications are depicted in the below diagram</p>
 <img
   src="https://storage.googleapis.com/strapi-assets/latest/mandate-pause/mandate-pause.png"
   alt="Bridge"
 />
 
+<p>After receiving <b>mandate_operation.pause.initiated</b> notification, the merchant can also use <a href="/payments/umap/mandates/generic/pause#check-mandate-operation-status" target="_blank">check mandate operation status API</a> to check if mandate pause is <b>successful</b></p>
+
 <Callout type="warning">
     The only operation that can be performed on a <code>paused</code> mandate is to <code>unpause</code> it. Other operations like <code>pre debit notification</code>, <code>execution</code>, <code>update</code> and <code>revoke</code> are blocked while a mandate is <code>paused</code>
 </Callout>
+
+<hr class="tertiary"/>
+
+#### Check mandate operation status
+
+After receiving pause operation initiated notification, the merchant can use this API to check the status of a mandate pause operation.
+
+<table>
+    <tbody>
+        <tr>
+            <th>Staging Host</th>
+            <td>
+                <code>https://umap-dev-core.setu.co/api/v1</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>GET</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>/merchants/mandate-operations/&#123;id&#125;</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Header</th>
+            <td>
+                <code>merchantId</code><br/>
+                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                Generate this token using <a
+                    href="/payments/upi-deeplinks/resources/oauth"
+                    target="_blank">
+                    OAuth
+                </a> or <a
+                    href="/payments/upi-deeplinks/resources/jwt"
+                    target="_blank">
+                    JWT
+                </a>.<br />
+                <br />
+                <code>Content-Type</code>—will be <code>application/json</code>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<h6>Sample response</h6>
+<CodeBlockWithCopy language="json">
+{`{
+  "amountLimit": 1000,
+  "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+  "endDate": "02012006",
+  "expireAfter": 120,
+  "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "mandateId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantReferenceId": "ABC1234789",
+  "mode": "collect",
+  "status": "success",
+  "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+  "type": "pause",
+  "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp"
+}`}
+</CodeBlockWithCopy>
+<b>In the above response:</b>
+<ul>
+    <li><code>id</code> is a unique ID that is associated with this mandate pause operation and can be used to track it later.</li>
+</ul>
+
+<p>To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#fetchMandateOperationById" target="_blank">here</a>.</p>
 
 <NextPage
     info={{
