@@ -1,14 +1,22 @@
 ---
 sidebar_title: Check Status
-page_title: UMAP - Payments - Check Collect Request Status API
+page_title: UMAP - Payments - Collect Request - Check Payment Status
 order: 3
 visible_in_sidebar: true
 ---
 
-## Check Collect Request Status API
+## Check collect request payment status
+
+<p>Merchant can track the <b><i>last payment</i></b> associated with the collect request.</p>
 
 <table>
     <tbody>
+        <tr>
+            <th>Staging Host</th>
+            <td>
+                <code>https://umap-dev-core.setu.co/api</code>
+            </td>
+        </tr>
         <tr>
             <th>Method</th>
             <td>
@@ -18,7 +26,7 @@ visible_in_sidebar: true
         <tr>
             <th>Path</th>
             <td>
-                <code>/merchants/collect/&#123;id&#125;</code>
+                <code>/v1/merchants/collect/&#123;collectRequestId&#125;/last</code>
             </td>
         </tr>
         <tr>
@@ -39,27 +47,31 @@ visible_in_sidebar: true
                 <code>Content-Type</code>—will be <code>application/json</code>
             </td>
         </tr>
+        <tr>
+            <th>API Reference</th>
+            <td>
+                <a href="/payments/umap/api-reference#/category~payments/operation~payments#fetchLastByProductInstanceId" target="_blank">
+                    Check Payment Status ↗
+                </a>
+            </td>
+        </tr>
     </tbody>
 </table>
 
-### Sample response
+###### Sample response
 
 <CodeBlockWithCopy language="json">
     {`{
   "amount": 10000,
-  "closedAt": "2023-09-04 12:08:20.202644 +0530 IST",
   "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
   "currency": "INR",
-  "customerVpa": "dekup@okhdfc",
-  "expireAfter": 2,
+  "customerAccountType": "savings",
+  "customerVpa": "test-auto-tyvmm59i9b@okokaxis",
   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  "merchantReferenceId": "1240689979139556557",
-  "merchantVpa": "deku@okokaxis",
-  "metadata": {
-    "InvoiceNumber": "INV-21-12-009"
-  },
-  "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantVpa": "test-auto-beibfev2oq@okokaxis",
+  "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
   "reason": {
     "code": "unable-to-fulfill-request",
     "desc": "unable-to-fulfill-request",
@@ -69,12 +81,16 @@ visible_in_sidebar: true
     "npciRespDesc": "MERCHANT ERROR (PAYEE PSP)"
   },
   "refId": "1240689979139556558",
-  "status": "active",
-  "transactionNote": "testcollect"
+  "rrn": "124068997913",
+  "status": "initiated",
+  "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+  "txnNote": "testpay"
 }`}
 </CodeBlockWithCopy>
 
-<a href="/payments/umap/api-reference#/category~collect/operation~collect#fetchById"target="_blank">
-    <code>Check Collect Request Status API</code> ↗
-</a>
-<br/>
+**In the above response:**
+
+- `id` is a unique ID that is associated with this payment and can be used to track it later.
+- `reason` object is only populated when there are errors from the NPCI.
+
+<WasPageHelpful />

@@ -1,14 +1,22 @@
 ---
 sidebar_title: Create
-page_title: UMAP - Payments - Create Payment Link API
+page_title: UMAP - Payments - Create Payment Link
 order: 1
 visible_in_sidebar: true
 ---
 
-## Create Payment Link API
+## Create Payment Link
+
+<p>The merchant will have to call the <b><i>create payment link API</i></b> with the correct set of parameters.</p>
 
 <table>
     <tbody>
+        <tr>
+            <th>Staging Host</th>
+            <td>
+                <code>https://umap-dev-core.setu.co/api</code>
+            </td>
+        </tr>
         <tr>
             <th>Method</th>
             <td>
@@ -18,7 +26,7 @@ visible_in_sidebar: true
         <tr>
             <th>Path</th>
             <td>
-                <code>/merchants/payment-links</code>
+                <code>/v1/merchants/payment-links</code>
             </td>
         </tr>
         <tr>
@@ -39,67 +47,210 @@ visible_in_sidebar: true
                 <code>Content-Type</code>—will be <code>application/json</code>
             </td>
         </tr>
+        <tr>
+            <th>API Reference</th>
+            <td>
+                <a href="/payments/umap/api-reference#/category~payment-link/operation~payment-link#create"target="_blank">
+                    Create Payment Link ↗
+                </a>
+            </td>
+        </tr>
     </tbody>
 </table>
 
-### Sample request
+###### Sample request
 
-<CodeBlockWithCopy language="json">
-    {`{
-    "amount": 10000,
-    "currency": "INR",
-    "expiryDate": "2023-09-04 12:08:20.202644 +0530 IST",
-    "merchantReferenceId": "1240689979139556557",
-    "merchantVpa": "deku@okokaxis",
-    "metadata": {
-        "InvoiceNumber": "INV-21-12-009"
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Pay Single",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "amount": 10000,
+  "currency": "INR",
+  "expiryDate": "2023-09-04 12:08:20.202644 +0530 IST",
+  "merchantReferenceId": "1240689979139556557",
+  "merchantVpa": "deku@okokaxis",
+  "metadata": {
+      "InvoiceNumber": "INV-21-12-009"
+  },
+  "paymentType": "pay_single",
+  "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "transactionNote": "testpay"
+}`}
+          </CodeBlockWithCopy>
+          <Callout type="note">
+            <strong>amount</strong> is a mandatory field
+          </Callout>
+          <br/>
+          <p>By creating a payment link with paymentType as <code>pay_single</code>
+            you can accept the payment only once.
+          </p>
+        </>
+      ),
     },
-    "minAmount": 10000,
-    "paymentType": "pay_single",
-    "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-    "transactionNote": "testpay"
-}`}
-</CodeBlockWithCopy>
+     {
+      key: "2",
+      label: "Pay Multi",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "currency": "INR",
+  "expiryDate": "2023-09-04 12:08:20.202644 +0530 IST",
+  "merchantReferenceId": "1240689979139556557",
+  "merchantVpa": "deku@okokaxis",
+  "metadata": {
+      "InvoiceNumber": "INV-21-12-009"
+  },
+  "paymentType": "pay_multi",
+  "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "transactionNote": "testpay"
+}}`}
+          </CodeBlockWithCopy>
+         <Callout type="note">
+            <strong>amount</strong> is not required when creating multi use payment link
+          </Callout>
+          <br/>
+          <p>By creating a payment link with paymentType as <code>pay_multi</code>
+            you can accept the payment more than once.
+          </p>
+        </>
+      ),
+    }
+  ]}
+/>
 
-### Sample response
+###### Sample response
 
 <CodeBlockWithCopy language="json">
     {`{
-"amount":10000
-"createdAt":"2023-09-04 12:08:20.202644 +0530 IST"
-"currency":"INR"
-"expiryDate":"2023-09-04 12:08:20.202644 +0530 IST"
-"id":"01ARZ3NDEKTSV4RRFFQ69G5FAV"
-"intentLink":"upi://pay?pa=test-auto-pgruosncak@okokax..."
-"merchantId":"01ARZ3NDEKTSV4RRFFQ69G5FAV"
-"merchantReferenceId":"1240689979139556557"
-"merchantVpa":"deku@okokaxis"
-"metadata":{
-"InvoiceNumber":"INV-21-12-009"
-}
-"minAmount":10000
-"paymentType":"pay_single"
-"productConfigId":"01ARZ3NDEKTSV4RRFFQ69G5FAV"
-"refId":"1240689979139556558"
-"shortCode":"Np3KnBCM8Om0"
-"shortLink":"bills.pe/Np3KnBCM8Om0"
-"status":"active"
-"transactionNote":"testpay"
+    "amount":10000
+    "createdAt":"2023-09-04 12:08:20.202644 +0530 IST"
+    "currency":"INR"
+    "expiryDate":"2023-09-04 12:08:20.202644 +0530 IST"
+    "id":"01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    "intentLink":"upi://pay?pa=test-auto-pgruosncak@okokax..."
+    "merchantId":"01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    "merchantReferenceId":"1240689979139556557"
+    "merchantVpa":"deku@okokaxis"
+    "metadata":{
+        "InvoiceNumber":"INV-21-12-009"
+    }
+    "minAmount":10000
+    "paymentType":"pay_single"
+    "productConfigId":"01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    "refId":"1240689979139556558"
+    "shortCode":"Np3KnBCM8Om0"
+    "shortLink":"bills.pe/Np3KnBCM8Om0"
+    "status":"active"
+    "transactionNote":"testpay"
 }`}
 </CodeBlockWithCopy>
 
-<a href="/payments/umap/api-reference#/category~payment-link/operation~payment-link#create"target="_blank">
-    <code>Create Payment Link API</code> ↗
-</a>
-<br/>
 
 <hr class="primary" />
+
+## Check Payment Link Status
+
+<p>The merchant can also get the payment link status by payment link id by calling <b><i>check payment link status API</i></b></p>
+
+<table>
+    <tbody>
+         <tr>
+            <th>Staging Host</th>
+            <td>
+                <code>https://umap-dev-core.setu.co/api</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>GET</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>/api/v1/merchants/payment-links/&#123;id&#125;</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Header</th>
+            <td>
+                <code>merchantId</code><br/>
+                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+                Generate this token using <a
+                    href="/payments/upi-deeplinks/resources/oauth"
+                    target="_blank">
+                    OAuth
+                </a> or <a
+                    href="/payments/upi-deeplinks/resources/jwt"
+                    target="_blank">
+                    JWT
+                </a>.<br />
+                <br />
+                <code>Content-Type</code>—will be <code>application/json</code>
+            </td>
+        </tr>
+        <tr>
+            <th>API Reference</th>
+            <td>
+                <a href="/payments/umap/api-reference#/category~payment-link/operation~payment-link#fetchById"target="_blank">
+                    Check Payment Link Status ↗
+                </a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+###### Sample response
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "amount": 10000,
+  "closedAt": "2023-09-04 12:08:20.202644 +0530 IST",
+  "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+  "currency": "INR",
+  "expiryDate": "2023-09-04 12:08:20.202644 +0530 IST",
+  "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "intentLink": "upi://pay?pa=test-auto-pgruosncak@okokaxis&pn=merchant-4&am=100.00&tr=SU1240659756905923780&tn=sample%20single%20use%20qr&cu=INR&mc=1234",
+  "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantReferenceId": "1240689979139556557",
+  "merchantVpa": "deku@okokaxis",
+  "metadata": {
+    "InvoiceNumber": "INV-21-12-009"
+  },
+  "minAmount": 10000,
+  "paymentType": "pay_single",
+  "productConfigId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "reason": {
+    "code": "unable-to-fulfill-request",
+    "desc": "unable-to-fulfill-request",
+    "npciErrCode": "YG",
+    "npciErrDesc": "MERCHANT ERROR (PAYEE PSP)",
+    "npciRespCode": "YG",
+    "npciRespDesc": "MERCHANT ERROR (PAYEE PSP)"
+  },
+  "refId": "1240689979139556558",
+  "shortCode": "Np3KnBCM8Om0",
+  "shortLink": "bills.pe/Np3KnBCM8Om0",
+  "status": "active",
+  "transactionNote": "testpay"
+}`}
+</CodeBlockWithCopy>
+
 
 <NextPage
     info={{
         description:
-            "Check payment link status",
-        slug: "/payments/umap/payments/intent-qr/check-payment-link-status",
-        title: "Check payment link status",
+            "Check payment status associated with payment link or qr.",
+        slug: "/payments/umap/payments/intent-qr/check-status",
+        title: "Check payment status",
     }}
 />
+
+<WasPageHelpful />
