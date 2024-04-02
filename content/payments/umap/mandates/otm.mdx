@@ -20,19 +20,20 @@ visible_in_sidebar: true
 
 #### What is a One Time Mandate ?
 
-A one time mandate a mandate that can be executed / debited only once
-
-`TODO : Write a few lines on one time mandates`
-
-#### What can I do with a One Time Mandate ?
-
-`TODO : Write a few lines on one time mandate use cases`
+A one time mandate a mandate that can be executed only once at a later date after taking user consent. One time mandates are very useful for conditional flows like:  
+* IPO mandates that are executed only on allotment of shares
+* Transit systems that debit funds only if ticket is confirmed
+* Events platforms can use OTMs for RSVP before confirmations
 
 <hr class="primary" />
 
 #### How it works
 
-The first step to collect a payment via a one time mandate is for the **Merchant** to create a one time mandate. There are 2 ways in which a one time mandate can be created: **Intent based**, **Collect based**
+The first step to collect a payment via a one time mandate is for the merchant to create a one time mandate. There are 2 ways in which a one time mandate can be created:  
+
+**Intent based :** Intent based mandates are always initiated by user through merchant app or by scanning a QR code. 
+
+**Collect based** Collect based mandates are initated by merchant by taking user's VPA as an input and creating a request.  
 
 <Tabs
   tabs={[
@@ -41,22 +42,24 @@ The first step to collect a payment via a one time mandate is for the **Merchant
       label: "Intent based",
       content: (
         <Text>
-            Here is a typical list of steps involved in collecting a payment from a customer via an intent based one time mandate. Let’s use the example of `TODO: mention one time mandate use case`. In this scenario, the lender (`TODO: replace 'lender' based on use case mentioned`) is the Merchant partner that has integrated with Setu.<br/>
+            These are the list of steps involved in collecting a payment from a customer using a one time mandate in intent flow<br/>
             {" "}<br/>
             <hr class="primary"/>
             <h6>Step 1 - create a one time mandate</h6>
             <ol>
-                <li><b>Merchant</b> sends one time mandate details to <b>UMAP</b> and receives a unique one time mandate creation intent link / qr to send to their <b>Customer</b>: `TODO: Redirect to intent based one time mandate creation`</li>
+                <li><b>Merchant</b> sends one time mandate details to <b>UMAP</b> and receives a unique one time mandate creation intent link / qr to send to their <b>Customer</b></li>
                 <li><b>Customer</b> clicks one time mandate creation intent link, chooses preferred UPI app / scans the qr on preferred UPI app and enters mPIN to initiate one time mandate creation.</li>
                 <li><b>UMAP</b> triggers a webhook notification on one time mandate creation initiation which the merchant can use to update one time mandate status at their end.</li>
                 <li>Once the mandate is <b>LIVE</b>, <b>UMAP</b> triggers another webhook notification which the merchant can use to mark mandate status as <b>LIVE</b> at their end.</li>
             </ol>
             <hr class="tertiary"/>
             <h6>Step 2 - send a pre debit notification</h6>
-            <p><b>Merchant</b> triggers a pre debit notification via <b>UMAP</b> 48 - 72 Hrs before debit / execution to let the <b>Customer</b> get notified about the upcoming debit.</p>
+            <p><b>Merchant</b> triggers a pre debit notification via UMAP <b>48 - 72 Hrs before</b> debit / execution to let the <b>Customer</b> get notified about the upcoming debit.</p>
             <hr class="tertiary"/>
             <h6>Step 3 - trigger mandate execution</h6>
             <ol>
+                <Callout type='tip'>Customer only has to provide authorization if amount exceeds ₹15,000</Callout>. 
+                
                 <li>48 - 72 Hrs after the pre debit notification is successful, <b>Merchant</b> triggers mandate execution via <b>UMAP</b>.</li>
                 <li><b>Customer</b> receives a collect request notification on their UPI app, clicks on the notification and enters mPIN to authorise the payment.</li>
             </ol>
@@ -64,13 +67,19 @@ The first step to collect a payment via a one time mandate is for the **Merchant
             <h6>Step 4 - check payment status</h6>
             <p><b>Merchant</b> can use check payment status API to check payment statuses associated to the mandate</p>
             <hr class = "primary"/>
-            Other operations that can be performed on a one time mandate once it is <b>LIVE</b>
+            Other operations that can happen on a one time mandate once it is <b>LIVE</b>
             <ul>
                 <li>Updating a one time mandate</li>
                 <li>Revoking a one time mandate</li>
                 <li>Pausing a one time mandate</li>
                 <li>Unpausing a paused one time mandate</li>
             </ul>
+            These have been detailed in the <b>Mandate Operations</b> section within UPI Mandates
+            <h6>Mandate Creation - Intent Based Flows</h6>
+            <img
+    src="https://storage.googleapis.com/strapi-assets/latest/intent-mandate-creation/intent-mandate-creation.png"
+    alt="Bridge"
+/>
         </Text>
         ),
     },
@@ -79,12 +88,12 @@ The first step to collect a payment via a one time mandate is for the **Merchant
       label: "Collect based",
       content: (
         <Text>
-            Here is a typical list of steps involved in collecting a payment from a customer via a collect based one time mandate. Let’s use the example of `TODO: mention one time mandate use case`. In this scenario, the lender (`TODO: replace 'lender' based on use case mentioned`) is the Merchant partner that has integrated with Setu.<br/>
+            These are the list of steps involved in collecting a payment from a customer using a one time mandate in intent flow<br/>
             {" "}<br/>
             <hr class="primary"/>
             <h6>Step 1 - create a one time mandate</h6>
             <ol>
-                <li><b>Merchant</b> sends one time mandate details to <b>UMAP</b> and the <b>Customer</b> receives a one time mandate creation notification on their UPI app: `TODO: Redirect to intent based one time mandate creation`</li>
+                <li><b>Merchant</b> sends one time mandate details to <b>UMAP</b> and the <b>Customer</b> receives a one time mandate creation notification on their UPI app</li>
                 <li><b>Customer</b> clicks one time mandate creation notification, and enters mPIN to initiate one time mandate creation.</li>
                 <li>Once the one time mandate is <b>LIVE</b>, <b>UMAP</b> triggers a webhook notification which the merchant can use to mark one time mandate status as <b>LIVE</b> at their end.</li>
             </ol>
@@ -108,6 +117,11 @@ The first step to collect a payment via a one time mandate is for the **Merchant
                 <li>Pausing a one time mandate</li>
                 <li>Unpausing a paused one time mandate</li>
             </ul>
+            <h6>Mandate Creation - Collect Based flows</h6>
+            <img
+    src="https://storage.googleapis.com/strapi-assets/latest/collect-mandate-creation/collect-mandate-creation.png"
+    alt="Bridge"
+/>
         </Text>
         ),
     },
