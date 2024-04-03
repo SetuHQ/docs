@@ -7,19 +7,9 @@ visible_in_sidebar: true
 
 ## API Guide
 
-#### API URLs
+<p>Once you get the <code>clientID</code> and <code>secret</code> from Setu, use them to generate the token.</p>
 
--   Sandbox `https://umap-dev-core.setu.co/`
--   Production `https://umap.setu.co/`
-
-#### Headers
-
-These will be applicable to all the APIs you call, unless specified otherwise-
-
--   `authorisation` - Bearer <code>`insert_token_here`</code>. This token can be generated via the **Generate Access Token API**
--   `Content-Type` - Set this to `application/json`
-
-### Generate Access Token API
+### Generate Access Token
 
 An API to generate access tokens, which are used to authorise any other API requests made to Setu.
 
@@ -27,12 +17,29 @@ An API to generate access tokens, which are used to authorise any other API requ
 
 <table>
     <tr>
+        <th>Staging Host</th>
+        <td>
+            <code>https://accountservice-dev.setu.co</code>
+        </td>
+    </tr>
+    <tr>
         <th>Method</th>
-        <td>POST</td>
+        <td>
+            <code>POST</code>
+        </td>
     </tr>
     <tr>
         <th>Path</th>
-        <td>/auth/token </td>
+        <td>
+            <code>/v1/users/login</code>
+        </td>
+    </tr>
+    <tr>
+        <th>Header</th>
+        <td>
+            <code>client</code>— will be <code>bridge</code><br/>
+            <code>Content-Type</code>— will be <code>application/json</code>
+        </td>
     </tr>
 </table>
 
@@ -41,67 +48,128 @@ An API to generate access tokens, which are used to authorise any other API requ
 **Request Body**
 
 <CodeBlockWithCopy language="json">
-    {`
-  { 
-    "client_id": "client_id", 
-    "client_secret": "client_secret", 
-    "grant_type": "client_credentials" 
-  }
-  `}
+{`{
+  "clientID": "client_id",
+  "secret": "client_secret"
+  "grant_type": "client_credentials",
+}`}
 </CodeBlockWithCopy>
-
-<Callout type='tip'>
-💡 Since this API is used to generate the <b>Bearer Token</b> the <code>authorisation</code> header shouldn’t be included in the API call. The <code>Content-Type</code> should still be included in the the header
-
-</Callout>
-<br />
 
 **Response**
 
 <CodeBlockWithCopy language="json">
-    {`
-  {
-      "accessToken': "your_access_token",
-  }
-  `}
+{`{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdG9rZW4iOiJhY2Nlc3NfdG9rZW4iLCJyZWZyZXNoX3Rva2VuIjoic3RyaW5nIn0.HfoWXjOPViPG0BWnZ7ZGahD9UXacsjl9vrYXVIHOcW8",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdG9rZW4iOiJhY2Nlc3NfdG9rZW4iLCJyZWZyZXNoX3Rva2VuIjoicmVmcmVzaF90b2tlbiJ9.67LNOUvWYtrxIELorznd4WUHqvjW3cOG1_dKs1BB9w8"
+}`}
 </CodeBlockWithCopy>
 
 <Callout type="tip">
-    💡 <code>accessToken</code> is are valid for 7 days.
+💡 <code>access_token</code> is valid for 5 mins.
 </Callout>
 
 ##### How to use the access token
 
-Once you have a valid token available against product configuration(s), you can store it and use it to authorise an API call made to Setu, by setting the `authorization` request header as `Bearer <token-value>`.
+- Once you have a valid token, you can use it to authorise an API calls made to Setu, by setting the `authorization` request header as `Bearer <token-value>`.
+- Store the `refresh_token` and use it to get the new access token before it expires.
 
-**On expiry**
+<hr class="primary" />
 
-Implement a workflow to generate new token when the old one expires. The general setup might look something like this—
+### Refresh Access Token
 
--   Store `clientID` and `secret`.
--   Generate new token with stored `clientID` and `secret` when token has expired. If the API you call returns `401 unauthorized`, it could be an indication that the token has expired.
--   Store the newly generated token and use for subsequent API calls.
+<p><strong>Before expiry</strong>, use the stored <code>refresh_token</code> from the previous step to get the new <code>access_token</code>.</p>
 
-#### Start integration
+**Request**
 
-You can use the API credentials provided by Setu to test UMAP on sandbox
+<table>
+    <tr>
+        <th>Staging Host</th>
+        <td>
+            <code>https://accountservice-dev.setu.co</code>
+        </td>
+    </tr>
+    <tr>
+        <th>Method</th>
+        <td>
+            <code>POST</code>
+        </td>
+    </tr>
+    <tr>
+        <th>Path</th>
+        <td>
+            <code>/v1/refresh</code>
+        </td>
+    </tr>
+    <tr>
+        <th>Header</th>
+        <td>
+            <code>client</code>— will be <code>bridge</code><br/>
+            <code>Content-Type</code>— will be <code>application/json</code>
+        </td>
+    </tr>
+</table>
+
+<br />
+
+**Request Body**
+
+<CodeBlockWithCopy language="json">
+{`{
+  "refresh_token": "string"
+}`}
+</CodeBlockWithCopy>
+
+**Response**
+
+<CodeBlockWithCopy language="json">
+{`{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdG9rZW4iOiJhY2Nlc3NfdG9rZW4iLCJyZWZyZXNoX3Rva2VuIjoic3RyaW5nIn0.HfoWXjOPViPG0BWnZ7ZGahD9UXacsjl9vrYXVIHOcW8",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdG9rZW4iOiJhY2Nlc3NfdG9rZW4iLCJyZWZyZXNoX3Rva2VuIjoicmVmcmVzaF90b2tlbiJ9.67LNOUvWYtrxIELorznd4WUHqvjW3cOG1_dKs1BB9w8"
+}`}
+</CodeBlockWithCopy>
+
+<Callout type="tip">
+💡  <strong>After expiry</strong>, use the <code>Generate Access Token</code> API to get the new token.
+</Callout>
+
+<hr class="primary" />
 
 <Row>
     <Portion desktopSpan="half">
-        <Card padding="small" shape="rounded">
-            <p>For Aggregators</p>
-            <a href="/payments/umap/api-integration/aggregators" target="_self">
-                Start API Integration ->
-            </a>
-        </Card>
+        <Link href="/payments/umap/api-integration/aggregators">
+            <Card padding="micro" shape="rounded">
+                <Text
+                    size="small"
+                    weight="600"
+                    textColor="slate-60"
+                    marginBottom="micro"
+                >
+                    READ NEXT &rarr;
+                </Text>
+                <Text size="large" weight="600" textColor="blue-90">
+                    Aggregators
+                </Text>
+                <Text weight="400">Start integrating with UMAP as an aggregator.</Text>
+            </Card>
+        </Link>
     </Portion>
     <Portion desktopSpan="half">
-        <Card padding="small" shape="rounded">
-            <p>For Merchants</p>
-            <a href="/payments/umap/api-integration/merchants" target="_self">
-                Start API Integration ->
-            </a>
-        </Card>
+        <Link href="/payments/umap/api-integration/merchants">
+            <Card padding="micro" shape="rounded">
+                <Text
+                    size="small"
+                    weight="600"
+                    textColor="slate-60"
+                    marginBottom="micro"
+                >
+                    READ NEXT &rarr;
+                </Text>
+                <Text size="large" weight="600" textColor="blue-90">
+                    Merchants
+                </Text>
+                <Text weight="400">Start integrating with UMAP as a merchant.</Text>
+            </Card>
+        </Link>
     </Portion>
 </Row>
 
