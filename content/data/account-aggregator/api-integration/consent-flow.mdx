@@ -408,7 +408,7 @@ In the Account Aggregator (AA) ecosystem in India, the multi consent feature all
             <td>
                 Sandbox: <code>https://fiu-sandbox.setu.co</code>
                 <br />
-                Production: <code>https://fiu-unified.setu.co</code>
+                Production: <code>https://fiu.setu.co</code>
             </td>
         </tr>
         <tr>
@@ -496,4 +496,127 @@ In the Account Aggregator (AA) ecosystem in India, the multi consent feature all
     </Portion>
 </Row>
 
+<hr class="primary" />
+
+### Revoke consent
+
+The customer in the Account Aggregator framework has full control over their data and to ensure this, the framework allows the user to revoke a consent at any point of time. The general process of revoking a consent requires the user to login to Account Aggregator's platform and revoke the consent manually. However this might not be a seamless experience for the customer, who might expect to be able to revoke a consent directly from FIU's app. There might also be cases where the FIU might want to automatically revoke a consent.
+
+To solve for these use cases, AA framework provides a way for FIUs to communicate revokation of consent to the Account Aggregator. Setu's AA gateway provides a simple API to perform this action for any AA.
+
+###### Request
+
+<table>
+    <tbody>
+        <tr>
+            <th>Base URL</th>
+            <td>
+                Sandbox: <code>https://fiu-sandbox.setu.co</code>
+                <br />
+                Production: <code>https://fiu.setu.co</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>/v2/consents/{request_id}/revoke</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>POST</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Headers</th>
+            <td>
+                <code>Content-Type</code>: <code>application/json</code> <br />
+                <code>Authorization</code>: Bearer <code>access_token</code> <br />
+                <code>x-product-instance-id</code>:{" "}
+                <code>product-instance-id</code>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<Callout type="info">
+    This is a POST API without any request body
+</Callout>
+
+<br />
+
+###### Sample Response
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "status": "REVOKED",
+    "traceId": "b3f26ccb-a64d-4692-a02e-282bd8ef7778"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL - Consent not found</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "traceId": "ec754b36-bf5f-4673-8be1-9d203d374c83",
+    "errorCode": "NotFound",
+    "errorMsg": "Consent not found"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
+                    label: <Badge type="failure">FAIL - Consent not ready</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "traceId": "ec754b36-bf5f-4673-8be1-9d203d374c83",
+    "errorCode": "InvalidRequest",
+    "errorMsg": "Consent '061a7599-ee29-4edb-82a5-02c98315c4fe' is not ready"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "4",
+                    label: <Badge type="failure">FAIL - Consent expired</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "traceId": "ec754b36-bf5f-4673-8be1-9d203d374c83",
+    "errorCode": "InvalidRequest",
+    "errorMsg": "Consent '061a7599-ee29-4edb-82a5-02c98315c4fe' has expired"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        />
+    </Portion>
+</Row>
 <WasPageHelpful />
