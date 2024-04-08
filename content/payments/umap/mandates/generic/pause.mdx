@@ -8,81 +8,51 @@ visible_in_sidebar: true
 ## Pausing a mandate
 
 <Card padding="nano" shape="rounded" marginBottom="micro" marginTop="micro">
-    <Text size="medium" marginBottom="nano" paddingRight="medium" weight="600">
-        Prerequisites
+    <Text weight="600">
+        Prerequisites:&nbsp;
+        <a href="/payments/umap/mandates/generic" target="_blank">UPI Mandates generic operations ↗</a>
     </Text>
-    <a href="/payments/umap/mandates/generic">
-        UPI Mandates Generic Operations ↗
-    </a>
 </Card>
 
-<hr class="primary" />
-
 <Callout type="tip">
-    Only customers can pause a UPI mandate from their UPI app and there is no
-    merchant intervention required.
+    Only customers can pause a UPI mandate from their UPI app. 
 </Callout>
+
 <br />
-<p>
-    When a customer initiates mandate pause from their UPI app, UMAP will send
-    notifications to the merchant for following events:
-</p>
-<ul>
-    <li>
-        <b>mandate_operation.pause.initiated</b>
-    </li>
-    <li>
-        <b>mandate.paused</b> (if mandate pause is successful)
-    </li>
-    <li>
-        <b>mandate_operation.pause.success</b> (if mandate pause is successful)
-    </li>
-    <li>
-        <b>mandate.live</b> (if mandate pause fails)
-    </li>
-    <li>
-        <b>mandate_operation.pause.failed</b> (if mandate pause fails)
-    </li>
-</ul>
-<p>
-    Read more about mandate status notifications{" "}
-    <a href="/payments/umap/notifications/mandates">here</a> and mandate pause
-    operation notifications{" "}
-    <a href="/payments/umap/notifications/mandates/pause">here</a>
-</p>
-<p>The notifications are depicted in the below diagram</p>
+
+When a customer initiates pausing a mandate from their UPI app, UMAP will send notifications to the merchant for following events—
+- <Text><code>mandate_operation.pause.initiated</code></Text>
+- <Text><code>mandate_operation.pause.success</code>, &nbsp; if pause is successful</Text>
+- <Text><code>mandate.paused</code>, &nbsp; terminal status, if pause is successful</Text>
+- <Text><code>mandate_operation.pause.failed</code>, &nbsp; if pause fails</Text>
+- <Text><code>mandate.live</code>, &nbsp; terminal status, if pause fails</Text>
+
+Read more about <a href="/payments/umap/notifications/mandates" target="_blank">mandate status notifications </a> and <a href="/payments/umap/notifications/mandates/pause" target="_blank">mandate pause operation notifications</a>.
+
+The notifications are depicted in the below diagram—
 <img
     src="https://storage.googleapis.com/strapi-assets/latest/update-mandate-customer-pause/update-mandate-customer-pause.png"
     alt="Bridge"
 />
 
-<p>
-    After receiving <b>mandate_operation.pause.initiated</b> notification, the
-    merchant can also use{" "}
-    <Link href="/payments/umap/mandates/generic/pause#check-mandate-operation-status">
-        check mandate operation status API
-    </Link>{" "}
-    to check if mandate pause is <b>successful</b>
-</p>
+After receiving `mandate_operation.pause.initiated` notification, a merchant can also use the <a href="/payments/umap/mandates/generic/pause#check-mandate-operation-status" target="_blank">check mandate operation status API</a> to check if mandate pause is <b>successful</b>.
 
 <Callout type="warning">
-    The only operation that can be performed on a <code>paused</code> mandate is
-    to <code>unpause</code> it. Other operations like{" "}
-    <code>pre debit notification</code>, <code>execution</code>,{" "}
-    <code>update</code> and <code>revoke</code> are blocked while a mandate is{" "}
-    <code>paused</code>
+    The only operation that can be performed on a <strong>paused</strong> mandate is to unpause it. Other operations like{" "}
+    pre-debit notification, execution,{" "}
+    update and revoke are blocked when a mandate is paused.
 </Callout>
 
 <hr class="tertiary" />
 
 #### Check mandate operation status (optional)
 
-After receiving pause operation initiated notification, the merchant can use this API to check the status of a mandate pause operation.
+Once notified on the mandate pause request, merchants can use this API to check its status.
 
 <table>
     <tbody>
         <tr>
-            <th>Staging Host</th>
+            <th>Staging host</th>
             <td>
                 <code>https://umap-dev-core.setu.co/api</code>
             </td>
@@ -135,24 +105,10 @@ After receiving pause operation initiated notification, the merchant can use thi
   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp"
 }`}
 </CodeBlockWithCopy>
-<b>In the above response:</b>
-<ul>
-    <li>
-        <code>id</code> is a unique ID that is associated with this mandate
-        pause operation and can be used to track it later.
-    </li>
-</ul>
 
-<p>
-    To know more about all the API params, please refer to the API documentation{" "}
-    <a
-        href="/payments/umap/api-reference#/category~mandates/operation~mandates#fetchMandateOperationById"
-        target="_blank"
-    >
-        here
-    </a>
-    .
-</p>
+In the above response `id` is a unique ID associated with this mandate pause request and can be used to track it later.
+
+To know more about all the API params, please refer to the <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#fetchMandateOperationById" target="_blank"> API documentation</a>.
 
 <NextPage
     info={{
