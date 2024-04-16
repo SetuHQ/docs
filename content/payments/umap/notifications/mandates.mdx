@@ -1,202 +1,55 @@
 ---
 sidebar_title: Mandates
-page_title: UMAP - Notifications & Alerts - Mandates
+page_title: UMAP - Notifications and alerts - Mandates
 order: 2
 visible_in_sidebar: true
 ---
 
-## Mandates Notifications & Alerts
+## Notifications and alerts for mandates
 
-<Card padding="nano" shape="rounded" marginBottom="micro" marginTop="micro">
-    <Text size="medium" marginBottom="nano" paddingRight="medium" weight="600">
-        Prerequisites
-    </Text>
-    <a href="/payments/umap/mandates">UPI Mandates Overview ↗</a>
-</Card>
+<Text size="small" weight="600">
+    PREREQUISITES&nbsp;
+</Text>
+<a href="/payments/umap/mandates">🌟 UPI mandates overview ↗</a>
 
 <hr class="primary" />
 
-### UPI Mandate Statuses
-
-A UPI mandate will flow through the below statuses throughout its lifecycle
-
-`Mandate Initiated :` A mandate creation request has been initiated.
-
-`Mandate Live :` Customer authorization received & mandate is now active.
-
-`Mandate Complete :` Mandate executions are done, and now mandate is closed.
-
-`Mandate Rejected:` Due to error or no authorization, mandate could not be created.
-
-`Mandate Paused:` Customer has decided to temporarily stop executions on mandate.
-
-`Mandate Revoked:` Mandate was closed by customer or merchant before expiry.
-
+Here is the expected life-cycle of statuses—
 <img
     src="https://storage.googleapis.com/strapi-assets/latest/Frame_109/Frame_109.png"
     alt="Bridge"
 />
 
-### Mandate Status Notification
+<hr class="primary" />
 
-This is the status notification which is a part of all mandate flows which describes the final mandate status post any action taken on the resource.
+### Details for mandate statuses
+Below is a list mandate statuses that are uniform across all types of mandates. Notifications corresponding to them are sent after relevant operations are taken on the mandate by either a merchant, or their customer.
 
-#### Mandate Initiated
+<Text>
+    <ul>
+        
+        <li><code>mandate.initiated</code>{" "}A customer or merchant has initiated creation of mandate</li>
+        <li><code>mandate.live</code>{" "}Customer has authorised the mandate, and the mandate is active</li>
+        <li><code>mandate.rejected</code>{" "}The mandate could not be set up, due to some error or due to the customer not authorising the mandate</li>
+        <li><code>mandate.paused</code>{" "}The customer has decided to pause executions for mandate, which can be temporary</li>
+        <li><code>mandate.unpaused</code>{" "}The customer has decided to unpause executions for mandate, and mandate is active again</li>
+        <li><code>mandate.revoked</code>{" "}The customer has decided to stop executions for mandate before its expiry—this is a permanent action, and payments from this customer would need a new mandate to be set up</li>
+        <li><code>mandate.complete</code>{" "}All mandate executions are complete</li>
+    </ul>
+</Text>
 
-<CodeBlockWithCopy language="json">
-    {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
-   "eventType": "mandate.initiated",
-   "resource": "mandate",
-   "status": "initiated", // pending | initiated | live | rejected | revoked
-   // pseudo state - updated
-   // for handling updates that are made to an existing mandate
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>", // TODO: what are the types?
-   // Mandate reference
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate id
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "rrn": "123456789012",
-   // Reason
-   "reason": {} // sample mentioned above
-}`}
-</CodeBlockWithCopy>
+<hr class="primary" />
 
-#### Mandate Live
+### Available actions against a mandate
+A merchant or a customer can initiate different operations against a mandate. A combination of this and the aboves statuses are used to notify merchants about specific updates to mandate statuses. 
 
-<CodeBlockWithCopy language="json">
-    {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
-   "eventType": "mandate.live",
-   "resource": "mandate",
-   "status": "live", // pending | initiated | live | rejected | revoked
-   // pseudo state - updated
-   // for handling updates that are made to an existing mandate
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>", // TODO: what are the types?
-   // Mandate reference
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate id
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "rrn": "123456789012",
-   // Reason
-   "reason": {} // sample mentioned above
-}`}
-</CodeBlockWithCopy>
+These scenarios are described in more detail under each of the following operation—
+- **<a href="/payments/umap/notifications/mandates/create">Create mandate ↗</a>**
+- **<a href="/payments/umap/notifications/mandates/update">Update mandate ↗</a>**
+- **<a href="/payments/umap/notifications/mandates/pause">Pause mandate↗</a>**
+- **<a href="/payments/umap/notifications/mandates/unpause">Unpause mandate↗</a>**
+- **<a href="/payments/umap/notifications/mandates/revoke">Revoke mandate↗</a>**
+- **<a href="/payments/umap/notifications/mandates/execute">Execute mandate↗</a>**
+- **<a href="/payments/umap/notifications/mandates/notify">Notify mandate success/failure↗</a>**
 
-#### Mandate Updated
 
-<CodeBlockWithCopy language="json">
-    {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
-   "eventType": "mandate.updated",
-   "resource": "mandate",
-   "status": "updated", // pending | initiated | live | rejected | revoked
-   // pseudo state - updated
-   // for handling updates that are made to an existing mandate
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>", // TODO: what are the types?
-   // Mandate reference
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate id
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "rrn": "123456789012",
-   // Updated params
-   "amountLimit": 10000,
-   "endDate": "31122023",
-   // Reason
-   "reason": {} // sample mentioned above
-}`}
-</CodeBlockWithCopy>
-
-#### Mandate Rejected
-
-<CodeBlockWithCopy language="json">
-    {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
-   "eventType": "mandate.rejected",
-   "resource": "mandate",
-   "status": "rejected", // pending | initiated | live | rejected | revoked
-   // pseudo state - updated
-   // for handling updates that are made to an existing mandate
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>", // TODO: what are the types?
-   // Mandate reference
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate id
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "rrn": "123456789012",
-   // Reason
-   "reason": {} // sample mentioned above
-}`}
-</CodeBlockWithCopy>
-
-#### Mandate Revoked
-
-<CodeBlockWithCopy language="json">
-    {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
-   "eventType": "mandate.revoked",
-   "resource": "mandate",
-   "status": "revoked", // pending | initiated | live | rejected | revoked
-   // pseudo state - updated
-   // for handling updates that are made to an existing mandate
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>", // TODO: what are the types?
-   // Mandate reference
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate id
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "rrn": "123456789012",
-   // Reason
-   "reason": {} // sample mentioned above
-}
-`}
-</CodeBlockWithCopy>
-
-#### Mandate Paused
-
-<CodeBlockWithCopy language="json">
-    {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
-   "eventType": "mandate.paused",
-   "resource": "mandate",
-   "status": "paused", // pending | initiated | live | rejected | revoked | paused
-   // pseudo state - updated
-   // for handling updates that are made to an existing mandate
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>", // TODO: what are the types?
-   // Mandate reference
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate id
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "rrn": "123456789012",
-   // Reason
-   "reason": {} // sample mentioned above
-}`}
-</CodeBlockWithCopy>
