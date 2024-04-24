@@ -220,67 +220,6 @@ In the response you either get the bill details, or “Processing” status if t
 
 <hr class="tertiary" />
 
-##### Auto-fetch bills
-
-You may also choose to enable automatic fetches for customer bills. Once you have provided the customer identifier and the business’s BBPS identifier, Setu has the information needed to fetch bill details automatically for every subsequent payment cycle. Once a bill is fetched automatically, the response is posted to the callback URL provided by you.
-
-To enable auto-fetch for a bill, simply set the `autoFetch` field to `true`, while making Fetch bill API request to `/bbps/bills/fetch/request`. This flag value will be honoured once a bill fetch is done successfully.
-
-<CodeBlockWithCopy language="diff">{`
-{
-+   "autoFetch": true,
-    "customer": { ... },
-    "agent": { ... },
-    "biller": { ... }
-}
-`}</CodeBlockWithCopy>
-
-<Callout type="tip">
-    Note that you would also need to tell Setu that you would like to auto fetch
-    bills for customers, when you are setting up your agent, so that Setu can
-    enable this feature for you.
-</Callout>
-
-<br />
-
-The response stays the same, with an additional field `autoFetchHash`. This hash is used as an identifier for the bill fetch. It can be used to check the last auto-fetched date, whether the auto-fetch is still active or disable auto-fetch for the bill in <a href="payments/billpay/api-integration/api-reference">Manage auto-fetch for bills</a> section.
-
-<CodeBlockWithCopy language="diff">{`
-{
-+   "autofetchHash": "d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a",
-    "data": { ... },
-    "success": true,
-    "traceId": "C51JQCUD608P36RN28H0"
-}
-`}</CodeBlockWithCopy>
-
-<br />
-
-When you set `autoFetch` flag to `true`, the response for Fetch bill will contain a `autofetchHash`. You can use this to—
-
--   Hit the `/list` endpoint to check if the bill autofetch is active, along with last date for bill fetch
--   Disable auto fetch by hitting the `/delete` endpoint
-    <br />
-
-<Callout type="highlight">
-    Note that you can also create an auto-fetch request for multiple bills at a
-    time, using the <code>/bbps/autofetches</code> endpoint>.
-</Callout>
-
-<br />
-
-**Specify auto-fetch for multiple bills**—A `POST` request to `/bbps/autofetches` lets you register multiple bills to be fetched automatically, at their respective payment cycles.
-
-<br />
-
-**List auto-fetch details for multiple bills**—A `GET` request to `/bbps/autofetches` returns list of bills registered for autofetch. Each entry has
-
--   `lastFetchDate` which is the date of the last bill fetch
--   `isActive` which specifies if bill has auto fetch enabled
-
-<br />
-
-**Disable auto-fetch**—A `DELETE` request to `/bbps/autofetches/{autofetchHash}` disable auto fetch for a bill on your app/website
 
 <hr class="primary" />
 
