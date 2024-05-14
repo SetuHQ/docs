@@ -1,0 +1,201 @@
+---
+sidebar_title: eStamp overview
+page_title: eStamp overview
+order: 2
+visible_in_sidebar: true
+---
+
+## Setu eStamp
+
+### What is eStamp?
+
+
+Setu eStamp enables easy acquisition of offline eStamps.
+Attach it to a document and perform Aadhaar-based esign on top of it.
+
+eStamp is a flow under esign and all features are interoperable.
+
+<hr class="primary" />
+
+### What can I do with this product?
+
+Setu Aadhaar-Based eSign gateway supports adding government stamp duty on the fly.
+Our eSign APIs empower you to collect legally bound Aadhaar-based eSignatures while adding government
+stamp duties, ensuring compliance and security on documents from signers. With these APIs, you can streamline your
+customer onboarding process and close contracts digitally, all while providing a frictionless experience.
+
+## Setu eStamp integration
+
+To use the eStamp solution:
+
+1. **Raise eStamp acquire request to Setu team (support@setu.co)** — Raise a request for count, value, and Indian state of the stamp duty needed.
+2. **Create signature request and complete signing** — Use the eSigning flow to complete signing and download the signed document.
+
+
+### Flow of API calls
+Creating an eStamp request is the same as creating a signature request.
+The flow of API calls is mentioned <a href="/data/esign/quickstart">here.</a>
+
+
+<br/>
+
+#### Create Signature request with eStamp
+
+
+A Signature request can be created with defined eStamp value
+and Indian state. This eStamp will be attached to the document that you upload for signing.
+<br/>
+
+Here is a quick description of the additional values required to be passed for signing a document with eStamp:
+
+- `eStampState` the Indian state of the eStamp.
+- `eStampValue` the value of the eStamp
+- `eStampMergePosition` supported values are -1 and 0. -1 indicates that the eStamp PDF would be merged at the end of the document, 0 indicates the eStamp PDF will be merged at the start of the document.
+
+<hr class="tertiary" />
+
+<Callout type="tip">
+    You can use eStamps with other eSign flows as well,
+    <code>flexible with configId</code>  
+    <code>esign with predefined positions</code> top-right, top-left, bottom-right, bottom-left,
+    <code>esign with templating</code>  
+    <a href="/data/esign/overview">read here for more details</a>,
+</Callout>
+
+
+
+
+<Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "201",
+          content: (
+            <>
+            <Text size="small" weight="600">Esign with eStamp</Text>
+            <Card padding="nano" shape="rounded" marginBottom="micro">
+  <details>
+    <summary>
+                <Text size="medium" marginBottom="none" paddingRight="medium"><Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.</Text>
+    </summary>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/signature/estamp 
+                
+{ 
+    "documentId": "67e0ca30-49e4-4883-86f9-3762f0e6798c", 
+    "redirectUrl": "your-redirect-url.com?other_keys=youcandefinehere", 
+    "eStampState": 17,
+    "eStampValue": 50,
+    "eStampMergePosition": 0,
+    "signers": [{ 
+        "identifier": "9876543210", 
+        "displayName": "John Doe", 
+        "birthYear": "1988",
+        "signature": { 
+            "onPages": [ 
+                "1" 
+            ], 
+            "position": "bottom-left", 
+            "height": 60, 
+            "width": 180 
+        } 
+    }] 
+} `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You will get a unique signature request <code>id</code> from Setu—to track this signature request. Additionally, you will get an array of <code>signers</code>, each with their own signer <code>id</code>, <code>status</code> and <code>url</code>.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{ 
+                    "documentId": "67e0ca30-49e4-4883-86f9-3762f0e6798c", 
+                    "id": "cb80bfb4-d163-426e-ad57-1fd8889e62d4", 
+                    "redirectUrl": "your-redirect-url.com?other_keys=youcandefinehere", 
+                    "eStampState": 17,
+                    "eStampValue": 50,
+                    "eStampMergePosition": 0,
+                    "signers": [{ 
+                            "displayName": "John Doe", 
+                            "birthYear": "1988", //included if specified in Create signature request API
+                            "id": "34f94af1-a8b9-4797-b287-c5ef7bff99a1", 
+                            "identifier": "9876543210", 
+                            "signatureDetails": null, 
+                            "status": "pending", 
+                            "url": "https://dg-uat.setu.co/signature/estamp/preview?requestId=6bae9d1f-0fa6-44e5-a801-3ad4a5f10a12&signerId=34f94af1-a8b9-4797-b287-c5ef7bff99a1" 
+                    }], 
+                    "status": "sign_initiated" 
+                } `}
+              </CodeBlockWithCopy>
+              <Callout type="warning">
+                    You can add one extra count to <code>onPages</code> 
+                    field in create signature request body 
+                    to account for the one extra page created by merging eStamp.
+                </Callout>
+              </details>
+              </Card>
+            </>
+          )
+        }
+      ]}
+    ></Tabs>
+
+<hr class="primary" />
+
+## Supported Indian state and their code
+
+<table>
+<tr><th>State Code</th><th>State Name</th></tr>
+<tr><td>1</td><td>Andaman and Nicobar Islands</td></tr>
+<tr><td>2</td><td>Andhra Pradesh</td></tr>
+<tr><td>3</td><td>Arunachal Pradesh</td></tr>
+<tr><td>4</td><td>Assam</td></tr>
+<tr><td>5</td><td>Bihar</td></tr>
+<tr><td>6</td><td>Chandigarh</td></tr>
+<tr><td>7</td><td>Chattisgarh</td></tr>
+<tr><td>8</td><td>Dadra and Nagar Haveli</td></tr>
+<tr><td>9</td><td>Daman and Diu</td></tr>
+<tr><td>10</td><td>Delhi</td></tr>
+<tr><td>11</td><td>Goa</td></tr>
+<tr><td>12</td><td>Gujarat</td></tr>
+<tr><td>13</td><td>Haryana</td></tr>
+<tr><td>14</td><td>Himachal Pradesh</td></tr>
+<tr><td>15</td><td>Jammu and Kashmir</td></tr>
+<tr><td>16</td><td>Jharkhand</td></tr>
+<tr><td>17</td><td>Karnataka</td></tr>
+<tr><td>18</td><td>Kerala</td></tr>
+<tr><td>19</td><td>Lakshadweep Islands</td></tr>
+<tr><td>20</td><td>Madhya Pradesh</td></tr>
+<tr><td>21</td><td>Maharashtra</td></tr>
+<tr><td>22</td><td>Manipur</td></tr>
+<tr><td>23</td><td>Meghalaya</td></tr>
+<tr><td>24</td><td>Mizoram</td></tr>
+<tr><td>25</td><td>Nagaland</td></tr>
+<tr><td>26</td><td>Odisha</td></tr>
+<tr><td>27</td><td>Pondicherry</td></tr>
+<tr><td>28</td><td>Punjab</td></tr>
+<tr><td>29</td><td>Rajasthan</td></tr>
+<tr><td>30</td><td>Sikkim</td></tr>
+<tr><td>31</td><td>Tamil Nadu</td></tr>
+<tr><td>32</td><td>Telangana</td></tr>
+<tr><td>33</td><td>Tripura</td></tr>
+<tr><td>34</td><td>Uttar Pradesh</td></tr>
+<tr><td>35</td><td>Uttarakhand</td></tr>
+<tr><td>36</td><td>West Bengal</td></tr>
+</table>
+
+
+## Supported eStamp value
+The supported eStamp values/denomination are:
+
+  `20`, `50`, `100`, `200`, `300`, `400`, `500`
+
+<br/>
+
+Please reach out to support@setu.co for any other denominations. 
+
+
+<WasPageHelpful />
