@@ -1,9 +1,9 @@
-# Setu Documentation : Content + API References
+# Setu Documentation : Content + API references
 
 Monorepo of content and API reference of [Setu docs](https://docs.setu.co)
 
 -   [Content](#content)
--   [API References](#api-references)
+-   [API references](#api-references)
 
 # Activity
 
@@ -50,7 +50,7 @@ For documentation preview, `Docter Preview`
 
 Using the `Docter Preview` extension, we can preview content and sidebar changes. Please go through the [README](https://github.com/SetuHQ/vscode-docter-preview#readme) to learn about the features and follow the steps mentioned to use it.
 
-# API References
+# API references
 
 You can find API reference spec files for [Setu docs](https://docs.setu.co) in `/api-reference` folder
 
@@ -125,7 +125,7 @@ In future if there is a new version, `v1.5`, which is not a default version,
 
 We need to add a folder `v1.5` and add contents of that version into it.
 
-## Update API Reference
+## Update API reference
 
 To update API references based on versions,
 
