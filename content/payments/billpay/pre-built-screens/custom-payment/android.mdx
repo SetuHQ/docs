@@ -148,13 +148,17 @@ Here is a sample of the Java Interface class needed by the webview—
     }
     /** Show a toast from the web page */
     @JavascriptInterface
-    public void initiatePayment(String orderId, String beneVpa, String amount, String callback, String remarks) {
+    public void initiatePayment(String orderId, String beneVpa, String amount, String callback, String remarks, String mobileNumber, String refId, String customerId, String allowedPaymentModes) {
         Intent intent = new Intent(mContext, PaymentScreen.class);
         intent.putExtra("BENE_VPA", beneVpa);
         intent.putExtra("ORDER_ID", orderId);
         intent.putExtra("AMOUNT", amount);
         intent.putExtra("CALLBACK_URL", success_url);
         intent.putExtra("REMARKS", remarks);
+        intent.putExtra("MOBILE_NUMBER", remarks);
+        intent.putExtra("REF_ID", refId);
+        intent.putExtra("CUSTOMER_ID", customerId);
+        intent.putExtra("ALLOWED_PAYMENT_MODES", allowedPaymentModes)
         mContext.startActivity(intent);
     }
     /** Show a toast from the web page */
@@ -181,11 +185,15 @@ The interface will contain 2 methods—
 
 `initiatePayment` on the Android interface takes the following parameters
 
--   `orderId` on the Setu COU System. Example— `Z7pFtTgr9LtO`
+-   `orderId` on the Setu COU System. Example— `COUWLZ7pFtTgr9LtO`
 -   `amount` to be paid by the customer: Example— `3522.20`
--   `callback` which needs to be loaded if the payment is completed. Example—`//billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
+-   `callback` which needs to be loaded if the payment is completed. Example—`https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
 -   `beneVpa` to which amount is to be transferred—this is relevant only if you can transfer in real time using UPI rails.
 -   `remarks` used to communicate information between mobile app and webview
+-   `mobileNumber` mobile number used for the session. Example - `9876543210`
+-   `refId` BBPS reference ID linked to a particular bill (only available for fetch billers). Example - `CMA0I65RCU2I32C3L0H0KNYQYAG40021831`
+-   `customerId` linked to a particular session. Example - `cust@1234`
+-   `allowedPaymentModes` comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
 
 When `initiatePayment` is called by the webview, your app needs to do the following—
 
