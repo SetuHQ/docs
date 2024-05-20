@@ -94,18 +94,40 @@
             }
           },
           {
+            "name": "coverage",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "IND-TEL-Hyderabad",
+            "description": "Fetches billers in the provided coverage area"
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "IND",
+            "description": "Fetches billers in the provided country"
+          },
+          {
             "name": "state",
             "in": "query",
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "TEL",
+            "description": "Fetches billers in the provided state"
           },
           {
             "name": "city",
             "in": "query",
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "Hyderabad",
+            "description": "Fetches billers in the provided city"
           },
           {
             "name": "tags",
@@ -165,6 +187,16 @@
                 ]
               }
             }
+          },
+          {
+            "name": "updatedSince",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2020-12-12T13:12:00+05:30",
+            "description": "Fetches billers updated on or after the provided timestamp"
           }
         ],
         "responses": {
@@ -1756,17 +1788,27 @@
         ],
         "type": "object",
         "properties": {
+          "bbpsUpdateTimestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2020-12-12T13:12:00+05:30",
+            "description": "The timestamp when the biller was last updated accurate to the nearest day"
+          },
           "categoryName": {
             "type": "string",
             "example": "loan-repayment"
           },
           "city": {
             "type": "string",
-            "example": "city"
+            "example": "Hyderabad"
+          },
+          "country": {
+            "type": "string",
+            "example": "IND"
           },
           "coverage": {
             "type": "string",
-            "example": "IND"
+            "example": "IND-TEL-Hyderabad"
           },
           "createdAt": {
             "type": "string",
@@ -1786,6 +1828,11 @@
             "items": {
               "$ref": "#/components/schemas/customerParamsGroupItem"
             }
+          },
+          "enforcesSameDayFetchPay": {
+            "type": "boolean",
+            "example": true,
+            "description": "Denotes whether the biller requires biller payment to be made on the same calendar day as the bill fetch."
           },
           "exactness": {
             "type": "string",
@@ -1851,7 +1898,7 @@
           },
           "state": {
             "type": "string",
-            "example": "state"
+            "example": "TEL"
           },
           "supportsPendingStatus": {
             "type": "boolean",
