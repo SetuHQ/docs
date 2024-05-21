@@ -105,7 +105,7 @@ struct WebViewBackButton: View {
         }
     }
 }
-class WebViewCoordinator: NSObject, ObservableObject, WKNavigationDelegate {
+class WebViewCoordinator: NSObject, ObservableObject, WKNavigationDelegate, WKScriptMessageHandler {
     static let shared = WebViewCoordinator()
     var webView: WKWebView?
     func goBack() {
@@ -127,6 +127,8 @@ struct WebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.navigationDelegate = context.coordinator
+        // Register script message handler
+        webView.configuration.userContentController.add(context.coordinator, name: "ios_observer")
         context.coordinator.webView = webView
         return webView
     }
@@ -148,6 +150,31 @@ struct ContentView_Previews: PreviewProvider {
 #endif
     `}
 </CodeBlockWithCopy>
+
+Here is a sample of the Swift class designed to handle the `unload` event
+
+<CodeBlockWithCopy language="jsx">
+{`
+// Setup to handle messages from JavaScript
+func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    if message.name == "ios_observer", let messageBody = message.body as? [String: String] {
+        if messageBody["function"] == "unload" {
+            handleUnload()
+        }
+    }
+}
+private func handleUnload() {
+    // logic to close webview and return to app
+}`
+}
+</CodeBlockWithCopy>
+
+The class will contain 1 method—
+-   `unload` This should be used by the your app to dismiss the webview.
+
+<Callout type="tip">
+    <b>Special use case:</b> This <code>unload</code> function can also be used for dismissing the webview and redirecting a user back to your native app once a bill payment journey is completed (i.e. payment is successful) via a CTA from the Setu webview. Please let our team know if you would like to enable this use case for your app.
+</Callout>
 
 <hr class="tertiary" />
 
