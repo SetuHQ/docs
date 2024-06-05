@@ -540,7 +540,7 @@ To solve for these use cases, AA framework provides a way for FIUs to communicat
     </tbody>
 </table>
 
-<br/>
+<br />
 
 <Callout type="tip">This is a POST API without any request body</Callout>
 
@@ -623,4 +623,137 @@ To solve for these use cases, AA framework provides a way for FIUs to communicat
         />
     </Portion>
 </Row>
+
+<hr class="primary" />
+
+### Multi consents
+
+In the Account Aggregator (AA) ecosystem in India, the multi consent feature allows Financial Information Users (FIUs) to streamline the process of obtaining consent from customers for data sharing. By merging multiple separate consent requests into a single flow, FIUs can enhance the user experience, reduce friction, and ensure higher completion rates for consent acquisition.
+
+<Callout type="tip">
+    Currently, the multi consent feature supports merging only two consents into
+    a multi consent
+</Callout>
+
+<br />
+
+<img src="https://storage.googleapis.com/strapi-assets/latest/dual-consent-approval-page/dual-consent-approval-page.png" />
+
+##### Features
+
+-   **Single UI Flow** — Merges two consent requests into a single UI flow, displaying the consent parameters of each request in a consolidated manner.
+
+-   **Optional and mandatory consents** — Offers flexibility in making one of the consents optional, while the other remains mandatory, allowing customers to choose which data they are willing to share.
+
+-   **Unified OTP authentication** — Simplifies the authentication process by requiring only a single set of OTP authentications for the multi consent flow.
+
+<br />
+
+##### Create multi consent API
+
+-   Create individual consent requests — Prior to using the Dual consent API, create the individual consent requests as per the standard procedure in the AA ecosystem.
+
+-   Create multi consent — Use the provided API endpoint to create a multi consent process by specifying which consents are optional and which are mandatory.
+
+-   Redirecting the customer to consent approval — On success, direct the customer to the redirectUrl for consent approval.
+
+-   Get consent status — Monitor the status of each consent through the same **Get Consent API**, that is used for a single consent.
+
+###### Request
+
+<table>
+    <tbody>
+        <tr>
+            <th>Base URL</th>
+            <td>
+                Sandbox: <code>https://fiu-sandbox.setu.co</code>
+                <br />
+                Production: <code>https://fiu-unified.setu.co</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>/v2/consents/consents/collection</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>POST</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Headers</th>
+            <td>
+                <code>Content-Type</code>: <code>application/json</code> <br />
+                <code>Authorization</code>: Bearer <code>access_token</code> <br />
+                <code>x-product-instance-id</code>:{" "}
+                <code>product-instance-id</code>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<br />
+
+###### Sample Request body
+
+<CodeBlockWithCopy language="json">
+    {`{
+    "optionalConsents": [],
+    "mandatoryConsents": ["36c34bbc-9408-454e-a80e-e44f4fc4cdbf", "037801eb-923e-4592-80cc-b05cecaedba1"]
+}`}
+</CodeBlockWithCopy>
+
+<Callout type="warning">
+    At least one consent must be marked as mandatory to create a multi consent
+</Callout>
+
+<br />
+
+###### Sample Response
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "consentCollectionId": "5f3a5564-9abc-48f9-ae32-af4b22c781ce",
+    "url": "https://fiu-sandbox.setu.co/v2/consents/webview/5f3a5564-9abc-48f9-ae32-af4b22c781ce",
+    "txnid": "6aeb84aa-b078-4ab1-bdb6-fa0e82b18bb3",
+    "traceId": "b3f26ccb-a64d-4692-a02e-282bd8ef7778"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "traceId": "ec754b36-bf5f-4673-8be1-9d203d374c83",
+    "errorCode": "InvalidRequest",
+    "errorMsg": "Consent doesn't belong to same customer id"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        />
+    </Portion>
+</Row>
+
 <WasPageHelpful />

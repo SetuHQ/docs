@@ -1,0 +1,191 @@
+---
+sidebar_title: Payments
+page_title: UMAP - Notifications and alerts - Payments
+order: 1
+visible_in_sidebar: true
+---
+
+## Notifications and alerts for payments
+
+Any UMAP product relies on creating and presenting payment request to a customer. Setu’s UMAP stack provides consistent and transparent payment statuses for a merchant, to be able to track the life-cycle of a payment request. These statuses are shown in the diagram below.
+<img
+  src="https://storage.googleapis.com/strapi-assets/latest/Frame_72/Frame_72.png"
+  alt="Bridge"
+/>
+
+### Details for each payment status
+
+<Tabs
+   tabs={[
+         {
+            key: "1",
+            label: "Payment initiated",
+            content: (
+               <>
+                  <Text>This indicates that a payment has been initiated by a customer, and the notification is only then sent to the merchant.</Text>
+                  <CodeBlockWithCopy language="json">
+{`{
+   // Resource
+   "resource": "payment",
+   "status": "initiated",
+   // Event attributes
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
+   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
+   "eventType": "payment.initiated",
+   // Payment context
+   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "<TYPE>", // collect | intent | mandate (seems like there are 12 types, might have to change this later)
+   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   // References
+   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   // Payment attributes
+   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+   "txnType": "pay", // collect | pay
+   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
+   "rrn": "124068997913",
+   "txnNote": "testpay",
+   "amount": 1000,
+   "currency": "INR",
+   "merchantVpa": "deku20231030@okokaxis",
+   "customerVpa": "test-auto-9xsabx8n8x@okokaxis",
+   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   // Reason
+   "reason": {} // sample mentioned above
+}`}
+                  </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "Payment pending",
+            content: (
+               <>
+                     <Text>This indicates that the payment is being processed by UMAP and is sent to the merchant in case of a deemed transaction. {" "}Note that, <strong>this is not a terminal status</strong>, and Setu will send other updated notifications for the same transaction.</Text>
+                     <CodeBlockWithCopy language="json">
+{`{
+   // Event attributes
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
+   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
+   "eventType": "payment.pending",
+   "resource": "payment",
+   "status": "pending",
+   // Payment context
+   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "<type>", // collect | intent | mandate (seems like there are 12 types, might have to change this later)
+   // References
+   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   // Payment references
+   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+   // mandate reference (in case of mandate related payment)
+   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
+   // Payment attributes
+   "txnType": "pay", // collect | pay
+   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
+   "rrn": "124068997913",
+   "txnNote": "testpay",
+   "amount": 1000,
+   "currency": "INR",
+   "merchantVpa": "deku20231030@okokaxis",
+   "customerVpa": "test-auto-9xsabx8n8x@okokaxis",
+   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   // Reason
+   "reason": {} // sample mentioned above
+}`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "3",
+            label: "Payment success",
+            content: (
+               <>
+                     <Text>This is sent to the merchant once a payment has been successfully completed.</Text>
+                     <CodeBlockWithCopy language="json">
+{`{
+   // Event attributes
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
+   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
+   "eventType": "payment.success",
+   "resource": "payment",
+   "status": "success",
+   // Payment context
+   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "<type>", // collect | intent | mandate (seems like there are 12 types, might have to change this later)
+   // References
+   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   // Payment references
+   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+   // mandate reference (in case of mandate related payment)
+   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
+   // Payment attributes
+   "txnType": "pay", // collect | pay
+   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
+   "rrn": "124068997913",
+   "txnNote": "testpay",
+   "amount": 1000,
+   "currency": "INR",
+   "merchantVpa": "deku20231030@okokaxis",
+   "customerVpa": "test-auto-9xsabx8n8x@okokaxis",
+   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   // Reason
+   "reason": {} // sample mentioned above
+}`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "4",
+            label: "Payment failed",
+            content: (
+               <>
+                     <Text>This is sent to the merchant if a payment could not be processed and has been marked as failed.</Text>
+                     <CodeBlockWithCopy language="json">
+{`{
+   // Event attributes
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
+   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
+   "eventType": "payment.failed",
+   "resource": "payment",
+   "status": "failed",
+   // Payment context
+   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "<type>", // collect | intent | mandate (seems like there are 12 types, might have to change this later)
+   // References
+   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   // Payment references
+   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+   // mandate reference (in case of mandate related payment)
+   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
+   // Payment attributes
+   "txnType": "pay", // collect | pay
+   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
+   "rrn": "124068997913",
+   "txnNote": "testpay",
+   "amount": 1000,
+   "currency": "INR",
+   "merchantVpa": "deku20231030@okokaxis",
+   "customerVpa": "test-auto-9xsabx8n8x@okokaxis",
+   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   // Reason
+   "reason": {} // sample mentioned above
+}`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+   ]}
+/>

@@ -1,0 +1,263 @@
+---
+sidebar_title: Pre Debit Notify
+page_title: UMAP - Mandates - Send One Time Mandate Pre Debit Notification
+order: 2
+visible_in_sidebar: true
+---
+
+## Send a pre debit notification
+
+<Text size="small" weight="600">
+    PREREQUISITES&nbsp;
+</Text>
+<a href="/payments/umap/mandates/otm/create" target="_self">🌟 Create one time mandate ↗</a>
+
+<br />
+
+<Callout type="tip">
+    Pre debit notification is not needed if <code>blockFunds</code> is set as{" "}
+    <code>true</code> while creating the mandate.
+</Callout>
+
+<br />
+
+Once the mandate is **LIVE** the merchant needs to send a pre debit notification 48 - 72 Hrs before debit / execution to let the customer be notified of the upcoming debit.
+
+The process for mandate pre debit notification is described in the below diagram:
+
+<img
+    src="https://storage.googleapis.com/strapi-assets/latest/update-mandate-pre-debit-notification/update-mandate-pre-debit-notification.png"
+    alt="Bridge"
+/>
+
+The merchant will have to call the **<i>send mandate pre debit notification API</i>** with the correct set of parameters.
+
+<table>
+    <tbody>
+        <tr>
+            <th>Staging host</th>
+            <td>
+                <code>https://umap-dev-core.setu.co/api</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>POST</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>/v1/merchants/mandates/&#123;mandateId&#125;/notify</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Header</th>
+            <td>
+                <code>merchantId</code>
+                <br />
+                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>
+                &gt;. Generate this token using <a
+                    href="/payments/umap/api-integration"
+                    target="_blank"
+                >
+                    OAuth
+                </a>
+                .<br />
+                <br />
+                <code>Content-Type</code>—will be <code>application/json</code>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+###### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+    "amount": 1000,
+    "executionDate": "04012006",
+    "merchantReferenceId": "ABC1234789",
+    "sequenceNumber": 1,
+    "umn": "setumandate1234789@ybl"
+}`}
+</CodeBlockWithCopy>
+
+<p>
+    <b>
+        Request body parameter values for sending pre debit notification for a
+        one time mandate
+    </b>
+</p>
+<table>
+    <tr>
+        <th>parameter</th>
+        <th>value</th>
+    </tr>
+    <tr>
+        <td>amount</td>
+        <td>
+            must be as per the <code>amountRule</code> and{" "}
+            <code>maxAmountLimit</code> configured while creating the mandate
+        </td>
+    </tr>
+    <tr>
+        <td>executionDate</td>
+        <td>
+            must be <code>48 - 72 Hrs</code> ahead of current time
+        </td>
+    </tr>
+    <tr>
+        <td>sequenceNumber</td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td>umn</td>
+        <td>
+            can be derived from the notifications received by the merchant
+            during mandate creation flow or via check mandate status API
+        </td>
+    </tr>
+</table>
+
+###### Sample response
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "amount": 1000,
+  "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+  "executionDate": "04012006",
+  "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "mandateId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantReferenceId": "ABC1234789",
+  "sequenceNumber": 1,
+  "status": "pending",
+  "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+  "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp"
+}`}
+</CodeBlockWithCopy>
+
+**In the above response:**
+
+-   `id` is a unique ID that is associated with this mandate pre debit notification and can be used to track it later.
+
+To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#notify" target="_blank">here</a>.
+
+<p>UMAP will send notifications to the merchant for the following events:</p>
+<ul>
+    <li>
+        <b>mandate_operation.notify.success</b> (if mandate pre debit
+        notification is successful)
+    </li>
+    <li>
+        <b>mandate_operation.notify.failed</b> (if mandate pre debit
+        notification fails)
+    </li>
+</ul>
+<p>
+    Read more about mandate pre debit notification operation notifications{" "}
+    <a href="/payments/umap/notifications/mandates/notify">here</a>
+</p>
+
+<p>
+    In addition to the notifications, the merchant can also use{" "}
+    <Link href="/payments/umap/mandates/otm/pre-debit-notify#check-mandate-pre-debit-notification-status">
+        check mandate pre debit notification status API
+    </Link>{" "}
+    to check if pre debit notification is <b>successful</b>
+</p>
+
+Please refer to the Document Reference section for checking the API reference and the notifications.
+
+<hr class="tertiary" />
+
+#### Check mandate pre debit notification status
+
+In addition to the notifications sent by UMAP, Merchant can use this API to check the status of a mandate pre debit notification.
+
+<table>
+    <tbody>
+        <tr>
+            <th>Staging host</th>
+            <td>
+                <code>https://umap-dev-core.setu.co/api</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Method</th>
+            <td>
+                <code>GET</code>
+            </td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td>
+                <code>
+                    /v1/merchants/mandate-pre-debit-notifications/&#123;id&#125;
+                </code>
+            </td>
+        </tr>
+        <tr>
+            <th>Header</th>
+            <td>
+                <code>merchantId</code>
+                <br />
+                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>
+                &gt;. Generate this token using <a
+                    href="/payments/umap/api-integration"
+                    target="_blank"
+                >
+                    OAuth
+                </a>
+                .<br />
+                <br />
+                <code>Content-Type</code>—will be <code>application/json</code>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<h6>Sample response</h6>
+<CodeBlockWithCopy language="json">
+    {`{
+  "amount": 1000,
+  "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+  "executionDate": "04012006",
+  "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "mandateId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantReferenceId": "ABC1234789",
+  "sequenceNumber": 1,
+  "status": "success",
+  "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR",
+  "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp"
+}`}
+</CodeBlockWithCopy>
+<b>In the above response:</b>
+<ul>
+    <li>
+        <code>id</code> is a unique ID that is associated with this mandate pre
+        debit notification and can be used to track it later.
+    </li>
+</ul>
+
+<p>
+    To know more about all the API params, please refer to the API documentation{" "}
+    <a
+        href="/payments/umap/api-reference#/category~mandates/operation~mandates#fetchMandatePreDebitNotificationById"
+        target="_blank"
+    >
+        here
+    </a>
+    .
+</p>
+
+<NextPage
+    info={{
+        description: "Execute mandate.  ",
+        slug: "/payments/umap/mandates/otm/execute",
+        title: "Execute mandate",
+    }}
+/>

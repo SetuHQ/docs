@@ -1,0 +1,103 @@
+---
+sidebar_title: Refunds and disputes
+page_title: UMAP - Refunds and disputes
+order: 6
+visible_in_sidebar: true
+---
+
+# Refunds and disputes
+
+<Text size="small" weight="600">
+    PREREQUISITES&nbsp;
+</Text>
+<a href="/payments/umap/quickstart" target="_self">🌟 Quickstart ↗</a>
+
+<hr class="primary" />
+
+UMAP empowers merchants with direct API access to issue refunds and contest disputes efficiently, by leveraging NPCI's default framework. This streamlines communication and resolution processes, ensuring merchants have control and visibility over transaction reversals and customer disputes, which in turn helps to resolve customer issues and maintain high levels of satisfaction.
+
+<hr class="primary" />
+
+### Refund process overview
+
+<img
+    src="https://storage.googleapis.com/strapi-assets/latest/refund-flow-online_flow/refund-flow-online_flow.png"
+    alt="Bridge"
+/>
+
+###### Step 1 - Issue refunds
+Merchants can initiate refunds through the <a href="/payments/umap/api-reference#/category~refund/operation~refund#create" target="_blank">create refund API</a> by submitting the details of the original transaction. UMAP coordinates with NPCI to process the refund, ensuring the amount is returned to the customer's account.
+
+Throughout the refund process, UMAP provides merchants
+with timely updates regarding the refund status,
+ensuring transparency and allowing merchants to keep
+their customers informed.
+
+UMAP also sends notifications to the merchants for the following events—
+- `refund_success`
+- `refund_failed`
+
+Read more about refund status notifications <a href="/payments/umap/notifications/refunds">here</a>.
+
+<br/>
+
+###### Step 2 - Check refund status
+In addition to notifications, merchants can also use the <a href="/payments/umap/api-reference#/category~refund/operation~refund#fetchById" target="_blank">check refund status API</a> to check if a refund is successful.
+
+**Refund statuses**
+- `refund_initiated` Refund request has been
+create at UMAP
+- `refund_pending` Refund is in queue for
+    being processed
+- `refund_successful` Refund has been
+successfully completed
+- `refund_failed` Refund could not be
+processed
+<img
+    src="https://storage.googleapis.com/strapi-assets/latest/Frame_74/Frame_74.png"
+    alt="Bridge"
+/>
+<NextPage
+    info={{
+        description: "Create refund.  ",
+        slug: "/payments/umap/refunds-disputes/create-refund-api",
+        title: "Create refund",
+    }}
+/>
+
+<hr class="primary" />
+
+### Dispute resolution overview
+The UMAP platform's seamless integration with the UDIR
+framework ensures that merchants can provide prompt and
+efficient resolutions to disputes, safeguarding both
+their interests and those of their customers.
+
+###### Step 1 - Initiation of dispute by customer
+Disputes are initiated by customers and communicated to UMAP via NPCI. Next, UMAP promptly notifies the merchant with dispute details.
+
+UMAP sends notifications to merchants for the following events
+- `dispute_created`
+
+Read more about dispute status notifications <a href="/payments/umap/notifications/disputes">here</a>
+
+###### Step 2 - Respond to dispute as a merchant
+As a merchant, you have the option to either accept or reject the dispute through UMAP. 
+
+**Accepting a dispute**—Agreeing to the dispute automatically triggers a refund to the customer for the disputed transaction.
+
+**Rejecting a dispute**—Contesting a dispute, requires you to provide transaction evidence, such as an invoice, which UMAP forwards to
+NPCI for review.
+- If the review process favors the merchant, the dispute is closed with no requirement for refund.
+- If the merchant loses the dispute, a refund is issued to the customer for the disputed transaction.
+
+**Dispute statuses**
+- `dispute_open`&nbsp;A dispute has been created
+by a customer
+- `dispute_closed`&nbsp;Merchant accepted the dispute
+and issued a refund
+- `dispute_in_review`&nbsp;Merchant has contested
+dispute and has provided evidence
+- `dispute_won`&nbsp;Merchant evidence accepted and no refund required
+- `dispute_lost`&nbsp;Merchant evidence rejected and refund is issued
+
