@@ -16,52 +16,62 @@ There are 2 ways to create a recurring mandate: **Intent based**, **Collect base
       label: "Intent based",
       content: (
         <Text>
-            <p>The process for mandate creation is described in the below diagram:</p>
-            <img
+          <p>
+            The process for mandate creation is described in the below diagram:
+          </p>
+          <img
             src="https://storage.googleapis.com/strapi-assets/latest/intent-mandate-creation/intent-mandate-creation.png"
             alt="Bridge"
-            />
-            <hr class="primary"/>
-            <p>The merchant will have to call the <b><i>create mandate API</i></b> with the correct set of parameters.</p>
-            <table>
-                <tbody>
-                    <tr>
-                        <th>Staging host</th>
-                        <td>
-                            <code>https://umap-dev-core.setu.co/api</code>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Method</th>
-                        <td>
-                            <code>POST</code>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Path</th>
-                        <td>
-                            <code>/v1/merchants/mandates</code>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Header</th>
-                        <td>
-                            <code>merchantId</code><br/>
-                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
-                            Generate this token using <a
-                                href="/payments/umap/api-integration"
-                                target="_blank">
-                                OAuth
-                            </a>.<br />
-                            <br />
-                            <code>Content-Type</code>—will be <code>application/json</code>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <h6>Sample request</h6>
-            <CodeBlockWithCopy language="json">
-                {`{
+          />
+          <hr class="primary" />
+          <p>
+            The merchant will have to call the{" "}
+            <b>
+              <i>create mandate API</i>
+            </b>{" "}
+            with the correct set of parameters.
+          </p>
+          <table>
+            <tbody>
+              <tr>
+                <th>Staging host</th>
+                <td>
+                  <code>https://umap-dev-core.setu.co/api</code>
+                </td>
+              </tr>
+              <tr>
+                <th>Method</th>
+                <td>
+                  <code>POST</code>
+                </td>
+              </tr>
+              <tr>
+                <th>Path</th>
+                <td>
+                  <code>/v1/merchants/mandates</code>
+                </td>
+              </tr>
+              <tr>
+                <th>Header</th>
+                <td>
+                  <code>merchantId</code>
+                  <br />
+                  <code>Authorization</code>: Bearer &lt;
+                  <b>insert_token_here</b>&gt;. Generate this token using{" "}
+                  <a href="/payments/umap/api-integration" target="_blank">
+                    OAuth
+                  </a>
+                  .<br />
+                  <br />
+                  <code>Content-Type</code>—will be{" "}
+                  <code>application/json</code>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <h6>Sample request</h6>
+          <CodeBlockWithCopy language="json">
+            {`{
     "allowMultipleDebit": false,
     "amount": 1000,
     "amountRule": "max",
@@ -88,148 +98,174 @@ There are 2 ways to create a recurring mandate: **Intent based**, **Collect base
     "startDate": "02012006",
     "transactionNote": "Transaction note"
 }`}
-            </CodeBlockWithCopy>
-            <p><b>Request body parameter values for creating an intent based recurring mandate</b></p>
-            <table>
-                <tr>
-                    <th>parameter</th>
-                    <th>value</th>
-                </tr>
-                <tr>
-                    <td>creationMode</td>
-                    <td>intent or qr</td>
-                </tr>
-                <tr>
-                    <td>initiationMode</td>
-                    <td>
-                        <p>01 if creationMode is qr</p>
-                        <p>04 if creationMode is intent</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td>autoExecute</td>
-                    <td>
-                        <p>If the value of <code>autoExecute</code> and <code>autoPreNotify</code> is <code>false</code> then the merchant is responsible for triggering the pre debit notification and execution in every recurrence cycle.</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td>autoPreNotify</td>
-                    <td>
-                        <p>If the value of <code>autoExecute</code> and <code>autoPreNotify</code> is <code>true</code> then no merchant intervention is needed and UMAP is responsible for triggering the pre debit notification and execution in every recurrence cycle.</p>
-                    </td>
-                </tr>
-            </table>
-            <Card padding="nano" shape="rounded">
-                <details>
-                    <summary>
-                        <Text size="medium" marginBottom="none" paddingRight="medium">Possible values and descriptions of <code>frequency</code>, <code>recurrenceValue</code> and <code>recurrenceRule</code></Text>
-                    </summary>
-                    <Tabs
-                        tabs={[
-                            {
-                                key: "tab1",
-                                label: "as presented",
-                                content:(
-                                    <Text>
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <th>frequency</th>
-                                                    <th>recurrenceValue</th>
-                                                    <th>recurrenceRule</th>
-                                                </tr>
-                                                <tr>
-                                                    <th>as presented</th>
-                                                    <td>0</td>
-                                                    <td>
-                                                        <p>on</p>
-                                                        <p>pre debit notification, execution is triggered as and when the merchant makes pre debit notification / execution API calls to UMAP</p>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </Text>
-                                ),
-                            },
-                            {
-                                key: "tab2",
-                                label: "daily",
-                                content:(
-                                    <Text>
-                                        <table>
-                                            <tbody>
-                                               <tr>
-                                                    <th>frequency</th>
-                                                    <th>recurrenceValue</th>
-                                                    <th>recurrenceRule</th>
-                                                </tr>
-                                                <tr>
-                                                    <th>daily</th>
-                                                    <td>0</td>
-                                                    <td>
-                                                        <p>on</p>
-                                                        <p>once every day</p>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </Text>
-                                ),
-                            },
-                            {
-                                key: "tab3",
-                                label: "periodic",
-                                content:(
-                                    <Text>
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <th>frequency</th>
-                                                    <th>recurrenceValue</th>
-                                                    <th>recurrenceRule</th>
-                                                </tr>
-                                                <tr>
-                                                    <th>weekly</th>
-                                                    <td>1-7</td>
-                                                    <td>
-                                                        <img
-                                                            src="https://storage.googleapis.com/strapi-assets/latest/Weekly_Recurrence/Weekly_Recurrence.png"
-                                                            alt="Bridge"
-                                                        />          
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th>fortnightly</th>
-                                                    <td>1-16</td>
-                                                    <td>
-                                                        <img
-                                                            src="https://storage.googleapis.com/strapi-assets/latest/Fortnightly_Recurrence/Fortnightly_Recurrence.png"
-                                                            alt="Bridge"
-                                                        />          
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th>monthly, bi monthly, quarterly, half yearly, yearly</th>
-                                                    <td>1-31</td>
-                                                    <td>
-                                                        <img
-                                                            src="https://storage.googleapis.com/strapi-assets/latest/Monthly_and_Above_Recurrence/Monthly_and_Above_Recurrence.png"
-                                                            alt="Bridge"
-                                                        />          
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </Text>
-                                ),
-                            }
-                        ]}
-                    />
-                </details>
-            </Card>
-            <h6>Sample response</h6>
-            <CodeBlockWithCopy language="json">
-                {`{
+          </CodeBlockWithCopy>
+          <p>
+            <b>
+              Request body parameter values for creating an intent based
+              recurring mandate
+            </b>
+          </p>
+          <table>
+            <tr>
+              <th>parameter</th>
+              <th>value</th>
+            </tr>
+            <tr>
+              <td>creationMode</td>
+              <td>intent or qr</td>
+            </tr>
+            <tr>
+              <td>initiationMode</td>
+              <td>
+                <p>01 if creationMode is qr</p>
+                <p>04 if creationMode is intent</p>
+              </td>
+            </tr>
+            <tr>
+              <td>autoExecute</td>
+              <td>
+                <p>
+                  If the value of <code>autoExecute</code> and{" "}
+                  <code>autoPreNotify</code> is <code>false</code> then the
+                  merchant is responsible for triggering the pre debit
+                  notification and execution in every recurrence cycle.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td>autoPreNotify</td>
+              <td>
+                <p>
+                  If the value of <code>autoExecute</code> and{" "}
+                  <code>autoPreNotify</code> is <code>true</code> then no
+                  merchant intervention is needed and UMAP is responsible for
+                  triggering the pre debit notification and execution in every
+                  recurrence cycle.
+                </p>
+              </td>
+            </tr>
+          </table>
+          <Card padding="nano" shape="rounded">
+            <details>
+              <summary>
+                <Text size="medium" marginBottom="none" paddingRight="medium">
+                  Possible values and descriptions of <code>frequency</code>,{" "}
+                  <code>recurrenceValue</code> and <code>recurrenceRule</code>
+                </Text>
+              </summary>
+              <Tabs
+                tabs={[
+                  {
+                    key: "tab1",
+                    label: "as presented",
+                    content: (
+                      <Text>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <th>frequency</th>
+                              <th>recurrenceValue</th>
+                              <th>recurrenceRule</th>
+                            </tr>
+                            <tr>
+                              <th>as presented</th>
+                              <td>0</td>
+                              <td>
+                                <p>on</p>
+                                <p>
+                                  pre debit notification, execution is triggered
+                                  as and when the merchant makes pre debit
+                                  notification / execution API calls to UMAP
+                                </p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </Text>
+                    ),
+                  },
+                  {
+                    key: "tab2",
+                    label: "daily",
+                    content: (
+                      <Text>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <th>frequency</th>
+                              <th>recurrenceValue</th>
+                              <th>recurrenceRule</th>
+                            </tr>
+                            <tr>
+                              <th>daily</th>
+                              <td>0</td>
+                              <td>
+                                <p>on</p>
+                                <p>once every day</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </Text>
+                    ),
+                  },
+                  {
+                    key: "tab3",
+                    label: "periodic",
+                    content: (
+                      <Text>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <th>frequency</th>
+                              <th>recurrenceValue</th>
+                              <th>recurrenceRule</th>
+                            </tr>
+                            <tr>
+                              <th>weekly</th>
+                              <td>1-7</td>
+                              <td>
+                                <img
+                                  src="https://storage.googleapis.com/strapi-assets/latest/Weekly_Recurrence/Weekly_Recurrence.png"
+                                  alt="Bridge"
+                                />
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>fortnightly</th>
+                              <td>1-16</td>
+                              <td>
+                                <img
+                                  src="https://storage.googleapis.com/strapi-assets/latest/Fortnightly_Recurrence/Fortnightly_Recurrence.png"
+                                  alt="Bridge"
+                                />
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>
+                                monthly, bi monthly, quarterly, half yearly,
+                                yearly
+                              </th>
+                              <td>1-31</td>
+                              <td>
+                                <img
+                                  src="https://storage.googleapis.com/strapi-assets/latest/Monthly_and_Above_Recurrence/Monthly_and_Above_Recurrence.png"
+                                  alt="Bridge"
+                                />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </Text>
+                    ),
+                  },
+                ]}
+              />
+            </details>
+          </Card>
+          <h6>Sample response</h6>
+          <CodeBlockWithCopy language="json">
+            {`{
     "allowMultipleDebit": false,
     "amount": 1000,
     "amountRule": "max",
@@ -262,77 +298,131 @@ There are 2 ways to create a recurring mandate: **Intent based**, **Collect base
     "transactionNote": "Transaction note",
     "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR"
 }`}
-            </CodeBlockWithCopy>
-            <b>In the above response:</b>
-            <ul>
-                <li>`intentLink` or corresponding qr can be shared directly with customers via a communication channel.</li>
-                <li>`id` is a unique mandate ID that is associated with this mandate and can be used to track it later.</li>
-            </ul>
-            <p>This request to generate a mandate creation intent link / qr is flexible and allows for many use cases. To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#create" target="_blank">here</a>.</p>
-            <ul>
-                <li><b>mandate.initiated</b></li>
-                <li><b>mandate_operation.create.initiated</b></li>
-                <li><b>mandate.live</b> (if mandate creation is successful)</li>
-                <li><b>mandate_operation.create.success</b> (if mandate creation is successful)</li>
-                <li><b>mandate.rejected</b> (if mandate creation fails)</li>
-                <li><b>mandate_operation.create.failed</b> (if mandate creation fails)</li>
-            </ul>
-            <p>Read more about mandate status notifications <a href="/payments/umap/notifications/mandates">here</a> and mandate create operation notifications <a href="/payments/umap/notifications/mandates/create">here</a></p>
-            <p>In addition to the notifications, the merchant can also use <Link href="/payments/umap/mandates/recurring/create#check-mandate-status">check mandate status API</Link> to check if mandate is <b>LIVE</b></p>
-            <p>Please refer to the Document Reference section for checking the API reference and the notifications.</p>
+          </CodeBlockWithCopy>
+          <b>In the above response:</b>
+          <ul>
+            <li>
+              `intentLink` or corresponding qr can be shared directly with
+              customers via a communication channel.
+            </li>
+            <li>
+              `id` is a unique mandate ID that is associated with this mandate
+              and can be used to track it later.
+            </li>
+          </ul>
+          <p>
+            This request to generate a mandate creation intent link / qr is
+            flexible and allows for many use cases. To know more about all the
+            API params, please refer to the API documentation{" "}
+            <a
+              href="/payments/umap/api-reference#/category~mandates/operation~mandates#create"
+              target="_blank"
+            >
+              here
+            </a>
+            .
+          </p>
+          <ul>
+            <li>
+              <b>mandate.initiated</b>
+            </li>
+            <li>
+              <b>mandate_operation.create.initiated</b>
+            </li>
+            <li>
+              <b>mandate.live</b> (if mandate creation is successful)
+            </li>
+            <li>
+              <b>mandate_operation.create.success</b> (if mandate creation is
+              successful)
+            </li>
+            <li>
+              <b>mandate.rejected</b> (if mandate creation fails)
+            </li>
+            <li>
+              <b>mandate_operation.create.failed</b> (if mandate creation fails)
+            </li>
+          </ul>
+          <p>
+            Read more about mandate status notifications{" "}
+            <a href="/payments/umap/notifications/mandates">here</a> and mandate
+            create operation notifications{" "}
+            <a href="/payments/umap/notifications/mandates/create">here</a>
+          </p>
+          <p>
+            In addition to the notifications, the merchant can also use{" "}
+            <Link href="/payments/umap/mandates/recur/create#check-mandate-status">
+              check mandate status API
+            </Link>{" "}
+            to check if mandate is <b>LIVE</b>
+          </p>
+          <p>
+            Please refer to the Document Reference section for checking the API
+            reference and the notifications.
+          </p>
         </Text>
-        ),
+      ),
     },
     {
       key: "tab2",
       label: "Collect based",
       content: (
         <Text>
-            <p>The process for mandate creation is described in the below diagram:</p>
-            <img
-                src="https://storage.googleapis.com/strapi-assets/latest/collect-mandate-creation/collect-mandate-creation.png"
-                alt="Bridge"
-            />
-            <p>The merchant will have to call the <b><i>create mandate API</i></b> with the correct set of parameters.</p>
-            <table>
-                <tbody>
-                    <tr>
-                        <th>Staging host</th>
-                        <td>
-                            <code>https://umap-dev-core.setu.co/api</code>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Method</th>
-                        <td>
-                            <code>POST</code>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Path</th>
-                        <td>
-                            <code>/v1/merchants/mandates</code>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Header</th>
-                        <td>
-                            <code>merchantId</code><br/>
-                            <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
-                            Generate this token using <a
-                                href="/payments/umap/api-integration"
-                                target="_blank">
-                                OAuth
-                            </a>.<br />
-                            <br />
-                            <code>Content-Type</code>—will be <code>application/json</code>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <h6>Sample request</h6>
-            <CodeBlockWithCopy language="json">
-                {`{
+          <p>
+            The process for mandate creation is described in the below diagram:
+          </p>
+          <img
+            src="https://storage.googleapis.com/strapi-assets/latest/collect-mandate-creation/collect-mandate-creation.png"
+            alt="Bridge"
+          />
+          <p>
+            The merchant will have to call the{" "}
+            <b>
+              <i>create mandate API</i>
+            </b>{" "}
+            with the correct set of parameters.
+          </p>
+          <table>
+            <tbody>
+              <tr>
+                <th>Staging host</th>
+                <td>
+                  <code>https://umap-dev-core.setu.co/api</code>
+                </td>
+              </tr>
+              <tr>
+                <th>Method</th>
+                <td>
+                  <code>POST</code>
+                </td>
+              </tr>
+              <tr>
+                <th>Path</th>
+                <td>
+                  <code>/v1/merchants/mandates</code>
+                </td>
+              </tr>
+              <tr>
+                <th>Header</th>
+                <td>
+                  <code>merchantId</code>
+                  <br />
+                  <code>Authorization</code>: Bearer &lt;
+                  <b>insert_token_here</b>&gt;. Generate this token using{" "}
+                  <a href="/payments/umap/api-integration" target="_blank">
+                    OAuth
+                  </a>
+                  .<br />
+                  <br />
+                  <code>Content-Type</code>—will be{" "}
+                  <code>application/json</code>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <h6>Sample request</h6>
+          <CodeBlockWithCopy language="json">
+            {`{
     "allowMultipleDebit": false,
     "amount": 1000,
     "amountRule": "max",
@@ -359,145 +449,171 @@ There are 2 ways to create a recurring mandate: **Intent based**, **Collect base
     "startDate": "02012006",
     "transactionNote": "Transaction note"
 }`}
-            </CodeBlockWithCopy>
-            <p><b>Request body parameter values for creating a collect based recurring mandate</b></p>
-            <table>
-                <tr>
-                    <th>parameter</th>
-                    <th>value</th>
-                </tr>
-                <tr>
-                    <td>creationMode</td>
-                    <td>collect</td>
-                </tr>
-                <tr>
-                    <td>initiationMode</td>
-                    <td>00 if creationMode is collect</td>
-                </tr>
-                <tr>
-                    <td>autoExecute</td>
-                    <td>
-                        <p>If the value of <code>autoExecute</code> and <code>autoPreNotify</code> is <code>false</code> then the merchant is responsible for triggering the pre debit notification and execution in every recurrence cycle.</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td>autoPreNotify</td>
-                    <td>
-                        <p>If the value of <code>autoExecute</code> and <code>autoPreNotify</code> is <code>true</code> then no merchant intervention is needed and UMAP is responsible for triggering the pre debit notification and execution in every recurrence cycle.</p>
-                    </td>
-                </tr>
-            </table>
-            <Card padding="nano" shape="rounded">
-                <details>
-                    <summary>
-                        <Text size="medium" marginBottom="none" paddingRight="medium">Possible values and descriptions of <code>frequency</code>, <code>recurrenceValue</code> and <code>recurrenceRule</code></Text>
-                    </summary>
-                    <Tabs
-                        tabs={[
-                            {
-                                key: "tab1",
-                                label: "as presented",
-                                content:(
-                                    <Text>
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <th>frequency</th>
-                                                    <th>recurrenceValue</th>
-                                                    <th>recurrenceRule</th>
-                                                </tr>
-                                                <tr>
-                                                    <th>as presented</th>
-                                                    <td>0</td>
-                                                    <td>
-                                                        <p>on</p>
-                                                        <p>pre debit notification, execution is triggered as and when the merchant makes pre debit notification / execution API calls to UMAP</p>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </Text>
-                                ),
-                            },
-                            {
-                                key: "tab2",
-                                label: "daily",
-                                content:(
-                                    <Text>
-                                        <table>
-                                            <tbody>
-                                               <tr>
-                                                    <th>frequency</th>
-                                                    <th>recurrenceValue</th>
-                                                    <th>recurrenceRule</th>
-                                                </tr>
-                                                <tr>
-                                                    <th>daily</th>
-                                                    <td>0</td>
-                                                    <td>
-                                                        <p>on</p>
-                                                        <p>once every day</p>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </Text>
-                                ),
-                            },
-                            {
-                                key: "tab3",
-                                label: "periodic",
-                                content:(
-                                    <Text>
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <th>frequency</th>
-                                                    <th>recurrenceValue</th>
-                                                    <th>recurrenceRule</th>
-                                                </tr>
-                                                <tr>
-                                                    <th>weekly</th>
-                                                    <td>1-7</td>
-                                                    <td>
-                                                        <img
-                                                            src="https://storage.googleapis.com/strapi-assets/latest/Weekly_Recurrence/Weekly_Recurrence.png"
-                                                            alt="Bridge"
-                                                        />          
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th>fortnightly</th>
-                                                    <td>1-16</td>
-                                                    <td>
-                                                        <img
-                                                            src="https://storage.googleapis.com/strapi-assets/latest/Fortnightly_Recurrence/Fortnightly_Recurrence.png"
-                                                            alt="Bridge"
-                                                        />          
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th>monthly, bi monthly, quarterly, half yearly, yearly</th>
-                                                    <td>1-31</td>
-                                                    <td>
-                                                        <img
-                                                            src="https://storage.googleapis.com/strapi-assets/latest/Monthly_and_Above_Recurrence/Monthly_and_Above_Recurrence.png"
-                                                            alt="Bridge"
-                                                        />          
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </Text>
-                                ),
-                            }
-                        ]}
-                    />
-                </details>
-            </Card>
-            <h6>Sample response</h6>
-            <CodeBlockWithCopy language="json">
-                {`{
+          </CodeBlockWithCopy>
+          <p>
+            <b>
+              Request body parameter values for creating a collect based
+              recurring mandate
+            </b>
+          </p>
+          <table>
+            <tr>
+              <th>parameter</th>
+              <th>value</th>
+            </tr>
+            <tr>
+              <td>creationMode</td>
+              <td>collect</td>
+            </tr>
+            <tr>
+              <td>initiationMode</td>
+              <td>00 if creationMode is collect</td>
+            </tr>
+            <tr>
+              <td>autoExecute</td>
+              <td>
+                <p>
+                  If the value of <code>autoExecute</code> and{" "}
+                  <code>autoPreNotify</code> is <code>false</code> then the
+                  merchant is responsible for triggering the pre debit
+                  notification and execution in every recurrence cycle.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td>autoPreNotify</td>
+              <td>
+                <p>
+                  If the value of <code>autoExecute</code> and{" "}
+                  <code>autoPreNotify</code> is <code>true</code> then no
+                  merchant intervention is needed and UMAP is responsible for
+                  triggering the pre debit notification and execution in every
+                  recurrence cycle.
+                </p>
+              </td>
+            </tr>
+          </table>
+          <Card padding="nano" shape="rounded">
+            <details>
+              <summary>
+                <Text size="medium" marginBottom="none" paddingRight="medium">
+                  Possible values and descriptions of <code>frequency</code>,{" "}
+                  <code>recurrenceValue</code> and <code>recurrenceRule</code>
+                </Text>
+              </summary>
+              <Tabs
+                tabs={[
+                  {
+                    key: "tab1",
+                    label: "as presented",
+                    content: (
+                      <Text>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <th>frequency</th>
+                              <th>recurrenceValue</th>
+                              <th>recurrenceRule</th>
+                            </tr>
+                            <tr>
+                              <th>as presented</th>
+                              <td>0</td>
+                              <td>
+                                <p>on</p>
+                                <p>
+                                  pre debit notification, execution is triggered
+                                  as and when the merchant makes pre debit
+                                  notification / execution API calls to UMAP
+                                </p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </Text>
+                    ),
+                  },
+                  {
+                    key: "tab2",
+                    label: "daily",
+                    content: (
+                      <Text>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <th>frequency</th>
+                              <th>recurrenceValue</th>
+                              <th>recurrenceRule</th>
+                            </tr>
+                            <tr>
+                              <th>daily</th>
+                              <td>0</td>
+                              <td>
+                                <p>on</p>
+                                <p>once every day</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </Text>
+                    ),
+                  },
+                  {
+                    key: "tab3",
+                    label: "periodic",
+                    content: (
+                      <Text>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <th>frequency</th>
+                              <th>recurrenceValue</th>
+                              <th>recurrenceRule</th>
+                            </tr>
+                            <tr>
+                              <th>weekly</th>
+                              <td>1-7</td>
+                              <td>
+                                <img
+                                  src="https://storage.googleapis.com/strapi-assets/latest/Weekly_Recurrence/Weekly_Recurrence.png"
+                                  alt="Bridge"
+                                />
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>fortnightly</th>
+                              <td>1-16</td>
+                              <td>
+                                <img
+                                  src="https://storage.googleapis.com/strapi-assets/latest/Fortnightly_Recurrence/Fortnightly_Recurrence.png"
+                                  alt="Bridge"
+                                />
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>
+                                monthly, bi monthly, quarterly, half yearly,
+                                yearly
+                              </th>
+                              <td>1-31</td>
+                              <td>
+                                <img
+                                  src="https://storage.googleapis.com/strapi-assets/latest/Monthly_and_Above_Recurrence/Monthly_and_Above_Recurrence.png"
+                                  alt="Bridge"
+                                />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </Text>
+                    ),
+                  },
+                ]}
+              />
+            </details>
+          </Card>
+          <h6>Sample response</h6>
+          <CodeBlockWithCopy language="json">
+            {`{
   "allowMultipleDebit": false,
   "amount": 1000,
   "amountRule": "max",
@@ -529,74 +645,116 @@ There are 2 ways to create a recurring mandate: **Intent based**, **Collect base
   "transactionNote": "Transaction note",
   "txnId": "BTTZrc5gDFkuCr3n3I0ey4aNtzLOLR7K7aR"
 }`}
-            </CodeBlockWithCopy>
-            <b>In the above response:</b>
-            <ul>
-                <li><code>id</code> is a unique mandate ID that is associated with this mandate and can be used to track it later.</li>
-            </ul>
-            <p>This request to trigger mandate creation via collect flow is flexible and allows for many use cases. To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#create" target="_blank">here</a>.</p>
-            <p>Post this, once the customer clicks on the mandate creation notification and enters the mPIN, the merchant will receive a webhook for following events:</p>
-            <ul>
-                <li><b>mandate.live</b> (if mandate creation is successful)</li>
-                <li><b>mandate_operation.create.success</b> (if mandate creation is successful)</li>
-                <li><b>mandate.rejected</b> (if mandate creation fails)</li>
-                <li><b>mandate_operation.create.failed</b> (if mandate creation fails)</li>
-            </ul>
-            <p>Read more about mandate status notifications <a href="/payments/umap/notifications/mandates">here</a> and mandate create operation notifications <a href="/payments/umap/notifications/mandates/create">here</a></p>
-            <p>In addition to the notifications, the merchant can also use <Link href="/payments/umap/mandates/recurring/create#check-mandate-status">check mandate status API</Link> to check if mandate is <b>LIVE</b></p>
-            <p>Please refer to the Document Reference section for checking the API reference and the notifications.</p>
+          </CodeBlockWithCopy>
+          <b>In the above response:</b>
+          <ul>
+            <li>
+              <code>id</code> is a unique mandate ID that is associated with
+              this mandate and can be used to track it later.
+            </li>
+          </ul>
+          <p>
+            This request to trigger mandate creation via collect flow is
+            flexible and allows for many use cases. To know more about all the
+            API params, please refer to the API documentation{" "}
+            <a
+              href="/payments/umap/api-reference#/category~mandates/operation~mandates#create"
+              target="_blank"
+            >
+              here
+            </a>
+            .
+          </p>
+          <p>
+            Post this, once the customer clicks on the mandate creation
+            notification and enters the mPIN, the merchant will receive a
+            webhook for following events:
+          </p>
+          <ul>
+            <li>
+              <b>mandate.live</b> (if mandate creation is successful)
+            </li>
+            <li>
+              <b>mandate_operation.create.success</b> (if mandate creation is
+              successful)
+            </li>
+            <li>
+              <b>mandate.rejected</b> (if mandate creation fails)
+            </li>
+            <li>
+              <b>mandate_operation.create.failed</b> (if mandate creation fails)
+            </li>
+          </ul>
+          <p>
+            Read more about mandate status notifications{" "}
+            <a href="/payments/umap/notifications/mandates">here</a> and mandate
+            create operation notifications{" "}
+            <a href="/payments/umap/notifications/mandates/create">here</a>
+          </p>
+          <p>
+            In addition to the notifications, the merchant can also use{" "}
+            <Link href="/payments/umap/mandates/recur/create#check-mandate-status">
+              check mandate status API
+            </Link>{" "}
+            to check if mandate is <b>LIVE</b>
+          </p>
+          <p>
+            Please refer to the Document Reference section for checking the API
+            reference and the notifications.
+          </p>
         </Text>
       ),
     },
   ]}
 />
 
-<hr class="tertiary"/>
+<hr class="tertiary" />
 
 #### Check mandate status
 
 In addition to the notifications sent by UMAP, Merchant can use this API to check the status of a mandate.
 
 <table>
-    <tbody>
-        <tr>
-            <th>Staging host</th>
-            <td>
-                <code>https://umap-dev-core.setu.co/api</code>
-            </td>
-        </tr>
-        <tr>
-            <th>Method</th>
-            <td>
-                <code>GET</code>
-            </td>
-        </tr>
-        <tr>
-            <th>Path</th>
-            <td>
-                <code>/v1/merchants/mandates/&#123;id&#125;</code>
-            </td>
-        </tr>
-        <tr>
-            <th>Header</th>
-            <td>
-                <code>merchantId</code><br/>
-                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
-                Generate this token using <a
-                    href="/payments/umap/api-integration"
-                    target="_blank">
-                    OAuth
-                </a>.<br />
-                <br />
-                <code>Content-Type</code>—will be <code>application/json</code>
-            </td>
-        </tr>
-    </tbody>
+  <tbody>
+    <tr>
+      <th>Staging host</th>
+      <td>
+        <code>https://umap-dev-core.setu.co/api</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>GET</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Path</th>
+      <td>
+        <code>/v1/merchants/mandates/&#123;id&#125;</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Header</th>
+      <td>
+        <code>merchantId</code>
+        <br />
+        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
+        Generate this token using{" "}
+        <a href="/payments/umap/api-integration" target="_blank">
+          OAuth
+        </a>
+        .<br />
+        <br />
+        <code>Content-Type</code>—will be <code>application/json</code>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 <h6>Sample response</h6>
 <CodeBlockWithCopy language="json">
-{`{
+  {`{
     "allowMultipleDebit": false,
     "amount": 1000,
     "amountRule": "max",
@@ -632,16 +790,31 @@ In addition to the notifications sent by UMAP, Merchant can use this API to chec
 </CodeBlockWithCopy>
 <b>In the above response:</b>
 <ul>
-    <li><code>id</code> is a unique mandate ID that is associated with this mandate and can be used to track it later.</li>
-    <li><code>umn</code> is a unique mandate identifier that is associated with this mandate and is needed for pre debit notification and execution APIs.</li>
+  <li>
+    <code>id</code> is a unique mandate ID that is associated with this mandate
+    and can be used to track it later.
+  </li>
+  <li>
+    <code>umn</code> is a unique mandate identifier that is associated with this
+    mandate and is needed for pre debit notification and execution APIs.
+  </li>
 </ul>
 
-<p>To know more about all the API params, please refer to the API documentation <a href="/payments/umap/api-reference#/category~mandates/operation~mandates#fetchById" target="_blank">here</a>.</p>
+<p>
+  To know more about all the API params, please refer to the API documentation{" "}
+  <a
+    href="/payments/umap/api-reference#/category~mandates/operation~mandates#fetchById"
+    target="_blank"
+  >
+    here
+  </a>
+  .
+</p>
 
 <NextPage
-    info={{
-        description: "Send pre debit notification.  ",
-        slug: "/payments/umap/mandates/recurring/pre-debit-notify",
-        title: "Pre debit notification",
-    }}
+  info={{
+    description: "Send pre debit notification.  ",
+    slug: "/payments/umap/mandates/recur/pre-debit-notify",
+    title: "Pre debit notification",
+  }}
 />
