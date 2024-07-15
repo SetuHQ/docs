@@ -7,42 +7,54 @@ visible_in_sidebar: true
 
 ## Accept UPI payments with Flash
 
-Merchants can offer their customers a seamless payment experience by utilizing UMAP APIs to create payment links. These links can either be directly integrated into their applications or converted into QR codes for easy scanning. Below is a detailed guide on how to implement this process:
+Merchants can offer their customers a seamless payment experience by utilizing UMAP APIs to create UPI intent links. These intent links can either be directly integrated into their applications or converted into QR codes for easy scanning. Below is a detailed guide on how to implement this process:
 
 <hr class="primary" />
 
-### Step 1 - Create payment link
+### Step 1 - Create a QR
 
-In the intent flow, a merchant generates a payment link which can be directly sent to customers, integrated to merchant app or coverted into a QR code which can be scanned by user's UPI app.
+In the QR flow, a merchant generates an intent link which can be directly sent to customers, integrated to merchant app or coverted into a QR code which can be scanned by user's UPI app. You can create two types of QR a Dynamic QR and a Static QR.
+
+- `DQR` — can be paid to only once, this is in cases where a one time session based payment is collected. A dynamic QR provides lot more context about the payment than an Static QR, like the amount, transaction note and metadata
 
 <a
-  href="/payments/umap/api-reference#/category~payment-link/operation~payment-link#create"
+  href="/payments/umap/api-reference#/category~payment-link/operation~dqr#create"
   target="_blank"
 >
-  <code>Generate payment link</code> ↗
+  Generate Dynamic QR ↗
 </a>
+
+- `SQR` — can be paid to multiple times, this is what we usually see printed in every store
+
+<a
+  href="/payments/umap/api-reference#/category~payment-link/operation~sqr#create"
+  target="_blank"
+>
+  Generate Static QR ↗
+</a>
+
 <br />
 
 <hr class="primary" />
 
 ### Step 2 - Wait for customer to initiate transaction
 
-An intent payment is always initiated by a customer. This can happen in two ways
+An intent or QR based payment is always initiated by a customer. This can happen in two ways
 
-- Customer scans a QR code representing the payment link
-- Customer is redirected using payment-link on merchant app
+- Customer scans a QR code representing the UPI intent link
+- Customer is redirected using payment short-link on merchant app
 
 <hr class="primary" />
 
 ### Step 3 - Retrieve payment details
 
-Following the initiation of the transaction, the system retrieves the payment details. This retrieval is based on the payment link ID or a reference number, ensuring you have access to transaction information for confirmation and record-keeping.
+Following the initiation of the transaction, the system retrieves the payment details. This retrieval is based on the Id of the QR resource, ensuring you have access to transaction information for confirmation and record-keeping.
 
 <a
-  href="/payments/umap/api-reference#/category~payment-link/operation~payment-link#fetchById"
+  href="/payments/umap/api-reference#/category~payments/operation~payments#fetchLastByProductInstanceId"
   target="_blank"
 >
-  <code>Retrieve payment details</code> ↗
+  Retrieve payment details ↗
 </a>
 
 <hr class="primary" />
@@ -58,9 +70,9 @@ Following the initiation of the transaction, the system retrieves the payment de
 
 <NextPage
   info={{
-    description: "Create intent link",
-    slug: "/payments/umap/payments/flash/create-payment-link",
-    title: "Start accepting UPI payments with Intent QR",
+    description: "Create dynamic QR",
+    slug: "/payments/umap/payments/flash/create-dqr",
+    title: "Start accepting UPI payments with DQR",
   }}
 />
 
