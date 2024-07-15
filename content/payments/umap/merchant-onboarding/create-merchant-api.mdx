@@ -1,11 +1,11 @@
 ---
-sidebar_title: Create merchant
-page_title: UMAP - Merchant on-boarding - Create merchant
+sidebar_title: Setup a merchant
+page_title: UMAP - Merchant on-boarding - Setup merchant
 order: 1
 visible_in_sidebar: true
 ---
 
-## Create merchant
+## Setting up a merchant (Aggregator)
 
 <Callout type="warning">
   The merchant on-boarding APIs are only relevant for an aggregator. If you are
@@ -26,18 +26,14 @@ visible_in_sidebar: true
 
 <br />
 
-You can use the following API, to on-board merchants in UMAP, by providing required business details for merchants and your `aggregatorID`.
+You can use the following API, to on-board merchants in UMAP, by providing required business details for merchants and your `aggregatorAccountId`. The `aggregatorAccountId` will be shared with you as part of the aggregator on-boarding process.
 
-<Callout type="tip">
-  For merchants acquired directly, <code>aggregatorID</code> can be accessed
-  from Bridge.
-</Callout>
 <br />
 
 <table>
   <tbody>
     <tr>
-      <th>Staging host</th>
+      <th>Host</th>
       <td>
         <code>https://umap.setu.co/api</code>
       </td>
@@ -57,13 +53,13 @@ You can use the following API, to on-board merchants in UMAP, by providing requi
     <tr>
       <th>Header</th>
       <td>
-        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
-        
+        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;
         {" "}
+        <br />
         <a href="/payments/umap/api-integration" target="_blank">
-          Generate an access token
+          Generate an access token ↗
         </a>{" "}
-        .<br />
+        <br />
         <br />
         <code>Content-Type</code>—will be <code>application/json</code>
       </td>
@@ -75,7 +71,7 @@ You can use the following API, to on-board merchants in UMAP, by providing requi
           href="/payments/umap/api-reference#/category~merchant/operation~merchant#createMerchantWrapper"
           target="_self"
         >
-          Create merchant ↗
+          Setup a merchant ↗
         </a>
       </td>
     </tr>
@@ -84,77 +80,113 @@ You can use the following API, to on-board merchants in UMAP, by providing requi
 
 <hr class="primary" />
 
-#### Sample request
 
-<CodeBlockWithCopy language="json">
-  {`{
-    "acceptDeemedTxns": true,
-    "standardAccountId": "328a928f-e277-4798-8e28-4b19a61a8a22"
+<Tabs
+   tabs={[
+         {
+            key: "1",
+            label: "Request body",
+            content: (
+               <>
+                  <Text>The request payload shown below is the bare minimum that needs to be passed inorder to create a merchant on our platform</Text>
+                  <CodeBlockWithCopy language="json">
+{`{
     "aggregatorAccountId": "328a928f-e277-4798-8e28-4b19a61a8a23",
     "businessName": "Setu",
-    "businessType": "PUBLIC",
     "franchiseName": "Setu",
-    "genre": "ONLINE",
     "legalName": "BrokenTusk Technologies Pvt Ltd",
-    "mcc": "5432",
-    "merchantType": "large",
-    "onboardingType": "aggregator",
+    "businessType": "PUBLIC",
+    "genre": "ONLINE",
+    "mcc": "5432"
+}`}
+                </CodeBlockWithCopy>
+                <br/>
+                <Callout type="warning">
+                    The <code>standardAccountId</code> parameter is optional and it is used to group merchants under a single organisation, when <code>standardAccountId</code> is not passed, the merchant is created under a new organisation.
+                </Callout>
+                <br/>
+                <Text>These are some optional parameters that you can pass along in the request payload, which will overrides the default behavior</Text>
+                <CodeBlockWithCopy language="json">
+{`{
+    "standardAccountId": "328a928f-e277-4798-8e28-4b19a61a8a22"
+    
+    "merchantType": "small", // default is large
+    "onboardingType": "bank", // default is aggregator
+    "acceptDeemedTxns": true, // default is false
     "paymentModes": [
-        "savings",
-        "lite",
-        "erupi",
-        "rupay_cc"
-    ],
+        "savings"
+    ], // defaults to aggregator.paymentModes
     "products": [
-      "autopay",
-      "pay_singe_tpv",
-      "pay_multi",
-      "pay_single"
-    ],
+      "autopay"
+    ], // defaults to aggregator.products
     "vpaHandles": [
         "pineaxis"
-      ]
+    ] // defaults to aggregator.vpaHandles
 }`}
-</CodeBlockWithCopy>
-
-#### Sample response
-
-<CodeBlockWithCopy language="json">
-  {`{
+                  </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "Response body",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
   "acceptDeemedTxns": true,
-  "addressProviderId": "1237800298651584417",
   "businessName": "Setu",
   "businessType": "PROPRIETARY",
   "callbackURLsEnabled": true,
   "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
-  "documentStatus": "APPROVED",
   "franchiseName": "Setu",
   "genre": "ONLINE",
   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
   "legalName": "BrokenTusk Technologies Pvt Ltd",
   "mcc": "5432",
-  "merchantType": "large",
-  "onboardingType": "aggregator",
+  "merchantType": "small",
+  "onboardingType": "bank",
   "paId": "1237799847336085408",
   "paymentModes": [
-    "savings",
-    "lite",
-    "erupi",
-    "rupay_cc"
+    "savings"
   ],
   "products": [
-    "autopay",
-    "pay_singe_tpv",
-    "pay_multi",
-    "pay_single"
+    "autopay"
   ],
    "vpaHandles": [
     "pineaxis"
   ],
-  "standardAccountId": "328a928f-e277-4798-8e28-4b19a61a8a22"
-  "transactionStatus": "active"
+  "standardAccountId": "328a928f-e277-4798-8e28-4b19a61a8a22",
+  "aggregatorAccountId": "328a928f-e277-4798-8e28-4b19a61a8a23"
 }`}
-</CodeBlockWithCopy>
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "3",
+            label: "cURL request",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="bash">
+{`curl --location 'https://umap.setu.co/api/v1/aggregators/merchants' \
+--header 'Authorization: Bearer <access_token>' \
+--header 'Content-Type: application/json' \
+--data '{
+    "aggregatorAccountId": "328a928f-e277-4798-8e28-4b19a61a8a23",
+    "businessName": "Setu",
+    "franchiseName": "Setu",
+    "legalName": "BrokenTusk Technologies Pvt Ltd",
+    "businessType": "PUBLIC",
+    "genre": "ONLINE",
+    "mcc": "5432"
+}'`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         }
+   ]}
+/>
 
 <NextPage
   info={{

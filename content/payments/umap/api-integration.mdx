@@ -7,7 +7,7 @@ visible_in_sidebar: true
 
 ## API integration guide
 
-Once you get the `clientID` and `secret` from Setu, use them to generate tokens to authorise all API requests.
+A `clientID` and `secret` together is called an **API key**. An **API key** can be used to access resources on one deployment environment specifically, either `Test` or `Live`, but not both. Once you get the `clientID` and `secret` from Setu, use them to generate tokens to authorise all API requests. 
 
 <hr class="primary" />
 
@@ -48,26 +48,60 @@ An API to generate access tokens, which are used to authorise any other API requ
 
 <br />
 
-**Request body**
 
-<CodeBlockWithCopy language="json">
-    {`{
+<Tabs
+   tabs={[
+         {
+            key: "1",
+            label: "Request body",
+            content: (
+               <>
+                  <CodeBlockWithCopy language="json">
+{`{
   "clientID": "client_id",
   "secret": "client_secret",
   "grant_type": "client_credentials"
 }`}
-</CodeBlockWithCopy>
-
-**Response**
-
-<CodeBlockWithCopy language="json">
-    {`{
+                  </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "Response body",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdG9rZW4iOiJhY2Nlc3NfdG9rZW4iLCJyZWZyZXNoX3Rva2VuIjoic3RyaW5nIn0.HfoWXjOPViPG0BWnZ7ZGahD9UXacsjl9vrYXVIHOcW8"
 }`}
-</CodeBlockWithCopy>
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "3",
+            label: "cURL request",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="bash">
+{`curl --location 'https://accountservice.setu.co/v1/users/login' \
+--header 'client: bridge' \
+--header 'Content-Type: application/json' \
+--data '{
+    "clientID": "client_id",
+    "secret": "client_secret",
+    "grant_type": "client_credentials"
+}'`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         }
+   ]}
+/>
 
 <Callout type="tip">
-    💡 The <code>access_token</code> is valid for 5 minutes.
+    💡 The <code>access_token</code> is valid for <code>300s</code>. The <code>access_token</code> can be <code>reused</code> any number of times within its expiry, so it is advised to cache the token. 
 </Callout>
 
 <br/>
