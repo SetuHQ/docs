@@ -1,21 +1,11 @@
 ---
-sidebar_title: Quickstart
+sidebar_title: Name Match Quickstart
 page_title: Name Match API quickstart
-order: 1
+order: 2
 visible_in_sidebar: true
 ---
 
 ##  Name Match V1 API Quickstart
-
-### Name Match overview
-
-A Name Match API in KYC verification ensures accurate identity verification, detects errors and variations in names, and prevents identity fraud. 
-It helps financial institutions comply with regulatory requirements like AML, enhances customer trust, and improves the efficiency and reliability of the verification process.
-
-### What is Setu Name Match API?
-
-The Setu Name Match API utilizes name-matching algorithms to accurately recognize variations of similar names from multiple sources. 
-This allows organizations to make informed decisions on whether to accept or reject users during the onboarding process.
 
 ### How is Setu Name Match API designed?
 The Setu Name Match API employs multiple backend algorithms to account for a wide range of name and identity variations commonly found in financial services. 
@@ -23,7 +13,7 @@ The API provides both optimistic and pessimistic match percentages for a given i
 
 #### What is the difference between optimistic and pessimistic results?
 We provide two results, an optimistic and pessimistic one, in order to allow the user to choose which result to use based on their risk policy. In the optimistic result, cases such as missing first/middle/last name, mis-spelt/out of order names are not penalised heavily. 
-In the pessimistic output, these scenarios are penalised more heavily, leading to lower match percentages/types. However, it is not necessary for optimistic and pessimistic results to always be different, as highlighted in the examples below.
+In the pessimistic output, these scenarios are penalised more heavily, leading to lower match percentages/types. However, it is not necessary for optimistic and pessimistic results to always be different.
 
 ### Steps to integrate
 
@@ -50,7 +40,7 @@ The URLs you would need for this API—
 
 ### Create Name Match Request
 
-Call this API to perform name match on two name inputs. The request params are
+Call this API to perform name match on two name inputs.
 
 <Row>
   <Portion desktopSpan="whole">
@@ -71,8 +61,8 @@ Call this API to perform name match on two name inputs. The request params are
                 {`POST /api/match/v1/name 
  
 payload= { 
-    "name1": "Rakesh Kumar Singh",
-    "name2": "Rakesh Kumar Singh"
+    "name1": "Rakesh Kumar Singh", // special characters and numbers are not allowed, except for . ' -
+    "name2": "Rakesh Kumar Singh"  // name length should not exceed 100 characters
  } `}
               </CodeBlockWithCopy>
               <hr className="tertiary" />
@@ -141,6 +131,102 @@ payload= {
             </>
           ),
         },
+        {
+          key: "2",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">FAIL</Badge>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/match/v1/name 
+ 
+payload= { 
+    "name1": "",
+    "name2": "Rakesh Kumar Singh"
+ } `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "bad_request",
+        "detail": "Name cannot be empty",
+        "traceId": "1-6696385a-3b4b39794498f35f0a1b4504"
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">FAIL</Badge>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/match/v1/name 
+ 
+payload= { 
+    "name1": "<Name with length greater than 100 characters>",
+    "name2": "<Name with length greater than 100 characters>"
+ } `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "bad_request",
+        "detail": "Name cannot be more than 100 characters",
+        "traceId": "1-669638da-3eae0fb323a7e58032192248"
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">FAIL</Badge>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/match/v1/name 
+ 
+payload= { 
+    "name1": "Chandra Kumar K 123",
+    "name2": "Chandra@Kumar K Sharma"
+ } `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "bad_request",
+        "detail": "Name cannot contain numbers or special characters",
+        "traceId": "1-66963916-70aabc357b88b8400776f24a"
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        }
       ]}
     ></Tabs>
   </Portion>
