@@ -1,11 +1,11 @@
 ---
-sidebar_title: Create and assign VPA
-page_title: UMAP - Merchant on-boarding - Create VPA API
+sidebar_title: Registering VPA
+page_title: UMAP - Merchant on-boarding - Registering a VPA
 order: 3
 visible_in_sidebar: true
 ---
 
-## Create and assign VPA
+## Registering a VPA
 
 <Callout type="warning">
   The merchant on-boarding APIs are only relevant for an aggregator. If you are
@@ -31,7 +31,7 @@ This API can be used to assign a VPA to a merchant, which will serve as the merc
 <table>
   <tbody>
     <tr>
-      <th>Staging host</th>
+      <th>Host</th>
       <td>
         <code>https://umap.setu.co/api</code>
       </td>
@@ -53,16 +53,13 @@ This API can be used to assign a VPA to a merchant, which will serve as the merc
       <td>
         <code>merchantId</code>
         <br />
-        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
-        Generate this token using{" "}
-        <a href="/payments/upi-deeplinks/resources/oauth" target="_blank">
-          OAuth
+        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;
+        {" "}
+        <br />
+        <a href="/payments/umap/api-integration" target="_blank">
+          Generate an access token ↗
         </a>{" "}
-        or{" "}
-        <a href="/payments/upi-deeplinks/resources/jwt" target="_blank">
-          JWT
-        </a>
-        .<br />
+        <br />
         <br />
         <code>Content-Type</code>—will be <code>application/json</code>
       </td>
@@ -83,27 +80,62 @@ This API can be used to assign a VPA to a merchant, which will serve as the merc
 
 <hr class="primary" />
 
-#### Sample request
 
-<CodeBlockWithCopy language="json">
-  {`{
-    "merchantReferenceId": "1240689979139556557",
+<Tabs
+   tabs={[
+         {
+            key: "1",
+            label: "Request body",
+            content: (
+               <>
+                  <Text><code>vpa</code> is the only parameter which is required to register a VPA for a merchant, if it is available, it will be registered and assigned against the merchant whose id is passed in the <code>merchantId</code> header.</Text>
+                  <CodeBlockWithCopy language="json">
+{`{
+    "referenceId": "1240689979139556557",
     "vpa": "fastestupi@pineaxis"
 }`}
-</CodeBlockWithCopy>
-
-#### Sample response
-
-<CodeBlockWithCopy language="json">
-  {`{
-  "addressProvider": "Axis",
+                  </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "Response body",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
   "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  "merchantReferenceId": "1240689979139556557",
+  "referenceId": "1240689979139556557",
   "status": "active",
-  "vpa": "fastestupi@pineaxis"
+  "vpa": "fastestupi@pineaxis",
+  "verificationStatus": "verified"
 }`}
-</CodeBlockWithCopy>
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "3",
+            label: "cURL request",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="bash">
+{`curl --location 'https://umap.setu.co/api/v1/merchants/vpas' \
+--header 'Authorization: Bearer <access_token>' \
+--header 'merchantId: <merchant_id>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "vpa": "merchant@pineaxis",
+    "referenceId": "test"
+}'`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         }
+   ]}
+/>
 
 <WasPageHelpful />

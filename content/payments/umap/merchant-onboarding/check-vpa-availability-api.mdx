@@ -5,7 +5,7 @@ order: 2
 visible_in_sidebar: true
 ---
 
-## Check availability of VPA
+## Check availability of a VPA
 
 <Callout type="warning">
   The merchant on-boarding APIs are only relevant for an aggregator. If you are
@@ -55,16 +55,13 @@ Use the following API to check if it is already associated with another merchant
       <td>
         <code>merchantId</code>
         <br />
-        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
-        Generate this token using{" "}
-        <a href="/payments/upi-deeplinks/resources/oauth" target="_blank">
-          OAuth
+        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;
+        {" "}
+        <br />
+        <a href="/payments/umap/api-integration" target="_blank">
+          Generate an access token ↗
         </a>{" "}
-        or{" "}
-        <a href="/payments/upi-deeplinks/resources/jwt" target="_blank">
-          JWT
-        </a>
-        .<br />
+        <br />
         <br />
         <code>Content-Type</code>—will be <code>application/json</code>
       </td>
@@ -85,22 +82,58 @@ Use the following API to check if it is already associated with another merchant
 
 <hr class="primary" />
 
-#### Sample request
 
-<CodeBlockWithCopy language="json">
-  {`{
+
+<Tabs
+   tabs={[
+         {
+            key: "1",
+            label: "Request body",
+            content: (
+               <>
+                  <CodeBlockWithCopy language="json">
+{`{
     "vpa": "fastestupi@pineaxis"
 }`}
-</CodeBlockWithCopy>
-
-#### Sample response
-
-<CodeBlockWithCopy language="json">
-  {`{
-  "available": true,
-  "status": "available"
+                  </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "Response body",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
+  "availabilityStatus": "available",
+  "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vpa": "fastestupi@pineaxis"
 }`}
-</CodeBlockWithCopy>
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "3",
+            label: "cURL request",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="bash">
+{`curl --request POST \
+  --url https://umap.setu.co/api/v1/merchants/vpas/availability \
+  --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
+  --header 'content-type: application/json' \
+  --header 'merchantId: 01ARZ3NDEKTSV4RRFFQ69G5FAV' \
+  --data '{
+    "vpa": "fastestupi@pineaxis"
+}'`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         }
+   ]}
+/>
 
 <NextPage
   info={{
