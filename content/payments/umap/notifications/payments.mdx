@@ -5,25 +5,56 @@ order: 1
 visible_in_sidebar: true
 ---
 
-## Notifications and alerts for payments
+## Payment notification
 
+<<<<<<< HEAD
 Any UPI Setu product relies on creating and presenting payment request to a customer. Setu’s UPI Setu stack provides consistent and transparent payment statuses for a merchant, to be able to track the life-cycle of a payment request. These statuses are shown in the diagram below.
 
+=======
+Most of the products on our platform end up creating a payment event when a customer interacts with it from a Payer PSP. We provide consistent and transparent payment statuses for a merchant, to be able to track the life-cycle of a payment request. These statuses are shown in the diagram below.
+>>>>>>> f12d6bd (umap: content update for payments)
 <img
   src="https://storage.googleapis.com/strapi-assets/latest/Frame_72/Frame_72.png"
   alt="Bridge"
 />
 
+<<<<<<< HEAD
 | **Payment statuses** | **Description**                                  |
 | -------------------- | ------------------------------------------------ |
 | `payment.initiated`  | Payment has been attempted by a customer         |
 | `payment.ending`     | Payment is currently being processed by UPI Setu |
 | `payment.success`    | Payment has been successfully completed          |
 | `payment.failed`     | Payment could not be processed                   |
+=======
+
+<table>
+    <tr>
+        <th><strong>Payment status</strong></th>
+        <th><strong>Description</strong></th>
+    </tr>
+    <tr>
+        <td><code>payment.initiated</code></td>
+        <td>Payment has been attempted by a customer — when a customer tries to make a payment by scanning a QR or clicking on a shortlink and entering his UPI pin on a Payer PSP </td>
+    </tr>
+    <tr>
+        <td><code>payment.pending</code></td>
+        <td>Payment is currently being processed — when the UPI network takes a while to process the payment or when the beneficiary bank is down</td>
+    </tr>
+    <tr>
+        <td><code>payment.success</code></td>
+        <td>Payment has been successfully completed — when all participants involved in the payment have acknowledged and accepted the payment</td>
+    </tr>
+    <tr>
+        <td><code>payment.failed</code></td>
+        <td>Payment could not be processed, you can find more about why it failed with the <code>reason</code> object in the notification payload</td>
+    </tr>
+</table>
+>>>>>>> f12d6bd (umap: content update for payments)
 
 <br />
 
 <Callout type="warning">
+<<<<<<< HEAD
   The order of the payment notifications cannot be guaranteed. For example, a
   client might receive a <code>payment.success</code> notification before a{" "}
   <code>payment.initiated</code> is sent.
@@ -45,6 +76,26 @@ Any UPI Setu product relies on creating and presenting payment request to a cust
 
 For TPV, these are the additional attributes in the notification spec -
 
+=======
+    The order of the payment notifications cannot be guaranteed. For example, a client might receive a <code>payment.success</code> notification before a <code>payment.initiated</code> is sent.
+    <br/>
+    <br/>
+    For the same <strong>payment transaction</strong> the <code>txnId</code> value will always be the same, you can use this to correlate different events to a unique payment
+</Callout>
+
+<hr class="primary"/>
+
+Payment events are common for products like `sqr`, `dqr`, `tpv`, `collect` and `autopay`, any product which is intended to collect funds from a customer will result in a payment event on customer interaction.
+
+While most of the attributes in the notificiation payload are the same for all products, there are some that are conditional.
+
+- `productInstanceType` - depends on the product type, allowed values — `collect`, `pay_single`, `pay_multi`, `pay_single_tpv`, `autopay`
+
+- `txnType` - all intent based payments will be of type `pay`, the rest will be `collect`
+
+- `tpv` — conditional, this object is populated only when the productInstanceType is `pay_single_tpv`
+
+>>>>>>> f12d6bd (umap: content update for payments)
 <CodeBlockWithCopy language="json">
   {`{
    // Payment context
@@ -67,7 +118,10 @@ For TPV, these are the additional attributes in the notification spec -
 }`}
 </CodeBlockWithCopy>
 
+<br/>
+
 <Tabs
+<<<<<<< HEAD
   tabs={[
     {
       key: "1",
@@ -83,10 +137,23 @@ For TPV, these are the additional attributes in the notification spec -
    // Resource
    "resource": "payment",
    "status": "initiated",
+=======
+   tabs={[
+         {
+            key: "1",
+            label: "payment.initiated",
+            content: (
+               <>
+                  <Text>A <code>payment.initiated</code> event is raised when a customer tries to make a payment to an intent link or QR either by clicking on a shortlink or by scanning the QR code</Text>
+                  <CodeBlockWithCopy language="json">
+{`{
+>>>>>>> f12d6bd (umap: content update for payments)
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
    "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
    "eventType": "payment.initiated",
+   "resource": "payment",
+   "status": "initiated",   
    // Payment context
    "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "productInstanceType": "<TYPE>", // collect | pay_single | pay_multi | pay_single_tpv | autopay
@@ -106,20 +173,8 @@ For TPV, these are the additional attributes in the notification spec -
    "merchantVpa": "deku20231030@pineaxis",
    "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
-   //  TPV attributes
-   “tpv”: {
-      "sourceAccounts": [
-         {
-            "ifsc": "HDFC00123",
-            "accountNumber": "**** **** **** 1234",
-            "accountName": "M*N* T*O*M*A*S",
-         }
-      ],
-      "customerAccount": {},
-   }
-   // Reason
-   "reason": {} // sample mentioned above
 }`}
+<<<<<<< HEAD
           </CodeBlockWithCopy>
         </>
       ),
@@ -137,15 +192,28 @@ For TPV, these are the additional attributes in the notification spec -
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
+=======
+                  </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "payment.pending",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
+>>>>>>> f12d6bd (umap: content update for payments)
    // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "eventTs": "2023-09-04T12:08:20+0530",
    "eventType": "payment.pending",
    "resource": "payment",
    "status": "pending",
    // Payment context
    "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "productInstanceType": "<type>", // collect | pay_single | pay_multi | pay_single_tpv | autopay
+   "productInstanceType": "<type>", 
    // References
    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
@@ -155,9 +223,9 @@ For TPV, these are the additional attributes in the notification spec -
    // mandate reference (in case of mandate related payment)
    "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
    // Payment attributes
-   "txnType": "pay", // collect | pay
+   "txnType": "pay",
    // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
-   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "rrn": "124068997913",
    "txnNote": "testpay",
    "amount": 1000,
@@ -165,24 +233,8 @@ For TPV, these are the additional attributes in the notification spec -
    "merchantVpa": "deku20231030@pineaxis",
    "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
-   //  TPV attributes
-   “tpv”: {
-      "sourceAccounts": [
-         {
-            "ifsc": "HDFC00123",
-            "accountNumber": "**** **** **** 1234",
-            "accountName": "M*N* T*O*M*A*S",
-         }
-      ],
-      "customerAccount": {
-         "ifsc": "HDFC00123",
-         "accountNumber": "**** **** **** 1234",
-         "accountName": "M*N* T*O*M*A*S",
-      },
-   }
-   // Reason
-   "reason": {} // sample mentioned above
 }`}
+<<<<<<< HEAD
           </CodeBlockWithCopy>
         </>
       ),
@@ -198,15 +250,28 @@ For TPV, these are the additional attributes in the notification spec -
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
+=======
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "3",
+            label: "payment.success",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
+>>>>>>> f12d6bd (umap: content update for payments)
    // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST",
    "eventType": "payment.success",
    "resource": "payment",
    "status": "success",
    // Payment context
    "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "productInstanceType": "<type>", // collect | pay_single | pay_multi | pay_single_tpv | autopay
+   "productInstanceType": "<type>",
    // References
    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
@@ -216,9 +281,9 @@ For TPV, these are the additional attributes in the notification spec -
    // mandate reference (in case of mandate related payment)
    "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
    // Payment attributes
-   "txnType": "pay", // collect | pay
+   "txnType": "pay",
    // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
-   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "rrn": "124068997913",
    "txnNote": "testpay",
    "amount": 1000,
@@ -227,23 +292,9 @@ For TPV, these are the additional attributes in the notification spec -
    "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
    //  TPV attributes
-   “tpv”: {
-      "sourceAccounts": [
-         {
-            "ifsc": "HDFC00123",
-            "accountNumber": "**** **** **** 1234",
-            "accountName": "M*N* T*O*M*A*S",
-         }
-      ],
-      "customerAccount": {
-         "ifsc": "HDFC00123",
-         "accountNumber": "**** **** **** 1234",
-         "accountName": "M*N* T*O*M*A*S",
-      },
-   }
-   // Reason
-   "reason": {} // sample mentioned above
+   “tpv”: {}   
 }`}
+<<<<<<< HEAD
           </CodeBlockWithCopy>
         </>
       ),
@@ -259,15 +310,29 @@ For TPV, these are the additional attributes in the notification spec -
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
+=======
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "4",
+            label: "payment.failed",
+            content: (
+               <>
+                     <Text>A <code>payment.failed</code> event is raised when a payment is rejected, the reason for rejection is populated in the <code>reason</code> object</Text>
+                     <CodeBlockWithCopy language="json">
+{`{
+>>>>>>> f12d6bd (umap: content update for payments)
    // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST",
    "eventType": "payment.failed",
    "resource": "payment",
    "status": "failed",
    // Payment context
    "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "productInstanceType": "<type>", // collect | pay_single | pay_multi | pay_single_tpv | autopay
+   "productInstanceType": "<type>",
    // References
    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
@@ -277,9 +342,9 @@ For TPV, these are the additional attributes in the notification spec -
    // mandate reference (in case of mandate related payment)
    "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
    // Payment attributes
-   "txnType": "pay", // collect | pay
+   "txnType": "pay",
    // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
-   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "rrn": "124068997913",
    "txnNote": "testpay",
    "amount": 1000,
@@ -288,22 +353,17 @@ For TPV, these are the additional attributes in the notification spec -
    "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
    //  TPV attributes
-   “tpv”: {
-      "sourceAccounts": [
-         {
-            "ifsc": "HDFC00123",
-            "accountNumber": "**** **** **** 1234",
-            "accountName": "M*N* T*O*M*A*S",
-         }
-      ],
-      "customerAccount": {
-            "ifsc": "HDFC00123",
-            "accountNumber": "**** **** **** 3456",
-            "accountName": "S*A* N*O*T*A*L",
-         },
-   }
+   “tpv”: {},
    // Reason
-   "reason": {} // sample mentioned above
+   "reason": {
+      "code": "payment-failed",
+      "desc": "payment failed",
+      "npciErrCategory": "TD",
+      "npciErrCode": "U28",
+      "npciErrDesc": "REMITTER BANK NOT AVAILABLE",
+      "setuDescription": "The customer's bank is unavailable.",
+      "suggestedAction": "Inform the customer and suggest trying again later or using a different bank or payment method."
+   }
 }`}
           </CodeBlockWithCopy>
         </>
