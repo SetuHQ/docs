@@ -1,0 +1,246 @@
+---
+sidebar_title: Static QR
+page_title: UMAP payments - Create Static QR
+order: 1
+visible_in_sidebar: true
+---
+
+## Create a static QR
+
+<p>
+  The merchant will have to call the{" "}
+  <b>
+    <i>create sqr API</i>
+  </b>{" "}
+  with the correct set of parameters.
+</p>
+
+<table>
+  <tbody>
+    <tr>
+      <th>Host</th>
+      <td>
+        <code>https://umap.setu.co/api</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>POST</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Path</th>
+      <td>
+        <code>/v1/merchants/sqr</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Header</th>
+      <td>
+        <code>merchantId</code>
+        <br />
+        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;
+        {" "}
+        <br />
+        <a href="/payments/umap/api-integration" target="_blank">
+          Generate an access token ↗
+        </a>{" "}
+        <br />
+        <br />
+        <code>Content-Type</code>—will be <code>application/json</code>
+      </td>
+    </tr>
+    <tr>
+      <th>API reference</th>
+      <td>
+        <a
+          href="/payments/umap/api-reference#/category~payment-link/operation~sqr#create"
+          target="_blank"
+        >
+          Create a static QR ↗
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<br/>
+<br/>
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Request payload",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "merchantVpa": "fastestupi@pineaxis",
+  "expiryDate": "2023-09-04T12:08:20+0530",
+  "referenceId": "1240689979139556557",
+  "metadata": {
+      "InvoiceNumber": "INV-21-12-009"
+  },
+  "transactionNote": "testpay"
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Response payload",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "createdAt": "2023-09-04T12:08:20+0530",
+    "expiryDate": "2023-09-04T12:08:20+0530",
+    "intentLink": "upi://pay?pa=test-auto-pgruosncak@okokax...",
+    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "referenceId": "1240689979139556557",
+    "merchantVpa": "fastestupi@pineaxis",
+    "metadata": {
+        "InvoiceNumber": "INV-21-12-009",
+    }
+    "refId": "1240689979139556558",
+    "shortLink": "upipay.setu.co/Np3KnBCM8Om0",
+    "status": "active",
+    "transactionNote": "testpay"
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+  ]}
+/>
+
+<hr class="primary" />
+
+## Fetch sqr by id (check status)
+
+<Callout type="tip">
+  This API fetches status of the payment-link itself, not the payment done using
+  it{" "}
+</Callout>
+<br />
+<p>
+  The merchant can also get the payment link status by payment link id by
+  calling{" "}
+  <b>
+    <i>fetch sqr by id API</i>
+  </b>{" "}
+  which can be used for debugging or knowing if payment link is active, inactive
+  or expired.
+</p>
+<br />
+<table>
+  <tbody>
+    <tr>
+      <th>Host</th>
+      <td>
+        <code>https://umap.setu.co/api</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>GET</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Path</th>
+      <td>
+        <code>/v1/merchants/sqr/&#123;id&#125;</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Header</th>
+      <td>
+        <code>merchantId</code>
+        <br />
+        <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;
+        {" "}
+        <br />
+        <a href="/payments/umap/api-integration" target="_blank">
+          Generate an access token ↗
+        </a>{" "}
+        <br />
+        <br />
+        <code>Content-Type</code>—will be <code>application/json</code>
+      </td>
+    </tr>
+    <tr>
+      <th>API reference</th>
+      <td>
+        <a
+          href="/payments/umap/api-reference#/category~payment-link/operation~sqr#fetchById"
+          target="_blank"
+        >
+          Fetch dqr by id ↗
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="primary" />
+
+<Tabs
+   tabs={[
+         {
+            key: "1",
+            label: "Response body",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
+  "expiryDate": "2023-09-04T12:08:20+0530",
+  "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "intentLink": "upi://pay?pa=test-auto-pgruosncak@pineaxis&pn=merchant-4&am=100.00&tr=SU1240659756905923780&tn=sample%20single%20use%20qr&cu=INR&mc=1234",
+  "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "merchantReferenceId": "1240689979139556557",
+  "merchantVpa": "fastestupi@pineaxis",
+  "metadata": {
+    "InvoiceNumber": "INV-21-12-009"
+  },
+  "refId": "1240689979139556558",
+  "shortLink": "upipay.setu.co/Np3KnBCM8Om0",
+  "status": "active",
+  "transactionNote": "testpay",
+  "createdAt": "2023-09-04 12:08:20.202644 +0530 IST"
+}`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "cURL request",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="bash">
+{`curl --request GET \
+  --url https://umap-uat-core.setu.co/api/v1/merchants/sqr/01ARZ3NDEKTSV4RRFFQ69G5FAV \
+  --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
+  --header 'merchantId: 01ARZ3NDEKTSV4RRFFQ69G5FAV'`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         }
+   ]}
+/>
+
+
+<NextPage
+  info={{
+    description: "Check payment status associated with the QR",
+    slug: "/payments/umap/payments/flash/check-status",
+    title: "Fetch payment details",
+  }}
+/>
+
+<WasPageHelpful />
