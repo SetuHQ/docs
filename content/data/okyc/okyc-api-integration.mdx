@@ -1,6 +1,6 @@
 ---
-sidebar_title: OKYC API Integration
-page_title: Offline Aadhar API integration
+sidebar_title: OKYC
+page_title: OKYC API integration
 order: 3
 visible_in_sidebar: true
 ---
@@ -11,20 +11,20 @@ Setu’s API solution can be used to complete a customer’s KYC with offline Aa
 
 The following APIs are required for enabling this flow—
 
--   **Create OKYC request**—Create OKYC request for your customer. You will get a unique `id` in the response which can be used to track this particular request.
--   **Initiate OKYC Request**—Initialise the OKYC request for your customer with the previously returned request `id` and receive a `base64` encoded `captchaImage` from Setu. Once you have called this API, you can redirect your customer to your OKYC screens, to collect Aadhaar number and captcha from your customer.
--   **Verify OKYC Request**—Share the `aadhaarNumber` and `captchaCode`, collected from your customer, with Setu. Next, redirect your customer to a screen to collect OTP sent to your customer’s Aadhaar linked mobile number. Also request your customer to enter a 4 digit share code—this is the code that will be used to unlock you customer’s fetch Aadhaar XML file.
--   **Complete OKYC Request**—Share the collected `otp` and `shareCode` to complete verification process. Next, you can call the **Get OKYC request status** API. Once the OKYC request has been processed successfully you will get customer details from the Aadhaar and the XML file link in the response.
--   **Get OKYC request status**—Get status of customer verification by providing the request `id` and optionally, the `shareCode`.
+- **Create OKYC request**—Create OKYC request for your customer. You will get a unique `id` in the response which can be used to track this particular request.
+- **Initiate OKYC Request**—Initialise the OKYC request for your customer with the previously returned request `id` and receive a `base64` encoded `captchaImage` from Setu. Once you have called this API, you can redirect your customer to your OKYC screens, to collect Aadhaar number and captcha from your customer.
+- **Verify OKYC Request**—Share the `aadhaarNumber` and `captchaCode`, collected from your customer, with Setu. Next, redirect your customer to a screen to collect OTP sent to your customer’s Aadhaar linked mobile number. Also request your customer to enter a 4 digit share code—this is the code that will be used to unlock you customer’s fetch Aadhaar XML file.
+- **Complete OKYC Request**—Share the collected `otp` and `shareCode` to complete verification process. Next, you can call the **Get OKYC request status** API. Once the OKYC request has been processed successfully you will get customer details from the Aadhaar and the XML file link in the response.
+- **Get OKYC request status**—Get status of customer verification by providing the request `id` and optionally, the `shareCode`.
 
 Additionally, here is the information you would need for calling these APIs—
 
--   Sandbox URL—`https://dg-sandbox.setu.co`
--   Production URL—`https://dg.setu.co`
--   Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
-    -   `x-client-id`
-    -   `x-client-secret`
-    -   `x-product-instance-id`
+- Sandbox URL—`https://dg-sandbox.setu.co`
+- Production URL—`https://dg.setu.co`
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+  - `x-product-instance-id`
 
 <hr class="primary" />
 
@@ -33,73 +33,70 @@ Additionally, here is the information you would need for calling these APIs—
 Call this API to create a unique request to get your customer started on the OKYC journey.
 
 <Row>
-    <Portion desktopSpan="whole">
-        <Tabs
-            tabs={[
-                {
-                    key: "1",
-                    label: "201",
-                    content: (
-                        <>
-                            <p>
-                                <Badge type="success">SUCCESS</Badge> Your
-                                request has been processed successfully and a
-                                new OKYC request has been created.
-                            </p>
-                            <hr className="tertiary" />
-                            <h5>Request</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`POST /api/okyc/ `}
-                            </CodeBlockWithCopy>
-                            <hr className="tertiary" />
-                            <h5>Response</h5>
-                            <p>
-                                Use the request <code>id</code> in this response
-                                for all subsequent API calls.
-                            </p>
-                            <CodeBlockWithCopy language="json">
-                                {`{  
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "201",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Your request has been
+                processed successfully and a new OKYC request has been created.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                Use the request <code>id</code> in this response for all
+                subsequent API calls.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{  
   "id": "7097e53a-ba29-48a2-983d-878433b4f33e", 
   "validUpto": "2024-07-22T10:02:33+05:30", 
   "status": "incomplete" 
 }  `}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-                {
-                    key: "2",
-                    label: "500",
-                    content: (
-                        <>
-                            <p>
-                                <Badge type="failure">
-                                    INTERNAL SERVER ERROR
-                                </Badge>{" "}
-                                Setu has failed to process your request due to
-                                some error in code or an unreachable database;
-                                or because authentication services are down.
-                            </p>
-                            <hr className="tertiary" />
-                            <h5>Request</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`POST /api/okyc/ `}
-                            </CodeBlockWithCopy>
-                            <hr className="tertiary" />
-                            <h5>Response</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`{  
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "500",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">INTERNAL SERVER ERROR</Badge> Setu has
+                failed to process your request due to some error in code or an
+                unreachable database; or because authentication services are
+                down.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/okyc/ `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{  
   "code": "internal_server_error", 
   "detail": "Internal Server Error", 
   "traceId": "" // unique identifier for this error   
 }  `}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-            ]}
-        ></Tabs>
-    </Portion>
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    ></Tabs>
+  </Portion>
 </Row>
 
 <hr class="primary" />
@@ -258,13 +255,13 @@ This also means that the Aadhaar number provided with this request id is already
 
 Call this API once you have collected the following details from your customer—
 
--   `aadhaarNumber` —This is not saved/stored by Setu, but is passed on to UIDAI to initiate sending an OTP to your customer’s Aadhaar linked mobile number.
--   `captchaCode`—An encoded captcha image is provided to you by Setu, as received from UIDAI, in the **_Initiate OKYC request_** API response. You would need to convert this to an image and display it to your customer, wherein they would enter the text associated with the captcha. A correct captcha response is expected to proceed to the next API call.
+- `aadhaarNumber` —This is not saved/stored by Setu, but is passed on to UIDAI to initiate sending an OTP to your customer’s Aadhaar linked mobile number.
+- `captchaCode`—An encoded captcha image is provided to you by Setu, as received from UIDAI, in the **_Initiate OKYC request_** API response. You would need to convert this to an image and display it to your customer, wherein they would enter the text associated with the captcha. A correct captcha response is expected to proceed to the next API call.
 
 <Callout type="tip">
-    For testing this API on Sandbox, use 999999990019 as the Aadhaar number for
-    success. Any other value for Aadhaar will be considered invalid. Use 2GAD0
-    for valid captcha and any other value for invalid.
+  For testing this API on Sandbox, use 999999990019 as the Aadhaar number for
+  success. Any other value for Aadhaar will be considered invalid. Use 2GAD0 for
+  valid captcha and any other value for invalid.
 </Callout>
 
 <Row>
@@ -436,31 +433,31 @@ Call this API once you have collected the following details from your customer�
 
 Call this API once you have collected the following details from your customer—
 
--   `otp` —This should be filled in by the customer, who would have received an OTP from UIDAI, on their Aadhaar linked mobile number.
--   `shareCode` is a 4 digit pin set by the customer and serves as the password to unlock the contents of the XML file at a later stage.
--   `aadhaarNumber` —This is not saved/stored by Setu, but is passed on to UIDAI to verify OTP.
+- `otp` —This should be filled in by the customer, who would have received an OTP from UIDAI, on their Aadhaar linked mobile number.
+- `shareCode` is a 4 digit pin set by the customer and serves as the password to unlock the contents of the XML file at a later stage.
+- `aadhaarNumber` —This is not saved/stored by Setu, but is passed on to UIDAI to verify OTP.
 
 <Callout type="tip">
-    Before calling the API, you may want to save the <code>shareCode</code> on
-    your end, as Setu will not store it and will simply pass on the value you
-    provide to UIDAI.
+  Before calling the API, you may want to save the <code>shareCode</code> on
+  your end, as Setu will not store it and will simply pass on the value you
+  provide to UIDAI.
 </Callout>
 
 <hr class="tertiary" />
 
 This API returns the unwrapped Aadhaar response, as well as a link to the XML, if the `otp` is correct. If `otp` is incorrect, the OKYC `status` remains `incomplete`. To test for different scenarios, use the following `otp` values on Sandbox—
 
--   Use 123456 for a valid OTP.
--   Use 123457 for OTP to mimic 1st failed attempt.
--   Use 123458 for OTP to mimic 2nd failed attempt.
--   Use 123459 for OTP to mimic failed attempts limit exceeded.
--   Anything aside from these values returns an error description as a generic “error”, if the upstream service returns an error.
+- Use 123456 for a valid OTP.
+- Use 123457 for OTP to mimic 1st failed attempt.
+- Use 123458 for OTP to mimic 2nd failed attempt.
+- Use 123459 for OTP to mimic failed attempts limit exceeded.
+- Anything aside from these values returns an error description as a generic “error”, if the upstream service returns an error.
 
 You may use any 4 digit value for the `shareCode`, when testing on Sandbox.
 
 <Callout type="warning">
-    Note that the error description will always be “Invalid OTP”. We are working
-    on more appropriate descriptions, and will release them soon.
+  Note that the error description will always be “Invalid OTP”. We are working
+  on more appropriate descriptions, and will release them soon.
 </Callout>
 
 <Row>
@@ -651,30 +648,30 @@ Call this API to view status of an OKYC journey that you initiated with a custom
 
 When the `status` of the OKYC request `id` is `complete`, this API returns—
 
--   Aadhaar details in json, if a correct `shareCode` is passed.
--   An error, if an incorrect `shareCode` is passed.
--   A link to the zip/xml aadhaar details, if no `shareCode` is passed.
+- Aadhaar details in json, if a correct `shareCode` is passed.
+- An error, if an incorrect `shareCode` is passed.
+- A link to the zip/xml aadhaar details, if no `shareCode` is passed.
 
 <Callout type="warning">
-    If the request <code>status</code> is <code>incomplete</code>, call the{" "}
-    <strong>Complete OKYC request</strong> API with a correct <code>otp</code>{" "}
-    input to mark request <code>status</code> as <code>complete</code>.
+  If the request <code>status</code> is <code>incomplete</code>, call the{" "}
+  <strong>Complete OKYC request</strong> API with a correct <code>otp</code>{" "}
+  input to mark request <code>status</code> as <code>complete</code>.
 </Callout>
 
 <br />
 
 <Callout type="tip">
-    You can call this API whenever you need to check for the <code>status</code>{" "}
-    associated with a particular request <code>id</code>.
+  You can call this API whenever you need to check for the <code>status</code>{" "}
+  associated with a particular request <code>id</code>.
 </Callout>
 
 <br />
 
 Possible values for `status`, received as part of the response—
 
--   When `complete`, KYC is complete for a customer. If you provide a `shareCode` in the API request, you will get all customer details from the Aadhaar XML file.
--   When `incomplete`, you can check for KYC completion after some time.
--   In case the request has `expired`, your will get a `404` error code.
+- When `complete`, KYC is complete for a customer. If you provide a `shareCode` in the API request, you will get all customer details from the Aadhaar XML file.
+- When `incomplete`, you can check for KYC completion after some time.
+- In case the request has `expired`, your will get a `404` error code.
 
 <Row>
   <Portion desktopSpan="whole">
