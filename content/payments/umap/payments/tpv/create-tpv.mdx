@@ -5,7 +5,12 @@ order: 1
 visible_in_sidebar: true
 ---
 
-## Create TPV
+When it comes to a TPV QR, these are the APIs that are available for a merchant to manage its lifecyle
+- <a href="/payments/umap/api-reference#/category~tpv/operation~tpv#createTPV"target="_blank">Create TPV QR ↗</a>
+- <a href="/payments/umap/api-reference#/category~tpv/operation~tpv#fetchTPV"target="_blank">Fetch TPV QR ↗</a>
+- <a href="/payments/umap/api-reference#/category~tpv/operation~tpv#expireTPV"target="_blank">Expire TPV QR ↗</a>
+
+## Create TPV QR
 
 The merchant generates a payment link. This unique link serves as the gateway for customers to initiate intent transactions via their Third-Party Application Provider (TPAP).
 
@@ -13,7 +18,7 @@ The merchant generates a payment link. This unique link serves as the gateway fo
 <table>
     <tbody>
         <tr>
-            <th>Staging host</th>
+            <th>Host</th>
             <td>
                 <code>https://umap.setu.co/api</code>
             </td>
@@ -33,17 +38,15 @@ The merchant generates a payment link. This unique link serves as the gateway fo
         <tr>
             <th>Header</th>
             <td>
-                <code>merchantId</code><br/>
-                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
-                Generate this token using <a
-                    href="/payments/upi-deeplinks/resources/oauth"
-                    target="_blank">
-                    OAuth
-                </a> or <a
-                    href="/payments/upi-deeplinks/resources/jwt"
-                    target="_blank">
-                    JWT
-                </a>.<br />
+                <code>merchantId</code>
+                <br />
+                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;
+                {" "}
+                <br />
+                <a href="/payments/umap/api-integration" target="_blank">
+                Generate an access token ↗
+                </a>{" "}
+                <br />
                 <br />
                 <code>Content-Type</code>—will be <code>application/json</code>
             </td>
@@ -52,19 +55,48 @@ The merchant generates a payment link. This unique link serves as the gateway fo
             <th>API reference</th>
             <td>
                 <a href="/payments/umap/api-reference#/category~tpv/operation~tpv#createTPV"target="_blank">
-                    Create TPV API ↗
+                    Create TPV QR ↗
                 </a>
             </td>
         </tr>
     </tbody>
 </table>
 
-###### Sample request
+<hr class="primary" />
 
-<CodeBlockWithCopy language="json">
-    {`{
-    "amount": 100,
-    "createdAt": "2023-09-04 12:08:20.202644 +0530 IST",
+Bank account details passed in the request payload are not stored in plain text to keep them safe. So you would see a combination of encrypted, masked and hashed account numbers in the response payload.
+
+### Error codes
+
+<table>
+    <tr>
+        <th><strong>Error code</strong></th>
+        <th><strong>HTTP code</strong></th>
+        <th><strong>Description</strong></th>
+    </tr>
+    <tr>
+        <td><code>invalid-min-amount</code></td>
+        <td><code>400</code></td>
+        <td>When both amount and minAmount fields are present in the request payload, the amount value should be greater than minAmount value</td>
+    </tr>
+    <tr>
+        <td><code>merchant-inactive</code></td>
+        <td><code>400</code></td>
+        <td>When the merchant identified by the merchant id passed in the header is inactive (transaction_status = inactive)</td>
+    </tr>
+</table>
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Request payload",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{
+    "amount": 10000,
+    "createdAt": "2023-09-04T12:08:20+0530",
     "expireAfter": 10,
     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
     "merchantReferenceId": "1240689979139556556",
@@ -73,97 +105,97 @@ The merchant generates a payment link. This unique link serves as the gateway fo
     "minAmount": 100,
     "primaryAccount": {
         "IFSC": "SBIN0000001",
-        "accountName": "deku",
+        "accountName": "ram",
         "accountNumber": "1234567890"
     },
-    "productConfigId": "1240689979139556556",
     "secondaryAccounts": [
         {
             "IFSC": "SBIN0000001",
-            "accountName": "deku",
-            "accountNumber": "1234567890"
-        },
-        {
-            "IFSC": "SBIN0000001",
-            "accountName": "deku",
+            "accountName": "shyam",
             "accountNumber": "1234567890"
         }
     ],
     "transactionNote": "test transaction"
 }`}
-</CodeBlockWithCopy>
-
-<Element as="ul">
-    <li><code>productConfigId</code> is an optional field.</li>
-</Element>
-
-###### Sample response
-
-<CodeBlockWithCopy language="json">
-    {`{
-  "amount": 100,
+          </CodeBlockWithCopy>
+          <Text>Both amount and minAmount fields are optional, these fields when passed in the request change the behavior of how they are rendered on a Payer PSP</Text>
+          <Element as="ul">
+            <li>
+              <strong>When only <code>amount</code> is passed</strong> — the amount passed in the request will be displayed on the payment page of the Payer PSP, but customer will not be allowed to choose any amount
+            </li>
+            <li>
+              <strong>When only <code>minAmount</code> is passed</strong> - the customer will be allowed to choose the amount to pay, it should be more than the minimum amount
+            </li>
+            <li>
+              <strong>When both <code>amount</code> and <code>minAmount</code> are passed</strong> - the amount passed in the request payload is displayed in the payment page of the Payer PSP, and the customer will be allowed to choose the payment amount
+            </li>
+          </Element>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Response payload",
+      content: (
+        <>          
+          <CodeBlockWithCopy language="json">
+            {`{
+  "amount": 10000,
+  "createdAt": "2024-05-17T19:17:32+05:30",
   "expireAfter": 10,
   "id": "1240689979139556556",
-  "intentLink": "upi://pay?pa=abc@setu&pn=abc&tn=abc&am=100",
+  "intentLink": "upi://pay?pa=test-auto-pgruosncak@pineaxis&pn=merchant-4&am=100.00&tr=SU1240659756905923780&tn=sample%20single%20use%20qr&cu=INR&mc=1234",
   "merchantId": "1240689979139556556",
-  "merchantReferenceId": "1240689979139556556",
-  "metadata": "test",
+  "merchantVpa": "fastestupi@pineaxis",
+  "metadata": {
+    "InvoiceNumber": "INV-21-12-009"
+  },
   "minAmount": 100,
   "primaryAccount": {
     "IFSC": "SBIN0000001",
-    "accountName": "deku",
+    "encryptedAccountName": "5e884898da28047151d0e56f8dc629277",
     "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
+    "hashedAccountName": "5e884898da28047151d0e56f8dc629277",
     "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
+    "maskedAccountName": "R*M*E*S*",
     "maskedAccountNumber": "**** **** **** 7890"
   },
-  "productConfigId": "1240689979139556556",
+  "qrCode": "",
+  "refId": "1240689979139556558",
+  "referenceId": "1240689979139556556",
+  "requestId": "cjqml1f2e5ocq2mesej0",
   "secondaryAccounts": [
     {
       "IFSC": "SBIN0000001",
-      "accountName": "deku",
+      "encryptedAccountName": "5e884898da28047151d0e56f8dc629277",
       "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
+      "hashedAccountName": "5e884898da28047151d0e56f8dc629277",
       "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "maskedAccountNumber": "**** **** **** 7890"
-    },
-    {
-      "IFSC": "SBIN0000001",
-      "accountName": "deku",
-      "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "maskedAccountNumber": "**** **** **** 7890"
-    },
-    {
-      "IFSC": "SBIN0000001",
-      "accountName": "deku",
-      "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "maskedAccountNumber": "**** **** **** 7890"
-    },
-    {
-      "IFSC": "SBIN0000001",
-      "accountName": "deku",
-      "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
+      "maskedAccountName": "R*M*E*S*",
       "maskedAccountNumber": "**** **** **** 7890"
     }
   ],
-  "shortCode": "abc",
-  "shortLink": "https://pay.setu.co/abc",
+  "shortLink": "upipay.setu.co/Np3KnBCM8Om0",
+  "status": "active",
   "transactionNote": "test transaction"
 }`}
-</CodeBlockWithCopy>
-
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+  ]}
+/>
 
 <hr class="primary" />
 
-## Check TPV Status
+## Fetch TPV QR by id
 
-Following the initiation of the transaction, the system retrieves the payment details. This retrieval is based on the payment link ID or a reference number, ensuring you have access to transaction information for confirmation and record-keeping.
+Following the initiation of the transaction, the system retrieves the payment details. This retrieval is based on the resource id, ensuring you have access to transaction information for confirmation and record-keeping.
 
 <table>
     <tbody>
         <tr>
-            <th>Staging host</th>
+            <th>Host</th>
             <td>
                 <code>https://umap.setu.co/api</code>
             </td>
@@ -183,17 +215,15 @@ Following the initiation of the transaction, the system retrieves the payment de
         <tr>
             <th>Header</th>
             <td>
-                <code>merchantId</code><br/>
-                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;.
-                Generate this token using <a
-                    href="/payments/upi-deeplinks/resources/oauth"
-                    target="_blank">
-                    OAuth
-                </a> or <a
-                    href="/payments/upi-deeplinks/resources/jwt"
-                    target="_blank">
-                    JWT
-                </a>.<br />
+                <code>merchantId</code>
+                <br />
+                <code>Authorization</code>: Bearer &lt;<b>insert_token_here</b>&gt;
+                {" "}
+                <br />
+                <a href="/payments/umap/api-integration" target="_blank">
+                Generate an access token ↗
+                </a>{" "}
+                <br />
                 <br />
                 <code>Content-Type</code>—will be <code>application/json</code>
             </td>
@@ -202,61 +232,103 @@ Following the initiation of the transaction, the system retrieves the payment de
             <th>API reference</th>
             <td>
                 <a href="/payments/umap/api-reference#/category~tpv/operation~tpv#fetchTPV"target="_blank">
-                    Check TPV Status ↗
+                    Fetch TPV QR ↗
                 </a>
             </td>
         </tr>
     </tbody>
 </table>
 
-###### Sample response
+<br/>
 
-<CodeBlockWithCopy language="json">
-    {`{
-  "amount": 100,
+### Error codes
+
+<table>
+    <tr>
+        <th><strong>Error code</strong></th>
+        <th><strong>HTTP code</strong></th>
+        <th><strong>Description</strong></th>
+    </tr>
+    <tr>
+        <td><code>tpv-not-found</code></td>
+        <td><code>404</code></td>
+        <td>Failed to fetch tpv by it resource id. Check if the resource id and the merchant id shared in the request URL are the right ones</td>
+    </tr>
+    <tr>
+        <td><code>merchant-inactive</code></td>
+        <td><code>400</code></td>
+        <td>When the merchant identified by the merchant id passed in the header is inactive (transaction_status = inactive)</td>
+    </tr>
+</table>
+
+<br/>
+
+<Tabs
+   tabs={[
+         {
+            key: "1",
+            label: "Response body",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
+  "amount": 10000,
+  "createdAt": "2024-05-17T19:17:32+05:30",
   "expireAfter": 10,
   "id": "1240689979139556556",
-  "intentLink": "upi://pay?pa=abc@setu&pn=abc&tn=abc&am=100",
+  "intentLink": "upi://pay?pa=test-auto-pgruosncak@pineaxis&pn=merchant-4&am=100.00&tr=SU1240659756905923780&tn=sample%20single%20use%20qr&cu=INR&mc=1234",
   "merchantId": "1240689979139556556",
-  "merchantReferenceId": "1240689979139556556",
-  "metadata": "test",
+  "merchantVpa": "fastestupi@pineaxis",
+  "metadata": {
+    "InvoiceNumber": "INV-21-12-009"
+  },
   "minAmount": 100,
+  "paymentDetails": {
+    "customerAccountType": "SAVINGS",
+    "customerVpa": "test-auto-tyvmm59i9b@pineaxis",
+    "paymentId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "paymentStatus": "success",
+    "rrn": "124068997913",
+    "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI"
+  },
   "primaryAccount": {
     "IFSC": "SBIN0000001",
-    "accountName": "deku",
+    "encryptedAccountName": "5e884898da28047151d0e56f8dc629277",
     "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
+    "hashedAccountName": "5e884898da28047151d0e56f8dc629277",
     "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
+    "maskedAccountName": "R*M*E*S*",
     "maskedAccountNumber": "**** **** **** 7890"
   },
-  "productConfigId": "1240689979139556556",
+  "refId": "1240689979139556558",
+  "referenceId": "1240689979139556556",
+  "requestId": "cjqml1f2e5ocq2mesej0",
   "secondaryAccounts": [
-    {
-      "IFSC": "SBIN0000001",
-      "accountName": "deku",
-      "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "maskedAccountNumber": "**** **** **** 7890"
-    },
-    {
-      "IFSC": "SBIN0000001",
-      "accountName": "deku",
-      "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "maskedAccountNumber": "**** **** **** 7890"
-    },
-    {
-      "IFSC": "SBIN0000001",
-      "accountName": "deku",
-      "encryptedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "hashedAccountNumber": "5e884898da28047151d0e56f8dc629277",
-      "maskedAccountNumber": "**** **** **** 7890"
-    }
   ],
-  "shortCode": "abc",
-  "shortLink": "https://pay.setu.co/abc",
+  "shortLink": "upipay.setu.co/Np3KnBCM8Om0",
+  "status": "paid",
   "transactionNote": "test transaction"
 }`}
-</CodeBlockWithCopy>
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "cURL request",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="bash">
+{`curl --request GET \
+  --url https://umap.setu.co/api/v1/merchants/tpv/1240689979139556556 \
+  --header 'Authorization: Bearer REPLACE_BEARER_TOKEN' \
+  --header 'merchantId: 1240689979139556556'`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         }
+   ]}
+/>
 
 <hr class="primary" />
 

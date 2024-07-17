@@ -1,0 +1,277 @@
+---
+sidebar_title: Payments
+page_title: UMAP - Notifications and alerts - Payments
+order: 1
+visible_in_sidebar: true
+---
+
+## Lifecyle and events
+
+### QR flow
+
+A QR starts off its lifecycle by being in an `active` state when it is successfully created by a merchant using the  `Create TPV QR` API. 
+- The QR moves to a `paid` terminal state if a payment is accepted
+- If a payment is rejected, the payment is recorded as a `failure`, but nothing happens to the QR, it will remain in an `active` state
+- If a QR expires, it moves to a `closed` terminal state
+
+<br/>
+<table>
+    <tr>
+        <th><strong>Status</strong></th>
+        <th><strong>Description</strong></th>
+    </tr>
+    <tr>
+        <td><code>active</code></td>
+        <td>The QR is active and the customer can still scan and make a payment</td>
+    </tr>
+    <tr>
+        <td><code>paid</code></td>
+        <td>A payment is accepted successfully on the QR and no new payment will be accepted on the QR. The details about the successful payment can be found in the <code>paymentDetails</code> object</td>
+    </tr>
+    <tr>
+        <td><code>closed</code></td>
+        <td>The QR has expired, payments will not be accepted if a customer tries to pay</td>
+    </tr>
+</table>
+
+<br/>
+
+Sample paymentDetails object—
+<CodeBlockWithCopy language="json">
+{`{
+      "paymentDetails": {
+         "customerAccountType": "SAVINGS",
+         "customerVpa": "ram@icici",
+         "paymentId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "paymentStatus": "success",
+         "rrn": "124068997913",
+         "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI"
+      }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary"/>
+
+### Payment notification flow
+
+<Callout type="tip">
+<ul>
+   <li>Every payment has a unique <code>txnId</code></li>
+   <li>Every time a customer tries to make a payment, a <code>payment.initiated</code> notification is sent to the merchant followed by a success or failure</li>
+   <li>A <code>payment.success</code> notification will be sent only once, but <code>payment.failure</code> notifications can happen every time a customer tries to make a payment and fails</li>   
+</ul>
+</Callout>
+
+<br/>
+
+<table>
+    <tr>
+        <th><strong>Payment status</strong></th>
+        <th><strong>Description</strong></th>
+    </tr>
+    <tr>
+        <td><code>payment.initiated</code></td>
+        <td>Payment has been attempted by a customer — when a customer tries to make a payment by scanning a QR or clicking on a shortlink and entering his UPI pin on a Payer PSP </td>
+    </tr>
+    <tr>
+        <td><code>payment.pending</code></td>
+        <td>Payment is currently being processed — when the UPI network takes a while to process the payment or when the beneficiary bank is down</td>
+    </tr>
+    <tr>
+        <td><code>payment.success</code></td>
+        <td>Payment has been successfully completed — when all participants involved in the payment have acknowledged and accepted the payment</td>
+    </tr>
+    <tr>
+        <td><code>payment.failed</code></td>
+        <td>Payment could not be processed, you can find more about why it failed with the <code>reason</code> object in the notification payload</td>
+    </tr>
+</table>
+
+<br/>
+
+<Callout type="warning">
+    The order of the payment notifications cannot be guaranteed. For example, a client might receive a <code>payment.success</code> notification before a <code>payment.initiated</code> is sent.
+    <br/>
+    <br/>
+    For the same <strong>payment transaction</strong> the <code>txnId</code> value will always be the same, you can use this to correlate different events to a unique payment
+</Callout>
+
+<br/>
+
+Sample TPV object in the notification payload—
+<CodeBlockWithCopy language="json">
+{`{
+   //  TPV attributes
+   “tpv”: {
+      "sourceAccounts": [
+         {
+            "ifsc": "HDFC00123",
+            "accountNumber": "**** **** **** 1234",
+            "accountName": "M*N* T*O*M*A*S",
+         }
+      ],
+      "customerAccount": {
+         "ifsc": "HDFC00123",
+         "accountNumber": "**** **** **** 1234",
+         "accountName": "M*N* T*O*M*A*S",
+      }
+   }
+}`}
+</CodeBlockWithCopy>
+
+<br/>
+
+<Tabs
+   tabs={[
+         {
+            key: "1",
+            label: "payment.initiated",
+            content: (
+               <>
+                  <Text>A <code>payment.initiated</code> event is raised when a customer tries to make a payment to an intent link or QR either by clicking on a shortlink or by scanning the QR code</Text>
+                  <CodeBlockWithCopy language="json">
+{`{
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
+   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
+   "txnTs": "2023-09-04T12:08:20+0530",
+   "eventType": "payment.initiated",
+   "resource": "payment",
+   "status": "initiated",   
+   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "pay_single_tpv",
+   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+   "txnType": "pay",
+   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
+   "rrn": "124068997913",
+   "txnNote": "testpay",
+   "amount": 1000,
+   "currency": "INR",
+   "merchantVpa": "fastestupi@pineaxis",
+   "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
+   "customerAccountType": "CREDIT", // SAVINGS, CREDIT,...
+   "bin": "652926" // Populated only when the customerAccountType is CREDIT
+}`}
+                  </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "2",
+            label: "payment.pending",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "eventTs": "2023-09-04T12:08:20+0530",
+   "txnTs": "2023-09-04T12:08:20+0530",
+   "eventType": "payment.pending",
+   "resource": "payment",
+   "status": "pending",
+   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "pay_single_tpv",
+   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+   "txnType": "pay",
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "rrn": "124068997913",
+   "txnNote": "testpay",
+   "amount": 1000,
+   "currency": "INR",
+   "merchantVpa": "fastestupi@pineaxis",
+   "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
+   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   "tpv": {},
+   "reason": {}
+}`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "3",
+            label: "payment.success",
+            content: (
+               <>
+                     <CodeBlockWithCopy language="json">
+{`{
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "eventTs": "2023-09-04T12:08:20+0530",
+   "txnTs": "2023-09-04T12:08:20+0530",
+   "eventType": "payment.success",
+   "resource": "payment",
+   "status": "success",
+   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "pay_single_tpv",
+   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+   "txnType": "pay",
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "rrn": "124068997913",
+   "txnNote": "testpay",
+   "amount": 1000,
+   "currency": "INR",
+   "merchantVpa": "fastestupi@pineaxis",
+   "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
+   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   “tpv”: {},
+   "reason": {}
+}`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+         {
+            key: "4",
+            label: "payment.failed",
+            content: (
+               <>
+                     <Text>A <code>payment.failed</code> event is raised when a payment is rejected, the reason for rejection is populated in the <code>reason</code> object</Text>
+                     <CodeBlockWithCopy language="json">
+{`{
+   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "eventTs": "2023-09-04T12:08:20+0530",
+   "txnTs": "2023-09-04T12:08:20+0530",
+   "eventType": "payment.failed",
+   "resource": "payment",
+   "status": "failed",
+   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "pay_single_tpv",
+   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
+   "txnType": "pay",
+   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "rrn": "124068997913",
+   "txnNote": "testpay",
+   "amount": 1000,
+   "currency": "INR",
+   "merchantVpa": "fastestupi@pineaxis",
+   "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
+   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   “tpv”: {},
+   // Reason
+   "reason": {
+      "code": "payment-failed",
+      "desc": "payment failed",
+      "npciErrCategory": "TD",
+      "npciErrCode": "U28",
+      "npciErrDesc": "REMITTER BANK NOT AVAILABLE",
+      "setuDescription": "The customer's bank is unavailable.",
+      "suggestedAction": "Inform the customer and suggest trying again later or using a different bank or payment method."
+   }
+}`}
+                     </CodeBlockWithCopy>
+               </>
+            ),
+         },
+   ]}
+/>
