@@ -48,11 +48,13 @@ Most of the products on our platform end up creating a payment event when a cust
 
 <hr class="primary"/>
 
-Payment events are common for products like `sqr`, `dqr`, `tpv`, `collect` and `autopay`, any product which is intended to collect funds from a customer will result in a payment event on customer interaction.
+Payment events are common for products like `sqr`, `dqr`, `tpv` and `collect`, any product which is intended to collect funds from a customer will result in a payment event on customer interaction.
 
 While most of the attributes in the notificiation payload are the same for all products, there are some that are conditional.
 
-- `productInstanceType` - depends on the product type, allowed values — `collect`, `pay_single`, `pay_multi`, `pay_single_tpv`, `autopay`
+- `productInstanceType` - depends on the product type, allowed values — `collect`, `pay_single`, `pay_multi` and `pay_single_tpv`
+
+- `bin` — when the `customerAccountType` is `CREDIT`
 
 - `txnType` - all intent based payments will be of type `pay`, the rest will be `collect`
 
@@ -94,14 +96,14 @@ While most of the attributes in the notificiation payload are the same for all p
 {`{
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST", // Timestamp associated with the event
+   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
+   "txnTs": "2023-09-04T12:08:20+0530",
    "eventType": "payment.initiated",
    "resource": "payment",
    "status": "initiated",   
    // Payment context
    "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "productInstanceType": "<TYPE>", // collect | pay_single | pay_multi | pay_single_tpv | autopay
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "productInstanceType": "<TYPE>", // collect | pay_single | pay_multi | pay_single_tpv
    // References
    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    // Payment attributes
@@ -114,9 +116,10 @@ While most of the attributes in the notificiation payload are the same for all p
    "txnNote": "testpay",
    "amount": 1000,
    "currency": "INR",
-   "merchantVpa": "deku20231030@pineaxis",
+   "merchantVpa": "fastestupi@pineaxis",
    "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   "bin": "652926"
 }`}
                   </CodeBlockWithCopy>
                </>
@@ -132,6 +135,7 @@ While most of the attributes in the notificiation payload are the same for all p
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "eventTs": "2023-09-04T12:08:20+0530",
+   "txnTs": "2023-09-04T12:08:20+0530",
    "eventType": "payment.pending",
    "resource": "payment",
    "status": "pending",
@@ -140,7 +144,7 @@ While most of the attributes in the notificiation payload are the same for all p
    "productInstanceType": "<type>", 
    // References
    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    // Payment references
    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
@@ -154,9 +158,11 @@ While most of the attributes in the notificiation payload are the same for all p
    "txnNote": "testpay",
    "amount": 1000,
    "currency": "INR",
-   "merchantVpa": "deku20231030@pineaxis",
+   "merchantVpa": "fastestupi@pineaxis",
    "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   "bin": "652926",
+   "reason": {}
 }`}
                      </CodeBlockWithCopy>
                </>
@@ -171,7 +177,8 @@ While most of the attributes in the notificiation payload are the same for all p
 {`{
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST",
+   "eventTs": "2023-09-04T12:08:20+0530",
+   "txnTs": "2023-09-04T12:08:20+0530",
    "eventType": "payment.success",
    "resource": "payment",
    "status": "success",
@@ -180,7 +187,7 @@ While most of the attributes in the notificiation payload are the same for all p
    "productInstanceType": "<type>",
    // References
    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    // Payment references
    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
@@ -194,11 +201,13 @@ While most of the attributes in the notificiation payload are the same for all p
    "txnNote": "testpay",
    "amount": 1000,
    "currency": "INR",
-   "merchantVpa": "deku20231030@pineaxis",
+   "merchantVpa": "fastestupi@pineaxis",
    "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   "bin": "652926",
    //  TPV attributes
-   “tpv”: {}   
+   “tpv”: {},
+   "reason": {}
 }`}
                      </CodeBlockWithCopy>
                </>
@@ -214,7 +223,8 @@ While most of the attributes in the notificiation payload are the same for all p
 {`{
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "eventTs": "2023-09-04 12:08:20.202644 +0530 IST",
+   "eventTs": "2023-09-04T12:08:20+0530",
+   "txnTs": "2023-09-04T12:08:20+0530",
    "eventType": "payment.failed",
    "resource": "payment",
    "status": "failed",
@@ -223,7 +233,7 @@ While most of the attributes in the notificiation payload are the same for all p
    "productInstanceType": "<type>",
    // References
    "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    // Payment references
    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
@@ -237,9 +247,10 @@ While most of the attributes in the notificiation payload are the same for all p
    "txnNote": "testpay",
    "amount": 1000,
    "currency": "INR",
-   "merchantVpa": "deku20231030@pineaxis",
+   "merchantVpa": "fastestupi@pineaxis",
    "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
+   "bin": "652926",
    //  TPV attributes
    “tpv”: {},
    // Reason
