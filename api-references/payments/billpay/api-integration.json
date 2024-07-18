@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "COU API",
+    "title": "Setu COU API",
     "version": "2.0.0"
   },
   "servers": [
@@ -10,6 +10,316 @@
     }
   ],
   "paths": {
+    "/bbps/bills/fetch/request": {
+      "post": {
+        "tags": [
+          "Fetch"
+        ],
+        "description": "Bill fetch request API",
+        "operationId": "FetchRequest",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "The Partner ID provided by Setu.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/couAgentBillFetchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericRefIdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bbps": [
+              "bbps:partner",
+              "cou:wl"
+            ]
+          }
+        ],
+        "x-codegen-request-body-name": "CouAgentBillFetchRequest"
+      }
+    },
+    "/bbps/bills/fetch/response": {
+      "post": {
+        "tags": [
+          "Fetch"
+        ],
+        "description": "Bill fetch response API",
+        "operationId": "FetchResponse",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "The Partner ID provided by Setu.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/refIdBasedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/couAgentBillFetchResponse"
+                },
+                "examples": {
+                  "Credit Card Bill": {
+                    "value": "{\n  \"data\": {\n    \"additionalInfo\": [\n      {\n        \"name\": \"MinimumDueAmount\",\n        \"value\": \"100.00\"\n      }\n    ],\n    \"bills\": [\n      {\n        \"amount\": 18600,\n        \"billDate\": \"2019-03-21\",\n        \"billNumber\": null,\n        \"billPeriod\": null,\n        \"customerName\": \"SANJAY KHAMESARA\",\n        \"dueDate\": \"2025-04-20\"\n      }\n    ],\n    \"billerRefId\": \"139786275\",\n    \"exactness\": \"Exact\",\n    \"refId\": \"CI9DITHL9QLI6M1PS3T0B9OIGZS31721635\",\n    \"status\": \"Success\"\n  },\n  \"success\": true,\n  \"traceId\": \"CI9DIU9L9QLI6M1PS3UG\"\n}"
+                  },
+                  "Electricity Bill": {
+                    "value": "{\n  \"data\": {\n    \"bills\": [{\n      \"amount\": 69400,\n      \"billDate\": \"2024-07-09\",\n      \"billNumber\": \"192648392484\",\n      \"billPeriod\": \"MONTHLY\",\n      \"customerName\": \"Batman\",\n      \"dueDate\": \"2024-07-23\"\n    }],\n    \"billerRefId\": \"zrkcmyud\",\n    \"exactness\": \"Exact and above\",\n    \"refId\": \"CQ9N9A9UTH0KB69QGK30WQE26R041961218\",\n    \"status\": \"Success\"\n  },\n  \"success\": true,\n  \"traceId\": \"CQ9N9BAD8SQ03RS2LU0G\"\n}"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bbps": [
+              "bbps:partner",
+              "cou:wl"
+            ]
+          }
+        ],
+        "x-codegen-request-body-name": "CouAgentAsyncRequest"
+      }
+    },
+    "/bbps/bills/payment/request": {
+      "post": {
+        "tags": [
+          "Pay"
+        ],
+        "description": "Bill payment request API",
+        "operationId": "PaymentRequest",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "The Partner ID provided by Setu.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/couAgentBillPaymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericRefIdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericRefIdResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bbps": [
+              "bbps:partner",
+              "cou:wl"
+            ]
+          }
+        ],
+        "x-codegen-request-body-name": "CouAgentBillPaymentRequest"
+      }
+    },
+    "/bbps/bills/payment/response": {
+      "post": {
+        "tags": [
+          "Pay"
+        ],
+        "description": "Bill payment response API",
+        "operationId": "PaymentResponse",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "The Partner ID provided by Setu.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/refIdBasedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/couAgentBillPaymentResponse"
+                },
+                "examples": {
+                  "Electricity": {
+                    "value": "{\n  \"data\": {\n    \"billerId\": \"BESCOM000KAR01\",\n    \"billerRefId\": \"AB123456\",\n    \"paymentDetails\": {\n      \"amount\": 69400,\n      \"mode\": \"UPI\",\n      \"paymentRefId\": \"419827220325\",\n      \"timestamp\": \"2024-07-16T09:20:31.000+05:30\"\n    },\n    \"refId\": \"CQ9N9A9UTH0KB69QGK30WQE26R041961218\",\n    \"status\": \"Success\",\n    \"transactionId\": \"AX014198092031LMYA4P\"\n  },\n  \"success\": true,\n  \"traceId\": \"CQAV3QJRQTNF9L3BI160\"\n}"
+                  },
+                  "Credit Card": {
+                    "value": "{\n  \"data\": {\n    \"billerId\": \"HDFC00000NATW1\",\n    \"billerRefId\": \"57250716\",\n    \"paymentDetails\": {\n      \"amount\": 500000,\n      \"mode\": \"UPI\",\n      \"paymentRefId\": \"Q4754649991211\",\n      \"timestamp\": \"2024-07-16T13:57:25.494+05:30\"\n    },\n    \"refId\": \"CQB2TFQD8SQ03RSG2ECG2WUELQH41981356\",\n    \"status\": \"Success\",\n    \"transactionId\": \"AX014198135725N7TVTA\"\n  },\n  \"success\": true,\n  \"traceId\": \"CQB2TSRRQTNF9L3DI8IG\"\n}"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bbps": [
+              "bbps:partner",
+              "cou:wl"
+            ]
+          }
+        ],
+        "x-codegen-request-body-name": "CouAgentAsyncRequest"
+      }
+    },
     "/bbps/categories": {
       "get": {
         "tags": [
@@ -67,77 +377,6 @@
             ]
           }
         ]
-      }
-    },
-    "/bbps/bills/complaint/request": {
-      "post": {
-        "tags": [
-          "Dispute"
-        ],
-        "description": "Raise dispute request API",
-        "operationId": "DisputeRequest",
-        "parameters": [
-          {
-            "name": "X-PARTNER-ID",
-            "in": "header",
-            "description": "The Partner ID provided by Setu.",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/couAgentDisputeRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericRefIdResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bbps": [
-              "bbps:partner",
-              "cou:wl"
-            ]
-          }
-        ],
-        "x-codegen-request-body-name": "CouAgentDisputeRequest"
       }
     },
     "/bbps/transactions": {
@@ -321,87 +560,6 @@
             ]
           }
         ]
-      }
-    },
-    "/bbps/bills/payment/request": {
-      "post": {
-        "tags": [
-          "Pay"
-        ],
-        "description": "Bill payment request API",
-        "operationId": "PaymentRequest",
-        "parameters": [
-          {
-            "name": "X-PARTNER-ID",
-            "in": "header",
-            "description": "The Partner ID provided by Setu.",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/couAgentBillPaymentRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericRefIdResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericRefIdResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bbps": [
-              "bbps:partner",
-              "cou:wl"
-            ]
-          }
-        ],
-        "x-codegen-request-body-name": "CouAgentBillPaymentRequest"
       }
     },
     "/bbps/billers": {
@@ -600,327 +758,6 @@
         ]
       }
     },
-    "/bbps/bills/complaint/response": {
-      "post": {
-        "tags": [
-          "Dispute"
-        ],
-        "description": "Raise dispute response API",
-        "operationId": "DisputeResponse",
-        "parameters": [
-          {
-            "name": "X-PARTNER-ID",
-            "in": "header",
-            "description": "The Partner ID provided by Setu.",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/refIdBasedRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/couAgentDisputeResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bbps": [
-              "bbps:partner",
-              "cou:wl"
-            ]
-          }
-        ],
-        "x-codegen-request-body-name": "CouAgentAsyncRequest"
-      }
-    },
-    "/bbps/bills/fetch/request": {
-      "post": {
-        "tags": [
-          "Fetch"
-        ],
-        "description": "Bill fetch request API",
-        "operationId": "FetchRequest",
-        "parameters": [
-          {
-            "name": "X-PARTNER-ID",
-            "in": "header",
-            "description": "The Partner ID provided by Setu.",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/couAgentBillFetchRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericRefIdResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bbps": [
-              "bbps:partner",
-              "cou:wl"
-            ]
-          }
-        ],
-        "x-codegen-request-body-name": "CouAgentBillFetchRequest"
-      }
-    },
-    "/bbps/bills/payment/response": {
-      "post": {
-        "tags": [
-          "Pay"
-        ],
-        "description": "Bill payment response API",
-        "operationId": "PaymentResponse",
-        "parameters": [
-          {
-            "name": "X-PARTNER-ID",
-            "in": "header",
-            "description": "The Partner ID provided by Setu.",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/refIdBasedRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/couAgentBillPaymentResponse"
-                },
-                "examples": {
-                  "Electricity": {
-                    "value": "{\n  \"data\": {\n    \"billerId\": \"BESCOM000KAR01\",\n    \"billerRefId\": \"AB123456\",\n    \"paymentDetails\": {\n      \"amount\": 69400,\n      \"mode\": \"UPI\",\n      \"paymentRefId\": \"419827220325\",\n      \"timestamp\": \"2024-07-16T09:20:31.000+05:30\"\n    },\n    \"refId\": \"CQ9N9A9UTH0KB69QGK30WQE26R041961218\",\n    \"status\": \"Success\",\n    \"transactionId\": \"AX014198092031LMYA4P\"\n  },\n  \"success\": true,\n  \"traceId\": \"CQAV3QJRQTNF9L3BI160\"\n}"
-                  },
-                  "Credit Card": {
-                    "value": "{\n  \"data\": {\n    \"billerId\": \"HDFC00000NATW1\",\n    \"billerRefId\": \"57250716\",\n    \"paymentDetails\": {\n      \"amount\": 500000,\n      \"mode\": \"UPI\",\n      \"paymentRefId\": \"Q4754649991211\",\n      \"timestamp\": \"2024-07-16T13:57:25.494+05:30\"\n    },\n    \"refId\": \"CQB2TFQD8SQ03RSG2ECG2WUELQH41981356\",\n    \"status\": \"Success\",\n    \"transactionId\": \"AX014198135725N7TVTA\"\n  },\n  \"success\": true,\n  \"traceId\": \"CQB2TSRRQTNF9L3DI8IG\"\n}"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bbps": [
-              "bbps:partner",
-              "cou:wl"
-            ]
-          }
-        ],
-        "x-codegen-request-body-name": "CouAgentAsyncRequest"
-      }
-    },
-    "/health": {
-      "get": {
-        "tags": [
-          "Health"
-        ],
-        "description": "Health check",
-        "operationId": "getHealth",
-        "responses": {
-          "200": {
-            "description": "Ok",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/healthResponseParam"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/bbps/bills/fetch/response": {
-      "post": {
-        "tags": [
-          "Fetch"
-        ],
-        "description": "Bill fetch response API",
-        "operationId": "FetchResponse",
-        "parameters": [
-          {
-            "name": "X-PARTNER-ID",
-            "in": "header",
-            "description": "The Partner ID provided by Setu.",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/refIdBasedRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/couAgentBillFetchResponse"
-                },
-                "examples": {
-                  "Credit Card Bill": {
-                    "value": "{\n  \"data\": {\n    \"additionalInfo\": [\n      {\n        \"name\": \"MinimumDueAmount\",\n        \"value\": \"100.00\"\n      }\n    ],\n    \"bills\": [\n      {\n        \"amount\": 18600,\n        \"billDate\": \"2019-03-21\",\n        \"billNumber\": null,\n        \"billPeriod\": null,\n        \"customerName\": \"SANJAY KHAMESARA\",\n        \"dueDate\": \"2025-04-20\"\n      }\n    ],\n    \"billerRefId\": \"139786275\",\n    \"exactness\": \"Exact\",\n    \"refId\": \"CI9DITHL9QLI6M1PS3T0B9OIGZS31721635\",\n    \"status\": \"Success\"\n  },\n  \"success\": true,\n  \"traceId\": \"CI9DIU9L9QLI6M1PS3UG\"\n}"
-                  },
-                  "Electricity Bill": {
-                    "value": "{\n  \"data\": {\n    \"bills\": [{\n      \"amount\": 69400,\n      \"billDate\": \"2024-07-09\",\n      \"billNumber\": \"192648392484\",\n      \"billPeriod\": \"MONTHLY\",\n      \"customerName\": \"Batman\",\n      \"dueDate\": \"2024-07-23\"\n    }],\n    \"billerRefId\": \"zrkcmyud\",\n    \"exactness\": \"Exact and above\",\n    \"refId\": \"CQ9N9A9UTH0KB69QGK30WQE26R041961218\",\n    \"status\": \"Success\"\n  },\n  \"success\": true,\n  \"traceId\": \"CQ9N9BAD8SQ03RS2LU0G\"\n}"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/genericErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bbps": [
-              "bbps:partner",
-              "cou:wl"
-            ]
-          }
-        ],
-        "x-codegen-request-body-name": "CouAgentAsyncRequest"
-      }
-    },
     "/bbps/disputes": {
       "get": {
         "tags": [
@@ -1094,6 +931,148 @@
             ]
           }
         ]
+      }
+    },
+    "/bbps/bills/complaint/request": {
+      "post": {
+        "tags": [
+          "Dispute"
+        ],
+        "description": "Raise dispute request API",
+        "operationId": "DisputeRequest",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "The Partner ID provided by Setu.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/couAgentDisputeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericRefIdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bbps": [
+              "bbps:partner",
+              "cou:wl"
+            ]
+          }
+        ],
+        "x-codegen-request-body-name": "CouAgentDisputeRequest"
+      }
+    },
+    "/bbps/bills/complaint/response": {
+      "post": {
+        "tags": [
+          "Dispute"
+        ],
+        "description": "Raise dispute response API",
+        "operationId": "DisputeResponse",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "The Partner ID provided by Setu.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/refIdBasedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/couAgentDisputeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/genericErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bbps": [
+              "bbps:partner",
+              "cou:wl"
+            ]
+          }
+        ],
+        "x-codegen-request-body-name": "CouAgentAsyncRequest"
       }
     }
   },
