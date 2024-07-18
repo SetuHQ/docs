@@ -1,0 +1,535 @@
+---
+sidebar_title: Mock environment
+page_title: BBPS Billpay Mock environment
+order: 2
+visible_in_sidebar: false
+---
+
+## BillPay APIs — Mock environment
+
+<Callout type="error">This set of APIs has been deprecated. It is recommended to use <a href="/payments/billpay/api-integration">these APIs</a> instead.</Callout>
+<br/>
+
+BillPay Sandbox API supports both Mock and UAT environments.
+
+UAT in BillPay’s context, refers to the entire API lifecycle where Setu connects to both Axis and NPCI’s UAT Servers.
+
+On the other hand, Mock is a simulated environment where Setu handles everything and is independent of both NPCI and Axis. Multiple mock APIs are defined so that you can integrate predictably.
+
+You can change the environment from UAT to Mock by changing the endpoint as below
+
+<CodeBlockWithCopy language="json">
+  {`UAT - https://sandbox.cou.setu.co/api/bills/uat/biller-categories
+MOCK - https://sandbox.cou.setu.co/api/bills/mock/biller-categories`}
+</CodeBlockWithCopy>
+
+The mock environment has been set up to mimic the actual process, so you’ll often see there’s a delay of about 30 secs until the bill is populated (until that time you’ll be shown ERR000). Also we have simulated cases where you’d see billers being down or giving timeout related errors.
+
+<hr class="primary" />
+
+## List of APIs
+
+<hr class="secondary" />
+
+##### Get all biller categories
+
+Use the <a href="/payments/billpay/api-reference#/category~List/operation~BillerCategories" target="_blank">Get categories API</a> to get a list of all categories on BBPS.
+
+<CodeBlockWithCopy language="json">
+  {`Method - GET
+Endpoint - https://sandbox.cou.setu.co/api/bills/mock/biller-categories
+Request Body - None
+`}
+</CodeBlockWithCopy>
+
+<br />
+
+In production, presently there are 23 categories in total. The following categories are supported in the mock environment—
+
+<table>
+  <tr>
+    <th>Category</th>
+    <th>Category Code</th>
+  </tr>
+  <tr>
+    <td>Electricity</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>Mobile Postpaid</td>
+    <td>6</td>
+  </tr>
+  <tr>
+    <td>Landline Postpaid</td>
+    <td>7</td>
+  </tr>
+  <tr>
+    <td>Water</td>
+    <td>8</td>
+  </tr>
+  <tr>
+    <td>DTH</td>
+    <td>9</td>
+  </tr>
+  <tr>
+    <td>Loan Repayment</td>
+    <td>12</td>
+  </tr>
+  <tr>
+    <td>Fastag</td>
+    <td>13</td>
+  </tr>
+</table>
+
+<hr class="secondary" />
+
+##### Get biller list for a category
+
+Use the <a href="/payments/billpay/api-reference#/category~List/operation~BillerList" target="_blank">Get biller list API</a> to get all billers for a particular category by providing the category code.
+
+<CodeBlockWithCopy language="json">
+  {`Method - GET
+Method - POST
+Endpoint - https://sandbox.cou.setu.co/api/bills/mock/biller-list
+Request Body -
+    {
+        "categoryCode":"1"
+    }`}
+
+</CodeBlockWithCopy>
+
+<br />
+
+You can also pass following parameters to the API—
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>
+      <code>limit</code>
+    </td>
+    <td>
+      Limit the number of billers you get in the result, to use for pagination
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>offset</code>
+    </td>
+    <td>
+      Number of values to skip. Value = (Offset x Limit). The resulting list
+      will show from (Offset x Limit) till (Offset x Limit) + Limit
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>search</code>
+    </td>
+    <td>Search biller code or name by passing a string value.</td>
+  </tr>
+</table>
+
+<hr class="secondary" />
+
+##### Get biller details
+
+Use the <a href="/payments/billpay/api-reference#/category~List/operation~BillerDetails" target="_blank">Get biller details API</a> to—
+
+- get the inputs required by the biller to fetch a bill
+- get details on biller’s availability for payment
+- to get the list of validations used by biller to qualify a payment attempt
+- and more...
+
+<CodeBlockWithCopy language="json">
+  {`Method - POST
+Endpoint - https://sandbox.cou.setu.co/api/bills/mock/biller-details
+Request Body -
+    {
+        "billerId": "MAHI00000NATIC",
+        "categoryCode": "12"
+    }`}
+</CodeBlockWithCopy>
+
+You can use the following combinations in the mock environment—
+
+<table>
+  <tr>
+    <th>Biller Id</th>
+    <th>Category Code</th>
+  </tr>
+  <tr>
+    <td>NDMC00000DEL02</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>BESCOM000KAR01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>AVVNL0000RAJ01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>APDCL0000ASM01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>SBPDCL000BHI01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>SKPR00000SIK01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>WESCO0000ODI01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>BSESRAJPLDEL01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>JIO000000NAT01</td>
+    <td>6</td>
+  </tr>
+  <tr>
+    <td>ATLLI0000NAT02</td>
+    <td>7</td>
+  </tr>
+  <tr>
+    <td>JALK00000UTP0P</td>
+    <td>8</td>
+  </tr>
+  <tr>
+    <td>AIRT00000NAT87</td>
+    <td>9</td>
+  </tr>
+  <tr>
+    <td>MAHI00000NATIC</td>
+    <td>12</td>
+  </tr>
+  <tr>
+    <td>AXIS00000NATSN</td>
+    <td>13</td>
+  </tr>
+</table>
+
+<hr class="secondary" />
+
+##### Get biller fields
+
+Use the <a href="/payments/billpay/api-reference#/category~List/operation~BillerFields" target="_blank">Get biller fields API</a> to list all input fields needed by a biller to do a bill fetch from biller system. The response to this API is a subset of the <a href="/payments/billpay/api-reference#/category~List/operation~BillerDetails" target="_blank">Get biller details API</a>.
+
+<CodeBlockWithCopy language="json">
+{`Method - POST
+Endpoint - https://sandbox.cou.setu.co/api/bills/mock/biller-fields
+Request Body -
+    {
+        "billerId": "MAHI00000NATIC",
+        "categoryCode": "12"
+    }
+`}
+
+</CodeBlockWithCopy>
+
+You can use the following combinations in the mock environment—
+
+<br />
+
+<table>
+  <tr>
+    <th>Biller Id</th>
+    <th>Category Code</th>
+  </tr>
+  <tr>
+    <td>NDMC00000DEL02</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>BESCOM000KAR01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>AVVNL0000RAJ01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>APDCL0000ASM01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>SBPDCL000BHI01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>SKPR00000SIK01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>WESCO0000ODI01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>BSESRAJPLDEL01</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>JIO000000NAT01</td>
+    <td>6</td>
+  </tr>
+  <tr>
+    <td>ATLLI0000NAT02</td>
+    <td>7</td>
+  </tr>
+  <tr>
+    <td>JALK00000UTP0P</td>
+    <td>8</td>
+  </tr>
+  <tr>
+    <td>AIRT00000NAT87</td>
+    <td>9</td>
+  </tr>
+  <tr>
+    <td>MAHI00000NATIC</td>
+    <td>12</td>
+  </tr>
+  <tr>
+    <td>AXIS00000NATSN</td>
+    <td>13</td>
+  </tr>
+</table>
+
+<hr class="primary" />
+
+##### Bill fetch and payment
+
+Use the <a href="/payments/billpay/api-reference#/category~Fetch/operation~billFetchRequest" target="_blank">Register for bill fetch API</a> to pass on details that you have collected from your customer. These are the details required to do a bill fetch from the biller’s system.
+
+<CodeBlockWithCopy language="json">
+{`Method - POST
+Method - POST
+Endpoint - https://sandbox.cou.setu.co/api/bills/mock/bill-fetch-request
+Request Body -
+    {
+        "agent": {
+            ** Please Find Values Below In Agent Ids Section **
+        },
+        "mobileNumber": "9192990013",
+        "billerId": "Example Biller Id from below examples",
+        "categoryCode": "Example Category Code from below examples",
+        "customerParams": [
+            {
+                "name": "Example Name from below examples",
+                "value": "Example Value from below examples"
+            }
+        ]
+    }
+`}
+
+</CodeBlockWithCopy>
+    
+The mock environment has support for creating different error scenarios. You can call the <a href="//payments/billpay/api-reference#/category~Fetch/operation~billFetchRequest" target="_blank">Bill fetch API</a> with the data that has been provided below to create various error scenarios.
+
+Follow these steps—
+
+1. Call the `Register for bill fetch API` with sample data given under each error scenario described below
+2. Use the `context` you get in the response from the `Register for bill fetch API` response for the next API called described in below errors.
+   Verify that you get the expected error and repeat above steps with data provided under other error scenarions.
+
+<hr class="secondary" />
+
+###### Error scenario 1 — Biller down
+
+The below data, when used in the `Register for bill fetch API` will always give **biller down** error (BFR008) when you call the <a href="/payments/billpay/api-reference#/category~Fetch/operation~GetFetchedBill" target="_blank">Get fetched bill API</a>.
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "AVVNL0000RAJ01",
+    "categoryCode": "1",
+    "customerParams": [
+        {
+            "name": "K Number",
+            "value": "100"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 2 — BOU Timeout
+
+The below data, when used in `Register for bill fetch API` will always give **BOU timeout** error when you call the <a href="/payments/billpay/api-reference#/category~Fetch/operation~GetFetchedBill" target="_blank">Get fetched bill API</a>.
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "APDCL0000ASM01",
+    "categoryCode": "1",
+    "customerParams": [
+        {
+            "name": "Consumer ID",
+            "value": "100"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 3 — Backside connection error
+
+The below data, when used in the `Register for bill fetch API` will always give **backside connection error** when you call the <a href="/payments/billpay/api-reference#/category~Fetch/operation~GetFetchedBill" target="_blank">Get fetched bill API</a>.
+
+<Callout type="warning">This can occur for any API in production</Callout>
+
+<br />
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "SBPDCL000BHI01",
+    "categoryCode": "1",
+    "customerParams": [
+        {
+            "name": "CA Number",
+            "value": "10085"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 4 — Non JSON error
+
+The below data, when used in the `Register for bill fetch API` will always give **non JSON error** when you call the <a href="/payments/billpay/api-reference#/category~Fetch/operation~GetFetchedBill" target="_blank">Get fetched bill API</a>
+
+<Callout type="warning">This can occur for any API in production</Callout>
+
+<br />
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "SKPR00000SIK01",
+    "categoryCode": "1",
+    "customerParams": [
+        {
+            "name": "Contract Acc Number",
+            "value": "10085"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 5 — Too many requests error
+
+The below data, when used in the `Register for bill fetch API` will always give **too many requests error** when you call the <a href="/payments/billpay/api-reference#/category~Fetch/operation~GetFetchedBill" target="_blank">Get fetched bill API</a>.
+
+<Callout type="warning">This can occur for any API in production</Callout>
+<br />
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "WESCO0000ODI01",
+    "categoryCode": "1",
+    "customerParams": [
+        {
+            "name": "Consumer Number",
+            "value": "10085"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 6 — Technical error
+
+The below data, when used in the `Register for bill fetch API` will always give **technical error** when you call the <a href="/payments/billpay/api-reference#/category~Fetch/operation~GetFetchedBill" target="_blank">Get fetched bill API</a>.
+
+<Callout type="warning">This can occur for any API in production</Callout>
+
+<br />
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "BSESRAJPLDEL01",
+    "categoryCode": "1",
+    "customerParams": [
+        {
+            "name": "CA Number",
+            "value": "10085"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 7 — Mandatory tag(s) not present
+
+The below data, when used in the `Register for bill fetch API` will give **Mandatory tag(s) not present** error when you call the <a href="/payments/billpay/api-reference#/category~Fetch/operation~GetFetchedBill" target="_blank">Get fetched bill API</a>.
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "MAHI00000NATKR",
+    "categoryCode": "12",
+    "customerParams": [
+        {
+            "name": "Loan Account Number",
+            "value": "3523122"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 8 — Client code regex validation failure
+
+The below data, when used in the `Register for bill fetch API` will give **client code regex validation failure** error when you call the <a href="/payments/billpay/api-reference#/category~Fetch/operation~GetFetchedBill" target="_blank">Get fetched bill API</a>
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "MAHI00000NATKR",
+    "categoryCode": "12",
+    "customerParams": [
+        {
+            "name": "Loan Account Number",
+            "value": "10001"
+        },{
+            "name": "Mobile or Vehicle Registration Number",
+            "value": "2121"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 9 — Failed payment due to techincal decline
+
+The below data, when used in the `Register for bill fetch API` will always give a **technical decline** when you call the <a href="/payments/billpay/api-reference#/category~Pay/operation~MakePayment" target="_blank">Make payment API</a>.
+
+In the mock environment, the technical decline happens with a probablility of 80% and will work 20% of the time. This is helpful for you to build a retry logic.
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "MAHI00000NATIC",
+    "categoryCode": "12",
+    "customerParams": [
+        {
+            "name": "Loan Number",
+            "value": "10805"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Error scenario 10 — Failed payment due to business decline{" "}
+
+The below data, when used in the `Register for bill fetch API` will give `data.status`, ie, payment status as `Cancelled` when you call the <a href="/payments/billpay/api-reference#/category~Pay/operation~GetPaymentStatus" target="_blank">Get payment status</a> API.
+
+<CodeBlockWithCopy language="json">
+  {`"billerId": "MAHI00000NATIC",
+    "categoryCode": "12",
+    "customerParams": [
+        {
+            "name": "Loan Number",
+            "value": "10505"
+        }
+    ]`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+<WasPageHelpful />
