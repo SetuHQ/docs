@@ -1,0 +1,256 @@
+---
+sidebar_title: Quickstart
+page_title: Name Match API quickstart
+order: 2
+visible_in_sidebar: true
+---
+
+## Name Match V1 API Quickstart
+
+### How is Setu Name Match API designed?
+
+The Setu Name Match API employs multiple backend algorithms to account for a wide range of name and identity variations commonly found in financial services.
+The API provides both optimistic and pessimistic match percentages for a given input, allowing organizations to choose the appropriate match based on their internal policies.
+
+#### What is the difference between optimistic and pessimistic results?
+
+We provide two results, an optimistic and pessimistic one, in order to allow the user to choose which result to use based on their risk policy. In the optimistic result, cases such as missing first/middle/last name, mis-spelt/out of order names are not penalised heavily.
+In the pessimistic output, these scenarios are penalised more heavily, leading to lower match percentages/types. However, it is not necessary for optimistic and pessimistic results to always be different.
+
+### Steps to integrate
+
+#### 1 — Start KYC and business documentation
+
+This is started once Setu’s Sales team has interacted with you and confirmed integration. You will need to add a few KYC details and review some agreements. Please reachout to us via <a href="https://setu.co/support" target="_blank">Setu Support</a> to get started here.
+
+#### 2 — Get API credentials
+
+Contact Setu to receive x-client-id, x-client-secret and x-product-instance-id details. These credentials are required to make API calls on Sandbox or Production.
+
+#### 3 — Integrate on Sandbox
+
+The URLs you would need for this API—
+
+- Sandbox—`https://dg-sandbox.setu.co`
+- Production—`https://dg.setu.co`
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+  - `x-product-instance-id`
+
+<hr className="primary" />
+
+### Create Name Match Request
+
+Call this API to perform name match on two name inputs.
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "201",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/match/v1/name 
+ 
+payload= { 
+    "name1": "Rakesh Kumar Singh", // special characters and numbers are not allowed, except for . ' -
+    "name2": "Rakesh Kumar Singh"  // name length should not exceed 100 characters
+ } `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You will get a unique <code>id</code> for each request, along
+                with an optimistic and pessimistic match output. Both the
+                optimistic and pessimistic match outputs will have a{" "}
+                <code>match_type</code> and <code>match_percentage</code>.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "name1": "Rakesh Kumar Singh",
+    "name2": "Rakesh Kumar Singh",
+    "id": "135b18e1-aaab-49eb-b921-5f798dc452d6",
+    "optimistic_match_output": {
+        "match_type": "COMPLETE_MATCH",
+        "match_percentage": 100.0
+    },
+    "pessimistic_match_output": {
+        "match_type": "COMPLETE_MATCH",
+        "match_percentage": 100.0
+    },
+    "traceId": "1-6690d779-00bd76895fc117162acba45f"
+} `}
+              </CodeBlockWithCopy>
+              <p>
+                The <code>match_type</code> is based on the percentage
+                thresholds shown below:
+              </p>
+              <table>
+                <tr>
+                  <th>
+                    <strong>Match Percentage</strong>
+                  </th>
+                  <th>
+                    <strong>Match Type</strong>
+                  </th>
+                </tr>
+                <tr>
+                  <td>99% - 100%</td>
+                  <td>
+                    <code>COMPLETE_MATCH</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>85% - 99%</td>
+                  <td>
+                    <code>HIGH_PARTIAL_MATCH</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>70% - 85%</td>
+                  <td>
+                    <code>MODERATE_PARTIAL_MATCH</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>45% - 70%</td>
+                  <td>
+                    <code>LOW_PARTIAL_MATCH</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>0% - 45%</td>
+                  <td>
+                    <code>NO_MATCH</code>
+                  </td>
+                </tr>
+              </table>
+              <br></br>
+              <p>
+                To get started, you can set a threshold between 70% and 75% when
+                testing the API, and adjust the threshold according to your
+                preference. You can also directly consume the match type.
+              </p>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">FAIL</Badge>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/match/v1/name 
+ 
+payload= { 
+    "name1": "",
+    "name2": "Rakesh Kumar Singh"
+ } `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "bad_request",
+        "detail": "Name cannot be empty",
+        "traceId": "1-6696385a-3b4b39794498f35f0a1b4504"
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">FAIL</Badge>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/match/v1/name 
+ 
+payload= { 
+    "name1": "<Name with length greater than 100 characters>",
+    "name2": "<Name with length greater than 100 characters>"
+ } `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "bad_request",
+        "detail": "Name cannot be more than 100 characters",
+        "traceId": "1-669638da-3eae0fb323a7e58032192248"
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "400",
+          content: (
+            <>
+              <p>
+                <Badge type="failure">FAIL</Badge>
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/match/v1/name 
+ 
+payload= { 
+    "name1": "Chandra Kumar K 123",
+    "name2": "Chandra@Kumar K Sharma"
+ } `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "error": {
+        "code": "bad_request",
+        "detail": "Name cannot contain numbers or special characters",
+        "traceId": "1-66963916-70aabc357b88b8400776f24a"
+    }
+} `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    />
+  </Portion>
+</Row>
+
+<NextPage
+  info={{
+    description: "Name match examples",
+    slug: "/data/match-apis/name-match/examples",
+    title: "Examples",
+  }}
+/>
+
+<WasPageHelpful />
