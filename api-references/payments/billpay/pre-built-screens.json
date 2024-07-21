@@ -865,7 +865,7 @@
           },
           "bills": {
             "type": "array",
-            "description": "Multiple bills in case of response from B2B biller",
+            "description": "Multiple bills returned by LIST billers",
             "items": {
               "$ref": "#/components/schemas/billData"
             },
@@ -2368,7 +2368,6 @@
       },
       "billData": {
         "required": [
-          "amount",
           "billDate",
           "billNumber",
           "billPeriod",
@@ -2377,6 +2376,10 @@
         ],
         "type": "object",
         "properties": {
+          "amount": {
+            "type": "integer",
+            "example": 120000
+          },
           "billDate": {
             "type": "string",
             "format": "date",
@@ -2388,7 +2391,17 @@
           },
           "billPeriod": {
             "type": "string",
-            "example": "ONETIME|DAILY|WEEKLY|BIMONTHLY|MONTHLY|QUARTERLY|HALFYEARLY|YEARLY|ASPRESENTED"
+            "enum": [
+              "ONETIME",
+              "DAILY",
+              "WEEKLY",
+              "BIMONTHLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "HALFYEARLY",
+              "YEARLY",
+              "ASPRESENTED"
+            ]
           },
           "customerName": {
             "type": "string",
@@ -2399,9 +2412,31 @@
             "format": "date",
             "example": "2021-09-24"
           },
-          "amount": {
+          "label": {
+            "type": "string",
+            "example": "Advance EMI",
+            "description": "Label for the bill"
+          },
+          "minAmount": {
             "type": "integer",
-            "example": 120000
+            "example": 1,
+            "description": "Minimum amount that can be paid for this bill in paise"
+          },
+          "maxAmount": {
+            "type": "integer",
+            "example": 10000,
+            "description": "Maximum amount that can be paid for this bill in paise"
+          },
+          "amountMultiple": {
+            "type": "integer",
+            "example": 100,
+            "description": "Bill payment amount should be multiple of this value in paise"
+          },
+          "paymentOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/paymentOptionItem"
+            }
           }
         },
         "x-go-name": "BillData"

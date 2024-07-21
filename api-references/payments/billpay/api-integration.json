@@ -1628,7 +1628,6 @@
       },
       "billData": {
         "required": [
-          "amount",
           "billDate",
           "billNumber",
           "billPeriod",
@@ -1653,14 +1652,16 @@
           "billPeriod": {
             "type": "string",
             "enum": [
-              "Onetime",
-              "Daily",
-              "Weekly",
-              "BiMontly",
-              "Monthly",
-              "Quarterly",
-              "HalfYearly",
-              "AsPresented"
+              "ONETIME",
+              "DAILY",
+              "WEEKLY",
+              "BIMONTHLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "HALFYEARLY",
+              "YEARLY",
+              "ASPRESENTED",
+              "NA"
             ]
           },
           "customerName": {
@@ -1671,6 +1672,32 @@
             "type": "string",
             "format": "date",
             "example": "2021-09-24"
+          },
+          "label": {
+            "type": "string",
+            "example": "Advance EMI",
+            "description": "Label for the bill"
+          },
+          "minAmount": {
+            "type": "integer",
+            "example": 1,
+            "description": "Minimum amount that can be paid for this bill in paise"
+          },
+          "maxAmount": {
+            "type": "integer",
+            "example": 10000,
+            "description": "Maximum amount that can be paid for this bill in paise"
+          },
+          "amountMultiple": {
+            "type": "integer",
+            "example": 100,
+            "description": "Bill payment amount should be multiple of this value in paise"
+          },
+          "paymentOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/paymentOptionItem"
+            }
           }
         },
         "x-go-name": "BillData"
@@ -2712,6 +2739,40 @@
         "description": "List of selected payment options",
         "items": {
           "$ref": "#/components/schemas/selectedPaymentOptionItem"
+        }
+      },
+      "paymentOptionItem": {
+        "x-go-name": "PaymentOption",
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "2 Months EMI Amount",
+            "description": "The display name of the option."
+          },
+          "amount": {
+            "type": "integer",
+            "example": 1000,
+            "description": "The amount that can be paid for this option in paise."
+          },
+          "minAmount": {
+            "type": "integer",
+            "example": 100,
+            "description": "The minimum amount that can be paid for this option in paise."
+          },
+          "maxAmount": {
+            "type": "integer",
+            "example": 10000,
+            "description": "The maximum amount that can be paid for this option in paise."
+          },
+          "amountMultiple": {
+            "type": "integer",
+            "example": 100,
+            "description": "The payment amount should be a multiple of this value in paise."
+          }
         }
       },
       "planItem": {

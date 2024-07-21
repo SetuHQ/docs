@@ -206,14 +206,29 @@ The Bill object contains information about a specific bill to be paid.
 
 ## Bill Data
 
-| parameter    | type                        | description                                                                              |
-| ------------ | --------------------------- | ---------------------------------------------------------------------------------------- |
-| customerName | `string`                    | Bill owner                                                                               |
-| amount       | `integer`                   | Bill amount in paise                                                                     |
-| dueDate      | `date`                      | Bill due date                                                                            |
-| billDate     | `date`                      | Bill date                                                                                |
-| billNumber   | `string`                    | Bill number                                                                              |
-| billPeriod   | [Bill Period](#bill-period) | Bill period of the bill fetch / payment requested. `NA` when bill period is unavailable. |
+| parameter      | type                                | description                                                                              |
+| -------------- | ----------------------------------- | ---------------------------------------------------------------------------------------- |
+| customerName   | `string`                            | Bill owner                                                                               |
+| amount         | `integer`                           | Bill amount in paise                                                                     |
+| dueDate        | `date`                              | Bill due date                                                                            |
+| billDate       | `date`                              | Bill date                                                                                |
+| billNumber     | `string`                            | Bill number                                                                              |
+| billPeriod     | [Bill Period](#bill-period)         | Bill period of the bill fetch / payment requested. `NA` when bill period is unavailable. |
+| label          | `string`                            | Additional label for the bill                                                            |
+| minAmount      | `integer`                           | Minimum amount that can be paid for this bill in paise                                   |
+| maxAmount      | `integer`                           | Maximum amount that can be paid for this bill in paise                                   |
+| amountMultiple | `integer`                           | Bill payment amount should be multiple of this value in paise                            |
+| paymentOptions | [Payment Option](#payment-option)[] | Array of payment options available for this bill                                         |
+
+## Payment Option
+
+| Parameter      | Type      | Description                                                          |
+| -------------- | --------- | -------------------------------------------------------------------- |
+| name           | `string`  | The display name of the option                                       |
+| amount         | `integer` | The amount that can be paid for this option in paise                 |
+| minAmount      | `integer` | The minimum amount that can be paid for this option in paise         |
+| maxAmount      | `integer` | The maximum amount that can be paid for this option in paise         |
+| amountMultiple | `integer` | The payment amount should be a multiple of this value in paise       |
 
 ## Exactness
 
@@ -409,8 +424,8 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 | plans                   | [Biller-Plan-Information](#biller-plan-information)`[]` | Plans provided by the biller.                                                                                                           |
 | enforcesSameDayFetchPay | `bool`                                                  | Whether the biller requires bill payment to be on the same calendar day as bill fetch.                                                  |
 | bbpsUpdateTimestamp     | `date-time`                                             | Last updated date-time of the Biller accurate to the nearest day.                                                                       |
-| responseType            | [Biller Response Type](#biller-response-type)                 | Indicates how the biller provides bill information in the fetch response                                                          |
-| selectionType           | [Biller Selection Type](#biller-selection-type)               | Specifies how users can select bills for payment (only applicable for LIST response type)                                         |
+| responseType            | [Biller Response Type](#biller-response-type)           | Indicates how the biller provides bill information in the fetch response                                                                |
+| selectionType           | [Biller Selection Type](#biller-selection-type)         | Specifies how users can select bills for payment (only applicable for LIST response type)                                               |
 
 <hr class="primary" />
 
@@ -469,12 +484,13 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 | refId               | `string`                                        | BBPS reference ID for the fetch request.                                                  |
 | status              | [Bill Status](#bill-status)                     | Bill fetch request status.                                                                |
 | failureReason       | [Failure Reason](#failure-reason)               | Failure reason on status `Failure`                                                        |
-| bill                | [Bill Data](#bill-data)                         | Bill                                                                                      |
+| bill                | [Bill Data](#bill-data)                         | Single bill data. Used when `billerResponseType` is 'SINGLE'.                             |
+| bills               | [Bill Data](#bill-data)`[]`                     | Array of bill data. Used when `billerResponseType` is 'LIST'.                             |
 | additionalInfo      | `{"name":"value"}[]`                            | Additional information of the bill sent by the biller                                     |
 | billerRefId         | `string`                                        | Biller reference ID used by the biller for the request.                                   |
 | exactness           | [Exactness](#exactness)                         | Biller Exactness                                                                          |
 | paymentLimits       | [Payment Limit](#payment-limit)`[]`             | Payment limits                                                                            |
-| billerResponseType  | [Biller Response Type](#biller-response-type)   | Indicates how the biller provides bill information in the fetch response                  |
+| billerResponseType  | [Biller Response Type](#biller-response-type)   | Indicates whether the biller provides a single bill ('SINGLE') or multiple bills ('LIST') |
 | billerSelectionType | [Biller Selection Type](#biller-selection-type) | Specifies how users can select bills for payment (only applicable for LIST response type) |
 
 <hr class="primary" />
