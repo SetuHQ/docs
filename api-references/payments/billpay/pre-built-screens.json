@@ -187,6 +187,20 @@
   },
   "components": {
     "schemas": {
+      "billerResponseType": {
+        "type": "string",
+        "enum": ["SINGLE", "LIST", "SELECTIVE"],
+        "example": "SINGLE",
+        "description": "Specifies whether a biller returns a single bill or a list of bills during bill fetch",
+        "nullable": true
+      },
+      "billerSelectionType": {
+        "type": "string",
+        "enum": ["SINGLE", "MULTIPLE", "ALL"],
+        "example": "SINGLE",
+        "description": "In case of LIST billers, specifies the number of bills a biller allows to be paid at once",
+        "nullable": true
+      },
       "billerAdditionalInfoItem": {
         "required": ["dataType", "optional", "paramName"],
         "type": "object",
@@ -1283,6 +1297,8 @@
           "payWithoutFetchAllowed",
           "paymentChannels",
           "paymentModes",
+          "responseType",
+          "selectionType",
           "supportsPendingStatus"
         ],
         "type": "object",
@@ -1340,9 +1356,15 @@
               "$ref": "#/components/schemas/planItem"
             }
           },
+          "responseType": {
+            "$ref": "#/components/schemas/billerResponseType"
+          },
           "state": {
             "type": "string",
             "example": "state"
+          },
+          "selectionType": {
+            "$ref": "#/components/schemas/billerSelectionType"
           },
           "subCategoryName": {
             "type": "string",

@@ -178,6 +178,22 @@ Details pertaining to the Agent which initiates the transaction. Values of the f
 | `ASPRESENTED` |
 | `NA`          |
 
+## Biller Selection Type
+
+| Type       | Description                                                       |
+|------------|-------------------------------------------------------------------|
+| `SINGLE`   | User can pay only one bill from the fetch response                |
+| `MULTIPLE` | User can pay any combination of bills from the fetch response     |
+| `ALL`      | User must pay all bills in the fetch response                     |
+
+## Biller Response Type
+
+| Type         | Description                                               |
+|--------------|-----------------------------------------------------------|
+| `SINGLE`     | Biller returns a single bill in the fetch response        |
+| `LIST`       | Biller returns multiple bills in the fetch response       |
+| `SELECTIVE`  | Biller returns bills based on specific criteria           |
+
 ## Bill Data
 
 | parameter    | type                        | description                                                                              |
@@ -383,6 +399,9 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 | plans                   | [Biller-Plan-Information](#biller-plan-information)`[]` | Plans provided by the biller.                                                                                                           |
 | enforcesSameDayFetchPay | `bool`                                                  | Whether the biller requires bill payment to be on the same calendar day as bill fetch.                                                  |
 | bbpsUpdateTimestamp     | `date-time`                                             | Last updated date-time of the Biller accurate to the nearest day.                                                                       |
+| responseType            | [Biller Response Type](#biller-response-type)                 | Indicates how the biller provides bill information in the fetch response                                                          |
+| selectionType           | [Biller Selection Type](#biller-selection-type)               | Specifies how users can select bills for payment (only applicable for LIST response type)                                         |
+
 <hr class="primary" />
 
 ## Dispute Request
@@ -435,16 +454,18 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 
 ### Response Body
 
-| parameter      | type                                | description                                             |
-| -------------- | ----------------------------------- | ------------------------------------------------------- |
-| refId          | `string`                            | BBPS reference ID for the fetch request.                |
-| status         | [Bill Status](#bill-status)         | Bill fetch request status.                              |
-| failureReason  | [Failure Reason](#failure-reason)   | Failure reason on status `Failure`                      |
-| bill           | [Bill Data](#bill-data)             | Bill                                                    |
-| additionalInfo | `{"name":"value"}[]`                | Additional information of the bill sent by the biller   |
-| billerRefId    | `string`                            | Biller reference ID used by the biller for the request. |
-| exactness      | [Exactness](#exactness)             | Biller Exactness                                        |
-| paymentLimits  | [Payment Limit](#payment-limit)`[]` | Payment limits                                          |
+| parameter           | type                                            | description                                                                               |
+| ------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| refId               | `string`                                        | BBPS reference ID for the fetch request.                                                  |
+| status              | [Bill Status](#bill-status)                     | Bill fetch request status.                                                                |
+| failureReason       | [Failure Reason](#failure-reason)               | Failure reason on status `Failure`                                                        |
+| bill                | [Bill Data](#bill-data)                         | Bill                                                                                      |
+| additionalInfo      | `{"name":"value"}[]`                            | Additional information of the bill sent by the biller                                     |
+| billerRefId         | `string`                                        | Biller reference ID used by the biller for the request.                                   |
+| exactness           | [Exactness](#exactness)                         | Biller Exactness                                                                          |
+| paymentLimits       | [Payment Limit](#payment-limit)`[]`             | Payment limits                                                                            |
+| billerResponseType  | [Biller Response Type](#biller-response-type)   | Indicates how the biller provides bill information in the fetch response                  |
+| billerSelectionType | [Biller Selection Type](#biller-selection-type) | Specifies how users can select bills for payment (only applicable for LIST response type) |
 
 <hr class="primary" />
 
