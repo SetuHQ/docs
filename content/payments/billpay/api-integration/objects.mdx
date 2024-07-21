@@ -453,13 +453,21 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 
 ### Request Body
 
-| parameter      | type                                | description                                              |
-| -------------- | ----------------------------------- | -------------------------------------------------------- |
-| customer       | [Customer](#customer)               | Customer Object                                          |
-| Biller         | [Biller](#biller)                   | Biller Object                                            |
-| Agent          | [Agent](#agent)                     | Agent Object                                             |
-| refId          | `string`                            | BBPS Reference ID of Fetch Request for non-adhoc billers |
-| paymentDetails | [Payment Details](#payment-details) | Payment information for paying the bill                  |
+| parameter      | type                                | description                                                                           |
+| -------------- | ----------------------------------- | ------------------------------------------------------------------------------------- |
+| refId          | `string`                            | BBPS Reference ID from previous bill fetch request. Mandatory for non-adhoc payments. |
+| agent          | [Agent](#agent)                     | Details of agent processing the payment. Mandatory for adhoc payments.                |
+| biller         | [Biller](#biller)                   | Details of biller receiving the payment. Mandatory for adhoc payments.                |
+| customer       | [Customer](#customer)               | Details of the customer making the payment. Mandatory for adhoc payments.             |
+| bills          | [Bill[]](#bill)                     | Details of bills to be paid. Mandatory for LIST billers only.                         |
+| paymentDetails | [Payment Details](#payment-details) | Details specific to the payment being made. Mandatory for all payments.               |
+
+<hr class="primary" />
+
+**Note:**
+
+- For non-adhoc payments, only `refId`, `paymentDetails`, and potentially `bills` (for LIST billers) are required.
+- For adhoc payments, `agent`, `biller`, `customer`, and `paymentDetails` are mandatory. `refId` and `bills` are not applicable.
 
 <hr class="primary" />
 

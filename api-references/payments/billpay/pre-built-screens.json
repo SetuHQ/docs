@@ -972,12 +972,23 @@
             "$ref": "#/components/schemas/agentDetails"
           },
           "bills": {
-            "uniqueItems": true,
             "type": "array",
-            "example": "Selection on bills in case of B2B",
+            "example": [
+              {
+                "billNumber": "4705299027986032967",
+                "amount": 3000
+              },
+              {
+                "billNumber": "3056665275489131002",
+                "amount": 7000
+              }
+            ],
+            "description": "Array of bills to be paid when making payments for LIST billers. Optional for SINGLE billers.",
             "items": {
               "$ref": "#/components/schemas/bill"
-            }
+            },
+            "uniqueItems": true,
+            "nullable": true
           },
           "dummyTransactionRefId": {
             "type": "string",
@@ -1152,21 +1163,24 @@
         ]
       },
       "bill": {
-        "required": ["amount", "billNumber"],
         "type": "object",
+        "required": [
+          "billNumber",
+          "amount"
+        ],
         "properties": {
-          "amount": {
-            "minimum": 1,
-            "type": "integer",
-            "description": "Amount in Paise",
-            "example": 10000
-          },
           "billNumber": {
             "type": "string",
-            "example": "B1234567"
+            "example": "B123456",
+            "description": "Unique identifier for the bill"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 450000,
+            "minimum": 1,
+            "description": "Amount to be paid in paise for the specified bill number"
           }
-        },
-        "x-omitempty": true
+        }
       },
       "billAdditionalInfo": {
         "type": "array",
