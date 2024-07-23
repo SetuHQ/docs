@@ -1,52 +1,81 @@
 ---
 sidebar_title: Payments
 page_title: UMAP - Notifications and alerts - Payments
-order: 1
+order: 2
 visible_in_sidebar: true
 ---
 
 ## Payment notification
 
 Most of the products on our platform end up creating a payment event when a customer interacts with it from a Payer PSP. We provide consistent and transparent payment statuses for a merchant, to be able to track the life-cycle of a payment request. These statuses are shown in the diagram below.
+
 <img
   src="https://storage.googleapis.com/strapi-assets/latest/Frame_72/Frame_72.png"
   alt="Bridge"
 />
 
-
 <table>
-    <tr>
-        <th><strong>Payment status</strong></th>
-        <th><strong>Description</strong></th>
-    </tr>
-    <tr>
-        <td><code>payment.initiated</code></td>
-        <td>Payment has been attempted by a customer — when a customer tries to make a payment by scanning a QR or clicking on a shortlink and entering his UPI pin on a Payer PSP </td>
-    </tr>
-    <tr>
-        <td><code>payment.pending</code></td>
-        <td>Payment is currently being processed — when the UPI network takes a while to process the payment or when the beneficiary bank is down</td>
-    </tr>
-    <tr>
-        <td><code>payment.success</code></td>
-        <td>Payment has been successfully completed — when all participants involved in the payment have acknowledged and accepted the payment</td>
-    </tr>
-    <tr>
-        <td><code>payment.failed</code></td>
-        <td>Payment could not be processed, you can find more about why it failed with the <code>reason</code> object in the notification payload</td>
-    </tr>
+  <tr>
+    <th>
+      <strong>Payment status</strong>
+    </th>
+    <th>
+      <strong>Description</strong>
+    </th>
+  </tr>
+  <tr>
+    <td>
+      <code>payment.initiated</code>
+    </td>
+    <td>
+      Payment has been attempted by a customer — when a customer tries to make a
+      payment by scanning a QR or clicking on a shortlink and entering his UPI
+      pin on a Payer PSP{" "}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>payment.pending</code>
+    </td>
+    <td>
+      Payment is currently being processed — when the UPI network takes a while
+      to process the payment or when the beneficiary bank is down
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>payment.success</code>
+    </td>
+    <td>
+      Payment has been successfully completed — when all participants involved
+      in the payment have acknowledged and accepted the payment
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>payment.failed</code>
+    </td>
+    <td>
+      Payment could not be processed, you can find more about why it failed with
+      the <code>reason</code> object in the notification payload
+    </td>
+  </tr>
 </table>
 
-<br/>
+<br />
 
 <Callout type="warning">
-    The order of the payment notifications cannot be guaranteed. For example, a client might receive a <code>payment.success</code> notification before a <code>payment.initiated</code> is sent.
-    <br/>
-    <br/>
-    For the same <strong>payment transaction</strong> the <code>txnId</code> value will always be the same, you can use this to correlate different events to a unique payment
+  The order of the payment notifications cannot be guaranteed. For example, a
+  client might receive a <code>payment.success</code> notification before a{" "}
+  <code>payment.initiated</code> is sent.
+  <br />
+  <br />
+  For the same <strong>payment transaction</strong> the <code>txnId</code> value
+  will always be the same, you can use this to correlate different events to a unique
+  payment
 </Callout>
 
-<hr class="primary"/>
+<hr class="primary" />
 
 Payment events are common for products like `sqr`, `dqr`, `tpv` and `collect`, any product which is intended to collect funds from a customer will result in a payment event on customer interaction.
 
@@ -61,7 +90,7 @@ While most of the attributes in the notificiation payload are the same for all p
 - `tpv` — conditional, this object is populated only when the productInstanceType is `pay_single_tpv`
 
 <CodeBlockWithCopy language="json">
-{`{
+  {`{
    // Payment context
    "productInstanceType": "pay_single_tpv",
    //  TPV attributes
@@ -82,18 +111,22 @@ While most of the attributes in the notificiation payload are the same for all p
 }`}
 </CodeBlockWithCopy>
 
-<br/>
+<br />
 
 <Tabs
-   tabs={[
-         {
-            key: "1",
-            label: "payment.initiated",
-            content: (
-               <>
-                  <Text>A <code>payment.initiated</code> event is raised when a customer tries to make a payment to an intent link or QR either by clicking on a shortlink or by scanning the QR code</Text>
-                  <CodeBlockWithCopy language="json">
-{`{
+  tabs={[
+    {
+      key: "1",
+      label: "payment.initiated",
+      content: (
+        <>
+          <Text>
+            A <code>payment.initiated</code> event is raised when a customer
+            tries to make a payment to an intent link or QR either by clicking
+            on a shortlink or by scanning the QR code
+          </Text>
+          <CodeBlockWithCopy language="json">
+            {`{
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
    "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
@@ -121,17 +154,17 @@ While most of the attributes in the notificiation payload are the same for all p
    "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
    "bin": "652926"
 }`}
-                  </CodeBlockWithCopy>
-               </>
-            ),
-         },
-         {
-            key: "2",
-            label: "payment.pending",
-            content: (
-               <>
-                     <CodeBlockWithCopy language="json">
-{`{
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "payment.pending",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "eventTs": "2023-09-04T12:08:20+0530",
@@ -164,17 +197,17 @@ While most of the attributes in the notificiation payload are the same for all p
    "bin": "652926",
    "reason": {}
 }`}
-                     </CodeBlockWithCopy>
-               </>
-            ),
-         },
-         {
-            key: "3",
-            label: "payment.success",
-            content: (
-               <>
-                     <CodeBlockWithCopy language="json">
-{`{
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "3",
+      label: "payment.success",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "eventTs": "2023-09-04T12:08:20+0530",
@@ -209,18 +242,22 @@ While most of the attributes in the notificiation payload are the same for all p
    “tpv”: {},
    "reason": {}
 }`}
-                     </CodeBlockWithCopy>
-               </>
-            ),
-         },
-         {
-            key: "4",
-            label: "payment.failed",
-            content: (
-               <>
-                     <Text>A <code>payment.failed</code> event is raised when a payment is rejected, the reason for rejection is populated in the <code>reason</code> object</Text>
-                     <CodeBlockWithCopy language="json">
-{`{
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "4",
+      label: "payment.failed",
+      content: (
+        <>
+          <Text>
+            A <code>payment.failed</code> event is raised when a payment is
+            rejected, the reason for rejection is populated in the{" "}
+            <code>reason</code> object
+          </Text>
+          <CodeBlockWithCopy language="json">
+            {`{
    // Event attributes
    "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
    "eventTs": "2023-09-04T12:08:20+0530",
@@ -264,9 +301,9 @@ While most of the attributes in the notificiation payload are the same for all p
       "suggestedAction": "Inform the customer and suggest trying again later or using a different bank or payment method."
    }
 }`}
-                     </CodeBlockWithCopy>
-               </>
-            ),
-         },
-   ]}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+  ]}
 />

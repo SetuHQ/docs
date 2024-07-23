@@ -8,21 +8,29 @@ visible_in_sidebar: true
 ## Events and notifications
 
 <Text size="small" weight="600">
-    PREREQUISITES&nbsp;
+  PREREQUISITES&nbsp;
 </Text>
-<a href="/payments/umap/quickstart" target="_self">🌟 Quickstart ↗</a>
+<a href="/payments/umap/quickstart" target="_self">
+  🌟 Quickstart ↗
+</a>
 
 <hr class="primary" />
 
 UMAP has a robust notification system to provide a transparent experience for our merchants.
 
--   <p>Retries to ensure notification delivery to customers</p>
--   <p>Coverage of statuses across all financial and non-financial flows</p>
--   <p>Configurable notification endpoints at merchant and aggregator levels</p>
+- <p>Retries to ensure notification delivery to customers</p>
+- <p>Coverage of statuses across all financial and non-financial flows</p>
+- <p>Configurable notification endpoints at merchant and aggregator levels</p>
 
 ### What are events?
 
-<Text>Whenever the <code>state</code> of a resource(type of a transaction record) changes on our platform, an <strong>event</strong> gets raised. For example, when a customer tries to make a payment on dynamic QR, a <code>payment.initiated</code> event is raised. Merchants can subscribe to these events to get timely updates on current state of a transaction.</Text>
+<Text>
+  Whenever the <code>state</code> of a resource(type of a transaction record)
+  changes on our platform, an <strong>event</strong> gets raised. For example,
+  when a customer tries to make a payment on dynamic QR, a{" "}
+  <code>payment.initiated</code> event is raised. Merchants can subscribe to
+  these events to get timely updates on current state of a transaction.
+</Text>
 
 Events are categorized based on the resources on top of which they are raised, they are
 
@@ -32,13 +40,14 @@ Events are categorized based on the resources on top of which they are raised, t
 - **<a href="/payments/umap/notifications/refunds" target="_self">refund ↗</a>**
 - **<a href="/payments/umap/notifications/disputes" target="_self">dispute ↗</a>**
 
-Every notification sent to the merchant follows the same base payload as seen below, 
+Every notification sent to the merchant follows the same base payload as seen below,
+
 - `resource` and the `status` together form the `eventType`
 - `eventId` is unique for every event notification sent to the merchant
 - `eventTs` records the time at the event was triggered
 
 <CodeBlockWithCopy language="json">
-{`{
+  {`{
     "eventType": "payment.initiated",
     "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
     "eventTs": "2023-09-04T12:08:20+0530",
@@ -47,8 +56,11 @@ Every notification sent to the merchant follows the same base payload as seen be
 }`}
 </CodeBlockWithCopy>
 
-In addition to these attributes, based on the `eventType` more attributes get added
+In addition to these attributes, based on the `eventType` more attributes get added.
 
+### Notification signature
+
+Every notification sent to the merchant will have a `x-setu-signature` to authenticate the webhook and verify its payload. Read more [here ↗](/payments/umap/notifications/verify-signature)
 
 ### Subscribing to events
 
@@ -57,9 +69,10 @@ A Merchant can recieve status updates by registering a callback URL and subscrib
 **<a href="/payments/umap/api-reference#/category~notificationConfig/operation~notificationConfig#create" target="_self">Register a callback ↗</a>**
 
 <Callout type="tip">
-Did you miss a notification because of a downtime? You don't have to be worried.
-<br/>
-<br/>
-If any of our notifications to the merchant fail, we retry the notification 3 times
-    with an exponential backoff strategy, the backoff interval is 3 minutes
+  Did you miss a notification because of a downtime? You don't have to be
+  worried.
+  <br />
+  <br />
+  If any of our notifications to the merchant fail, we retry the notification 3 times
+  with an exponential backoff strategy, the backoff interval is 3 minutes
 </Callout>

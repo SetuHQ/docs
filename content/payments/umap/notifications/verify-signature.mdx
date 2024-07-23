@@ -1,0 +1,179 @@
+---
+sidebar_title: Verify signature
+page_title: UMAP - Events and notifications
+order: 1
+visible_in_sidebar: true
+---
+
+## Verify signature
+
+Setu will sign every notification sent to your webhook endpoint by generating a signature and sent in a custom header `x-setu-signature`.
+
+This signature helps you to verify that the notifications were sent by Setu rather than a third party
+
+### Generating the signature
+
+Setu generates a signature using the [Hash-based Message Authentication Code (HMAC)](https://en.wikipedia.org/wiki/HMAC). An HMAC is generated using a secret key in combination with a cryptographic hash function, [SHA256](https://en.wikipedia.org/wiki/SHA-2). This HMAC becomes the signature of the webhook, which is then used to authenticate the webhook and verify its payload.
+
+Setu will create a unique secret key for your webhook endpoint and is shared between both the webhook producer (Setu) and consumer (you). This secret usually is a alpha-numeric string and its length can vary between 20 to 50 characters.
+
+### Verify the signature
+
+To verify a signature, you need to extract the notifcation payload and the `x-setu-signature` header from the request received on your webhook endpoint.
+
+Below are the code snippets for verification:
+
+<br />
+
+<Callout type="tip">
+  Please ensure the notification payload is a string when using the below
+  snippets
+</Callout>
+
+<br />
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "Node.js",
+      content: (
+        <>
+          <CodeBlockWithCopy language="javascript">
+            {`const crypto = require('crypto');
+// Generate HMAC SHA-256 signature
+function generateHMACSHA256(message, secret) {
+    const hmac = crypto.createHmac('sha256', secret);
+    hmac.update(message);
+    return hmac.digest('base64');
+}
+// Verify HMAC SHA-256 signature
+function verifyHMACSHA256(message, secret, signature) {
+    const expectedSignature = generateHMACSHA256(message, secret);
+    return crypto.timingSafeEqual(Buffer.from(signature, 'base64'), Buffer.from(expectedSignature, 'base64'));
+}
+const message = '{"id":"01J1ZBPW7Y8M6NV1YXJYGJST5Q","rrn":"418666712574"}';
+const secret = "thisisasecretkey";
+const signature = "x-setu-signature value"
+const isValid = verifyHMACSHA256(message, secret, signature);
+console.log("Is the signature valid?", isValid);
+`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Python",
+      content: (
+        <>
+          <CodeBlockWithCopy language="python">
+            {`import base64
+import hashlib
+import hmac
+def generate_hmac_sha256(message, secret):
+    """
+    Generate HMAC SHA-256 signature for a given message and secret
+    """
+    secret_bytes = secret.encode('utf-8')
+    message_bytes = message.encode('utf-8')
+    hmac_instance = hmac.new(secret_bytes, message_bytes, hashlib.sha256)
+    signature = base64.b64encode(hmac_instance.digest()).decode('utf-8')
+    return signature
+def verify_hmac_sha256(message, secret, signature):
+    """
+    Verify HMAC SHA-256 signature for a given message and secret
+    """
+    expected_signature = generate_hmac_sha256(message, secret)
+    return hmac.compare_digest(signature, expected_signature)
+message = '{"id":"01J1ZBPW7Y8M6NV1YXJYGJST5Q","rrn":"418666712574"}'
+secret = "thisisasecretkey"
+signature = "x-setu-signature value"
+is_valid = verify_hmac_sha256(message, secret, signature)
+print("Is the signature valid?", is_valid)
+`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "3",
+      label: "Java",
+      content: (
+        <>
+          <CodeBlockWithCopy language="java">
+            {`import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
+public class Main {
+    // Generate HMAC SHA-256 signature
+    public static String generateHMACSHA256(String message, String secret) throws Exception {
+        Mac sha256Hmac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+        sha256Hmac.init(secretKey);
+        byte[] signedBytes = sha256Hmac.doFinal(message.getBytes());
+        return Base64.getEncoder().encodeToString(signedBytes);
+    }
+    // Verify HMAC SHA-256 signature
+    public static boolean verifyHMACSHA256(String message, String secret, String signature) throws Exception {
+        String expectedSignature = generateHMACSHA256(message, secret);
+        return signature.equals(expectedSignature);
+    }
+    public static void main(String[] args) {
+        try {
+            String message = "{\"id\":\"01J1ZBPW7Y8M6NV1YXJYGJST5Q\",\"rrn\":\"418666712574\"}";
+            String secret = "thisisasecretkey";
+            String signature = "x-setu-signature value";
+            boolean isValid = verifyHMACSHA256(message, secret, signature);
+            System.out.println("Is the signature valid? " + isValid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "4",
+      label: "Go",
+      content: (
+        <>
+          <CodeBlockWithCopy language="go">
+            {`package main
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"fmt"
+)
+// GenerateHMACSHA256 generates an HMAC SHA-256 signature for a given message and secret
+func generateHMACSHA256(message, secret string) string {
+		key := []byte(secret)
+		h := hmac.New(sha256.New, key)
+		h.Write([]byte(message))
+		return base64.StdEncoding.EncodeToString(h.Sum(nil))
+}
+// VerifyHMACSHA256 verifies an HMAC SHA-256 signature for a given message and secret
+func verifyHMACSHA256(message, secret, signature string) bool {
+		key := []byte(secret)
+		h := hmac.New(sha256.New, key)
+		h.Write([]byte(message))
+		expectedSignature := base64.StdEncoding.EncodeToString(h.Sum(nil))
+		return hmac.Equal([]byte(signature), []byte(expectedSignature))
+}
+func main() {
+		message :='{"id":"01J1ZBPW7Y8M6NV1YXJYGJST5Q","rrn":"418666712574"}'
+		secret := "thisisasecretkey"
+		signature := "x-setu-signature value"
+		isValid := verifyHMACSHA256(message, secret, signature)
+		fmt.Println("Is the signature valid?", isValid)
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+  ]}
+/>
