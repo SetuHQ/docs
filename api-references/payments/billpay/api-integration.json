@@ -1606,9 +1606,28 @@
         },
         "x-go-name": "BillAdditionalInfo"
       },
+      "bill": {
+        "type": "object",
+        "required": [
+          "billNumber",
+          "amount"
+        ],
+        "properties": {
+          "billNumber": {
+            "type": "string",
+            "example": "B123456",
+            "description": "Unique identifier for the bill"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 450000,
+            "minimum": 1,
+            "description": "Amount to be paid for the bill in paise"
+          }
+        }
+      },
       "billData": {
         "required": [
-          "amount",
           "billDate",
           "billNumber",
           "billPeriod",
@@ -1619,7 +1638,7 @@
         "properties": {
           "amount": {
             "type": "integer",
-            "example": 120000
+            "example": 1000
           },
           "billDate": {
             "type": "string",
@@ -1633,14 +1652,16 @@
           "billPeriod": {
             "type": "string",
             "enum": [
-              "Onetime",
-              "Daily",
-              "Weekly",
-              "BiMontly",
-              "Monthly",
-              "Quarterly",
-              "HalfYearly",
-              "AsPresented"
+              "ONETIME",
+              "DAILY",
+              "WEEKLY",
+              "BIMONTHLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "HALFYEARLY",
+              "YEARLY",
+              "ASPRESENTED",
+              "NA"
             ]
           },
           "customerName": {
@@ -1651,6 +1672,32 @@
             "type": "string",
             "format": "date",
             "example": "2021-09-24"
+          },
+          "label": {
+            "type": "string",
+            "example": "Advance EMI",
+            "description": "Label for the bill"
+          },
+          "minAmount": {
+            "type": "integer",
+            "example": 1,
+            "description": "Minimum amount that can be paid for this bill in paise"
+          },
+          "maxAmount": {
+            "type": "integer",
+            "example": 10000,
+            "description": "Maximum amount that can be paid for this bill in paise"
+          },
+          "amountMultiple": {
+            "type": "integer",
+            "example": 100,
+            "description": "Bill payment amount should be multiple of this value in paise"
+          },
+          "paymentOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/paymentOptionItem"
+            }
           }
         },
         "x-go-name": "BillData"
@@ -1674,8 +1721,10 @@
           },
           "exactness": {
             "type": "string",
-            "example": "EXACT/EXACT_UP/EXACT_DOWN/ADHOC"
-          },
+            "enum": ["Exact", "Exact and above", "Exact and below", "Any", "RANGE"],
+            "example": "Exact",
+            "description": "Specifies the range of payment amounts allowed by the biller"
+          },        
           "failureReason": {
             "$ref": "#/components/schemas/bbpsFailureReason"
           },
@@ -1693,6 +1742,12 @@
           },
           "status": {
             "$ref": "#/components/schemas/status"
+          },
+          "billerResponseType": {
+            "$ref": "#/components/schemas/billerResponseType"
+          },
+          "billerSelectionType": {
+            "$ref": "#/components/schemas/billerSelectionType"
           }
         }
       },
@@ -1733,6 +1788,25 @@
             "type": "string",
             "description": "The biller ID on BBPS",
             "example": "MAHI00000NATIC"
+          },
+          "bills": {
+            "type": "array",
+            "example": [
+              {
+                "billNumber": "4705299027986032967",
+                "amount": 3000
+              },
+              {
+                "billNumber": "3056665275489131002",
+                "amount": 7000
+              }
+            ],
+            "description": "Details of bills(for LIST billers) for which payment was made.",
+            "items": {
+              "$ref": "#/components/schemas/bill"
+            },
+            "uniqueItems": true,
+            "nullable": true
           },
           "billerRefId": {
             "type": "string",
@@ -1784,6 +1858,8 @@
           "payWithoutFetchAllowed",
           "paymentChannels",
           "paymentModes",
+          "responseType",
+          "selectionType",
           "supportsPendingStatus"
         ],
         "type": "object",
@@ -1836,11 +1912,9 @@
           },
           "exactness": {
             "type": "string",
-            "enum": [
-              "Exact",
-              "Exact and above",
-              "Exact and below"
-            ]
+            "enum": ["Exact", "Exact and above", "Exact and below", "Any", "RANGE"],
+            "example": "Exact",
+            "description": "Specifies the range of payment amounts allowed by the biller"
           },
           "fetchApiType": {
             "type": "string",
@@ -1896,9 +1970,15 @@
               "$ref": "#/components/schemas/planItem"
             }
           },
+          "responseType": {
+            "$ref": "#/components/schemas/billerResponseType"
+          },
           "state": {
             "type": "string",
             "example": "TEL"
+          },
+          "selectionType": {
+            "$ref": "#/components/schemas/billerSelectionType"
           },
           "supportsPendingStatus": {
             "type": "boolean",
@@ -1910,6 +1990,20 @@
           }
         },
         "x-go-name": "CouBillerDetails"
+      },
+      "billerResponseType": {
+        "type": "string",
+        "enum": ["SINGLE", "LIST", "SELECTIVE"],
+        "example": "LIST",
+        "description": "Specifies whether a biller returns a single bill or a list of bills during bill fetch",
+        "nullable": true
+      },
+      "billerSelectionType": {
+        "type": "string",
+        "enum": ["SINGLE", "MULTIPLE", "ALL"],
+        "example": "SINGLE",
+        "description": "In case of LIST billers, specifies the number of bills a biller allows to be paid at once",
+        "nullable": true
       },
       "billerListResponse": {
         "required": [
@@ -2103,6 +2197,25 @@
           },
           "customer": {
             "$ref": "#/components/schemas/customerDetails"
+          },
+          "bills": {
+            "type": "array",
+            "example": [
+              {
+                "billNumber": "4705299027986032967",
+                "amount": 3000
+              },
+              {
+                "billNumber": "3056665275489131002",
+                "amount": 7000
+              }
+            ],
+            "description": "Array of bills to be paid when making payments for LIST billers. Optional for SINGLE billers.",
+            "items": {
+              "$ref": "#/components/schemas/bill"
+            },
+            "uniqueItems": true,
+            "nullable": true
           },
           "paymentDetails": {
             "$ref": "#/components/schemas/paymentDetails"
@@ -2542,8 +2655,8 @@
           "mode": {
             "$ref": "#/components/schemas/paymentMode"
           },
-          "paymentParams": {
-            "$ref": "#/components/schemas/paymentParameters"
+          "selectedPaymentOptions": {
+            "$ref": "#/components/schemas/selectedPaymentOptions"
           },
           "paymentRefId": {
             "maxLength": 35,
@@ -2603,30 +2716,64 @@
           }
         }
       },
-      "paymentParameterItem": {
+      "selectedPaymentOptionItem": {
         "required": [
           "name",
-          "value"
+          "amount"
         ],
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "description": "The display name of the parameter. This has to match what is sent in fields.",
+            "description": "The display name of the selected payment option from fetch response.",
             "example": "Early Payment Amount"
           },
-          "value": {
-            "type": "string",
-            "description": "The value of the payment parameter",
-            "example": "100"
+          "amount": {
+            "type": "integer",
+            "description": "The amount being paid for the selected payment option in paise.",
+            "example": 10000
           }
         }
       },
-      "paymentParameters": {
+      "selectedPaymentOptions": {
         "type": "array",
-        "description": "Additional Payment Parameters",
+        "description": "List of selected payment options",
         "items": {
-          "$ref": "#/components/schemas/paymentParameterItem"
+          "$ref": "#/components/schemas/selectedPaymentOptionItem"
+        }
+      },
+      "paymentOptionItem": {
+        "x-go-name": "PaymentOption",
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "2 Months EMI Amount",
+            "description": "The display name of the option."
+          },
+          "amount": {
+            "type": "integer",
+            "example": 2000,
+            "description": "The amount that can be paid for this option in paise."
+          },
+          "minAmount": {
+            "type": "integer",
+            "example": 200,
+            "description": "The minimum amount that can be paid for this option in paise."
+          },
+          "maxAmount": {
+            "type": "integer",
+            "example": 20000,
+            "description": "The maximum amount that can be paid for this option in paise."
+          },
+          "amountMultiple": {
+            "type": "integer",
+            "example": 100,
+            "description": "The payment amount should be a multiple of this value in paise."
+          }
         }
       },
       "planItem": {
@@ -2793,6 +2940,25 @@
           "amount": {
             "type": "integer",
             "example": 120000
+          },
+          "bills": {
+            "type": "array",
+            "example": [
+              {
+                "billNumber": "4705299027986032967",
+                "amount": 3000
+              },
+              {
+                "billNumber": "3056665275489131002",
+                "amount": 7000
+              }
+            ],
+            "description": "Details of bills for which payment was made.",
+            "items": {
+              "$ref": "#/components/schemas/bill"
+            },
+            "uniqueItems": true,
+            "nullable": true
           },
           "billerId": {
             "type": "string",
