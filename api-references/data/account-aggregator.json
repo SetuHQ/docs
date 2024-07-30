@@ -2,19 +2,14 @@
   "openapi": "3.0.2",
   "info": {
     "description": "API spec for Setu AA gateway",
-    "title": "AA Gateway",
-    "version": "v2"
-  },
-  "servers": [
-    {
-      "url": "https://fiu-sandbox.setu.co/",
-      "description": "Sandbox"
+    "termsOfService": "",
+    "contact": {
+      "email": "aa@setu.co"
     },
-    {
-      "url": "https://fiu.setu.co",
-      "description": "Production"
-    }
-  ],
+    "title": "AA Gateway",
+    "version": "v1"
+  },
+  "servers": [],
   "tags": [
     {
       "name": "AA participants APIs",
@@ -25,19 +20,11 @@
       "description": "APIs for Consent management"
     },
     {
-      "name": "FI Data Control APIs",
-      "description": "APIs to update or modify FI encrypted data"
-    },
-    {
       "name": "FI data fetch APIs",
       "description": "APIs for FI data flow"
     },
     {
-      "name": "Meta APIs",
-      "description": "AA-Rohan meta information APIs"
-    },
-    {
-      "name": "Internal notification APIs",
+      "name": "Notification APIs",
       "description": "APIs to receive notifications from AA"
     },
     {
@@ -50,30 +37,6 @@
     }
   ],
   "paths": {
-    "/fips": {
-      "get": {
-        "parameters": [
-          {
-            "in": "header",
-            "name": "x-vault-config",
-            "required": false,
-            "description": "Path to fetch config from Vault",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "$ref": "#/components/responses/BAD_REQUEST"
-          },
-          "200": {
-            "description": "OK"
-          }
-        },
-        "tags": ["AA participants APIs"]
-      }
-    },
     "/v2/fips": {
       "get": {
         "responses": {
@@ -88,109 +51,11 @@
             }
           }
         },
-        "tags": ["AA participants APIs"]
-      }
-    },
-    "/v2/account-availability": {
-      "post": {
-        "parameters": [
-          {
-            "in": "header",
-            "name": "Authorization",
-            "required": true,
-            "description": "Authorization Bearer token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "x-product-instance-id",
-            "required": true,
-            "description": "Product instance ID of FIU",
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "$ref": "#/components/responses/BAD_REQUEST"
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AccountAvailabilityResponse"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AccountAvailabilityRequest"
-              }
-            }
-          }
-        },
-        "tags": ["AA participants APIs"]
-      }
-    },
-    "/v2/generate-jws-signature": {
-      "post": {
-        "parameters": [
-          {
-            "in": "header",
-            "name": "Authorization",
-            "required": true,
-            "description": "Authorization Bearer token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "x-product-instance-id",
-            "required": true,
-            "description": "Product instance ID of FIU",
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "$ref": "#/components/responses/BAD_REQUEST"
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenerateJWSSignatureResponse"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GenerateJWSSignatureRequest"
-              }
-            }
-          }
-        },
-        "tags": ["AA participants APIs"]
+        "summary": "Get FIP list",
+        "description": "This API is used to get the list of FIPs.",
+        "tags": [
+          "AA participants APIs"
+        ]
       }
     },
     "/consents": {
@@ -258,7 +123,9 @@
         },
         "summary": "Create consent",
         "description": "This API is intended for AA Client to request generation of digitally signed consent artefacts. The customer has to use the AA application to select accounts and approve consent generation. Once the customer approves the consent request on the AA application, AA generates the digitally signed consent artefacts. Note - The AA Client never sees the account of the customer or directly participates in consent generation.\n\nNote: \u201cRequest Body Example Value\u201d and \u201cResponses Example Value\u201d given below is for illustrative purposes only.",
-        "tags": ["Consent APIs"]
+        "tags": [
+          "Consent APIs"
+        ]
       }
     },
     "/consents/{request_id}": {
@@ -316,7 +183,9 @@
         },
         "summary": "Get a consent",
         "description": "This API gets consent information using request ID.",
-        "tags": ["Consent APIs"]
+        "tags": [
+          "Consent APIs"
+        ]
       },
       "parameters": [
         {
@@ -385,37 +254,9 @@
         },
         "summary": "Revoke a consent",
         "description": "This API revokes a consent based on request ID.",
-        "tags": ["Consent APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "request_id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ]
-    },
-    "/consents/webview/{request_id}": {
-      "get": {
-        "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Redirect to consent manager",
-        "description": "This API redirects to the actual consent manager URL using request ID",
-        "tags": ["Consent APIs"]
+        "tags": [
+          "Consent APIs"
+        ]
       },
       "parameters": [
         {
@@ -476,7 +317,9 @@
         },
         "summary": "Create multi consent",
         "description": "This API creates multi consent",
-        "tags": ["Consent APIs"]
+        "tags": [
+          "Consent APIs"
+        ]
       }
     },
     "/consents/consents/collection/{id}": {
@@ -509,7 +352,9 @@
         },
         "summary": "Get multi consent",
         "description": "This API gets multi consent",
-        "tags": ["Consent APIs"]
+        "tags": [
+          "Consent APIs"
+        ]
       },
       "parameters": [
         {
@@ -522,164 +367,6 @@
           }
         }
       ]
-    },
-    "/consents/consent-manager-callback/{request_id}": {
-      "get": {
-        "parameters": [
-          {
-            "in": "query",
-            "name": "resdate",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "errormsg",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "fi",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "ecres",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "$ref": "#/components/responses/BAD_REQUEST"
-          }
-        },
-        "summary": "Handle redirect from webview",
-        "description": "This API handles the redirect from webview and makes a simplified redirect to actual FIU redirectUrl (given while creating consent)",
-        "tags": ["Consent APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "request_id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ]
-    },
-    "/consents/active/{customer_id}": {
-      "get": {
-        "parameters": [
-          {
-            "in": "header",
-            "name": "x-client-id",
-            "required": false,
-            "description": "Client ID of FIU",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserActiveConsents"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get active consents of a particular user",
-        "description": "This API gets active consents of a particular user",
-        "tags": ["Consent APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "customer_id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ]
-    },
-    "/consents/encrypted_consent_request/{request_id}": {
-      "get": {
-        "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Encrypted consent request",
-        "description": "This API fetches the encrypted consent request",
-        "tags": ["Consent APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "request_id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ]
-    },
-    "/fi/purge": {
-      "delete": {
-        "parameters": [
-          {
-            "in": "query",
-            "name": "customer_id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "$ref": "#/components/responses/BAD_REQUEST"
-          }
-        },
-        "tags": ["FI Data Control APIs"]
-      }
     },
     "/sessions": {
       "post": {
@@ -746,7 +433,9 @@
         },
         "summary": "Create FI data fetch",
         "description": "This API is used to initiate a data fetch for FI data.",
-        "tags": ["FI data fetch APIs"]
+        "tags": [
+          "FI data fetch APIs"
+        ]
       }
     },
     "/sessions/{request_id}": {
@@ -804,7 +493,9 @@
         },
         "summary": "Get FI data",
         "description": "This API gets consent information using request ID.",
-        "tags": ["FI data fetch APIs"]
+        "tags": [
+          "FI data fetch APIs"
+        ]
       },
       "parameters": [
         {
@@ -817,42 +508,6 @@
           }
         }
       ]
-    },
-    "/": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        },
-        "tags": ["Meta APIs"],
-        "summary": "API base"
-      }
-    },
-    "/health": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VersionResponse"
-                }
-              }
-            }
-          }
-        },
-        "tags": ["Meta APIs"],
-        "summary": "Health check API"
-      }
     },
     "/Consent/Notification": {
       "post": {
@@ -978,7 +633,9 @@
         },
         "summary": "Consent notification endpoint",
         "description": "This endpoint is used by AA to send Consent Status notifications.",
-        "tags": ["Internal notification APIs"]
+        "tags": [
+          "Notification APIs"
+        ]
       }
     },
     "/FI/Notification": {
@@ -1105,7 +762,9 @@
         },
         "summary": "FI data notification endpoint",
         "description": "This endpoint is used by AA to send FI data notifications.",
-        "tags": ["Internal notification APIs"]
+        "tags": [
+          "Notification APIs"
+        ]
       }
     },
     "/v2/consents": {
@@ -1165,7 +824,9 @@
         },
         "summary": "Create consent",
         "description": "This API is intended for AA Client to request generation of digitally signed consent artefacts. The customer has to use the AA application to select accounts and approve consent generation. Once the customer approves the consent request on the AA application, AA generates the digitally signed consent artefacts. Note - The AA Client never sees the account of the customer or directly participates in consent generation.\n\nNote: \u201cRequest Body Example Value\u201d and \u201cResponses Example Value\u201d given below is for illustrative purposes only.",
-        "tags": ["Consent V2 APIs"]
+        "tags": [
+          "Consent V2 APIs"
+        ]
       }
     },
     "/v2/consents/{request_id}": {
@@ -1225,7 +886,9 @@
         },
         "summary": "Get a consent",
         "description": "This API gets consent information using request ID.",
-        "tags": ["Consent V2 APIs"]
+        "tags": [
+          "Consent V2 APIs"
+        ]
       },
       "parameters": [
         {
@@ -1286,154 +949,14 @@
         },
         "summary": "Revoke a consent",
         "description": "This API revokes a consent based on request ID.",
-        "tags": ["Consent V2 APIs"]
+        "tags": [
+          "Consent V2 APIs"
+        ]
       },
       "parameters": [
         {
           "in": "path",
           "name": "request_id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ]
-    },
-    "/v2/consents/webview/{request_id}": {
-      "get": {
-        "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Redirect to consent manager",
-        "description": "This API redirects to the actual consent manager URL using request ID",
-        "tags": ["Consent V2 APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "request_id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ]
-    },
-    "/v2/consents/consents/collection": {
-      "post": {
-        "parameters": [
-          {
-            "in": "header",
-            "name": "Authorization",
-            "required": true,
-            "description": "Authorization Bearer token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "x-product-instance-id",
-            "required": false,
-            "description": "Product instance ID of FIU",
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MultiConsentResponse"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MultiConsentRequest"
-              }
-            }
-          }
-        },
-        "summary": "Create multi consent",
-        "tags": ["Consent V2 APIs"]
-      }
-    },
-    "/v2/consents/consents/collection/{id}": {
-      "get": {
-        "parameters": [
-          {
-            "in": "header",
-            "name": "Authorization",
-            "required": true,
-            "description": "Authorization Bearer token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "x-product-instance-id",
-            "required": true,
-            "description": "Product instance ID of FIU",
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "$ref": "#/components/responses/BAD_REQUEST"
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MultiConsentResponse"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get multi consent",
-        "tags": ["Consent V2 APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "id",
           "required": true,
           "schema": {
             "type": "string",
@@ -1498,7 +1021,9 @@
           }
         },
         "summary": "Create multi consent",
-        "tags": ["Consent V2 APIs"]
+        "tags": [
+          "Consent V2 APIs"
+        ]
       }
     },
     "/v2/consents/collection/{id}": {
@@ -1540,69 +1065,14 @@
           }
         },
         "summary": "Get multi consent",
-        "tags": ["Consent V2 APIs"]
+        "tags": [
+          "Consent V2 APIs"
+        ]
       },
       "parameters": [
         {
           "in": "path",
           "name": "id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ]
-    },
-    "/v2/consents/consent-manager-callback/{request_id}": {
-      "get": {
-        "parameters": [
-          {
-            "in": "query",
-            "name": "resdate",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "errormsg",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "fi",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "ecres",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "$ref": "#/components/responses/BAD_REQUEST"
-          }
-        },
-        "summary": "Handle redirect from webview",
-        "description": "This API handles the redirect from webview and makes a simplified redirect to actual FIU redirectUrl (given while creating consent)",
-        "tags": ["Consent V2 APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "request_id",
           "required": true,
           "schema": {
             "type": "string",
@@ -1649,42 +1119,16 @@
             "description": "OK"
           }
         },
-        "tags": ["Consent V2 APIs"]
+        "summary": "Get last fetch status",
+        "description": "This API gets the last data fetch status for a consent",
+        "tags": [
+          "Consent V2 APIs"
+        ]
       },
       "parameters": [
         {
           "in": "path",
           "name": "consent_id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ]
-    },
-    "/v2/consents/encrypted_consent_request/{request_id}": {
-      "get": {
-        "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Encrypted consent request",
-        "description": "This API fetches the encrypted consent request",
-        "tags": ["Consent V2 APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "request_id",
           "required": true,
           "schema": {
             "type": "string",
@@ -1750,7 +1194,9 @@
         },
         "summary": "Create FI data fetch",
         "description": "This API is used to initiate a data fetch for FI data.",
-        "tags": ["FI data fetch V2 APIs"]
+        "tags": [
+          "FI data fetch V2 APIs"
+        ]
       }
     },
     "/v2/sessions/{session_id}": {
@@ -1800,7 +1246,9 @@
         },
         "summary": "Get FI data",
         "description": "This API gets consent information using request ID.",
-        "tags": ["FI data fetch V2 APIs"]
+        "tags": [
+          "FI data fetch V2 APIs"
+        ]
       },
       "parameters": [
         {
@@ -1813,184 +1261,26 @@
           }
         }
       ]
-    },
-    "/v2/sessions/refresh/{consent_id}": {
-      "get": {
-        "parameters": [
-          {
-            "in": "query",
-            "name": "restart",
-            "required": false,
-            "description": "Flag to inidicate if we need to restart a running data fetch workflow",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "in": "header",
-            "name": "Authorization",
-            "required": true,
-            "description": "Authorization Bearer token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "x-product-instance-id",
-            "required": true,
-            "description": "Product instance ID of FIU",
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        },
-        "tags": ["FI data fetch V2 APIs"]
-      },
-      "parameters": [
-        {
-          "in": "path",
-          "name": "consent_id",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      ],
-      "post": {
-        "parameters": [
-          {
-            "in": "query",
-            "name": "restart",
-            "required": false,
-            "description": "Flag to inidicate if we need to restart a running data fetch workflow",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "in": "header",
-            "name": "Authorization",
-            "required": true,
-            "description": "Authorization Bearer token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "x-product-instance-id",
-            "required": true,
-            "description": "Product instance ID of FIU",
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ],
-        "responses": {
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ManualRefreshRequest"
-              }
-            }
-          }
-        },
-        "tags": ["FI data fetch V2 APIs"]
-      }
     }
   },
   "components": {
     "schemas": {
-      "ManualRefreshRequest": {
-        "type": "object",
-        "properties": {
-          "dataRange": {
-            "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange"
-          }
-        }
-      },
-      "ConsentsRequestConsentDetailFIDataRange": {
-        "type": "object",
-        "properties": {
-          "to": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Selects the ending date-time from where the financial information is to be end. It is a mandatory field only if consentTypes includes ENUM TRANSACTIONS in consent parameters."
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Selects the starting date-time from where the financial information is to be start. It is a mandatory field only if consentTypes includes ENUM TRANSACTIONS in consent parameters."
-          }
-        },
-        "required": ["from", "to"]
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "txnid": {
-            "type": "string",
-            "description": "Trnsaction id of the request. Must be same value as sent in the request"
-          },
-          "errorMsg": {
-            "type": "string",
-            "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
-          },
-          "ver": {
-            "type": "string",
-            "description": "API version."
-          },
-          "errorCode": {
-            "type": "string",
-            "description": "Error code indicating the problem with the request"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Response timestamp"
-          }
-        },
-        "required": ["errorCode", "errorMsg", "timestamp", "txnid", "ver"],
-        "additionalProperties": true
-      },
       "FIDataFetchResponseV2": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Request identifier to fetch the status and data."
+          },
+          "dataRange": {
+            "description": "Time range for which the data is being requested",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange"
+              }
+            ]
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -2008,10 +1298,13 @@
             "format": "uuid",
             "description": "Consent identifier for this data fetch request."
           },
-          "id": {
+          "format": {
             "type": "string",
-            "format": "uuid",
-            "description": "Request identifier to fetch the status and data."
+            "enum": [
+              "xml",
+              "json"
+            ],
+            "description": "Format of decrypted data"
           },
           "fips": {
             "type": "array",
@@ -2020,41 +1313,47 @@
             "items": {
               "$ref": "#/components/schemas/FIFetchDecrpytedResponseFIItem1"
             }
-          },
-          "format": {
-            "type": "string",
-            "enum": ["xml", "json"],
-            "description": "Format of decrypted data"
-          },
-          "dataRange": {
-            "description": "Time range for which the data is being requested",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange"
-              }
-            ]
           }
         },
-        "required": ["consentId", "dataRange", "fips", "format", "id", "status"]
+        "required": [
+          "consentId",
+          "dataRange",
+          "fips",
+          "format",
+          "id",
+          "status"
+        ]
       },
       "FIFetchDecrpytedResponseFIItem1": {
         "type": "object",
         "properties": {
-          "fipID": {
-            "type": "string"
-          },
           "accounts": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FIFetchDecrpytedResponseFIItemDataItem1"
             }
+          },
+          "fipID": {
+            "type": "string"
           }
         },
-        "required": ["accounts", "fipID"]
+        "required": [
+          "accounts",
+          "fipID"
+        ]
       },
       "FIFetchDecrpytedResponseFIItemDataItem1": {
         "type": "object",
         "properties": {
+          "maskedAccNumber": {
+            "type": "string"
+          },
+          "linkRefNumber": {
+            "type": "string"
+          },
+          "FIstatus": {
+            "type": "string"
+          },
           "data": {
             "description": "Contains the decrypted financial information",
             "allOf": [
@@ -2062,18 +1361,14 @@
                 "$ref": "#/components/schemas/FIFetchDecrpytedResponseFIItemDataItemData"
               }
             ]
-          },
-          "linkRefNumber": {
-            "type": "string"
-          },
-          "maskedAccNumber": {
-            "type": "string"
-          },
-          "FIstatus": {
-            "type": "string"
           }
         },
-        "required": ["FIstatus", "data", "linkRefNumber", "maskedAccNumber"]
+        "required": [
+          "FIstatus",
+          "data",
+          "linkRefNumber",
+          "maskedAccNumber"
+        ]
       },
       "FIFetchDecrpytedResponseFIItemDataItemData": {
         "type": "object",
@@ -4250,12 +3545,68 @@
           }
         }
       },
+      "ConsentsRequestConsentDetailFIDataRange": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Selects the ending date-time from where the financial information is to be end. It is a mandatory field only if consentTypes includes ENUM TRANSACTIONS in consent parameters."
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Selects the starting date-time from where the financial information is to be start. It is a mandatory field only if consentTypes includes ENUM TRANSACTIONS in consent parameters."
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "txnid": {
+            "type": "string",
+            "description": "Trnsaction id of the request. Must be same value as sent in the request"
+          },
+          "errorMsg": {
+            "type": "string",
+            "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Error code indicating the problem with the request"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Response timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "description": "API version."
+          }
+        },
+        "required": [
+          "errorCode",
+          "errorMsg",
+          "timestamp",
+          "txnid",
+          "ver"
+        ],
+        "additionalProperties": true
+      },
       "CreateFIDataFetchRequestV2": {
         "type": "object",
         "properties": {
           "format": {
             "type": "string",
-            "enum": ["xml", "json"],
+            "enum": [
+              "xml",
+              "json"
+            ],
             "description": "Format of decrypted data"
           },
           "dataRange": {
@@ -4272,7 +3623,11 @@
             "description": "The request identifier to fetch the status and data."
           }
         },
-        "required": ["consentId", "dataRange", "format"]
+        "required": [
+          "consentId",
+          "dataRange",
+          "format"
+        ]
       },
       "MultiConsentResponse": {
         "type": "object",
@@ -4288,18 +3643,15 @@
             "type": "string"
           }
         },
-        "required": ["consentCollectionId", "txnid", "url"]
+        "required": [
+          "consentCollectionId",
+          "txnid",
+          "url"
+        ]
       },
       "MultiConsentRequest": {
         "type": "object",
         "properties": {
-          "optionalConsents": {
-            "type": "array",
-            "x-maximum": 1,
-            "items": {
-              "type": "string"
-            }
-          },
           "mandatoryConsents": {
             "type": "array",
             "x-minimum": 1,
@@ -4307,9 +3659,18 @@
             "items": {
               "type": "string"
             }
+          },
+          "optionalConsents": {
+            "type": "array",
+            "x-maximum": 1,
+            "items": {
+              "type": "string"
+            }
           }
         },
-        "required": ["mandatoryConsents"]
+        "required": [
+          "mandatoryConsents"
+        ]
       },
       "RevokeConsentResponse": {
         "type": "object",
@@ -4327,7 +3688,9 @@
             "description": "Surrogate status for this consent"
           }
         },
-        "required": ["status"]
+        "required": [
+          "status"
+        ]
       },
       "ConsentResponseV2": {
         "type": "object",
@@ -4397,26 +3760,31 @@
             }
           }
         },
-        "required": ["accountsLinked", "id", "status", "url"]
+        "required": [
+          "accountsLinked",
+          "id",
+          "status",
+          "url"
+        ]
       },
       "ConsentResponseConsentDetailAccountsItem": {
         "type": "object",
         "properties": {
-          "linkRefNumber": {
-            "type": "string",
-            "description": "FIP's linkRefNumber as shared by the FIP after linking"
-          },
           "maskedAccNumber": {
             "type": "string",
             "description": "Masked account number"
           },
-          "accType": {
+          "linkRefNumber": {
             "type": "string",
-            "description": "Type of Account"
+            "description": "FIP's linkRefNumber as shared by the FIP after linking"
           },
           "fiType": {
             "type": "string",
             "description": "Type of Financial Information"
+          },
+          "accType": {
+            "type": "string",
+            "description": "Type of Account"
           },
           "fipId": {
             "type": "string",
@@ -4427,18 +3795,21 @@
       "ConsentResponseConsentUsage1": {
         "type": "object",
         "properties": {
+          "count": {
+            "type": "number",
+            "description": "Count of the number of times data has been fetched for this consent"
+          },
           "lastUsed": {
             "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "Timestamp of last data fetch for this consent"
-          },
-          "count": {
-            "type": "number",
-            "description": "Count of the number of times data has been fetched for this consent"
           }
         },
-        "required": ["count", "lastUsed"]
+        "required": [
+          "count",
+          "lastUsed"
+        ]
       },
       "ConsentsRequestContext": {
         "type": "object",
@@ -4463,18 +3834,34 @@
             "description": "The key of data"
           }
         },
-        "required": ["key", "value"]
+        "required": [
+          "key",
+          "value"
+        ]
       },
       "ConsentResponseConsentDetailV2": {
         "type": "object",
         "properties": {
-          "consentTypes": {
-            "type": "array",
-            "x-minimum": 1,
-            "items": {
-              "type": "string",
-              "enum": ["PROFILE", "SUMMARY", "TRANSACTIONS"]
-            }
+          "vua": {
+            "type": "string"
+          },
+          "fetchType": {
+            "type": "string",
+            "enum": [
+              "ONETIME",
+              "PERIODIC"
+            ],
+            "description": "FI Fetch type. Could be ONETIME or PERIODIC"
+          },
+          "consentMode": {
+            "type": "string",
+            "enum": [
+              "VIEW",
+              "STORE",
+              "QUERY",
+              "STREAM"
+            ],
+            "description": "Consent Mode as defined in the AA Technical Specification"
           },
           "purpose": {
             "description": "Purpose of the consent defined in the AA Technical Specification",
@@ -4484,59 +3871,6 @@
               }
             ]
           },
-          "dataLife": {
-            "description": "Datalife defines for how long can the FIU/AA Application store the data",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataLife"
-              }
-            ]
-          },
-          "consentMode": {
-            "type": "string",
-            "enum": ["VIEW", "STORE", "QUERY", "STREAM"],
-            "description": "Consent Mode as defined in the AA Technical Specification"
-          },
-          "fiTypes": {
-            "type": "array",
-            "x-minimum": 1,
-            "items": {
-              "type": "string",
-              "enum": [
-                "DEPOSIT",
-                "TERM_DEPOSIT",
-                "RECURRING_DEPOSIT",
-                "SIP",
-                "CP",
-                "GOVT_SECURITIES",
-                "EQUITIES",
-                "BONDS",
-                "DEBENTURES",
-                "MUTUAL_FUNDS",
-                "ETF",
-                "IDR",
-                "CIS",
-                "AIF",
-                "INSURANCE_POLICIES",
-                "NPS",
-                "INVIT",
-                "REIT",
-                "GSTR1_3B",
-                "OTHER"
-              ],
-              "description": "List of financial information types."
-            }
-          },
-          "consentExpiry": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Expiry date-time for the consent"
-          },
-          "fetchType": {
-            "type": "string",
-            "enum": ["ONETIME", "PERIODIC"],
-            "description": "FI Fetch type. Could be ONETIME or PERIODIC"
-          },
           "frequency": {
             "description": "Defines frequency of FI data fetch within the defined time unit. E.g.HOURLY,DAILY,MONTHLY,YEARLY.The maximum frequency value that can be defined is 1 request per HOUR. Similaraly it will be 24 requests per DAY and so on. Frequency can not be set below 1 request per hour.",
             "allOf": [
@@ -4544,14 +3878,6 @@
                 "$ref": "#/components/schemas/ConsentsRequestConsentDetailFrequency"
               }
             ]
-          },
-          "consentStart": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Start date-time of the consent. This field would allow for Post-Dated consent."
-          },
-          "vua": {
-            "type": "string"
           },
           "dataRange": {
             "description": "Data Range (Datetime) for the Financial Information Requested",
@@ -4567,156 +3893,6 @@
             "items": {
               "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataFilterItem"
             }
-          }
-        },
-        "required": ["consentExpiry", "consentStart"]
-      },
-      "ConsentsRequestConsentDetailDataFilterItem": {
-        "type": "object",
-        "properties": {
-          "operator": {
-            "type": "string",
-            "enum": ["=", "!=", ">", "<", ">=", "<="],
-            "description": "Operator to filter data by."
-          },
-          "value": {
-            "type": "string",
-            "description": "Value to filter data"
-          },
-          "type": {
-            "type": "string",
-            "enum": ["TRANSACTIONTYPE", "TRANSACTIONAMOUNT"],
-            "description": "The condition to filter the data on."
-          }
-        },
-        "required": ["operator", "type", "value"]
-      },
-      "ConsentsRequestConsentDetailFIDataRange1": {
-        "type": "object",
-        "properties": {
-          "to": {
-            "type": "string",
-            "format": "date-time",
-            "description": "End date for financial information"
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Start date for financial information"
-          }
-        },
-        "required": ["from", "to"]
-      },
-      "ConsentsRequestConsentDetailFrequency": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "integer",
-            "description": "Define the number of times FI data can be fetched within the defined time unit."
-          },
-          "unit": {
-            "type": "string",
-            "enum": ["HOUR", "DAY", "MONTH", "YEAR", "INF"],
-            "description": "Defines the time unit of the frequency to access the financial information."
-          }
-        },
-        "required": ["unit", "value"]
-      },
-      "ConsentsRequestConsentDetailDataLife": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "integer",
-            "description": "Define the value of unit of how long can consumer store the data"
-          },
-          "unit": {
-            "type": "string",
-            "enum": ["MONTH", "YEAR", "DAY", "INF"],
-            "description": "A unit of how long consumer can store the data"
-          }
-        },
-        "required": ["unit", "value"]
-      },
-      "ConsentResponseConsentDetailPurpose": {
-        "type": "object",
-        "properties": {
-          "category": {
-            "$ref": "#/components/schemas/PurposeCategory1"
-          },
-          "code": {
-            "type": "string",
-            "enum": ["101", "102", "103", "104", "105", "106"],
-            "description": "Purpose Code as defined in the AA Technical Specification "
-          },
-          "refUri": {
-            "type": "string",
-            "description": "URL where the purpose is further defined"
-          },
-          "text": {
-            "type": "string",
-            "description": "Textual Description"
-          }
-        },
-        "required": ["code"]
-      },
-      "PurposeCategory1": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "description": "Category name of the Purpose code"
-          }
-        }
-      },
-      "CreateConsentRequestV2": {
-        "type": "object",
-        "properties": {
-          "consentTypes": {
-            "type": "array",
-            "x-minimum": 1,
-            "items": {
-              "type": "string",
-              "enum": ["PROFILE", "SUMMARY", "TRANSACTIONS"]
-            }
-          },
-          "PAN": {
-            "type": "string",
-            "pattern": "^$|[A-Z]{5}[0-9]{4}[A-Z]{1}"
-          },
-          "purpose": {
-            "description": "Purpose of the consent defined in the AA Technical Specification",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentRequestPurpose"
-              }
-            ]
-          },
-          "context": {
-            "type": "array",
-            "items": {
-              "description": "Specify extra data in key-value pair that might be required for custom arguments or filteration",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ConsentsRequestContext"
-                }
-              ]
-            }
-          },
-          "consentDuration": {
-            "description": "How long consumer is allowed to store data",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentDurartion"
-              }
-            ]
-          },
-          "dataLife": {
-            "description": "How long consumer is allowed to store data",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataLife"
-              }
-            ]
           },
           "fiTypes": {
             "type": "array",
@@ -4748,17 +3924,215 @@
               "description": "List of financial information types."
             }
           },
-          "consentMode": {
+          "dataLife": {
+            "description": "Datalife defines for how long can the FIU/AA Application store the data",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataLife"
+              }
+            ]
+          },
+          "consentExpiry": {
             "type": "string",
-            "enum": ["VIEW", "STORE", "QUERY", "STREAM"],
-            "description": "Consent Mode as defined in the AA Technical Specification"
+            "format": "date-time",
+            "description": "Expiry date-time for the consent"
+          },
+          "consentTypes": {
+            "type": "array",
+            "x-minimum": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "PROFILE",
+                "SUMMARY",
+                "TRANSACTIONS"
+              ]
+            }
+          },
+          "consentStart": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start date-time of the consent. This field would allow for Post-Dated consent."
+          }
+        },
+        "required": [
+          "consentExpiry",
+          "consentStart"
+        ]
+      },
+      "ConsentsRequestConsentDetailDataLife": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "type": "string",
+            "enum": [
+              "MONTH",
+              "YEAR",
+              "DAY",
+              "INF"
+            ],
+            "description": "A unit of how long consumer can store the data"
+          },
+          "value": {
+            "type": "integer",
+            "description": "Define the value of unit of how long can consumer store the data"
+          }
+        },
+        "required": [
+          "unit",
+          "value"
+        ]
+      },
+      "ConsentsRequestConsentDetailDataFilterItem": {
+        "type": "object",
+        "properties": {
+          "operator": {
+            "type": "string",
+            "enum": [
+              "=",
+              "!=",
+              ">",
+              "<",
+              ">=",
+              "<="
+            ],
+            "description": "Operator to filter data by."
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to filter data"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "TRANSACTIONTYPE",
+              "TRANSACTIONAMOUNT"
+            ],
+            "description": "The condition to filter the data on."
+          }
+        },
+        "required": [
+          "operator",
+          "type",
+          "value"
+        ]
+      },
+      "ConsentsRequestConsentDetailFIDataRange1": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End date for financial information"
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start date for financial information"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ]
+      },
+      "ConsentsRequestConsentDetailFrequency": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "type": "string",
+            "enum": [
+              "HOUR",
+              "DAY",
+              "MONTH",
+              "YEAR",
+              "INF"
+            ],
+            "description": "Defines the time unit of the frequency to access the financial information."
+          },
+          "value": {
+            "type": "integer",
+            "description": "Define the number of times FI data can be fetched within the defined time unit."
+          }
+        },
+        "required": [
+          "unit",
+          "value"
+        ]
+      },
+      "ConsentResponseConsentDetailPurpose": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "101",
+              "102",
+              "103",
+              "104",
+              "105",
+              "106"
+            ],
+            "description": "Purpose Code as defined in the AA Technical Specification "
+          },
+          "text": {
+            "type": "string",
+            "description": "Textual Description"
+          },
+          "category": {
+            "$ref": "#/components/schemas/PurposeCategory1"
+          },
+          "refUri": {
+            "type": "string",
+            "description": "URL where the purpose is further defined"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "PurposeCategory1": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Category name of the Purpose code"
+          }
+        }
+      },
+      "CreateConsentRequestV2": {
+        "type": "object",
+        "properties": {
+          "consentDateRange": {
+            "$ref": "#/components/schemas/ConsentDateRange"
+          },
+          "vua": {
+            "type": "string"
           },
           "fetchType": {
             "type": "string",
-            "enum": ["ONETIME", "PERIODIC"]
+            "enum": [
+              "ONETIME",
+              "PERIODIC"
+            ]
           },
-          "consentDateRange": {
-            "$ref": "#/components/schemas/ConsentDateRange"
+          "purpose": {
+            "description": "Purpose of the consent defined in the AA Technical Specification",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentRequestPurpose"
+              }
+            ]
+          },
+          "consentMode": {
+            "type": "string",
+            "enum": [
+              "VIEW",
+              "STORE",
+              "QUERY",
+              "STREAM"
+            ],
+            "description": "Consent Mode as defined in the AA Technical Specification"
           },
           "frequency": {
             "description": "Defines frequency of FI data fetch within the defined time unit. E.g.HOURLY,DAILY,MONTHLY,YEARLY.The maximum frequency value that can be defined is 1 request per HOUR. Similaraly it will be 24 requests per DAY and so on. Frequency can not be set below 1 request per hour.",
@@ -4768,14 +4142,34 @@
               }
             ]
           },
-          "vua": {
-            "type": "string"
-          },
-          "redirectUrl": {
-            "type": "string"
+          "consentDuration": {
+            "description": "How long consumer is allowed to store data",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentDurartion"
+              }
+            ]
           },
           "dataRange": {
             "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange1"
+          },
+          "PAN": {
+            "type": "string",
+            "pattern": "^$|[A-Z]{5}[0-9]{4}[A-Z]{1}"
+          },
+          "context": {
+            "type": "array",
+            "items": {
+              "description": "Specify extra data in key-value pair that might be required for custom arguments or filteration",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ConsentsRequestContext"
+                }
+              ]
+            }
+          },
+          "redirectUrl": {
+            "type": "string"
           },
           "dataFilter": {
             "type": "array",
@@ -4783,88 +4177,145 @@
             "items": {
               "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataFilterItem"
             }
-          }
-        },
-        "required": ["dataRange", "vua"]
-      },
-      "ConsentDateRange": {
-        "type": "object",
-        "properties": {
-          "endDate": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Expiry date-time for the consent"
           },
-          "startDate": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Expiry date-time for the consent"
+          "fiTypes": {
+            "type": "array",
+            "x-minimum": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "DEPOSIT",
+                "TERM_DEPOSIT",
+                "RECURRING_DEPOSIT",
+                "SIP",
+                "CP",
+                "GOVT_SECURITIES",
+                "EQUITIES",
+                "BONDS",
+                "DEBENTURES",
+                "MUTUAL_FUNDS",
+                "ETF",
+                "IDR",
+                "CIS",
+                "AIF",
+                "INSURANCE_POLICIES",
+                "NPS",
+                "INVIT",
+                "REIT",
+                "GSTR1_3B",
+                "OTHER"
+              ],
+              "description": "List of financial information types."
+            }
+          },
+          "dataLife": {
+            "description": "How long consumer is allowed to store data",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataLife"
+              }
+            ]
+          },
+          "consentTypes": {
+            "type": "array",
+            "x-minimum": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "PROFILE",
+                "SUMMARY",
+                "TRANSACTIONS"
+              ]
+            }
           }
         },
-        "required": ["endDate", "startDate"]
+        "required": [
+          "dataRange",
+          "vua"
+        ]
       },
       "ConsentDurartion": {
         "type": "object",
         "properties": {
+          "unit": {
+            "type": "string",
+            "enum": [
+              "MONTH",
+              "YEAR",
+              "DAY"
+            ],
+            "description": "A unit of how long consumer can store the data"
+          },
           "value": {
             "type": "integer",
             "description": "Define the value of unit of how long can consumer store the data"
-          },
-          "unit": {
-            "type": "string",
-            "enum": ["MONTH", "YEAR", "DAY"],
-            "description": "A unit of how long consumer can store the data"
           }
         },
-        "required": ["unit", "value"]
+        "required": [
+          "unit",
+          "value"
+        ]
       },
       "ConsentRequestPurpose": {
         "type": "object",
         "properties": {
-          "category": {
-            "$ref": "#/components/schemas/PurposeCategory1"
-          },
           "code": {
             "type": "string",
-            "enum": ["101", "102", "103", "104", "105", "106"],
+            "enum": [
+              "101",
+              "102",
+              "103",
+              "104",
+              "105",
+              "106"
+            ],
             "description": "Purpose Code as defined in the AA Technical Specification "
-          },
-          "refUri": {
-            "type": "string",
-            "description": "URL where the purpose is further defined"
           },
           "text": {
             "type": "string",
             "description": "Textual Description"
+          },
+          "category": {
+            "$ref": "#/components/schemas/PurposeCategory1"
+          },
+          "refUri": {
+            "type": "string",
+            "description": "URL where the purpose is further defined"
           }
         },
-        "required": ["category", "code", "refUri", "text"]
+        "required": [
+          "category",
+          "code",
+          "refUri",
+          "text"
+        ]
+      },
+      "ConsentDateRange": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Expiry date-time for the consent"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Expiry date-time for the consent"
+          }
+        },
+        "required": [
+          "endDate",
+          "startDate"
+        ]
       },
       "FIStatusNotification": {
         "type": "object",
         "properties": {
-          "Notifier": {
-            "description": "Information about the notifier",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/FIStatusNotificationNotifier"
-              }
-            ]
-          },
           "txnid": {
             "type": "string",
             "format": "uuid",
             "description": "The unique transaction identifier used for providing an end to end traceability."
-          },
-          "ver": {
-            "type": "string",
-            "minLength": 1,
-            "description": "The version of the API"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Creation timestamp of the message which will be updated at each leg"
           },
           "FIStatusNotification": {
             "description": "Selects a type of  Data-flow events , Consent-flow events, and Account discovery flow events",
@@ -4873,6 +4324,24 @@
                 "$ref": "#/components/schemas/FIStatusNotificationFIStatusNotification"
               }
             ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp of the message which will be updated at each leg"
+          },
+          "Notifier": {
+            "description": "Information about the notifier",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FIStatusNotificationNotifier"
+              }
+            ]
+          },
+          "ver": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The version of the API"
           }
         },
         "required": [
@@ -4882,62 +4351,6 @@
           "txnid",
           "ver"
         ]
-      },
-      "FIStatusNotificationFIStatusNotification": {
-        "type": "object",
-        "properties": {
-          "FIStatusResponse": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "$ref": "#/components/schemas/FIStatusNotificationFIStatusNotificationFIStatusResponseItem"
-            }
-          },
-          "sessionStatus": {
-            "type": "string",
-            "enum": ["ACTIVE", "COMPLETED", "EXPIRED", "FAILED"]
-          },
-          "sessionId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": ["FIStatusResponse", "sessionId", "sessionStatus"]
-      },
-      "FIStatusNotificationFIStatusNotificationFIStatusResponseItem": {
-        "type": "object",
-        "properties": {
-          "fipID": {
-            "type": "string",
-            "minLength": 1
-          },
-          "Accounts": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "$ref": "#/components/schemas/FIStatusNotificationFIStatusNotificationFIStatusResponseItemAccountsItem"
-            }
-          }
-        },
-        "required": ["Accounts", "fipID"]
-      },
-      "FIStatusNotificationFIStatusNotificationFIStatusResponseItemAccountsItem": {
-        "type": "object",
-        "properties": {
-          "linkRefNumber": {
-            "type": "string",
-            "minLength": 1
-          },
-          "FIStatus": {
-            "type": "string",
-            "enum": ["READY", "DENIED", "PENDING", "DELIVERED", "TIMEOUT"]
-          },
-          "description": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": ["FIStatus", "description", "linkRefNumber"]
       },
       "FIStatusNotificationNotifier": {
         "type": "object",
@@ -4951,7 +4364,88 @@
             "description": ""
           }
         },
-        "required": ["id", "type"]
+        "required": [
+          "id",
+          "type"
+        ]
+      },
+      "FIStatusNotificationFIStatusNotification": {
+        "type": "object",
+        "properties": {
+          "sessionStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "COMPLETED",
+              "EXPIRED",
+              "FAILED"
+            ]
+          },
+          "FIStatusResponse": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/FIStatusNotificationFIStatusNotificationFIStatusResponseItem"
+            }
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "FIStatusResponse",
+          "sessionId",
+          "sessionStatus"
+        ]
+      },
+      "FIStatusNotificationFIStatusNotificationFIStatusResponseItem": {
+        "type": "object",
+        "properties": {
+          "Accounts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/FIStatusNotificationFIStatusNotificationFIStatusResponseItemAccountsItem"
+            }
+          },
+          "fipID": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "Accounts",
+          "fipID"
+        ]
+      },
+      "FIStatusNotificationFIStatusNotificationFIStatusResponseItemAccountsItem": {
+        "type": "object",
+        "properties": {
+          "linkRefNumber": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "FIStatus": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "DENIED",
+              "PENDING",
+              "DELIVERED",
+              "TIMEOUT"
+            ]
+          }
+        },
+        "required": [
+          "FIStatus",
+          "description",
+          "linkRefNumber"
+        ]
       },
       "NotificationResponse": {
         "type": "object",
@@ -4960,20 +4454,25 @@
             "type": "string",
             "description": "Creation timestamp of the message which will be updated at each call"
           },
-          "response": {
-            "type": "string",
-            "description": "response description"
-          },
           "txnid": {
             "type": "string",
             "description": "An unique transaction identifier used for providing an end to end traceability."
+          },
+          "response": {
+            "type": "string",
+            "description": "response description"
           },
           "ver": {
             "type": "string",
             "description": "The version of the API"
           }
         },
-        "required": ["response", "timestamp", "txnid", "ver"]
+        "required": [
+          "response",
+          "timestamp",
+          "txnid",
+          "ver"
+        ]
       },
       "UnauthorizedAccess": {
         "type": "object",
@@ -4986,21 +4485,28 @@
             "type": "string",
             "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
           },
-          "ver": {
-            "type": "string",
-            "description": "API version."
-          },
           "errorCode": {
             "type": "string",
-            "enum": ["Unauthorized"]
+            "enum": [
+              "Unauthorized"
+            ]
           },
           "timestamp": {
             "type": "string",
             "format": "date-time",
             "description": "Response timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "description": "API version."
           }
         },
-        "required": ["errorMsg", "timestamp", "txnid", "ver"],
+        "required": [
+          "errorMsg",
+          "timestamp",
+          "txnid",
+          "ver"
+        ],
         "additionalProperties": true
       },
       "NotFound": {
@@ -5014,22 +4520,29 @@
             "type": "string",
             "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
           },
-          "ver": {
-            "type": "string",
-            "description": "API version."
-          },
           "errorCode": {
             "type": "string",
-            "enum": ["NoSuchVersion"],
+            "enum": [
+              "NoSuchVersion"
+            ],
             "description": "Indicates that the version ID specified in the request does not match an existing version"
           },
           "timestamp": {
             "type": "string",
             "format": "date-time",
             "description": "Response timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "description": "API version."
           }
         },
-        "required": ["errorMsg", "timestamp", "txnid", "ver"],
+        "required": [
+          "errorMsg",
+          "timestamp",
+          "txnid",
+          "ver"
+        ],
         "additionalProperties": true
       },
       "Conflict": {
@@ -5043,22 +4556,29 @@
             "type": "string",
             "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
           },
-          "ver": {
-            "type": "string",
-            "description": "API version."
-          },
           "errorCode": {
             "type": "string",
-            "enum": ["IdempotencyError"],
+            "enum": [
+              "IdempotencyError"
+            ],
             "description": "IdempotencyError When UUID/Id is not unique"
           },
           "timestamp": {
             "type": "string",
             "format": "date-time",
             "description": "Response timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "description": "API version."
           }
         },
-        "required": ["errorMsg", "timestamp", "txnid", "ver"],
+        "required": [
+          "errorMsg",
+          "timestamp",
+          "txnid",
+          "ver"
+        ],
         "additionalProperties": true
       },
       "PreconditionFailed": {
@@ -5072,21 +4592,28 @@
             "type": "string",
             "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
           },
-          "ver": {
-            "type": "string",
-            "description": "API version."
-          },
           "errorCode": {
             "type": "string",
-            "enum": ["PreconditionFailed"]
+            "enum": [
+              "PreconditionFailed"
+            ]
           },
           "timestamp": {
             "type": "string",
             "format": "date-time",
             "description": "Response timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "description": "API version."
           }
         },
-        "required": ["errorMsg", "timestamp", "txnid", "ver"],
+        "required": [
+          "errorMsg",
+          "timestamp",
+          "txnid",
+          "ver"
+        ],
         "additionalProperties": true
       },
       "InternalServerError": {
@@ -5100,21 +4627,28 @@
             "type": "string",
             "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
           },
-          "ver": {
-            "type": "string",
-            "description": "API version."
-          },
           "errorCode": {
             "type": "string",
-            "enum": ["InternalError"]
+            "enum": [
+              "InternalError"
+            ]
           },
           "timestamp": {
             "type": "string",
             "format": "date-time",
             "description": "Response timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "description": "API version."
           }
         },
-        "required": ["errorMsg", "timestamp", "txnid", "ver"],
+        "required": [
+          "errorMsg",
+          "timestamp",
+          "txnid",
+          "ver"
+        ],
         "additionalProperties": true
       },
       "ServiceUnavailable": {
@@ -5128,21 +4662,28 @@
             "type": "string",
             "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
           },
-          "ver": {
-            "type": "string",
-            "description": "API version."
-          },
           "errorCode": {
             "type": "string",
-            "enum": ["ServiceUnavailable"]
+            "enum": [
+              "ServiceUnavailable"
+            ]
           },
           "timestamp": {
             "type": "string",
             "format": "date-time",
             "description": "Response timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "description": "API version."
           }
         },
-        "required": ["errorMsg", "timestamp", "txnid", "ver"],
+        "required": [
+          "errorMsg",
+          "timestamp",
+          "txnid",
+          "ver"
+        ],
         "additionalProperties": true
       },
       "BadRequestConsentFetch": {
@@ -5155,10 +4696,6 @@
           "errorMsg": {
             "type": "string",
             "description": "Error message with additional details. Ensure no sensitive information is included in the error message."
-          },
-          "ver": {
-            "type": "string",
-            "description": "API version."
           },
           "errorCode": {
             "type": "string",
@@ -5174,9 +4711,18 @@
             "type": "string",
             "format": "date-time",
             "description": "Response timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "description": "API version."
           }
         },
-        "required": ["errorMsg", "timestamp", "txnid", "ver"],
+        "required": [
+          "errorMsg",
+          "timestamp",
+          "txnid",
+          "ver"
+        ],
         "additionalProperties": true
       },
       "PassDownSerializedBody": {
@@ -5191,6 +4737,16 @@
       "ConsentStatusNotification": {
         "type": "object",
         "properties": {
+          "txnid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique transaction identifier used for providing an end to end traceability."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp of the message which will be updated at each leg"
+          },
           "Notifier": {
             "description": "Information about the notifier",
             "allOf": [
@@ -5207,20 +4763,10 @@
               }
             ]
           },
-          "txnid": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The unique transaction identifier used for providing an end to end traceability."
-          },
           "ver": {
             "type": "string",
             "minLength": 1,
             "description": "The version of the API"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Creation timestamp of the message which will be updated at each leg"
           }
         },
         "required": [
@@ -5234,6 +4780,15 @@
       "ConsentStatusNotificationConsentStatusNotification": {
         "type": "object",
         "properties": {
+          "consentHandle": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
           "consentStatus": {
             "type": "string",
             "enum": [
@@ -5244,18 +4799,12 @@
               "EXPIRED",
               "REJECTED"
             ]
-          },
-          "consentHandle": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "consentId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
           }
         },
-        "required": ["consentId", "consentStatus"]
+        "required": [
+          "consentId",
+          "consentStatus"
+        ]
       },
       "ConsentStatusNotificationNotifier": {
         "type": "object",
@@ -5269,42 +4818,26 @@
             "description": ""
           }
         },
-        "required": ["id", "type"]
-      },
-      "VersionResponse": {
-        "type": "object",
-        "properties": {
-          "environment": {
-            "type": "string"
-          },
-          "version": {
-            "type": "string"
-          },
-          "server": {
-            "type": "string"
-          }
-        }
-      },
-      "MessageResponse": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "Welcome message to the API"
-          }
-        },
-        "required": ["message"]
+        "required": [
+          "id",
+          "type"
+        ]
       },
       "FIDataFetchResponse": {
         "type": "object",
         "properties": {
-          "DataRange": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Request identifier to fetch the status and data."
+          },
+          "Payload": {
+            "type": "array",
+            "nullable": true,
             "description": "Time range for which the data is being requested",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange"
-              }
-            ]
+            "items": {
+              "$ref": "#/components/schemas/FIFetchDecrpytedResponseFIItem"
+            }
           },
           "status": {
             "type": "string",
@@ -5323,23 +4856,21 @@
             "format": "uuid",
             "description": "Consent identifier for this data fetch request."
           },
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Request identifier to fetch the status and data."
-          },
-          "Payload": {
-            "type": "array",
-            "nullable": true,
-            "description": "Time range for which the data is being requested",
-            "items": {
-              "$ref": "#/components/schemas/FIFetchDecrpytedResponseFIItem"
-            }
-          },
           "format": {
             "type": "string",
-            "enum": ["xml", "json"],
+            "enum": [
+              "xml",
+              "json"
+            ],
             "description": "Format of decrypted data"
+          },
+          "DataRange": {
+            "description": "Time range for which the data is being requested",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange"
+              }
+            ]
           }
         },
         "required": [
@@ -5354,21 +4885,30 @@
       "FIFetchDecrpytedResponseFIItem": {
         "type": "object",
         "properties": {
-          "fipID": {
-            "type": "string"
-          },
           "data": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FIFetchDecrpytedResponseFIItemDataItem"
             }
+          },
+          "fipID": {
+            "type": "string"
           }
         },
-        "required": ["data", "fipID"]
+        "required": [
+          "data",
+          "fipID"
+        ]
       },
       "FIFetchDecrpytedResponseFIItemDataItem": {
         "type": "object",
         "properties": {
+          "maskedAccNumber": {
+            "type": "string"
+          },
+          "linkRefNumber": {
+            "type": "string"
+          },
           "decryptedFI": {
             "description": "Contains the decrypted financial information",
             "allOf": [
@@ -5376,15 +4916,13 @@
                 "$ref": "#/components/schemas/FIFetchDecrpytedResponseFIItemDataItemDecryptedFI"
               }
             ]
-          },
-          "linkRefNumber": {
-            "type": "string"
-          },
-          "maskedAccNumber": {
-            "type": "string"
           }
         },
-        "required": ["decryptedFI", "linkRefNumber", "maskedAccNumber"]
+        "required": [
+          "decryptedFI",
+          "linkRefNumber",
+          "maskedAccNumber"
+        ]
       },
       "FIFetchDecrpytedResponseFIItemDataItemDecryptedFI": {
         "type": "object",
@@ -5446,8 +4984,16 @@
         "properties": {
           "format": {
             "type": "string",
-            "enum": ["xml", "json"],
+            "enum": [
+              "xml",
+              "json"
+            ],
             "description": "Format of decrypted data"
+          },
+          "consentId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The request identifier to fetch the status and data."
           },
           "DataRange": {
             "description": "Time range for which the data is being requested (should be inclusive of the consent's FIDataRange)",
@@ -5456,656 +5002,13 @@
                 "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange"
               }
             ]
-          },
-          "consentId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The request identifier to fetch the status and data."
-          }
-        },
-        "required": ["DataRange", "consentId", "format"]
-      },
-      "UserActiveConsents": {
-        "type": "object",
-        "properties": {
-          "customerVua": {
-            "type": "string"
-          },
-          "totalConsents": {
-            "type": "integer"
-          },
-          "activeConsentsCount": {
-            "type": "integer"
-          },
-          "activeConsents": {
-            "type": "array",
-            "items": {
-              "description": "List of consent objects",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/UserActiveConsentsResponse"
-                }
-              ]
-            }
-          }
-        },
-        "required": ["activeConsentsCount", "customerVua", "totalConsents"]
-      },
-      "UserActiveConsentsResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The request identifier to fetch the status and data."
-          },
-          "url": {
-            "type": "string",
-            "description": "The URL link to the consent manager app for user to complete the flow."
-          },
-          "status": {},
-          "Detail": {
-            "description": "The identifier of the Customer.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentDetailsAggregated"
-              }
-            ]
-          },
-          "redirectUrl": {
-            "type": "string",
-            "description": "URL to redirect to after completion of consent journey"
-          },
-          "PAN": {
-            "type": "string",
-            "pattern": "^$|[A-Z]{5}[0-9]{4}[A-Z]{1}"
-          },
-          "context": {
-            "type": "array",
-            "items": {
-              "description": "Specify extra data in key-value pair that might be required for custom arguments or filteration",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ConsentsRequestContext"
-                }
-              ]
-            }
-          },
-          "Usage": {
-            "nullable": true,
-            "description": "Usage object for this consent. Defines how many times and when this consent has been used for data fetch",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentResponseConsentUsage"
-              }
-            ]
-          },
-          "detail": {
-            "description": "The identifier of the Customer.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ActiveConsentsDetail"
-              }
-            ]
-          },
-          "requestId": {
-            "type": "string"
-          }
-        },
-        "required": ["Detail", "detail", "id", "redirectUrl", "url"]
-      },
-      "ActiveConsentsDetail": {
-        "type": "object",
-        "properties": {
-          "consentTypes": {
-            "type": "array",
-            "x-minimum": 1,
-            "items": {
-              "type": "string",
-              "enum": ["PROFILE", "SUMMARY", "TRANSACTIONS"]
-            }
-          },
-          "Purpose": {
-            "description": "Purpose of the consent defined in the AA Technical Specification",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentDetailPurpose"
-              }
-            ]
-          },
-          "consentMode": {
-            "description": "Consent Mode as defined in the AA Technical Specification"
-          },
-          "fiTypes": {
-            "type": "array",
-            "x-minimum": 1,
-            "items": {
-              "type": "string",
-              "enum": [
-                "DEPOSIT",
-                "TERM_DEPOSIT",
-                "RECURRING_DEPOSIT",
-                "SIP",
-                "CP",
-                "GOVT_SECURITIES",
-                "EQUITIES",
-                "BONDS",
-                "DEBENTURES",
-                "MUTUAL_FUNDS",
-                "ETF",
-                "IDR",
-                "CIS",
-                "AIF",
-                "INSURANCE_POLICIES",
-                "NPS",
-                "INVIT",
-                "REIT",
-                "OTHER",
-                "GSTR1_3B"
-              ],
-              "description": "List of financial information types."
-            }
-          },
-          "DataConsumer": {
-            "description": "Dataconsumer ID. For a consent between FIP & AA, Dataconsumer would be AA whereas for a consent between FIU/AA Application & AA, Dataconsumer would be FIU/AA Application.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailDataConsumerByValue"
-              }
-            ]
-          },
-          "consentExpiry": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Expiry date-time for the consent"
-          },
-          "fetchType": {
-            "description": "FI Fetch type. Could be ONETIME or PERIODIC"
-          },
-          "Frequency": {
-            "description": "Defines frequency of FI data fetch within the defined time unit. E.g.HOURLY,DAILY,MONTHLY,YEARLY.The maximum frequency value that can be defined is 1 request per HOUR. Similaraly it will be 24 requests per DAY and so on. Frequency can not be set below 1 request per hour.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailFrequencyEnumByValue"
-              }
-            ]
-          },
-          "FIDataRange": {
-            "description": "Data Range (Datetime) for the Financial Information Requested",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailFIDataRange"
-              }
-            ]
-          },
-          "DataProvider": {
-            "description": "DataProvider ID. For a consent between FIP & AA, DataProvider would be FIP whereas for a consent between FIU/AA Application & AA, DataProvider would be AA.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailDataProviderByEnumValue"
-              }
-            ]
-          },
-          "Customer": {
-            "description": "Address of the end customer",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailCustomer"
-              }
-            ]
-          },
-          "Accounts": {
-            "type": "array",
-            "description": "List of accounts which the consent would fetch FI from. For a consent between FIU & AA, this list could have accounts from multiple FIP. For a consent between FIP & AA, only accounts from particular FIP must be present in this section.",
-            "items": {
-              "$ref": "#/components/schemas/SignedConsentDetailAccountsItemByEnumValue"
-            }
-          },
-          "consentStart": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Start date-time of the consent. This field would allow for Post-Dated consent."
-          },
-          "DataFilter": {
-            "type": "array",
-            "description": "rules that will be utilized by FIP to filter the data",
-            "items": {
-              "$ref": "#/components/schemas/SignedConsentDetailDataFilterItemByEnumValue"
-            }
-          },
-          "DataLife": {
-            "description": "Datalife defines for how long can the FIU/AA Application store the data",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailDataLifeByEnumValue"
-              }
-            ]
           }
         },
         "required": [
-          "Accounts",
-          "Customer",
-          "DataConsumer",
-          "DataLife",
-          "DataProvider",
-          "FIDataRange",
-          "Frequency",
-          "Purpose",
-          "consentExpiry",
-          "consentStart",
-          "consentTypes",
-          "fiTypes"
+          "DataRange",
+          "consentId",
+          "format"
         ]
-      },
-      "SignedConsentDetailDataLifeByEnumValue": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "number",
-            "description": "Value for the Datalife Unit. If INF, value must be set to 0."
-          },
-          "unit": {
-            "description": "A unit of how long consumer can store the data."
-          }
-        },
-        "required": ["value"]
-      },
-      "SignedConsentDetailDataFilterItemByEnumValue": {
-        "type": "object",
-        "properties": {
-          "operator": {
-            "type": "string",
-            "enum": ["=", "!=", ">", "<", ">=", "<="],
-            "description": "Operator to filter data by."
-          },
-          "value": {
-            "type": "string",
-            "description": "Value to filter data"
-          },
-          "type": {}
-        },
-        "required": ["operator", "value"]
-      },
-      "SignedConsentDetailAccountsItemByEnumValue": {
-        "type": "object",
-        "properties": {
-          "linkRefNumber": {
-            "type": "string",
-            "description": "FIP's linkRefNumber as shared by the FIP after linking"
-          },
-          "maskedAccNumber": {
-            "type": "string",
-            "description": "Masked account number"
-          },
-          "accType": {
-            "type": "string",
-            "description": "Type of Account"
-          },
-          "fiType": {},
-          "fipId": {
-            "type": "string",
-            "description": "FIP ID"
-          }
-        }
-      },
-      "SignedConsentDetailCustomer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Customer Address"
-          }
-        }
-      },
-      "SignedConsentDetailDataProviderByEnumValue": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "DataProvider ID"
-          },
-          "type": {
-            "description": "Type of DataConsumer"
-          }
-        }
-      },
-      "SignedConsentDetailFIDataRange": {
-        "type": "object",
-        "properties": {
-          "to": {
-            "type": "string",
-            "format": "date-time",
-            "description": "End date for financial information"
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Start date for financial information"
-          }
-        },
-        "required": ["from", "to"]
-      },
-      "SignedConsentDetailFrequencyEnumByValue": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "number",
-            "description": "Define the number of times FI data can be fetched within the defined time unit."
-          },
-          "unit": {
-            "description": "Defines the time unit of the frequency to access the financial information."
-          }
-        },
-        "required": ["value"]
-      },
-      "SignedConsentDetailDataConsumerByValue": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "DataConsumer ID"
-          },
-          "type": {
-            "description": "Type of DataConsumer"
-          }
-        }
-      },
-      "ConsentDetailPurpose": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "enum": ["101", "102", "103", "104", "105", "106"],
-            "description": "Purpose Code as defined in the AA Technical Specification "
-          },
-          "refUri": {
-            "type": "string",
-            "description": "URL where the purpose is further defined"
-          },
-          "text": {
-            "type": "string",
-            "description": "Textual Description"
-          },
-          "Category": {
-            "$ref": "#/components/schemas/PurposeCategory"
-          }
-        },
-        "required": ["Category", "code", "refUri", "text"]
-      },
-      "PurposeCategory": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "description": "Category name of the Purpose code"
-          }
-        }
-      },
-      "ConsentResponseConsentUsage": {
-        "type": "object",
-        "properties": {
-          "lastUsed": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "Timestamp of last data fetch for this consent"
-          },
-          "count": {
-            "type": "number",
-            "description": "Count of the number of times data has been fetched for this consent"
-          }
-        },
-        "required": ["count", "lastUsed"]
-      },
-      "ConsentDetailsAggregated": {
-        "type": "object",
-        "properties": {
-          "consentTypes": {
-            "type": "array",
-            "x-minimum": 1,
-            "items": {
-              "type": "string",
-              "enum": ["PROFILE", "SUMMARY", "TRANSACTIONS"]
-            }
-          },
-          "Purpose": {
-            "description": "Purpose of the consent defined in the AA Technical Specification",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentDetailPurpose"
-              }
-            ]
-          },
-          "consentMode": {
-            "type": "string",
-            "enum": ["VIEW", "STORE", "QUERY", "STREAM"],
-            "description": "Consent Mode as defined in the AA Technical Specification"
-          },
-          "fiTypes": {
-            "type": "array",
-            "x-minimum": 1,
-            "items": {
-              "type": "string",
-              "enum": [
-                "DEPOSIT",
-                "TERM_DEPOSIT",
-                "RECURRING_DEPOSIT",
-                "SIP",
-                "CP",
-                "GOVT_SECURITIES",
-                "EQUITIES",
-                "BONDS",
-                "DEBENTURES",
-                "MUTUAL_FUNDS",
-                "ETF",
-                "IDR",
-                "CIS",
-                "AIF",
-                "INSURANCE_POLICIES",
-                "NPS",
-                "INVIT",
-                "REIT",
-                "OTHER",
-                "GSTR1_3B"
-              ],
-              "description": "List of financial information types."
-            }
-          },
-          "DataConsumer": {
-            "description": "Dataconsumer ID. For a consent between FIP & AA, Dataconsumer would be AA whereas for a consent between FIU/AA Application & AA, Dataconsumer would be FIU/AA Application.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailDataConsumer"
-              }
-            ]
-          },
-          "consentExpiry": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Expiry date-time for the consent"
-          },
-          "fetchType": {
-            "type": "string",
-            "enum": ["ONETIME", "PERIODIC"],
-            "description": "FI Fetch type. Could be ONETIME or PERIODIC"
-          },
-          "FIDataRange": {
-            "description": "Data Range (Datetime) for the Financial Information Requested",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailFIDataRange"
-              }
-            ]
-          },
-          "Frequency": {
-            "description": "Defines frequency of FI data fetch within the defined time unit. E.g.HOURLY,DAILY,MONTHLY,YEARLY.The maximum frequency value that can be defined is 1 request per HOUR. Similaraly it will be 24 requests per DAY and so on. Frequency can not be set below 1 request per hour.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailFrequency"
-              }
-            ]
-          },
-          "DataProvider": {
-            "description": "DataProvider ID. For a consent between FIP & AA, DataProvider would be FIP whereas for a consent between FIU/AA Application & AA, DataProvider would be AA.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailDataProvider"
-              }
-            ]
-          },
-          "Customer": {
-            "description": "Address of the end customer",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailCustomer"
-              }
-            ]
-          },
-          "Accounts": {
-            "type": "array",
-            "description": "List of accounts which the consent would fetch FI from. For a consent between FIU & AA, this list could have accounts from multiple FIP. For a consent between FIP & AA, only accounts from particular FIP must be present in this section.",
-            "items": {
-              "$ref": "#/components/schemas/SignedConsentDetailAccountsItem"
-            }
-          },
-          "consentStart": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Start date-time of the consent. This field would allow for Post-Dated consent."
-          },
-          "DataFilter": {
-            "type": "array",
-            "nullable": true,
-            "description": "rules that will be utilized by FIP to filter the data",
-            "items": {
-              "$ref": "#/components/schemas/SignedConsentDetailDataFilterItem"
-            }
-          },
-          "DataLife": {
-            "description": "Datalife defines for how long can the FIU/AA Application store the data",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SignedConsentDetailDataLife"
-              }
-            ]
-          }
-        },
-        "required": [
-          "Customer",
-          "DataConsumer",
-          "DataLife",
-          "FIDataRange",
-          "Frequency",
-          "Purpose",
-          "consentExpiry",
-          "consentMode",
-          "consentStart",
-          "consentTypes",
-          "fetchType",
-          "fiTypes"
-        ]
-      },
-      "SignedConsentDetailDataLife": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "number",
-            "description": "Value for the Datalife Unit. If INF, value must be set to 0."
-          },
-          "unit": {
-            "type": "string",
-            "enum": ["DAY", "MONTH", "YEAR", "INF"],
-            "description": "A unit of how long consumer can store the data."
-          }
-        },
-        "required": ["unit", "value"]
-      },
-      "SignedConsentDetailDataFilterItem": {
-        "type": "object",
-        "properties": {
-          "operator": {
-            "type": "string",
-            "enum": ["=", "!=", ">", "<", ">=", "<="],
-            "description": "Operator to filter data by."
-          },
-          "value": {
-            "type": "string",
-            "description": "Value to filter data"
-          },
-          "type": {
-            "type": "string",
-            "enum": ["TRANSACTIONTYPE", "TRANSACTIONAMOUNT"],
-            "description": "The condition to filter the data on."
-          }
-        },
-        "required": ["operator", "type", "value"]
-      },
-      "SignedConsentDetailAccountsItem": {
-        "type": "object",
-        "properties": {
-          "linkRefNumber": {
-            "type": "string",
-            "description": "FIP's linkRefNumber as shared by the FIP after linking"
-          },
-          "maskedAccNumber": {
-            "type": "string",
-            "description": "Masked account number"
-          },
-          "accType": {
-            "type": "string",
-            "description": "Type of Account"
-          },
-          "fiType": {
-            "type": "string",
-            "description": "Type of Financial Information"
-          },
-          "fipId": {
-            "type": "string",
-            "description": "FIP ID"
-          }
-        }
-      },
-      "SignedConsentDetailDataProvider": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "DataProvider ID"
-          },
-          "type": {
-            "type": "string",
-            "enum": ["FIP", "AA"],
-            "description": "Type of DataConsumer"
-          }
-        }
-      },
-      "SignedConsentDetailFrequency": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "number",
-            "description": "Define the number of times FI data can be fetched within the defined time unit."
-          },
-          "unit": {
-            "type": "string",
-            "enum": ["HOUR", "DAY", "MONTH", "YEAR"],
-            "description": "Defines the time unit of the frequency to access the financial information."
-          }
-        },
-        "required": ["unit", "value"]
-      },
-      "SignedConsentDetailDataConsumer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "DataConsumer ID"
-          },
-          "type": {
-            "type": "string",
-            "enum": ["FIU", "AA"],
-            "description": "Type of DataConsumer"
-          }
-        }
       },
       "ConsentResponse": {
         "type": "object",
@@ -6168,7 +5071,402 @@
             ]
           }
         },
-        "required": ["Detail", "id", "redirectUrl", "status", "url"]
+        "required": [
+          "Detail",
+          "id",
+          "redirectUrl",
+          "status",
+          "url"
+        ]
+      },
+      "ConsentResponseConsentUsage": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Count of the number of times data has been fetched for this consent"
+          },
+          "lastUsed": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp of last data fetch for this consent"
+          }
+        },
+        "required": [
+          "count",
+          "lastUsed"
+        ]
+      },
+      "ConsentDetailsAggregated": {
+        "type": "object",
+        "properties": {
+          "fetchType": {
+            "type": "string",
+            "enum": [
+              "ONETIME",
+              "PERIODIC"
+            ],
+            "description": "FI Fetch type. Could be ONETIME or PERIODIC"
+          },
+          "consentMode": {
+            "type": "string",
+            "enum": [
+              "VIEW",
+              "STORE",
+              "QUERY",
+              "STREAM"
+            ],
+            "description": "Consent Mode as defined in the AA Technical Specification"
+          },
+          "Customer": {
+            "description": "Address of the end customer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignedConsentDetailCustomer"
+              }
+            ]
+          },
+          "Purpose": {
+            "description": "Purpose of the consent defined in the AA Technical Specification",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentDetailPurpose"
+              }
+            ]
+          },
+          "DataProvider": {
+            "description": "DataProvider ID. For a consent between FIP & AA, DataProvider would be FIP whereas for a consent between FIU/AA Application & AA, DataProvider would be AA.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignedConsentDetailDataProvider"
+              }
+            ]
+          },
+          "Accounts": {
+            "type": "array",
+            "description": "List of accounts which the consent would fetch FI from. For a consent between FIU & AA, this list could have accounts from multiple FIP. For a consent between FIP & AA, only accounts from particular FIP must be present in this section.",
+            "items": {
+              "$ref": "#/components/schemas/SignedConsentDetailAccountsItem"
+            }
+          },
+          "FIDataRange": {
+            "description": "Data Range (Datetime) for the Financial Information Requested",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignedConsentDetailFIDataRange"
+              }
+            ]
+          },
+          "fiTypes": {
+            "type": "array",
+            "x-minimum": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "DEPOSIT",
+                "TERM_DEPOSIT",
+                "RECURRING_DEPOSIT",
+                "SIP",
+                "CP",
+                "GOVT_SECURITIES",
+                "EQUITIES",
+                "BONDS",
+                "DEBENTURES",
+                "MUTUAL_FUNDS",
+                "ETF",
+                "IDR",
+                "CIS",
+                "AIF",
+                "INSURANCE_POLICIES",
+                "NPS",
+                "INVIT",
+                "REIT",
+                "OTHER",
+                "GSTR1_3B"
+              ],
+              "description": "List of financial information types."
+            }
+          },
+          "consentExpiry": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Expiry date-time for the consent"
+          },
+          "consentTypes": {
+            "type": "array",
+            "x-minimum": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "PROFILE",
+                "SUMMARY",
+                "TRANSACTIONS"
+              ]
+            }
+          },
+          "DataLife": {
+            "description": "Datalife defines for how long can the FIU/AA Application store the data",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignedConsentDetailDataLife"
+              }
+            ]
+          },
+          "Frequency": {
+            "description": "Defines frequency of FI data fetch within the defined time unit. E.g.HOURLY,DAILY,MONTHLY,YEARLY.The maximum frequency value that can be defined is 1 request per HOUR. Similaraly it will be 24 requests per DAY and so on. Frequency can not be set below 1 request per hour.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignedConsentDetailFrequency"
+              }
+            ]
+          },
+          "DataFilter": {
+            "type": "array",
+            "nullable": true,
+            "description": "rules that will be utilized by FIP to filter the data",
+            "items": {
+              "$ref": "#/components/schemas/SignedConsentDetailDataFilterItem"
+            }
+          },
+          "consentStart": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start date-time of the consent. This field would allow for Post-Dated consent."
+          },
+          "DataConsumer": {
+            "description": "Dataconsumer ID. For a consent between FIP & AA, Dataconsumer would be AA whereas for a consent between FIU/AA Application & AA, Dataconsumer would be FIU/AA Application.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignedConsentDetailDataConsumer"
+              }
+            ]
+          }
+        },
+        "required": [
+          "Customer",
+          "DataConsumer",
+          "DataLife",
+          "FIDataRange",
+          "Frequency",
+          "Purpose",
+          "consentExpiry",
+          "consentMode",
+          "consentStart",
+          "consentTypes",
+          "fetchType",
+          "fiTypes"
+        ]
+      },
+      "SignedConsentDetailDataConsumer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "DataConsumer ID"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIU",
+              "AA"
+            ],
+            "description": "Type of DataConsumer"
+          }
+        }
+      },
+      "SignedConsentDetailDataFilterItem": {
+        "type": "object",
+        "properties": {
+          "operator": {
+            "type": "string",
+            "enum": [
+              "=",
+              "!=",
+              ">",
+              "<",
+              ">=",
+              "<="
+            ],
+            "description": "Operator to filter data by."
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to filter data"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "TRANSACTIONTYPE",
+              "TRANSACTIONAMOUNT"
+            ],
+            "description": "The condition to filter the data on."
+          }
+        },
+        "required": [
+          "operator",
+          "type",
+          "value"
+        ]
+      },
+      "SignedConsentDetailFrequency": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "type": "string",
+            "enum": [
+              "HOUR",
+              "DAY",
+              "MONTH",
+              "YEAR"
+            ],
+            "description": "Defines the time unit of the frequency to access the financial information."
+          },
+          "value": {
+            "type": "number",
+            "description": "Define the number of times FI data can be fetched within the defined time unit."
+          }
+        },
+        "required": [
+          "unit",
+          "value"
+        ]
+      },
+      "SignedConsentDetailDataLife": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "type": "string",
+            "enum": [
+              "DAY",
+              "MONTH",
+              "YEAR",
+              "INF"
+            ],
+            "description": "A unit of how long consumer can store the data."
+          },
+          "value": {
+            "type": "number",
+            "description": "Value for the Datalife Unit. If INF, value must be set to 0."
+          }
+        },
+        "required": [
+          "unit",
+          "value"
+        ]
+      },
+      "SignedConsentDetailFIDataRange": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End date for financial information"
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start date for financial information"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ]
+      },
+      "SignedConsentDetailAccountsItem": {
+        "type": "object",
+        "properties": {
+          "maskedAccNumber": {
+            "type": "string",
+            "description": "Masked account number"
+          },
+          "linkRefNumber": {
+            "type": "string",
+            "description": "FIP's linkRefNumber as shared by the FIP after linking"
+          },
+          "fiType": {
+            "type": "string",
+            "description": "Type of Financial Information"
+          },
+          "accType": {
+            "type": "string",
+            "description": "Type of Account"
+          },
+          "fipId": {
+            "type": "string",
+            "description": "FIP ID"
+          }
+        }
+      },
+      "SignedConsentDetailDataProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "DataProvider ID"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FIP",
+              "AA"
+            ],
+            "description": "Type of DataConsumer"
+          }
+        }
+      },
+      "ConsentDetailPurpose": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "101",
+              "102",
+              "103",
+              "104",
+              "105",
+              "106"
+            ],
+            "description": "Purpose Code as defined in the AA Technical Specification "
+          },
+          "Category": {
+            "$ref": "#/components/schemas/PurposeCategory"
+          },
+          "text": {
+            "type": "string",
+            "description": "Textual Description"
+          },
+          "refUri": {
+            "type": "string",
+            "description": "URL where the purpose is further defined"
+          }
+        },
+        "required": [
+          "Category",
+          "code",
+          "refUri",
+          "text"
+        ]
+      },
+      "PurposeCategory": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Category name of the Purpose code"
+          }
+        }
+      },
+      "SignedConsentDetailCustomer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Customer Address"
+          }
+        }
       },
       "CreateConsentsRequest": {
         "type": "object",
@@ -6181,14 +5479,6 @@
             "type": "string",
             "description": "URL to redirect to after completion of consent journey"
           },
-          "Detail": {
-            "description": "Specify the financial information types that customer wants to access",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetail"
-              }
-            ]
-          },
           "context": {
             "type": "array",
             "items": {
@@ -6199,20 +5489,48 @@
                 }
               ]
             }
+          },
+          "Detail": {
+            "description": "Specify the financial information types that customer wants to access",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetail"
+              }
+            ]
           }
         },
-        "required": ["Detail"]
+        "required": [
+          "Detail"
+        ]
       },
       "ConsentsRequestConsentDetail": {
         "type": "object",
         "properties": {
-          "consentTypes": {
-            "type": "array",
-            "x-minimum": 1,
-            "items": {
-              "type": "string",
-              "enum": ["PROFILE", "SUMMARY", "TRANSACTIONS"]
-            }
+          "fetchType": {
+            "type": "string",
+            "enum": [
+              "ONETIME",
+              "PERIODIC"
+            ],
+            "description": "FI Fetch type. Could be ONETIME or PERIODIC"
+          },
+          "consentMode": {
+            "type": "string",
+            "enum": [
+              "VIEW",
+              "STORE",
+              "QUERY",
+              "STREAM"
+            ],
+            "description": "Consent Mode as defined in the AA Technical Specification"
+          },
+          "Customer": {
+            "description": "Contains the customer address",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetailCustomer"
+              }
+            ]
           },
           "Purpose": {
             "description": "Purpose of the consent defined in the AA Technical Specification",
@@ -6222,10 +5540,13 @@
               }
             ]
           },
-          "consentMode": {
-            "type": "string",
-            "enum": ["VIEW", "STORE", "QUERY", "STREAM"],
-            "description": "Consent Mode as defined in the AA Technical Specification"
+          "FIDataRange": {
+            "description": "Specify the datetime range for querying the financial information",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange"
+              }
+            ]
           },
           "fiTypes": {
             "type": "array",
@@ -6257,45 +5578,36 @@
               "description": "List of financial information types."
             }
           },
-          "DataConsumer": {
-            "description": "Contains the FIU id",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataConsumer"
-              }
-            ]
-          },
           "consentExpiry": {
             "type": "string",
             "format": "date-time",
             "description": "Expiry date-time for the consent"
           },
-          "fetchType": {
-            "type": "string",
-            "enum": ["ONETIME", "PERIODIC"],
-            "description": "FI Fetch type. Could be ONETIME or PERIODIC"
+          "consentTypes": {
+            "type": "array",
+            "x-minimum": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "PROFILE",
+                "SUMMARY",
+                "TRANSACTIONS"
+              ]
+            }
+          },
+          "DataLife": {
+            "description": "How long consumer is allowed to store data",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataLife"
+              }
+            ]
           },
           "Frequency": {
             "description": "Defines frequency of FI data fetch within the defined time unit. E.g.HOURLY,DAILY,MONTHLY,YEARLY.The maximum frequency value that can be defined is 1 request per HOUR. Similaraly it will be 24 requests per DAY and so on. Frequency can not be set below 1 request per hour.",
             "allOf": [
               {
                 "$ref": "#/components/schemas/ConsentsRequestConsentDetailFrequency"
-              }
-            ]
-          },
-          "Customer": {
-            "description": "Contains the customer address",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetailCustomer"
-              }
-            ]
-          },
-          "FIDataRange": {
-            "description": "Specify the datetime range for querying the financial information",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetailFIDataRange"
               }
             ]
           },
@@ -6311,11 +5623,11 @@
             "format": "date-time",
             "description": "Start date-time of the consent. This field would allow for Post-Dated consent."
           },
-          "DataLife": {
-            "description": "How long consumer is allowed to store data",
+          "DataConsumer": {
+            "description": "Contains the FIU id",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataLife"
+                "$ref": "#/components/schemas/ConsentsRequestConsentDetailDataConsumer"
               }
             ]
           }
@@ -6335,16 +5647,6 @@
           "fiTypes"
         ]
       },
-      "ConsentsRequestConsentDetailCustomer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The identifier of the Customer can be generated during the registration with AA"
-          }
-        },
-        "required": ["id"]
-      },
       "ConsentsRequestConsentDetailDataConsumer": {
         "type": "object",
         "properties": {
@@ -6353,71 +5655,21 @@
             "description": "The identifier of the FIU"
           }
         },
-        "required": ["id"]
+        "required": [
+          "id"
+        ]
       },
-      "GenerateJWSSignatureRequest": {
+      "ConsentsRequestConsentDetailCustomer": {
         "type": "object",
         "properties": {
-          "payload": {
+          "id": {
             "type": "string",
-            "description": "Payload to be signed"
+            "description": "The identifier of the Customer can be generated during the registration with AA"
           }
         },
-        "required": ["payload"]
-      },
-      "GenerateJWSSignatureResponse": {
-        "type": "object",
-        "properties": {
-          "signature": {
-            "type": "string",
-            "description": "JWS signature of the payload"
-          }
-        },
-        "required": ["signature"]
-      },
-      "AccountAvailabilityRequest": {
-        "type": "object",
-        "properties": {
-          "mobileNumber": {
-            "type": "string",
-            "description": "Mobile number of the customer"
-          }
-        },
-        "required": ["mobileNumber"]
-      },
-      "AccountAvailabilityResponse": {
-        "type": "object",
-        "properties": {
-          "accounts": {
-            "type": "array",
-            "items": {
-              "description": "Account availability",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/AccountAvailability"
-                }
-              ]
-            }
-          }
-        }
-      },
-      "AccountAvailability": {
-        "type": "object",
-        "properties": {
-          "aa": {
-            "type": "string",
-            "description": "Handle of the AA"
-          },
-          "vua": {
-            "type": "string",
-            "description": "Customer identifier for the account"
-          },
-          "status": {
-            "type": "boolean",
-            "description": "Status of the account availability"
-          }
-        },
-        "required": ["aa", "status", "vua"]
+        "required": [
+          "id"
+        ]
       },
       "FIPResponse": {
         "type": "object",
@@ -6486,11 +5738,21 @@
             "description": "Type of FIP"
           },
           "status": {
-            "enum": ["ACTIVE", "INACTIVE", "TEMPORARILY_INACTIVE"],
+            "enum": [
+              "ACTIVE",
+              "INACTIVE",
+              "TEMPORARILY_INACTIVE"
+            ],
             "description": "Current status of the FIP"
           }
         },
-        "required": ["fiTypes", "fipId", "institutionType", "name", "status"]
+        "required": [
+          "fiTypes",
+          "fipId",
+          "institutionType",
+          "name",
+          "status"
+        ]
       }
     },
     "responses": {
