@@ -10,9 +10,41 @@ visible_in_sidebar: true
 The **Third Party Validation (TPV)** QR introduces an enhanced layer of security to the traditional UPI QR by incorporating a conditional validation check of the customer’s bank account details. This procedure is designed to ensure that payments are made from a bank account that has been previously registered with the merchant, typically during the on-boarding or KYC process.
 
 <Callout type="tip">
-The TPV process is a mandatory check required for most <code>capital markets merchants</code> and is mandated by SEBI to ensure that funds are collected from a verified account of the customer only. It can also be beneficial for other use-cases like <strong>insurance, loans and loyalty programs</strong>.
+  The TPV process is a mandatory check required for most{" "}
+  <code>capital markets merchants</code> and is mandated by SEBI to ensure that
+  funds are collected from a verified account of the customer only. It can also
+  be beneficial for other use-cases like{" "}
+  <strong>insurance, loans and loyalty programs</strong>.
 </Callout>
 
+<hr class="primary" />
+
+#### Step 1 - Create payment link with validation
+
+When creating a payment link, merchants have the option to include the customer's bank account details as part of the link creation request. This additional information is aimed at facilitating the validation process.
+
+<a
+  href="/payments/umap/api-reference#/category~tpv/operation~tpv#createTPV"
+  target="_blank"
+>
+  <code>Create request</code> ↗
+</a>
+
+<hr class="primary" />
+
+#### Step 2 - Validate account during transaction
+
+As the transaction is initiated and processed through the UPI system, the bank account details provided at the payment stage are compared against those supplied by the merchant. This comparison is conducted in real-time, with the UPI Setu system receiving the customer's bank account details from NPCI.
+
+<hr class="primary" />
+
+#### Step 3 - Accept or reject transaction
+
+Based on the outcome of the validation check, the UPI Setu system decides whether to accept or reject the transaction. If the customer’s bank account details match the details registered with the merchant, the transaction proceeds. If there is a discrepancy, the transaction is halted to prevent unauthorized payments.
+
+<hr class="primary" />
+
+### TPV Process Flow
 
 <img
   src="https://storage.googleapis.com/strapi-assets/latest/TPV-flow/TPV-flow.png"
@@ -32,12 +64,13 @@ When creating a QR, merchants have the option to include the **customer's bank a
   Create TPV QR ↗
 </a>
 
-<br/>
-<br/>
+<br />
+<br />
 
 Sample bank account validation object—
+
 <CodeBlockWithCopy language="json">
-{`{
+  {`{
     "primaryAccount": {
       "IFSC": "SBIN0000001",
       "accountName": "ram",
@@ -53,7 +86,6 @@ Sample bank account validation object—
 }`}
 </CodeBlockWithCopy>
 
-
 <hr class="primary" />
 
 #### Step 2 - Accept or reject a payment
@@ -67,18 +99,21 @@ When a customer interacts with a QR or a payment shortlink and tries to make a p
   Fetch QR status ↗
 </a>
 
-<br/>
-<br/>
+<br />
+<br />
 
 <Callout type="tip">
-  A payment is <strong>accepted</strong> and the customer's <strong>bank account is debited</strong>, only if the details <strong>match</strong>.
+  A payment is <strong>accepted</strong> and the customer's{" "}
+  <strong>bank account is debited</strong>, only if the details{" "}
+  <strong>match</strong>.
 </Callout>
 
-<br/>
+<br />
 
 Sample reason object, when a payment is rejected—
+
 <CodeBlockWithCopy language="json">
-{`{
+  {`{
     "reason": {
       "code": "payment-failed",
       "desc": "account name: mismatch",
@@ -94,12 +129,16 @@ Sample reason object, when a payment is rejected—
 #### Step 3 - Retrieve payment details
 
 There are two methods in which the merchant can get the details of the payment made by the customer
+
 - Get notified on payment events with merchant notifications
 - Fetch payment history for the QR
-<br/>
-<a href="/payments/umap/api-reference#/category~payments/operation~payments#fetchLastByProductInstanceId" target="_blank">
+  <br />
+  <a
+    href="/payments/umap/api-reference#/category~payments/operation~payments#fetchLastByProductInstanceId"
+    target="_blank"
+  >
     Check payment status ↗
-</a>
+  </a>
 
 <NextPage
   info={{
