@@ -1,0 +1,1468 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Data Gateway Pennydrop-pennyless",
+      "description": "Confirm the validity of an account from the account holder’s bank, with pennyless as primary and penny-drop as fallback done in real-time.",
+      "contact": {},
+      "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "https://dg-sandbox.setu.co",
+            "description": "Sandbox"
+        },
+        {
+            "url": "https://dg.setu.co",
+            "description": "Production"
+        }
+    ],
+    "paths": {
+      "/async": {
+        "post": {
+          "tags": [
+            "SETU BAV"
+          ],
+          "summary": "Create",
+          "operationId": "Create",
+          "parameters": [
+            {
+              "name": "x-client-id",
+              "in": "header",
+              "description": "",
+              "required": true,
+              "style": "simple",
+              "schema": {
+                "type": "string",
+                "example": "{{client_id}}"
+              }
+            },
+            {
+              "name": "x-client-secret",
+              "in": "header",
+              "description": "",
+              "required": true,
+              "style": "simple",
+              "schema": {
+                "type": "string",
+                "example": "{{secret}}"
+              }
+            },
+            {
+              "name": "x-product-instance-id",
+              "in": "header",
+              "description": "",
+              "required": true,
+              "style": "simple",
+              "schema": {
+                "type": "string",
+                "example": "{{setu_bav_product_instance_id}}"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CreateRequest"
+                    },
+                    {
+                      "example": {
+                        "ifsc": "UTIB0002083",
+                        "accountNumber": "1234567890"
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "ifsc": "UTIB0002083",
+                  "accountNumber": "1234567890"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "201": {
+              "description": "CREATED",
+              "headers": {},
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Success"
+                      },
+                      {
+                        "example": {
+                          "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+                          "status": "CREATED",
+                          "traceId": "e99b6f9a-41bc-4063-adcf-cd27043785d4"
+                        }
+                      }
+                    ]
+                  },
+                  "example": {
+                    "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+                    "status": "CREATED",
+                    "traceId": "e99b6f9a-41bc-4063-adcf-cd27043785d4"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "BAD REQUEST",
+              "headers": {},
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Failed1"
+                      },
+                      {
+                        "example": {
+                          "error": {
+                            "code": "BAVM1",
+                            "detail": "Either ifsc or bank account is invalid",
+                            "traceId": "f8d0e4f2-674f-4192-863a-6e9c1f595bc3"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "example": {
+                    "error": {
+                      "code": "BAVM1",
+                      "detail": "Either ifsc or bank account is invalid",
+                      "traceId": "f8d0e4f2-674f-4192-863a-6e9c1f595bc3"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "deprecated": false
+        }
+      },
+      "/{request_id}": {
+        "get": {
+          "tags": [
+            "SETU BAV"
+          ],
+          "summary": "Get details",
+          "operationId": "Getdetails",
+          "parameters": [
+            {
+              "name": "request_id",
+              "in": "path",
+              "description": "",
+              "required": true,
+              "style": "simple",
+              "schema": {
+                "type": "string",
+                "example": "{{request_id}}"
+              }
+            },
+            {
+              "name": "x-product-instance-id",
+              "in": "header",
+              "description": "",
+              "required": true,
+              "style": "simple",
+              "schema": {
+                "type": "string",
+                "example": "{{setu_bav_product_instance_id}}"
+              }
+            },
+            {
+              "name": "x-client-id",
+              "in": "header",
+              "description": "",
+              "required": true,
+              "style": "simple",
+              "schema": {
+                "type": "string",
+                "example": "{{client_id}}"
+              }
+            },
+            {
+              "name": "x-client-secret",
+              "in": "header",
+              "description": "",
+              "required": true,
+              "style": "simple",
+              "schema": {
+                "type": "string",
+                "example": "{{secret}}"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "headers": {
+                "Content-Length": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "711"
+                    }
+                  }
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/success-pennydrop"
+                      },
+                      {
+                        "example": {
+                          "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+                          "status": "SUCCESS",
+                          "fulfillmentType": "PENNYDROP",
+                          "data": {
+                            "bankAccountNumber": "1234567890",
+                            "bankAccountIfsc": "ABCD0123456",
+                            "bankAccountName": "Test User Name",
+                            "ifscCrossCheck": true,
+                            "ifscDetails": {
+                              "name": "State Bank of India",
+                              "branch": "CANTONMENT, BARODA",
+                              "center": "BARODA",
+                              "district": "BARODA",
+                              "state": "GUJARAT",
+                              "address": "BARODA MUNICIPAL CORPN. SHOPPING COMPLEX,NEAR FATEHGUNJ PETROL PUMP ,FATEHGUNJ BARODA ,PIN - 390002",
+                              "contact": "+912652795129",
+                              "imps": "true",
+                              "rtgs": "true",
+                              "city": "VADODARA",
+                              "iso3166": "IN-GJ",
+                              "neft": "true",
+                              "micr": "390002022",
+                              "upi": "true",
+                              "swift": ""
+                            }
+                          },
+                          "traceId": "cf7d0e36-1eb8-46b1-ac66-e0576d4d18f1"
+                        }
+                      }
+                    ]
+                  },
+                  "example": {
+                    "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+                    "status": "SUCCESS",
+                    "fulfillmentType": "PENNYDROP",
+                    "data": {
+                      "bankAccountNumber": "1234567890",
+                      "bankAccountIfsc": "ABCD0123456",
+                      "bankAccountName": "Test User Name",
+                      "ifscCrossCheck": true,
+                      "ifscDetails": {
+                        "name": "State Bank of India",
+                        "branch": "CANTONMENT, BARODA",
+                        "center": "BARODA",
+                        "district": "BARODA",
+                        "state": "GUJARAT",
+                        "address": "BARODA MUNICIPAL CORPN. SHOPPING COMPLEX,NEAR FATEHGUNJ PETROL PUMP ,FATEHGUNJ BARODA ,PIN - 390002",
+                        "contact": "+912652795129",
+                        "imps": "true",
+                        "rtgs": "true",
+                        "city": "VADODARA",
+                        "iso3166": "IN-GJ",
+                        "neft": "true",
+                        "micr": "390002022",
+                        "upi": "true",
+                        "swift": ""
+                      }
+                    },
+                    "traceId": "cf7d0e36-1eb8-46b1-ac66-e0576d4d18f1"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "BAD REQUEST",
+              "headers": {
+                "Content-Length": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "112"
+                    }
+                  }
+                },
+                "Connection": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "keep-alive"
+                    }
+                  }
+                },
+                "RateLimit-Remaining": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "1999"
+                    }
+                  }
+                },
+                "RateLimit-Limit": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "2000"
+                    }
+                  }
+                },
+                "X-RateLimit-Limit-Second": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "2000"
+                    }
+                  }
+                },
+                "X-RateLimit-Remaining-Second": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "1999"
+                    }
+                  }
+                },
+                "RateLimit-Reset": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "1"
+                    }
+                  }
+                },
+                "Server": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "SETU"
+                    }
+                  }
+                },
+                "Date": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "Thu, 31 Aug 2023 14:11:02 GMT"
+                    }
+                  }
+                },
+                "Permissions-Policy": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "interest-cohort=()"
+                    }
+                  }
+                },
+                "X-Frame-Options": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "DENY"
+                    }
+                  }
+                },
+                "X-XSS-Protection": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "1; mode=block"
+                    }
+                  }
+                },
+                "X-Content-Type-Options": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "nosniff"
+                    }
+                  }
+                },
+                "Content-Security-Policy": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "default-src 'self'; img-src 'self' data-gateway-resources.s3.ap-south-1.amazonaws.com; script-src 'self' data-gateway-resources.s3.ap-south-1.amazonaws.com 'unsafe-inline'; style-src 'self' data-gateway-resources.s3.ap-south-1.amazonaws.com fonts.googleapis.com 'unsafe-inline'; font-src fonts.gstatic.com"
+                    }
+                  }
+                },
+                "Referrer-Policy": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "strict-origin-when-cross-origin"
+                    }
+                  }
+                },
+                "Strict-Transport-Security": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "max-age=31556926; includeSubDomains"
+                    }
+                  }
+                },
+                "Cache-Control": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0, max-stale = 0"
+                    }
+                  }
+                },
+                "Pragma": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "no-cache"
+                    }
+                  }
+                },
+                "X-Kong-Upstream-Latency": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "19"
+                    }
+                  }
+                },
+                "X-Kong-Proxy-Latency": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "39"
+                    }
+                  }
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/failed-invalidtxs1"
+                      },
+                      {
+                        "example": {
+                          "error": {
+                            "code": "BAV12",
+                            "detail": "Invalid transaction",
+                            "traceId": "38e6b7c5-7e64-47b0-975b-26bf07efbc58"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "example": {
+                    "error": {
+                      "code": "BAV12",
+                      "detail": "Invalid transaction",
+                      "traceId": "38e6b7c5-7e64-47b0-975b-26bf07efbc58"
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "INTERNAL SERVER ERROR",
+              "headers": {
+                "Content-Length": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "108"
+                    }
+                  }
+                },
+                "Connection": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "keep-alive"
+                    }
+                  }
+                },
+                "RateLimit-Remaining": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "1999"
+                    }
+                  }
+                },
+                "RateLimit-Limit": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "2000"
+                    }
+                  }
+                },
+                "X-RateLimit-Limit-Second": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "2000"
+                    }
+                  }
+                },
+                "X-RateLimit-Remaining-Second": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "1999"
+                    }
+                  }
+                },
+                "RateLimit-Reset": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "1"
+                    }
+                  }
+                },
+                "Server": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "SETU"
+                    }
+                  }
+                },
+                "Date": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "Thu, 31 Aug 2023 14:12:16 GMT"
+                    }
+                  }
+                },
+                "Permissions-Policy": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "interest-cohort=()"
+                    }
+                  }
+                },
+                "X-Frame-Options": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "DENY"
+                    }
+                  }
+                },
+                "X-XSS-Protection": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "1; mode=block"
+                    }
+                  }
+                },
+                "X-Content-Type-Options": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "nosniff"
+                    }
+                  }
+                },
+                "Content-Security-Policy": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "default-src 'self'; img-src 'self' data-gateway-resources.s3.ap-south-1.amazonaws.com; script-src 'self' data-gateway-resources.s3.ap-south-1.amazonaws.com 'unsafe-inline'; style-src 'self' data-gateway-resources.s3.ap-south-1.amazonaws.com fonts.googleapis.com 'unsafe-inline'; font-src fonts.gstatic.com"
+                    }
+                  }
+                },
+                "Referrer-Policy": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "strict-origin-when-cross-origin"
+                    }
+                  }
+                },
+                "Strict-Transport-Security": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "max-age=31556926; includeSubDomains"
+                    }
+                  }
+                },
+                "Cache-Control": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0, max-stale = 0"
+                    }
+                  }
+                },
+                "Pragma": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "no-cache"
+                    }
+                  }
+                },
+                "X-Kong-Upstream-Latency": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "42"
+                    }
+                  }
+                },
+                "X-Kong-Proxy-Latency": {
+                  "content": {
+                    "text/plain": {
+                      "schema": {
+                        "type": "string"
+                      },
+                      "example": "13"
+                    }
+                  }
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/upstreamerror1"
+                      },
+                      {
+                        "example": {
+                          "error": {
+                            "code": "BAV2000",
+                            "detail": "Upsteam error",
+                            "traceId": "a762f19a-e433-4d0a-9474-916e262f69ac"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "example": {
+                    "error": {
+                      "code": "BAV2000",
+                      "detail": "Upsteam error",
+                      "traceId": "a762f19a-e433-4d0a-9474-916e262f69ac"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "deprecated": false
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "CreateRequest": {
+          "title": "CreateRequest",
+          "required": [
+            "ifsc",
+            "accountNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "ifsc": {
+              "type": "string"
+            },
+            "accountNumber": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "ifsc": "UTIB0002083",
+            "accountNumber": "1234567890"
+          }
+        },
+        "Success": {
+          "title": "Success",
+          "required": [
+            "id",
+            "status",
+            "traceId"
+          ],
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "traceId": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+            "status": "CREATED",
+            "traceId": "e99b6f9a-41bc-4063-adcf-cd27043785d4"
+          }
+        },
+        "Error": {
+          "title": "Error",
+          "required": [
+            "code",
+            "detail",
+            "traceId"
+          ],
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "traceId": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "code": "BAVM1",
+            "detail": "Either ifsc or bank account is invalid",
+            "traceId": "f8d0e4f2-674f-4192-863a-6e9c1f595bc3"
+          }
+        },
+        "Failed1": {
+          "title": "Failed1",
+          "required": [
+            "error"
+          ],
+          "type": "object",
+          "properties": {
+            "error": {
+              "$ref": "#/components/schemas/Error"
+            }
+          },
+          "example": {
+            "error": {
+              "code": "BAVM1",
+              "detail": "Either ifsc or bank account is invalid",
+              "traceId": "f8d0e4f2-674f-4192-863a-6e9c1f595bc3"
+            }
+          }
+        },
+        "success-pennydrop": {
+          "title": "success-pennydrop",
+          "required": [
+            "id",
+            "status",
+            "fulfillmentType",
+            "data",
+            "traceId"
+          ],
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "fulfillmentType": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/components/schemas/Data"
+            },
+            "traceId": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+            "status": "SUCCESS",
+            "fulfillmentType": "PENNYDROP",
+            "data": {
+              "bankAccountNumber": "1234567890",
+              "bankAccountIfsc": "ABCD0123456",
+              "bankAccountName": "Test User Name",
+              "ifscCrossCheck": true,
+              "ifscDetails": {
+                "name": "State Bank of India",
+                "branch": "CANTONMENT, BARODA",
+                "center": "BARODA",
+                "district": "BARODA",
+                "state": "GUJARAT",
+                "address": "BARODA MUNICIPAL CORPN. SHOPPING COMPLEX,NEAR FATEHGUNJ PETROL PUMP ,FATEHGUNJ BARODA ,PIN - 390002",
+                "contact": "+912652795129",
+                "imps": "true",
+                "rtgs": "true",
+                "city": "VADODARA",
+                "iso3166": "IN-GJ",
+                "neft": "true",
+                "micr": "390002022",
+                "upi": "true",
+                "swift": ""
+              }
+            },
+            "traceId": "cf7d0e36-1eb8-46b1-ac66-e0576d4d18f1"
+          }
+        },
+        "Data": {
+          "title": "Data",
+          "required": [
+            "bankAccountNumber",
+            "bankAccountIfsc",
+            "bankAccountName",
+            "ifscCrossCheck",
+            "ifscDetails"
+          ],
+          "type": "object",
+          "properties": {
+            "bankAccountNumber": {
+              "type": "string"
+            },
+            "bankAccountIfsc": {
+              "type": "string"
+            },
+            "bankAccountName": {
+              "type": "string"
+            },
+            "ifscCrossCheck": {
+              "type": "boolean"
+            },
+            "ifscDetails": {
+              "$ref": "#/components/schemas/IfscDetails"
+            }
+          },
+          "example": {
+            "bankAccountNumber": "1234567890",
+            "bankAccountIfsc": "ABCD0123456",
+            "bankAccountName": "Test User Name",
+            "ifscCrossCheck": true,
+            "ifscDetails": {
+              "name": "State Bank of India",
+              "branch": "CANTONMENT, BARODA",
+              "center": "BARODA",
+              "district": "BARODA",
+              "state": "GUJARAT",
+              "address": "BARODA MUNICIPAL CORPN. SHOPPING COMPLEX,NEAR FATEHGUNJ PETROL PUMP ,FATEHGUNJ BARODA ,PIN - 390002",
+              "contact": "+912652795129",
+              "imps": "true",
+              "rtgs": "true",
+              "city": "VADODARA",
+              "iso3166": "IN-GJ",
+              "neft": "true",
+              "micr": "390002022",
+              "upi": "true",
+              "swift": ""
+            }
+          }
+        },
+        "IfscDetails": {
+          "title": "IfscDetails",
+          "required": [
+            "name",
+            "branch",
+            "center",
+            "district",
+            "state",
+            "address",
+            "contact",
+            "imps",
+            "rtgs",
+            "city",
+            "iso3166",
+            "neft",
+            "micr",
+            "upi",
+            "swift"
+          ],
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "branch": {
+              "type": "string"
+            },
+            "center": {
+              "type": "string"
+            },
+            "district": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "contact": {
+              "type": "string"
+            },
+            "imps": {
+              "type": "string"
+            },
+            "rtgs": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "iso3166": {
+              "type": "string"
+            },
+            "neft": {
+              "type": "string"
+            },
+            "micr": {
+              "type": "string"
+            },
+            "upi": {
+              "type": "string"
+            },
+            "swift": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "name": "State Bank of India",
+            "branch": "CANTONMENT, BARODA",
+            "center": "BARODA",
+            "district": "BARODA",
+            "state": "GUJARAT",
+            "address": "BARODA MUNICIPAL CORPN. SHOPPING COMPLEX,NEAR FATEHGUNJ PETROL PUMP ,FATEHGUNJ BARODA ,PIN - 390002",
+            "contact": "+912652795129",
+            "imps": "true",
+            "rtgs": "true",
+            "city": "VADODARA",
+            "iso3166": "IN-GJ",
+            "neft": "true",
+            "micr": "390002022",
+            "upi": "true",
+            "swift": ""
+          }
+        },
+        "failed-invalidtxs1": {
+          "title": "failed-invalidtxs1",
+          "required": [
+            "error"
+          ],
+          "type": "object",
+          "properties": {
+            "error": {
+              "$ref": "#/components/schemas/Error"
+            }
+          },
+          "example": {
+            "error": {
+              "code": "BAV12",
+              "detail": "Invalid transaction",
+              "traceId": "38e6b7c5-7e64-47b0-975b-26bf07efbc58"
+            }
+          }
+        },
+        "upstreamerror1": {
+          "title": "upstreamerror1",
+          "required": [
+            "error"
+          ],
+          "type": "object",
+          "properties": {
+            "error": {
+              "$ref": "#/components/schemas/Error"
+            }
+          },
+          "example": {
+            "error": {
+              "code": "BAV2000",
+              "detail": "Upsteam error",
+              "traceId": "a762f19a-e433-4d0a-9474-916e262f69ac"
+            }
+          }
+        },
+        "pennyless-INDIVIDUAL": {
+          "title": "pennyless-INDIVIDUAL",
+          "required": [
+            "id",
+            "status",
+            "fulfillmentType",
+            "data",
+            "traceId"
+          ],
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "fulfillmentType": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/components/schemas/Data1"
+            },
+            "traceId": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "id": "36b2bb8e-af2b-4791-adf7-d8553d459de5",
+            "status": "SUCCESS",
+            "fulfillmentType": "PENNYLESS",
+            "data": {
+              "bankAccountNumber": "1234567890",
+              "bankAccountIfsc": "UTIB0002084",
+              "bankAccountName": "PAVANKUMAR KAMAT",
+              "ifscCrossCheck": true,
+              "ifscDetails": {
+                "name": "Axis Bank",
+                "branch": "BHADRAVATHI",
+                "center": "SHIMOGA",
+                "district": "SHIMOGA",
+                "state": "KARNATAKA",
+                "address": "AXIS BANK LTD POOJA BUILDING WARD NUMBER4, NEAR RANGAPPA CIRCLE, C N ROAD,BHADRAVATHI 577301",
+                "contact": "+919886464250",
+                "imps": "true",
+                "rtgs": "true",
+                "city": "BHADRAVATHI",
+                "iso3166": "IN-KA",
+                "neft": "true",
+                "micr": "577211203",
+                "upi": "true",
+                "swift": ""
+              },
+              "entityType": "INDIVIDUAL"
+            },
+            "traceId": "44fb1c9c-3af6-4961-8215-04fa6d1fcd52"
+          }
+        },
+        "Data1": {
+          "title": "Data1",
+          "required": [
+            "bankAccountNumber",
+            "bankAccountIfsc",
+            "bankAccountName",
+            "ifscCrossCheck",
+            "ifscDetails",
+            "entityType"
+          ],
+          "type": "object",
+          "properties": {
+            "bankAccountNumber": {
+              "type": "string"
+            },
+            "bankAccountIfsc": {
+              "type": "string"
+            },
+            "bankAccountName": {
+              "type": "string"
+            },
+            "ifscCrossCheck": {
+              "type": "boolean"
+            },
+            "ifscDetails": {
+              "$ref": "#/components/schemas/IfscDetails"
+            },
+            "entityType": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "bankAccountNumber": "1234567890",
+            "bankAccountIfsc": "UTIB0002084",
+            "bankAccountName": "PAVANKUMAR KAMAT",
+            "ifscCrossCheck": true,
+            "ifscDetails": {
+              "name": "Axis Bank",
+              "branch": "BHADRAVATHI",
+              "center": "SHIMOGA",
+              "district": "SHIMOGA",
+              "state": "KARNATAKA",
+              "address": "AXIS BANK LTD POOJA BUILDING WARD NUMBER4, NEAR RANGAPPA CIRCLE, C N ROAD,BHADRAVATHI 577301",
+              "contact": "+919886464250",
+              "imps": "true",
+              "rtgs": "true",
+              "city": "BHADRAVATHI",
+              "iso3166": "IN-KA",
+              "neft": "true",
+              "micr": "577211203",
+              "upi": "true",
+              "swift": ""
+            },
+            "entityType": "INDIVIDUAL"
+          }
+        },
+        "pennyless-MERCHANT": {
+          "title": "pennyless-MERCHANT",
+          "required": [
+            "id",
+            "status",
+            "fulfillmentType",
+            "data",
+            "traceId"
+          ],
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "fulfillmentType": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/components/schemas/Data2"
+            },
+            "traceId": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "id": "50c4b0a4-7de2-4eb3-9d78-153fb4d9991d",
+            "status": "SUCCESS",
+            "fulfillmentType": "PENNYLESS",
+            "data": {
+              "bankAccountNumber": "1234567890",
+              "bankAccountIfsc": "UTIB0002083",
+              "bankAccountName": "PAVANKUMAR KAMAT BIZ",
+              "ifscCrossCheck": true,
+              "ifscDetails": {
+                "name": "Axis Bank",
+                "branch": "KAPODRA, SURAT",
+                "center": "SURAT",
+                "district": "SURAT",
+                "state": "GUJARAT",
+                "address": "J R SQUARE, MAMTA PARK - 1 KAPODRA, VARACHHA MAIN ROAD,  SURAT - 395 006",
+                "contact": "+919824188896",
+                "imps": "true",
+                "rtgs": "true",
+                "city": "SURAT",
+                "iso3166": "IN-GJ",
+                "neft": "true",
+                "micr": "395211016",
+                "upi": "true",
+                "swift": ""
+              },
+              "entityType": "MERCHANT",
+              "merchantDetails": {
+                "mccCode": "1520",
+                "identifier": {
+                  "merchantType": "SMALL",
+                  "merchantGenre": "OFFLINE",
+                  "onBoardingType": "BANK"
+                },
+                "name": {
+                  "brand": "praimports",
+                  "legal": "Indian",
+                  "franchise": "rajababuimpor"
+                },
+                "ownership": {
+                  "type": "PRIVATE"
+                }
+              }
+            },
+            "traceId": "1ab2fbc8-5b10-4358-8a87-a46592b89a6b"
+          }
+        },
+        "Data2": {
+          "title": "Data2",
+          "required": [
+            "bankAccountNumber",
+            "bankAccountIfsc",
+            "bankAccountName",
+            "ifscCrossCheck",
+            "ifscDetails",
+            "entityType",
+            "merchantDetails"
+          ],
+          "type": "object",
+          "properties": {
+            "bankAccountNumber": {
+              "type": "string"
+            },
+            "bankAccountIfsc": {
+              "type": "string"
+            },
+            "bankAccountName": {
+              "type": "string"
+            },
+            "ifscCrossCheck": {
+              "type": "boolean"
+            },
+            "ifscDetails": {
+              "$ref": "#/components/schemas/IfscDetails"
+            },
+            "entityType": {
+              "type": "string"
+            },
+            "merchantDetails": {
+              "$ref": "#/components/schemas/MerchantDetails"
+            }
+          },
+          "example": {
+            "bankAccountNumber": "1234567890",
+            "bankAccountIfsc": "UTIB0002083",
+            "bankAccountName": "PAVANKUMAR KAMAT BIZ",
+            "ifscCrossCheck": true,
+            "ifscDetails": {
+              "name": "Axis Bank",
+              "branch": "KAPODRA, SURAT",
+              "center": "SURAT",
+              "district": "SURAT",
+              "state": "GUJARAT",
+              "address": "J R SQUARE, MAMTA PARK - 1 KAPODRA, VARACHHA MAIN ROAD,  SURAT - 395 006",
+              "contact": "+919824188896",
+              "imps": "true",
+              "rtgs": "true",
+              "city": "SURAT",
+              "iso3166": "IN-GJ",
+              "neft": "true",
+              "micr": "395211016",
+              "upi": "true",
+              "swift": ""
+            },
+            "entityType": "MERCHANT",
+            "merchantDetails": {
+              "mccCode": "1520",
+              "identifier": {
+                "merchantType": "SMALL",
+                "merchantGenre": "OFFLINE",
+                "onBoardingType": "BANK"
+              },
+              "name": {
+                "brand": "praimports",
+                "legal": "Indian",
+                "franchise": "rajababuimpor"
+              },
+              "ownership": {
+                "type": "PRIVATE"
+              }
+            }
+          }
+        },
+        "MerchantDetails": {
+          "title": "MerchantDetails",
+          "required": [
+            "mccCode",
+            "identifier",
+            "name",
+            "ownership"
+          ],
+          "type": "object",
+          "properties": {
+            "mccCode": {
+              "type": "string"
+            },
+            "identifier": {
+              "$ref": "#/components/schemas/Identifier"
+            },
+            "name": {
+              "$ref": "#/components/schemas/Name"
+            },
+            "ownership": {
+              "$ref": "#/components/schemas/Ownership"
+            }
+          },
+          "example": {
+            "mccCode": "1520",
+            "identifier": {
+              "merchantType": "SMALL",
+              "merchantGenre": "OFFLINE",
+              "onBoardingType": "BANK"
+            },
+            "name": {
+              "brand": "praimports",
+              "legal": "Indian",
+              "franchise": "rajababuimpor"
+            },
+            "ownership": {
+              "type": "PRIVATE"
+            }
+          }
+        },
+        "Identifier": {
+          "title": "Identifier",
+          "required": [
+            "merchantType",
+            "merchantGenre",
+            "onBoardingType"
+          ],
+          "type": "object",
+          "properties": {
+            "merchantType": {
+              "type": "string"
+            },
+            "merchantGenre": {
+              "type": "string"
+            },
+            "onBoardingType": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "merchantType": "SMALL",
+            "merchantGenre": "OFFLINE",
+            "onBoardingType": "BANK"
+          }
+        },
+        "Name": {
+          "title": "Name",
+          "required": [
+            "brand",
+            "legal",
+            "franchise"
+          ],
+          "type": "object",
+          "properties": {
+            "brand": {
+              "type": "string"
+            },
+            "legal": {
+              "type": "string"
+            },
+            "franchise": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "brand": "praimports",
+            "legal": "Indian",
+            "franchise": "rajababuimpor"
+          }
+        },
+        "Ownership": {
+          "title": "Ownership",
+          "required": [
+            "type"
+          ],
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "type": "PRIVATE"
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "tags": [
+      {
+        "name": "SETU BAV"
+      }
+    ]
+  }
