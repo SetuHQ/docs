@@ -65,8 +65,19 @@ Setu will post this payload to your notification endpoint whenever there is a ch
 
 In cases where the user **cancels** the consent before login, or **rejects** the consent after login, an error code and error message will be included in the notification payload.
 
-<CodeBlockWithCopy language="json">
-  {`{
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: <Badge>UserCancelled</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                  {`{
   "success": false,
   "error": {
     "code": "UserCancelled",
@@ -78,7 +89,61 @@ In cases where the user **cancels** the consent before login, or **rejects** the
   "timestamp": "2024-01-29T07:28:24.547Z",
   "type": "CONSENT_STATUS_UPDATE"
 }`}
-</CodeBlockWithCopy>
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: <Badge>UserRejected</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                  {`{
+  "success": false,
+  "error": {
+    "code": "UserRejected",
+    "message": "reject_not_want_to_share"
+  },
+  "data": null,
+  "consentId": "72cb6cb8-c248-4b88-9282-18262fbdfbc2",
+  "notificationId": "66d5fef5-d5f3-48f6-afe7-1e82ac952ecb",
+  "timestamp": "2024-01-29T07:28:24.547Z",
+  "type": "CONSENT_STATUS_UPDATE"
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: <Badge>Error while fetching consent from upstream AA</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+  "success": false,
+  "error": {
+    "code": "ConsentObjectCreationFailure",
+    "message": "Internal server error occurred while fetching consent details from upstream AA"
+  }
+  "data": null,
+  "consentId": "72cb6cb8-c248-4b88-9282-18262fbdfbc2",
+  "notificationId": "66d5fef5-d5f3-48f6-afe7-1e82ac952ecb",
+  "timestamp": "2024-01-29T07:28:24.547Z",
+  "type": "CONSENT_STATUS_UPDATE"
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    />
+  </Portion>
+</Row>
+
 
 ###### Consent error codes
 Mapping of error code, error message and it's meaning:
@@ -92,6 +157,9 @@ Mapping of error code, error message and it's meaning:
 | `UserRejected` | `reject_not_want_to_share` | I do not want to share my data with FIU |
 | `UserRejected` | `reject_accounts_not_found` | I could not find my accounts |
 | `UserRejected` | `reject_other` | For other reasons |
+| `NoFIPAccountsDiscovered` | `no_fip_accounts_found` |No fip accounts discovered |
+| `FIPDenied` | `FIP_DENIED_CONSENT` | FIP denied your consent |
+
 
 <br />
 
