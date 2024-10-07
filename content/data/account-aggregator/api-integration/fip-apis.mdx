@@ -106,7 +106,7 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
     </tr>
     <tr>
         <td>
-            <code>TEMPORARILY INACTIVE</code>
+            <code>TEMPORARILY_INACTIVE</code>
         </td>
         <td>
             This is an FIP that has been disabled for breaching SLIs on
@@ -115,7 +115,7 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             However, this is a temporary status and will be moved to ACTIVE
             status once their performance has improved. Do not redirect your
             customers to the consent flow when an FIP status is INACTIVE or
-            TEMPORARILY INACTIVE as that will mean their consents and/or data
+            TEMPORARILY_INACTIVE as that will mean their consents and/or data
             fetches are likely to fail.
         </td>
     </tr>
@@ -149,6 +149,15 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             "status": "ACTIVE"
         },
         {
+            "name": "Federal Bank",
+            "fipId": "FDRLFIP",
+            "fiTypes": [
+                "DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "ACTIVE"
+        },
+        {
             "name": "IndusInd Bank Ltd.",
             "fipId": "fiplive@indusind",
             "fiTypes": [
@@ -157,7 +166,7 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                 "RECURRING_DEPOSIT"
             ],
             "institutionType": "BANK",
-            "status": "ACTIVE"
+            "status": "TEMPORARILY_INACTIVE"
         },
         {
             "name": "HDFC Bank",
@@ -195,7 +204,132 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                     ),
                 },
             ]}
-        ></Tabs>
+        />
+    </Portion>
+</Row>
+
+### Get FIP by ID API
+
+###### Request
+
+<CodeBlockWithCopy language="json">{` GET /v2/fips/:id `}</CodeBlockWithCopy>
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "data": [
+        {
+            "name": "HDFC Bank",
+            "fipId": "HDFC-FIP",
+            "fiTypes": [
+                "DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "INACTIVE"
+        }
+    ],
+    "traceId": "1-66ff79c7-46029a1f1aaa59083489fd46"
+}
+`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "errorMsg": "string",
+  "errorCode": "string",
+  "txnid": "string",
+  "timestamp": "2023-03-30T08:20:31.367Z",
+  "ver": "string"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        />
+    </Portion>
+</Row>
+
+### Get FIPs by Status API
+
+###### Request
+
+<CodeBlockWithCopy language="json">{` GET /v2/fips?status=ACTIVE `}</CodeBlockWithCopy>
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "data": [
+        {
+            "name": "Axis Bank",
+            "fipId": "AXIS001",
+            "fiTypes": [
+                "DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "ACTIVE"
+        },
+        {
+            "name": "Federal Bank",
+            "fipId": "FDRLFIP",
+            "fiTypes": [
+                "DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "ACTIVE"
+        }
+    ],
+    "traceId": "1-64313583-255e3a0705424652664584b2"
+}
+`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "errorMsg": "string",
+  "errorCode": "string",
+  "txnid": "string",
+  "timestamp": "2023-03-30T08:20:31.367Z",
+  "ver": "string"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        />
     </Portion>
 </Row>
 
