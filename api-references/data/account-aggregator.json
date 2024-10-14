@@ -84,7 +84,22 @@
     },
     "/v2/fips": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "description": "Status of the FIP by which the FIPs are to be filtered",
+            "schema": {
+              "type": "string",
+              "enum": ["ACTIVE", "INACTIVE", "TEMPORARILY_INACTIVE"]
+            }
+          }
+        ],
         "responses": {
+          "400": {
+            "$ref": "#/components/responses/BAD_REQUEST"
+          },
           "200": {
             "description": "OK",
             "content": {
@@ -99,6 +114,36 @@
         "summary": "Get FIP list",
         "description": "This API is used to get the list of FIPs.",
         "tags": ["AA participants APIs"]
+      }
+    },
+    "/v2/fips/{fip_id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FIPResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get FIP by ID",
+        "description": "This API is used to get a FIP by its ID.",
+        "tags": ["AA participants APIs"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fip_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ]
       }
     },
     "/v2/consents": {
