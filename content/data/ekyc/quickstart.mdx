@@ -1,0 +1,420 @@
+---
+sidebar_title: Quickstart
+page_title: PAN verification quickstart
+order: 1
+visible_in_sidebar: true
+---
+
+## eKYC API Quickstart
+
+### Overview
+
+This guide describes the implementation of our eKYC APIs. It allows you to create an eKYC request, which generates a verification URL. Once the aadhaar holder completes the Aadhaar verification process, the eKYC data can be retrieved.
+
+You will need the following 2 APIs—
+
+- **Create eKYC request**- This lets you initiate an eKYC request.
+- **Get eKYC request**- This lets you check the status and data associated with the eKYC request.
+
+Here is the information you would need for calling these APIs—
+
+- Sandbox URL—`https://dg-sandbox.setu.co`
+- Production URL—`https://dg.setu.co`
+- Headers—Contact support@setu.co for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+  - `x-product-instance-id`
+- One time configuration
+  - `webhook_url`
+  - `redirection_url` (default, can be overridden per request)
+
+<hr className="primary" />
+
+### Create eKYC request
+
+Call this API to create a unique request to get your customer started on the eKYC journey.
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "201",
+      content: (
+        <>
+          <p>
+            <Badge type="success">SUCCESS</Badge> Your request has been
+            processed successfully and a new eKYC request has been created.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST /api/ekyc/
+            
+{
+  "webhook_url": "<client_webhook_url>" // Optional
+  "redirection_url": "<client_redirection_url>"
+}   `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <p>
+            Use the request <code>id</code> in this response for all subsequent
+            API calls.
+          </p>
+          <CodeBlockWithCopy language="json">
+            {`{  
+  "id": "0c624d3e-9cb0-4323-b468-d89092d7d305", // UUID4
+  "status": "CREATED", // enum 'eKYC Request Status'
+  "kycURL": "https://{base_url}/public/ekyc-web/0c624d3e-9cb0-4323-b468-d89092d7d305"
+}  `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "400",
+      content: (
+        <>
+          <p>
+            <Badge type="failure">BAD REQUEST</Badge> Your request body has
+            field <code>redirection_url</code> missing.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST /api/ekyc/
+            
+{
+  "webhook_url": "<client_webhook_url>" // Optional
+  "redirection_url": "<client_redirection_url>"
+}   `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{
+    "errorCode": "invalid_request",
+    "errorMsg": "1 validation error(s): [1] body -> redirectionUrl: Field required"
+}  `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "3",
+      label: "500",
+      content: (
+        <>
+          <p>
+            <Badge type="failure">INTERNAL SERVER ERROR</Badge> Setu has failed
+            to process your request due to some error in code or an unreachable
+            database; or because authentication services are down.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`POST /api/ekyc/
+            
+{
+  "webhook_url": "<client_webhook_url>" // Optional
+  "redirection_url": "<client_redirection_url>"
+}   `}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{
+    "errorCode": "internal_server_error", // or upstream_service_error
+    "errorMsg": "An internal server error has occurred"
+}  `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+  ]}
+></Tabs>
+
+<hr class="primary" />
+
+### Get eKYC request
+
+Call this API to get the status and data (if the status is `SUCCESS`) of your eKYC request.
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "200",
+      content: (
+        <>
+          <>
+            <Text size="small" weight="600">
+              Response Type 1
+            </Text>
+            <Card padding="nano" shape="rounded" marginBottom="micro">
+              <details>
+                <summary>
+                  <Badge type="success">SUCCESS</Badge> In progress
+                </summary>
+                <hr className="tertiary" />
+                <h5>Request</h5>
+                <CodeBlockWithCopy language="json">
+                  {`GET /api/ekyc/:request_id`}
+                </CodeBlockWithCopy>
+                <hr className="tertiary" />
+                <h5>Response</h5>
+                <CodeBlockWithCopy language="json">
+                  {`{
+    "id": "2ac3191e-d5ef-4e99-9aef-4ad93e1b720d",
+    "status": "CREATED",
+    "kycUrl": "http://localhost:3100/v1/public/ekyc-web/2ac3191e-d5ef-4e99-9aef-4ad93e1b720d",
+    "data": null
+}  `}
+                </CodeBlockWithCopy>
+              </details>
+            </Card>
+          </>
+          <>
+            <Text size="small" weight="600">
+              Response Type 2
+            </Text>
+            <Card padding="nano" shape="rounded" marginBottom="micro">
+              <details>
+                <summary>
+                  <Badge type="success">SUCCESS</Badge> Aadhaar verification done
+                </summary>
+                <hr className="tertiary" />
+                <h5>Request</h5>
+                <CodeBlockWithCopy language="json">
+                  {`GET /api/ekyc/:request_id`}
+                </CodeBlockWithCopy>
+                <hr className="tertiary" />
+                <h5>Response</h5>
+                <CodeBlockWithCopy language="json">
+                  {`{
+    "id": "0c624d3e-9cb0-4323-b468-d89092d7d305", // UUID4
+    "status": "SUCCESS", // enum 'eKYC Request Status'
+    "kycURL": "http://dg-ekyc.setu.co/public/ekyc-web/0c624d3e-9cb0-4323-b468-d89092d7d305"
+    "data": {
+        "aadhaar": {
+            "name": "Ritesh Ujjwal",
+            "dateOfBirth": "1989",
+            "gender": "M",
+            "address": {
+                "careOf": "",
+                "country": "India",
+                "district": "ABC",
+                "house": "",
+                "landmark": "XYZ",
+                "locality": "AAAAAA",
+                "pin": "560001",
+                "postOffice": "Bangalore",
+                "state": "Karnataka",
+                "street": "ABC Road",
+                "subDistrict": "",
+                "vtc": "my location"
+            },
+            "photo": "...base64...",
+            "aadhaarNumber": "XXXXXXXX8888", // masked aadhaar number
+            "generatedAt": "2024-03-22T15:18:35.269+05:30"
+        },
+        "xml": {
+          "xmlBase64": "...base64..." 
+        }
+    }
+}  `}
+                </CodeBlockWithCopy>
+              </details>
+            </Card>
+          </>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "404",
+      content: (
+        <>
+          <p>
+            <Badge type="failure">NOT FOUND</Badge> When the provided{" "}
+            <code>request_id</code> is incorrect or deleted.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`GET /api/ekyc/:request_id`}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{  
+    "errorCode": "not_found",
+    "errorMsg": "eKYC id not found"  
+}  `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "3",
+      label: "500",
+      content: (
+        <>
+          <p>
+            <Badge type="failure">INTERNAL SERVER ERROR</Badge> Setu has failed
+            to process your request due to some error in code or an unreachable
+            database; or because authentication services are down.
+          </p>
+          <hr className="tertiary" />
+          <h5>Request</h5>
+          <CodeBlockWithCopy language="json">
+            {`GET /api/ekyc/:request_id`}
+          </CodeBlockWithCopy>
+          <hr className="tertiary" />
+          <h5>Response</h5>
+          <CodeBlockWithCopy language="json">
+            {`{
+    "errorCode": "internal_server_error", // or upstream_service_error
+    "errorMsg": "An internal server error has occurred"
+}  `}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+  ]}
+></Tabs>
+
+<hr class="primary" />
+
+### Webhook response
+
+<CodeBlockWithCopy language="json">
+  {`{  
+    "event": "EKYC_DATA",
+    "data": {
+        "id": "...",
+        "status": "SUCCESS",
+        "aadhaar": {
+            "name": "Ritesh Ujjwal",
+            "dateOfBirth": "1989",
+            "gender": "M",
+            "address": {
+                "careOf": "",
+                "country": "India",
+                "district": "ABC",
+                "house": "",
+                "landmark": "XYZ",
+                "locality": "AAAAAA",
+                "pin": "560001",
+                "postOffice": "Bangalore",
+                "state": "Karnataka",
+                "street": "ABC Road",
+                "subDistrict": "",
+                "vtc": "my location"
+            },
+            "photo": "...base64...",
+            "aadhaarNumber": "XXXXXXXX8888", // masked aadhaar number
+            "generatedAt": "2024-03-22T15:18:35.269+05:30"
+        },
+        "xml": {
+            "xmlBase64": "...base64..." 
+        }
+    }
+}  `}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+### Web redirection flow
+
+`status` and `id` will be passed as query parameters through the redirection callback url
+
+<CodeBlockWithCopy language="json">
+  {`https://{your_redirection_url}?status={status}&id={ekyc_id}&errorCode={code}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+### Data Model
+
+<br />
+
+<h5>eKYC Request Status</h5>
+
+<table>
+  <tr>
+    <th>Values</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>
+      <code>CREATED</code>
+    </td>
+    <td>Link created but not used</td>
+  </tr>
+  <tr>
+    <td>
+      <code>KYC_REQUESTED</code>
+    </td>
+    <td>Consent success and KYC request success from NPCI</td>
+  </tr>
+  <tr>
+    <td>
+      <code>SUCCESS</code>
+    </td>
+    <td>Received KYC data</td>
+  </tr>
+  <tr>
+    <td>
+      <code>ERROR</code>
+    </td>
+    <td>Any internal errors</td>
+  </tr>
+</table>
+
+<hr class="primary" />
+
+### Error Codes
+
+<br />
+
+<table>
+  <tr>
+    <th>Error codes</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>
+      <code>internal_server_error</code>
+    </td>
+    <td>
+      An internal server error has occurred, please try again in some time. OR
+      Upstream service error
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>unauthorized</code>
+    </td>
+    <td>Unauthorized request</td>
+  </tr>
+  <tr>
+    <td>
+      <code>invalid_request</code>
+    </td>
+    <td>Invalid request body</td>
+  </tr>
+  <tr>
+    <td>
+      <code>not_found</code>
+    </td>
+    <td>The resource you are looking for was not found</td>
+  </tr>
+  <tr>
+    <td>
+      <code>too_many_requests</code>
+    </td>
+    <td>Request made too soon. Please retry after some time.</td>
+  </tr>
+</table>
