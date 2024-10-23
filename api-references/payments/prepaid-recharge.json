@@ -663,7 +663,7 @@
           "/recharge/request":{
             "post": {
               "tags": ["Recharge"],
-              "summary": "API to initiate a prepaid recharge request for a mobile number",
+              "summary": "API to initiate a recharge request for a mobile number",
               "consumes": ["application/json"],
               "produces": ["application/json"],
               "responses": {
@@ -677,26 +677,56 @@
                         "example": "true",
                         "description": "Status of API call"
                       },
-                      "data": {
+                      "data":  {
                         "type": "object",
                         "properties": {
-                          "transactionId": {
+                          "error": {
                             "type": "string",
-                            "example": "TXN12345",
-                            "description": "Unique identifier for the recharge transaction"
+                            "nullable": true,
+                            "description": "Error object, null if no error"
+                          },
+                          "details": {
+                            "type": "object",
+                            "properties": {
+                              "mobile_number": {
+                                "type": "string",
+                                "example": "7249649345"
+                              },
+                              "provider": {
+                                "type": "string",
+                                "example": "Airtel"
+                              },
+                              "service_type": {
+                                "type": "string",
+                                "example": "M"
+                              },
+                              "is_postpaid": {
+                                "type": "boolean",
+                                "example": false
+                              },
+                              "is_special": {
+                                "type": "boolean",
+                                "example": false
+                              }
+                            }
+                          },
+                          "amount": {
+                            "type": "integer",
+                            "example": 2200
+                          },
+                          "transactionRefId": {
+                            "type": "string",
+                            "example": "LXMREN493393852"
                           },
                           "status": {
                             "type": "string",
-                            "example": "SUCCESS",
-                            "description": "Status of the recharge request (e.g., SUCCESS, PENDING, FAILED)"
+                            "example": "Success"
                           },
-                          "operatorResponse": {
+                          "operatorRefId": {
                             "type": "string",
-                            "example": "Recharge successful",
-                            "description": "Message returned by the operator for this request"
+                            "example": "1436295520"
                           }
-                        },
-                        "description": "Details of the recharge transaction"
+                        }
                       },
                       "traceId": {
                         "type": "string",
@@ -890,7 +920,7 @@
                   "name": "body",
                   "schema": {
                     "type": "object",
-                    "required": ["customer", "paymentDetails", "refId"],
+                    "required": ["customer", "paymentDetails"],
                     "properties": {
                       "customer": {
                         "type": "object",
@@ -954,11 +984,6 @@
                           }
                         },
                         "description": "Details of the payment for the recharge"
-                      },
-                      "refId": {
-                        "type": "string",
-                        "example": "REFIDTEST6291DD4004750702202402",
-                        "description": "Unique reference ID for the recharge request"
                       }
                     }
                   }
@@ -969,7 +994,7 @@
     "/recharge/status": {
     "post": {
       "tags": ["Recharge"],
-      "summary": "API to check the status of a prepaid recharge transaction",
+      "summary": "API to check transaction status",
       "consumes": ["application/json"],
       "produces": ["application/json"],
       "responses": {
@@ -983,26 +1008,56 @@
                 "example": "true",
                 "description": "Status of the API call"
               },
-              "data": {
+              "data":  {
                 "type": "object",
                 "properties": {
-                  "paymentRefId": {
+                  "error": {
                     "type": "string",
-                    "example": "TEST62XD4XX04750702202402",
-                    "description": "Reference ID for the payment transaction"
+                    "nullable": true,
+                    "description": "Error object, null if no error"
+                  },
+                  "details": {
+                    "type": "object",
+                    "properties": {
+                      "mobile_number": {
+                        "type": "string",
+                        "example": "7249649345"
+                      },
+                      "provider": {
+                        "type": "string",
+                        "example": "Airtel"
+                      },
+                      "service_type": {
+                        "type": "string",
+                        "example": "M"
+                      },
+                      "is_postpaid": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "is_special": {
+                        "type": "boolean",
+                        "example": false
+                      }
+                    }
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "example": 2200
+                  },
+                  "transactionRefId": {
+                    "type": "string",
+                    "example": "LXMREN493393852"
                   },
                   "status": {
                     "type": "string",
-                    "example": "SUCCESS",
-                    "description": "Status of the recharge request (e.g., SUCCESS, PENDING, FAILED)"
+                    "example": "Success"
                   },
-                  "operatorResponse": {
+                  "operatorRefId": {
                     "type": "string",
-                    "example": "Transaction completed successfully",
-                    "description": "Message returned by the operator for this request"
+                    "example": "1436295520"
                   }
-                },
-                "description": "Details of the recharge transaction status"
+                }
               },
               "traceId": {
                 "type": "string",
