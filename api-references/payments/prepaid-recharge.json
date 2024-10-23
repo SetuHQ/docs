@@ -8,8 +8,20 @@
         "version": "1.0.0",
         "description": "Process flow for prepaid recharge payments."
       },
+      "schemes": ["https"],
+     
+      "servers": [
+      {
+        "url": "https://prepaid.setu.co",
+        "description": "Production"
+      },
+      {
+        "url": "https://prepaid-uat.setu.co",
+        "description":"UAT"
+      }
+    ],
       "paths": {
-        "/mobile-prepaid-recharge/fetch_operator_details": {
+        "/fetch-operator-details": {
           "post": {
             "tags": ["Fetch"],
             "summary": "API to fetch operator details for mobile number",
@@ -153,7 +165,7 @@
               }
             },
             "422": {
-              "description": "422",
+              "description": "Invalid Request",
               "headers": {
                 "content-length": {
                   "schema": {
@@ -229,7 +241,7 @@
               }
             },
             "500": {
-              "description": "500",
+              "description": "Upstream Connectivity Error",
               "headers": {
                 "content-length": {
                   "schema": {
@@ -311,7 +323,14 @@
                 "in": "header",
                 "name": "X-PRODUCT-INSTANCE-ID",
                 "schema": { "type": "string" },
-                "description": "This is provided by Setu and it represents a product instance for business in their system."
+                "description": "A unique identifier provided by Setu which represent a specific business product instance within their system"
+              },
+              {
+                "in": "header",
+                "name": "Authorization",
+                "required": true,
+                "type": "string",
+                "description": "Bearer token for authorization."
               },
               
               {
@@ -354,7 +373,7 @@
             ]
           }
         },
-        "/mobile-prepaid-recharge/fetch_plans":{
+        "/fetch-plans":{
             "post": {
               "tags": ["Fetch"],
               "summary": "API to fetch prepaid plans for a mobile number",
@@ -421,7 +440,7 @@
                   "description": "Response"
                 },
                 "400": {
-              "description": "400 / 400 / 400 / Fetch Plans",
+              "description": "Invalid Request",
               "headers": {
                 "content-length": {
                   "schema": {
@@ -508,7 +527,7 @@
               }
             },
             "500": {
-              "description": "Fetch Plans",
+              "description": "Upstream API Connectivity Error",
               "headers": {
                 "content-length": {
                   "schema": {
@@ -589,7 +608,14 @@
                   "in": "header",
                   "name": "X-PRODUCT-INSTANCE-ID",
                   "schema": { "type": "string" },
-                  "description": "This is provided by Setu and it represents a product instance for business in their system."
+                  "description": "A unique identifier provided by Setu which represent a specific business product instance within their system"
+                },
+                {
+                  "in": "header",
+                  "name": "Authorization",
+                  "required": true,
+                  "type": "string",
+                  "description": "Bearer token for authorization."
                 },
                 {
                   "in": "body",
@@ -634,7 +660,7 @@
               ]
             }
           },
-          "/mobile-prepaid-recharge/recharge/request":{
+          "/recharge/request":{
             "post": {
               "tags": ["Recharge"],
               "summary": "API to initiate a prepaid recharge request for a mobile number",
@@ -682,7 +708,7 @@
                   "description": "Response"
                 },
                 "422": {
-                  "description": "422",
+                  "description": "Invalid Request",
                   "headers": {
                     "content-length": {
                       "schema": {
@@ -758,7 +784,7 @@
                   }
                 },
                 "500": {
-                  "description": "500 / 500 / 400",
+                  "description": "Upstream API Connectivity Error",
                   "headers": {
                     "content-length": {
                       "schema": {
@@ -850,7 +876,14 @@
                   "in": "header",
                   "name": "X-PRODUCT-INSTANCE-ID",
                   "schema": { "type": "string" },
-                  "description": "This is provided by Setu and it represents a product instance for business in their system."
+                  "description": "A unique identifier provided by Setu which represent a specific business product instance within their system"
+                },
+                {
+                  "in": "header",
+                  "name": "Authorization",
+                  "required": true,
+                  "type": "string",
+                  "description": "Bearer token for authorization."
                 },
                 {
                   "in": "body",
@@ -933,7 +966,7 @@
               ]
             }
           },
-    "/mobile-prepaid-recharge/recharge/status": {
+    "/recharge/status": {
     "post": {
       "tags": ["Recharge"],
       "summary": "API to check the status of a prepaid recharge transaction",
@@ -983,22 +1016,18 @@
 
       },
       "parameters": [
-        {
-          "in": "header",
-          "name": "X-PARTNER-ID",
-          "schema": { "type": "string" },
-          "description": "Unique identifier for the partner requesting the status"
-        },
+        
         {
           "in": "header",
           "name": "X-PRODUCT-INSTANCE-ID",
           "schema": { "type": "string" },
-          "description": "This is provided by Setu and it represents a product instance for business in their system."
+          "description": "A unique identifier provided by Setu which represent a specific business product instance within their system"
         },
         {
           "in": "header",
           "name": "Authorization",
-          "schema": { "type": "string" },
+          "required": true,
+          "type": "string",
           "description": "Bearer token for authorization."
         },
         {
@@ -1019,7 +1048,7 @@
       ]
     }
   },
-  "/mobile-prepaid-recharge/wallet/balance": {
+  "/wallet/balance": {
     "get": {
       "tags": ["Wallet"],
       "summary": "API to fetch the balance of the wallet",
@@ -1066,7 +1095,7 @@
           "in": "header",
           "name": "X-PRODUCT-INSTANCE-ID",
           "schema": { "type": "string" },
-          "description": "This is provided by Setu and it represents a product instance for business in their system."
+          "description": "A unique identifier provided by Setu which represent a specific business product instance within their system"
         },
         {
           "in": "header",
@@ -1077,7 +1106,7 @@
       ]
     }
   },
-  "/mobile-prepaid-recharge/transaction": {
+  "/transaction": {
     "get": {
       "tags": ["Transaction"],
       "summary": "API to fetch transaction details",
@@ -1130,7 +1159,7 @@
           "name": "X-PRODUCT-INSTANCE-ID",
           "required": true,
           "type": "string",
-          "description": "This is provided by Setu and it represents a product instance for business in their system."
+          "description": "A unique identifier provided by Setu which represent a specific business product instance within their system"
         },
         {
           "in": "header",
