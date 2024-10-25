@@ -168,6 +168,12 @@ The signing config is a JSON that specifies on which pages and at what coordinat
 
 ## Upload signing config
 
+<Callout type="tip">
+  <code>configId</code> is an optional UUID parameter. If passed, the config 
+  will be created with the same ID. If not passed, a new <code>configId</code> will 
+  be generated automatically.
+</Callout>
+
 <Row>
     <Portion desktopSpan="whole">
         <Tabs
@@ -182,24 +188,12 @@ The signing config is a JSON that specifies on which pages and at what coordinat
                                 processed your request successfully.
                             </p>
                             <hr className="tertiary" />
-                            <p>
-                                Upload the signing config to get the config id
-                                in response. <br />
-                                The request body should be a continuos string. To
-                                achieve that, remove line breaks from the JSON before
-                                uploading. <a
-                                    href="https://www.textfixer.com/tools/remove-line-breaks.php"
-                                    target="_blank"
-                                >
-                                    (remove line break)
-                                </a>
-                                <br />
-                            </p>
                             <h5>Request</h5>
                             <CodeBlockWithCopy language="json">
                                 {`POST /api/signature/config
                                 
 {
+    "configId": "825169c7-08a4-4739-94d5-0d8c4ef5e4f1", // Optional
     "signers": [
         {
             "optional": false,
@@ -256,6 +250,313 @@ The signing config is a JSON that specifies on which pages and at what coordinat
     </Portion>
 </Row>
 
+## Update signing config
+
+<Callout type="tip">
+  The latest version of config will be used for signing the request, 
+  but you can view the previous versions of config using the configId.
+</Callout>
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Setu has
+                                processed your request successfully.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`PUT /api/signature/config
+                                
+{
+    "configId": "df9962aa-153e-410a-b98c-9aa351936fb3",
+    "config": {
+        "signers": [
+            {
+                "optional": false,
+                "signRectangles": [
+                    {
+                        "coordinate": {
+                            "lowerLeftX": 358,
+                            "lowerLeftY": 232,
+                            "upperRightX": 498.53009106595096,
+                            "upperRightY": 272.52901734104046
+                        },
+                        "pages": [
+                            2
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "configId": "df9962aa-153e-410a-b98c-9aa351936fb7",
+    "config": {
+        "signers": [
+            {
+                "optional": false,
+                "signRectangles": [
+                    {
+                        "coordinate": {
+                            "lowerLeftX": 358.0,
+                            "lowerLeftY": 232.0,
+                            "upperRightX": 498.53009106595096,
+                            "upperRightY": 272.52901734104046
+                        },
+                        "pages": [
+                            2
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "versionNo": 2,
+    "traceId": "1-671a2aad-7b1fd38704e5f1567083fcd3"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    "key": "2",
+                    label: "404",
+                        content: (
+                            <>
+                                <p>
+                                    <Badge type="failure">NOT FOUND</Badge> The configId does not exist.
+                                </p>
+                                <h5>Request</h5>
+                                <CodeBlockWithCopy language="json">
+                                  {`PUT /api/signature/config
+                                
+{
+    "configId": "df9962aa-153e-410a-b98c-9aa351936fb3",
+    "config": {
+        "signers": [
+            {
+                "optional": false,
+                "signRectangles": [
+                    {
+                        "coordinate": {
+                            "lowerLeftX": 358,
+                            "lowerLeftY": 232,
+                            "upperRightX": 498.53009106595096,
+                            "upperRightY": 272.52901734104046
+                        },
+                        "pages": [
+                            2
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}`}
+                                </CodeBlockWithCopy>
+                                <hr className="tertiary" />
+                                <h5>Response</h5>
+                                <CodeBlockWithCopy language="json">
+                                {`{
+    "error": {
+        "code": "config_id_not_found",
+        "detail": "Unable to find the resource",
+        "traceId": "1-671a2f9f-1ffab5482d801880634082e3"
+    }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    "key": "3",
+                    label: "500",
+                        content: (
+                            <>
+                                <p>
+                                    <Badge type="failure">INTERNAL SERVER ERROR</Badge> 
+                                     Setu has failed to process your request due to some 
+                                    error in code or an unreachable database.
+                                </p>
+                                <h5>Request</h5>
+                                <CodeBlockWithCopy language="json">
+                                  {`PUT /api/signature/config
+                                
+{
+    "configId": "df9962aa-153e-410a-b98c-9aa351936fb3",
+    "config": {
+        "signers": [
+            {
+                "optional": false,
+                "signRectangles": [
+                    {
+                        "coordinate": {
+                            "lowerLeftX": 358,
+                            "lowerLeftY": 232,
+                            "upperRightX": 498.53009106595096,
+                            "upperRightY": 272.52901734104046
+                        },
+                        "pages": [
+                            2
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}`}
+                                </CodeBlockWithCopy>
+                                <hr className="tertiary" />
+                                <h5>Response</h5>
+                                <CodeBlockWithCopy language="json">
+                                {`{
+    "error": {
+        "code": "unexpected_error",
+        "detail": "An internal server error has occurred",
+        "traceId": "72dbdc7b-ebcb-46f2-93b2-7a34e102ed32"
+    }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
+## Get signing config
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Setu has
+                                processed your request successfully.
+                            </p>
+                            <hr className="tertiary" />
+                            <Callout type="tip">
+                                If the <code>versionNo</code> is not provided, 
+                                the latest version of the config will be 
+                                returned by default.
+                            </Callout>
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`GET /api/signature/config/:configId/:versionNo`}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "configId": "df9962aa-153e-410a-b98c-9aa351936fb7",
+    "config": {
+        "signers": [
+            {
+                "optional": false,
+                "signRectangles": [
+                    {
+                        "coordinate": {
+                            "lowerLeftX": 358.0,
+                            "lowerLeftY": 232.0,
+                            "upperRightX": 498.53009106595096,
+                            "upperRightY": 272.52901734104046
+                        },
+                        "pages": [
+                            2
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "versionNo": 2,
+    "traceId": "1-671a2aad-7b1fd38704e5f1567083fcd3"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    "key": "2",
+                    label: "404",
+                        content: (
+                            <>
+                                <p>
+                                    <Badge type="failure">NOT FOUND</Badge> The configId or versionNo does not exist.
+                                </p>
+                                <h5>Request</h5>
+                                <CodeBlockWithCopy language="json">
+                                  {`GET /api/signature/config/:configId/:versionNo`}
+                                </CodeBlockWithCopy>
+                                <hr className="tertiary" />
+                                <h5>Response</h5>
+                                <CodeBlockWithCopy language="json">
+                                {`{
+    "error": {
+        "code": "config_id_not_found",
+        "detail": "Unable to find the resource",
+        "traceId": "1-671a2f9f-1ffab5482d801880634082e3"
+    }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    "key": "3",
+                    label: "500",
+                        content: (
+                            <>
+                                <p>
+                                    <Badge type="failure">INTERNAL SERVER ERROR</Badge> 
+                                     Setu has failed to process your request due to some 
+                                    error in code or an unreachable database.
+                                </p>
+                                <h5>Request</h5>
+                                <CodeBlockWithCopy language="json">
+                                  {`GET /api/signature/config/:configId/:versionNo`}
+                                </CodeBlockWithCopy>
+                                <hr className="tertiary" />
+                                <h5>Response</h5>
+                                <CodeBlockWithCopy language="json">
+                                {`{
+    "error": {
+        "code": "unexpected_error",
+        "detail": "An internal server error has occurred",
+        "traceId": "72dbdc7b-ebcb-46f2-93b2-7a34e102ed32"
+    }
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
 ### Flow of API calls
 
 Read more about the flow of API calls <a href="/data/esign/quickstart">here</a>
+
+
+<WasPageHelpful />
