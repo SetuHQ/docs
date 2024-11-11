@@ -5,7 +5,6 @@
     "description": "APIs exposed to help merchants get onboarded onto the platform, create a payment context and collect payments from their customers",
     "version": "1.0"
   },
-
   "servers": [
     {
       "url": "https://umap-uat-core.setu.co",
@@ -13313,6 +13312,370 @@
         },
         "required": ["paymentId", "amount"]
       },
+      "CreateRequestBodyAsPresented": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "description": "Start date of the mandate (ddmmyyyy)",
+            "example": "02012006",
+            "default": "System date - Today"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "End date of the mandate (ddmmyyyy)",
+            "example": "02012008",
+            "default": "Mandate start date + 30 years"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Amount(in paise) of the mandate",
+            "example": 1000,
+            "minimum": 100,
+            "maximum": 20000000
+          },
+          "amountRule": {
+            "type": "string",
+            "description": "Rule for verifying the debit amount is within range of specified amount_limit",
+            "example": "max",
+            "enum": ["max", "exact"],
+            "default": "max"
+          },
+          "autoExecute": {
+            "type": "boolean",
+            "description": "Auto execute of the mandate",
+            "default": false,
+            "enum": ["false", "true"],
+            "example": false
+          },
+          "creationMode": {
+            "type": "string",
+            "description": "Creation mode of the mandate",
+            "example": "qr",
+            "enum": ["collect", "intent"],
+            "default": "intent"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency in which the mandate payment will be executed",
+            "default": "INR",
+            "example": "INR"
+          },
+          "customerRevocable": {
+            "type": "boolean",
+            "default": true,
+            "example": true
+          },
+          "customerVpa": {
+            "type": "string",
+            "description": "UPI id of the customer from which payments are made",
+            "example": "ram@axis",
+            "pattern": "^[a-zA-Z0-9.-]*@[a-zA-Z0-9.-]*$"
+          },
+          "expireAfter": {
+            "type": "integer",
+            "description": "Number of minutes after which the mandate creation request will expire",
+            "default": 2,
+            "example": 2,
+            "minimum": 2,
+            "maximum": 64800
+          },
+          "firstExecutionAmount": {
+            "type": "integer",
+            "description": "First execution amount(in paise) of the mandate",
+            "default": 0,
+            "example": 1000,
+            "format": "int64"
+          },
+          "maxAmountLimit": {
+            "type": "integer",
+            "description": "Maximum amount(in paise) for which a mandate transaction can be executed",
+            "example": 1000,
+            "minimum": 100,
+            "maximum": 20000000,
+            "default": "Mandate amount"
+          },
+          "merchantVpa": {
+            "type": "string",
+            "description": "UPI id of the merchant on which the payments are collected",
+            "example": "fastestupi@pineaxis",
+            "pattern": "^[a-z0-9.-]*@[a-zA-Z]*$"
+          },
+          "recurrenceRule": {
+            "type": "string",
+            "description": "Recurrence rule of the mandate",
+            "default": "on",
+            "example": "on",
+            "enum": ["on", "before", "after"]
+          },
+          "referenceId": {
+            "type": "string",
+            "description": "Merchant reference id of the mandate",
+            "example": "ABC1234789",
+            "minLength": 5,
+            "maxLength": 50
+          },
+          "transactionNote": {
+            "type": "string",
+            "description": "Transaction note of the mandate",
+            "example": "Transaction note"
+          }
+        },
+        "required": ["amount", "merchantVpa"]
+      },
+      "CreateRequestBodyPeriodic": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "description": "Start date of the mandate (ddmmyyyy)",
+            "example": "02012006",
+            "default": "System date - Today"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "End date of the mandate (ddmmyyyy)",
+            "example": "02012008",
+            "default": "Mandate start date + 30 years"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Amount(in paise) of the mandate",
+            "example": 1000,
+            "minimum": 100,
+            "maximum": 20000000
+          },
+          "autoExecute": {
+            "type": "boolean",
+            "description": "Auto execute of the mandate",
+            "default": false,
+            "enum": ["false", "true"],
+            "example": false
+          },
+          "creationMode": {
+            "type": "string",
+            "description": "Creation mode of the mandate",
+            "example": "qr",
+            "enum": ["collect", "intent"],
+            "default": "intent"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency in which the mandate payment will be executed",
+            "default": "INR",
+            "example": "INR"
+          },
+          "customerRevocable": {
+            "type": "boolean",
+            "default": true,
+            "example": false
+          },
+          "customerVpa": {
+            "type": "string",
+            "description": "UPI id of the customer from which payments are made",
+            "example": "ram@axis",
+            "pattern": "^[a-zA-Z0-9.-]*@[a-zA-Z0-9.-]*$"
+          },
+          "expireAfter": {
+            "type": "integer",
+            "description": "Number of minutes after which the mandate creation request will expire",
+            "default": 2,
+            "example": 2,
+            "minimum": 2,
+            "maximum": 64800
+          },
+          "firstExecutionAmount": {
+            "type": "integer",
+            "description": "First execution amount(in paise) of the mandate",
+            "default": 0,
+            "example": 1000,
+            "format": "int64"
+          },
+          "frequency": {
+            "type": "string",
+            "description": "Frequency of the mandate",
+            "example": "monthly",
+            "enum": [
+              "daily",
+              "weekly",
+              "fortnightly",
+              "monthly",
+              "bi monthly",
+              "quarterly",
+              "half yearly",
+              "yearly"
+            ]
+          },
+          "maxAmountLimit": {
+            "type": "integer",
+            "description": "Maximum amount(in paise) for which a mandate transaction can be executed",
+            "example": 1000,
+            "minimum": 100,
+            "maximum": 20000000
+          },
+          "merchantVpa": {
+            "type": "string",
+            "description": "UPI id of the merchant on which the payments are collected",
+            "example": "fastestupi@pineaxis",
+            "pattern": "^[a-z0-9.-]*@[a-zA-Z]*$"
+          },
+          "recurrenceRule": {
+            "type": "string",
+            "description": "Recurrence rule of the mandate",
+            "default": "on",
+            "example": "on",
+            "enum": ["on", "before", "after"]
+          },
+          "recurrenceValue": {
+            "type": "integer",
+            "description": "Recurrence value of the mandate",
+            "example": 1,
+            "minimum": 0,
+            "maximum": 31
+          },
+          "referenceId": {
+            "type": "string",
+            "description": "Merchant reference id of the mandate",
+            "example": "ABC1234789",
+            "minLength": 5,
+            "maxLength": 50
+          },
+          "shareToPayee": {
+            "type": "boolean",
+            "default": true,
+            "example": false
+          },
+          "transactionNote": {
+            "type": "string",
+            "description": "Transaction note of the mandate",
+            "example": "Transaction note"
+          }
+        },
+        "required": ["amount", "merchantVpa", "frequency", "recurrenceValue"]
+      },
+      "CreateRequestBodyOneTime": {
+        "type": "object",
+        "properties": {
+          "allowMultipleDebit": {
+            "type": "boolean",
+            "description": "Allow multiple debits for the mandate",
+            "default": false,
+            "example": false,
+            "enum": ["false", "true"]
+          },
+          "startDate": {
+            "type": "string",
+            "description": "Start date of the mandate (ddmmyyyy)",
+            "example": "02012006",
+            "default": "System date - Today"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "End date of the mandate (ddmmyyyy)",
+            "example": "02012008",
+            "default": "Mandate start date + 30 years"
+          },
+          "blockFunds": {
+            "type": "boolean",
+            "description": "Block funds for the mandate",
+            "default": false,
+            "example": true,
+            "enum": ["false", "true"]
+          },
+
+          "amount": {
+            "type": "integer",
+            "description": "Amount(in paise) of the mandate",
+            "example": 1000,
+            "minimum": 100,
+            "maximum": 20000000
+          },
+          "autoExecute": {
+            "type": "boolean",
+            "description": "Auto execute of the mandate",
+            "default": false,
+            "enum": ["false", "true"],
+            "example": false
+          },
+          "creationMode": {
+            "type": "string",
+            "description": "Creation mode of the mandate",
+            "example": "qr",
+            "enum": ["collect", "intent"],
+            "default": "intent"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency in which the mandate payment will be executed",
+            "default": "INR",
+            "example": "INR"
+          },
+          "customerRevocable": {
+            "type": "boolean",
+            "default": true,
+            "example": false
+          },
+          "customerVpa": {
+            "type": "string",
+            "description": "UPI id of the customer from which payments are made",
+            "example": "ram@axis",
+            "pattern": "^[a-zA-Z0-9.-]*@[a-zA-Z0-9.-]*$"
+          },
+          "expireAfter": {
+            "type": "integer",
+            "description": "Number of minutes after which the mandate creation request will expire",
+            "default": 2,
+            "example": 2,
+            "minimum": 2,
+            "maximum": 64800
+          },
+          "firstExecutionAmount": {
+            "type": "integer",
+            "description": "First execution amount(in paise) of the mandate",
+            "default": 0,
+            "example": 1000,
+            "format": "int64"
+          },
+          "maxAmountLimit": {
+            "type": "integer",
+            "description": "Maximum amount(in paise) for which a mandate transaction can be executed",
+            "example": 1000,
+            "minimum": 100,
+            "maximum": 20000000
+          },
+          "merchantVpa": {
+            "type": "string",
+            "description": "UPI id of the merchant on which the payments are collected",
+            "example": "fastestupi@pineaxis",
+            "pattern": "^[a-z0-9.-]*@[a-zA-Z]*$"
+          },
+          "recurrenceRule": {
+            "type": "string",
+            "description": "Recurrence rule of the mandate",
+            "default": "on",
+            "example": "on",
+            "enum": ["on", "before", "after"]
+          },
+          "referenceId": {
+            "type": "string",
+            "description": "Merchant reference id of the mandate",
+            "example": "ABC1234789",
+            "minLength": 5,
+            "maxLength": 50
+          },
+          "shareToPayee": {
+            "type": "boolean",
+            "default": true,
+            "example": false
+          },
+          "transactionNote": {
+            "type": "string",
+            "description": "Transaction note of the mandate",
+            "example": "Transaction note"
+          }
+        },
+        "required": ["amount", "merchantVpa", "blockFunds"]
+      },
       "CreateRequestBodyAsPresentedTPV": {
         "type": "object",
         "properties": {
@@ -13427,7 +13790,6 @@
         },
         "required": ["amount", "merchantVpa", "primaryAccount"]
       },
-      "CreateRequestBodyPeriodic": {
       "CreateSettlementBankAccountRequestBody": {
         "type": "object",
         "properties": {
@@ -13821,7 +14183,10 @@
             "description": "Reference id provided by the merchant",
             "example": "1240689979139556556"
           },
-          "requestId": { "type": "string", "example": "cjqml1f2e5ocq2mesej0" },
+          "requestId": {
+            "type": "string",
+            "example": "cjqml1f2e5ocq2mesej0"
+          },
           "shortLink": {
             "type": "string",
             "description": "short link for the payment link",
@@ -14017,7 +14382,9 @@
           },
           "secondaryAccounts": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/MandateTPVAccountDetail" },
+            "items": {
+              "$ref": "#/components/schemas/MandateTPVAccountDetail"
+            },
             "description": "Secondary account details",
             "example": [
               {
@@ -14164,7 +14531,9 @@
           },
           "secondaryAccounts": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/MandateTPVAccountDetail" },
+            "items": {
+              "$ref": "#/components/schemas/MandateTPVAccountDetail"
+            },
             "description": "secondary accounts for the tpv transaction",
             "example": [
               {
@@ -14308,7 +14677,10 @@
             "description": "Reference id provided by the merchant",
             "example": "1240689979139556556"
           },
-          "requestId": { "type": "string", "example": "cjqml1f2e5ocq2mesej0" },
+          "requestId": {
+            "type": "string",
+            "example": "cjqml1f2e5ocq2mesej0"
+          },
           "secondaryAccounts": {
             "type": "array",
             "items": {
@@ -16618,7 +16990,10 @@
             "description": "reference id in the merchant's system",
             "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
           },
-          "requestId": { "type": "string", "example": "cjqml1f2e5ocq2mesej0" },
+          "requestId": {
+            "type": "string",
+            "example": "cjqml1f2e5ocq2mesej0"
+          },
           "rrn": {
             "type": "string",
             "description": "NPCI transaction custRef",
@@ -16917,7 +17292,10 @@
             "description": "Reference id provided by the merchant",
             "example": "1240689979139556556"
           },
-          "requestId": { "type": "string", "example": "cjqml1f2e5ocq2mesej0" },
+          "requestId": {
+            "type": "string",
+            "example": "cjqml1f2e5ocq2mesej0"
+          },
           "shortLink": {
             "type": "string",
             "description": "short link for the payment link",
@@ -17057,7 +17435,10 @@
             "description": "Reference id provided by the merchant",
             "example": "1240689979139556556"
           },
-          "requestId": { "type": "string", "example": "cjqml1f2e5ocq2mesej0" },
+          "requestId": {
+            "type": "string",
+            "example": "cjqml1f2e5ocq2mesej0"
+          },
           "secondaryAccounts": {
             "type": "array",
             "items": {
@@ -19610,7 +19991,10 @@
             "example": "2024-05-17T19:17:32+05:30",
             "format": "date-time"
           },
-          "currency": { "type": "string", "example": "Repellendus cum rerum." },
+          "currency": {
+            "type": "string",
+            "example": "Repellendus cum rerum."
+          },
           "expiryDate": {
             "type": "string",
             "description": "RFC 3339 timestamp to indicate the expiry date \u0026 time",
