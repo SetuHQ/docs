@@ -1,0 +1,472 @@
+---
+sidebar_title: Webhooks
+page_title: BBPS COU — Webhooks
+order: 4
+visible_in_sidebar: true
+---
+
+# Webhooks
+
+Here is the general structure of any webhook—
+
+<CodeBlockWithCopy language="json">{`
+    "traceId"   : "C3SFG0O6N88R6UI7EQ",
+    "timeStamp" : "2021-11-12T00:12:29+05:30",
+    "event"     : "BILLER_UPDATES",
+    "data"      : {...}`}</CodeBlockWithCopy>
+
+1. `traceId` is a unique ID assigned to the error and used by Setu to debug
+2. `timeStamp` denotes the time when the webhook was triggered
+3. `event` is a pre-defined list of event types used to define what the webhook was triggered for
+4. `data` contains the webhook payload data
+
+<hr class="primary" />
+
+### Bill fetch webhook
+
+This webhook can be used to get details of outstanding bills on BBPS. It will only be triggered if the Fetch bill API is
+consumed. If the bill does not exist then suitable error
+message will be sent.
+
+<CodeBlockWithCopy language="json">{`Method : POST
+URL    : To be provided by partner`}</CodeBlockWithCopy>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Bill fetch sample request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "BILL_FETCH",
+    "timeStamp": "2023-08-27T17:09:24.566+05:30",
+    "data": {
+        "bill": {
+            "amount": 60500,
+            "billDate": "2023-06-02",
+            "billNumber": "3749280326878517751",
+            "billPeriod": "Monthly",
+            "customerName": "Elijah White",
+            "dueDate": "2023-06-02"
+        },
+        "billerRefId": "9540207519",
+        "exactness": "Exact",
+        "paymentLimits": [
+            {
+                "maxLimit": 99999900,
+                "minLimit": 100,
+                "paymentMode": "Internet Banking",
+                "supportsPendingStatus": false
+            },
+            {
+                "maxLimit": 99999900,
+                "minLimit": 100,
+                "paymentMode": "Debit Card",
+                "supportsPendingStatus": false
+            },
+            {
+                "maxLimit": 99999900,
+                "minLimit": 100,
+                "paymentMode": "Prepaid Card",
+                "supportsPendingStatus": false
+            },
+            {
+                "maxLimit": 99999900,
+                "minLimit": 100,
+                "paymentMode": "IMPS",
+                "supportsPendingStatus": false
+            },
+            {
+                "maxLimit": 4999900,
+                "minLimit": 100,
+                "paymentMode": "Cash",
+                "supportsPendingStatus": false
+            },
+            {
+                "maxLimit": 99999900,
+                "minLimit": 100,
+                "paymentMode": "UPI",
+                "supportsPendingStatus": false
+            },
+            {
+                "maxLimit": 99999900,
+                "minLimit": 100,
+                "paymentMode": "Wallet",
+                "supportsPendingStatus": false
+            },
+            {
+                "maxLimit": 99999900,
+                "minLimit": 100,
+                "paymentMode": "NEFT",
+                "supportsPendingStatus": false
+            },
+            {
+                "maxLimit": 99999900,
+                "minLimit": 100,
+                "paymentMode": "AEPS",
+                "supportsPendingStatus": false
+            }
+        ],
+        "refId": "CJLJBQK91PA0FD9MPMK0W75BD9M32391709",
+        "status": "Success"
+    }
+}
+`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### Bill payment webhook
+
+This informs you that NPCI has received the payment request for a particular bill. It will also pass on
+relevant errors and messages.
+
+<CodeBlockWithCopy language="json">{`Method : POST
+URL    : To be provided by partner`}</CodeBlockWithCopy>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Bill payment sample request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "BILL_PAY",
+    "data": {
+        "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+        "status": "PROCESSING/SUCCESS/FAILURE",
+        "billerRefId": "ABC1235",
+        "transactionId": "AX01122999900001",
+        "failureReason": {
+            "code": "BRR005",
+            "message": "Biller not accepting payments at the moment"
+        },
+        "paymentDetails": {
+            "mode": "Internet Banking/Debit Card/Credit Card/IMPS/Cash/UPI/Wallet/NEFT/Prepaid Card/AEPS/Account Transfer/Bharat QR/USSD",
+            "paymentRefId": "N2001121212344",
+            "amount": 10000,
+            "timestamp": "2020-12-12T13:12:00+05:30"
+        },
+        "billerId": "VODA00000MUM03"
+    },
+    "success": true,
+    "traceId": "C3SFG0O6N88R6UI7EQ",
+    "error": null
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### Dispute webhook
+
+This webhook can be used to view the status update for a dispute raised by a customer.
+
+<CodeBlockWithCopy language="json">{`Method : POST
+URL    : To be provided by partner`}</CodeBlockWithCopy>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Dispute sample request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "BILL_DISPUTE",
+    "data": {
+        "refId": "JPMRPBOGGDTP1EFRZVXVESQVQIS10461642",
+        "disputeId": "OP0121046567755",
+        "status": "INITIALIZED/ASSIGNED/RE_ASSIGNED/ASSIGNED_TO_BOU/ASSIGNED_TO_COU/ASSIGNED_TO_OU/ESCALATED/RESOLVED/UNRESOLVED",
+        "assignedTo": "AX39",
+        "remarks": "Resolved in favour of customer"
+    },
+    "success": true,
+    "error": null
+}
+`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### Biller updates webhook
+
+This is used to notify you about updates on any BBPS biller—including biller being
+added to or modified on the BBPS platform. In case of a biller gets modified, the
+request contains the biller with the new modification.
+
+<CodeBlockWithCopy language="json">{`Method : POST
+URL    : To be provided by partner`}</CodeBlockWithCopy>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Biller updates sample request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "BILLER_UPDATES",
+    "traceId": "C6I7O22PC5TNLVD7QSKG",
+    "timeStamp": "2021-11-29T12:36:48.910+05:30",
+    "data": [
+        {
+            "ID": 699158487875191900,
+            "Status": "ACTIVE",
+            "BillerAcceptsAdhoc": "F",
+            "BillerAdditionalInfo": [
+                {
+                    "DataType": "ALPHANUMERIC",
+                    "Optional": true,
+                    "ParamName": "URL"
+                },
+                {
+                    "DataType": "ALPHANUMERIC",
+                    "Optional": true,
+                    "ParamName": "Early Payment Date"
+                }
+            ],
+            "BillerAdditionalInfoPayment": null,
+            "BillerAliasName": "TATA PWR - MUM",
+            "BillerCategoryName": "DTH",
+            "BillerCoverage": "IND",
+            "BillerCustomerParams": [
+                {
+                    "dataType": "NUMERIC",
+                    "maxLength": 12,
+                    "minLength": 12,
+                    "paramName": "Consumer Number"
+                }
+            ],
+            "BillerDescription": "",
+            "BillerEffctvFrom": "2017-10-31",
+            "BillerEffctvTo": "2025-12-31",
+            "BillerID": "ZEE500000NAT01",
+            "BillerMode": "ONLINE",
+            "BillerName": "ZEE TV",
+            "BillerOwnerShp": "Private",
+            "BillerPaymentChannels": [
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "INT"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "INTB"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "MOB"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "MOBB"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "POS"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "MPOS"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "ATM"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "BNKBRNCH"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "KIOSK"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "AGT"
+                },
+                {
+                    "minLimit": 100,
+                    "maxLimit": 500000000,
+                    "paymentChannel": "BSC"
+                }
+            ],
+            "BillerPaymentModes": [
+                {
+                    "minLimit": 1,
+                    "paymentMode": "Internet Banking"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "Debit Card"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "Credit Card"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "Prepaid Card"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "IMPS"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "Cash"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "UPI"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "Wallet"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "NEFT"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "AEPS"
+                },
+                {
+                    "minLimit": 1,
+                    "paymentMode": "Account Transfer"
+                }
+            ],
+            "BillerResponseParams": {
+                "amountOptions": [
+                    {
+                        "amountBreakupSet": ["BASE_BILL_AMOUNT"]
+                    },
+                    {
+                        "amountBreakupSet": ["Early Payment Amount"]
+                    }
+                ]
+            },
+            "BillerTempDeactivationEnd": "",
+            "BillerTempDeactivationStart": "",
+            "BillerTimeOut": "",
+            "CustomerParamGroups": {
+                "groups": null
+            },
+            "FetchRequirement": "MANDATORY",
+            "InterchangeFee": null,
+            "ParentBiller": "",
+            "PaymentAmountExactness": "EXACT",
+            "PlanAdditionalInfo": null,
+            "PlanMdmRequirement": "",
+            "SupportBillValidation": "",
+            "SupportDeemed": "",
+            "SupportPendingStatus": "",
+            "NameVector": "'mum':3 'pwr':2 'tata':1 'tv':5 'zee':4",
+            "Plans": [
+                {
+                    "ID": 773944272117303200,
+                    "PlanID": "1",
+                    "AmountInRupees": "99.0",
+                    "BillerID": "ZEE500000NAT01",
+                    "CategorySubType": {
+                        "subType": "1 Month"
+                    },
+                    "CategoryType": "Premium",
+                    "EffctvFrom": "2021-01-01",
+                    "EffctvTo": "2021-12-31",
+                    "PlanAdditionalInfo": [],
+                    "PlanDescription": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows,\nKids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
+                    "Status": "ACTIVE"
+                },
+                {
+                    "ID": 773944272134080400,
+                    "PlanID": "2",
+                    "AmountInRupees": "299.0",
+                    "BillerID": "ZEE500000NAT01",
+                    "CategorySubType": {
+                        "subType": "2 Months"
+                    },
+                    "CategoryType": "Premium",
+                    "EffctvFrom": "2021-01-01",
+                    "EffctvTo": "2021-12-31",
+                    "PlanAdditionalInfo": [],
+                    "PlanDescription": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows,\nKids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
+                    "Status": "ACTIVE"
+                },
+                {
+                    "ID": 773944272142469000,
+                    "PlanID": "3",
+                    "AmountInRupees": "599.0",
+                    "BillerID": "ZEE500000NAT01",
+                    "CategorySubType": {
+                        "subType": "6 Months"
+                    },
+                    "CategoryType": "Premium",
+                    "EffctvFrom": "2021-01-01",
+                    "EffctvTo": "2021-12-31",
+                    "PlanAdditionalInfo": [],
+                    "PlanDescription": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows,\nKids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
+                    "Status": "ACTIVE"
+                },
+                {
+                    "ID": 773944272159246300,
+                    "PlanID": "4",
+                    "AmountInRupees": "999.0",
+                    "BillerID": "ZEE500000NAT01",
+                    "CategorySubType": {
+                        "subType": "12 Months"
+                    },
+                    "CategoryType": "Premium",
+                    "EffctvFrom": "2021-01-01",
+                    "EffctvTo": "2021-12-31",
+                    "PlanAdditionalInfo": [],
+                    "PlanDescription": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows,\nKids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
+                    "Status": "ACTIVE"
+                },
+                {
+                    "ID": 773944272167635000,
+                    "PlanID": "5",
+                    "AmountInRupees": "365.0",
+                    "BillerID": "ZEE500000NAT01",
+                    "CategorySubType": {
+                        "subType": "12 Months"
+                    },
+                    "CategoryType": "Club",
+                    "EffctvFrom": "2021-01-01",
+                    "EffctvTo": "2021-12-31",
+                    "PlanAdditionalInfo": [],
+                    "PlanDescription": "TV shows before telecast, Select ZEE5 Originals, Select ALT Balaji Shows, Select Movies, Zindagi\nTV Shows, Kids, Live TV. Watch on 2 devices at a time",
+                    "Status": "ACTIVE"
+                }
+            ]
+        }
+    ]
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<WasPageHelpful />
