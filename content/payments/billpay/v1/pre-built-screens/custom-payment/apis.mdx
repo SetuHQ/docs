@@ -1,0 +1,183 @@
+---
+sidebar_title: Required APIs
+page_title: BBPS Billpay APIs for custom payment
+order: 1
+visible_in_sidebar: true
+---
+
+## APIs required for custom payment
+
+APIs for integrating your own payment gateway
+
+<hr class="primary" />
+
+### Webhook
+
+The following API needs to be integrated by you, and is sent in the case of a successful or failed payment. Please build retry mechanisms to account for network & http errors. The API is idempotent on our end.
+
+**URL**
+
+`/webhooks/payment-event`
+
+**Headers**
+
+<CodeBlockWithCopy language="bash">
+  {`Content-type: application/json`}
+</CodeBlockWithCopy>
+
+**Request**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "orderId": "COUWLje9V7wWs9N3w",
+  "transactionId": "UNIQUE_PAYMENT_TRANSACTION_ID",
+  "paymentDateTime": "YYYY-MM-DD HH:MM:SS in UTC",
+  "amount": "100.00",
+  "paymentMode": "CASH|UPI|IMPS|NEFT|AEPS|ACCOUNT TRANSFER|INTERNET BANKING|WALLET|DEBIT CARD|CREDIT CARD|PREPAID CARD|Bharat QR|USSD",
+  "paymentStatus": "SUCCESS|FAILURE"
+}`}
+</CodeBlockWithCopy>
+
+The `orderId` is always prefixed with `COUWL` to identify Setu payment requests.
+
+**Response**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "status": "acknowledged"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+### APIs you need to support
+
+These APIs are needed to handle various payment scenarios and let Setu know about payment status.
+
+##### Get payment status
+
+**URL**
+
+As provided by you, with the suffix `/setu/v1/getPaymentStatus`.
+
+For example, if the URL provided by you is `https://example.com`, the URL for this API will be `https://example.com/setu/v1/getPaymentStatus`.
+
+**Headers**
+
+<CodeBlockWithCopy language="bash">
+  {`X-SETU-BILLPAY-API-KEY: 77kxHrhbKNYXMwzHWFranymXV2xRkSRE
+Content-Type: application/json`}
+</CodeBlockWithCopy>
+
+**Request**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "orderId": "COUWLje9V7wWs9N3w"
+}`}
+</CodeBlockWithCopy>
+
+**Response**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "status": "success/invalid-order-id",
+  "message": "",
+  "data": {
+    "orderId": "COUWLje9V7wWs9N3w",
+    "transactionId": "UNIQUE_PAYMENT_TRANSACTION_ID",
+    "paymentDateTime": "YYYY-MM-DD HH:MM:SS in UTC",
+    "amount": "100.00",
+    "paymentMode": "CASH|UPI|IMPS|NEFT|AEPS|ACCOUNT TRANSFER|INTERNET BANKING|WALLET|DEBIT CARD|CREDIT CARD|PREPAID CARD|Bharat QR|USSD",
+    "paymentStatus": "SUCCESS|FAILURE"
+  }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Refund
+
+This API should be be idempotent on your end.
+
+**URL**
+
+As provided by you, with the suffix `/setu/v1/refund`.
+
+For example, if the URL provided by you is `https://example.com`, the URL for this API will be `https://example.com/setu/v1/refund`.
+
+**Headers**
+
+<CodeBlockWithCopy language="bash">
+  {`X-SETU-BILLPAY-API-KEY: 77kxHrhbKNYXMwzHWFranymXV2xRkSRE
+Content-Type: application/json`}
+</CodeBlockWithCopy>
+
+**Request**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "orderId": "COUWLje9V7wWs9N3w",
+  "amount": "100.00",
+  "transactionId": "UNIQUE_PAYMENT_TRANSACTION_ID"
+}`}
+</CodeBlockWithCopy>
+
+**Response**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "status": "success/failure",
+  "message": "Accepted/Reason for rejection",
+  "data": {
+    "orderId": "COUWLje9V7wWs9N3w",
+    "transactionId": "UNIQUE_PAYMENT_TRANSACTION_ID",
+    "refundId": "UNIQUE_REFUND_ID"
+  }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+##### Refund status — optional webhook
+
+**URL**
+
+`/webhooks/refund-event`
+
+**Headers**
+
+<CodeBlockWithCopy language="bash">
+  {`Content-type: application/json
+x-api-user: api user name issued by Setu
+x-api-password: api password issued by Setu`}
+</CodeBlockWithCopy>
+
+**Request**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "orderId": "COUWLje9V7wWs9N3w",
+  "refundId": "UNIQUE_REFUND_ID",
+  "refundStatus": "success/failure",
+  "refundDateTime": "YYYY-MM-DD HH:MM:SS in UTC"
+}`}
+</CodeBlockWithCopy>
+
+**Response**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "status": "acknowledged"
+}`}
+</CodeBlockWithCopy>
+
+See <a href="/payments/billpay/api-reference/white-label#/category~Payment/operation~refundWebhook" target="_blank">API reference</a> for more information.
+
+<hr class="primary" />
+
+### Listen to user events
+
+You can optionally listen to events sent by Setu. Please check supported <a href="/payments/billpay/user-events" target="_blank">user events</a>.
+
+<WasPageHelpful />

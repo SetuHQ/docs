@@ -1,0 +1,484 @@
+---
+sidebar_title: Objects
+page_title: BBPS COU — Objects
+order: 3
+visible_in_sidebar: true
+---
+
+## Payment Channel
+
+This is the initiating payment channel.
+
+| type       | description            |
+| ---------- | ---------------------- |
+| `INT`      | Internet Portal        |
+| `INTB`     | Internet Banking       |
+| `MOB`      | Mobile Application     |
+| `BNKBRNCH` | Bank Branch            |
+| `BSC`      | Business correspondent |
+| `AGT`      | Offline Agent          |
+| `KIOSK`    | KIOSK                  |
+| `ATM`      | ATM                    |
+| `MOBB`     | Mobile Banking         |
+| `POS`      | POS                    |
+| `MPOS`     | MPOS                   |
+
+## Payment Mode
+
+Payment modes supported by a biller.
+
+| type             |
+| ---------------- |
+| Cash             |
+| Internet Banking |
+| Credit Card      |
+| Debit Card       |
+| Prepaid Card     |
+| IMPS             |
+| NEFT             |
+| UPI              |
+| Wallet           |
+| AEPS             |
+| Account Transfer |
+| Bharat QR        |
+| USSD             |
+
+## State and City mapping
+
+[Click here &#8599](https://docs.google.com/spreadsheets/d/18LYdPbEw5JCB-bOp3gacbV6xUeHun_gBxbLeGxBuhK8/edit?usp=sharing) for State and City Biller Coverage Mapping
+
+## Customer
+
+Customer object holds the customer mobile number and the customer bill parameters.
+
+| parameter                | type                               | description                                                                                        |
+| ------------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `mobile`                 | `string` (6, 10 and 20 digits)     | Customer Mobile Number                                                                             |
+| `billParameters`         | `{ name: string, value: string}[]` | Bill Parameters. The parameters to send is found in the biller details API.                        |
+| `billParameters[].name`  | `string`                           | Name of the bill parameter. name should match the parameter in biller details API.                 |
+| `billParameters[].value` | `string`                           | Value of the bill parameter. Value is validate according to the regex found in the biller details. |
+
+## Biller
+
+Biller object holds the biller ID.
+
+| parameter | type     | description           |
+| --------- | -------- | --------------------- |
+| `id`      | `string` | The Biller ID on BBPS |
+
+## Agent
+
+Details pertaining to the Agent which initiates the transaction. Values of the field if provided to NPCI has to be matched against it.
+
+| parameter    | type               | description                    |
+| ------------ | ------------------ | ------------------------------ |
+| `id`         | `string`           | The Agent ID on BBPS           |
+| `channel`    | `PaymentChannel`   | Payment Channel used by Agent. |
+| `ip`         | `string,ipv4`      | Agent server IP address        |
+| `mac`        | `string,mac`       | Server MAC address             |
+| `mobile`     | `string`           | Agent Mobile number            |
+| `geocode`    | `string`           | Agent Geocode                  |
+| `postalCode` | `string`           | Agent Pincode                  |
+| `terminalId` | `string`           | Agent terminal ID              |
+| `imei`       | `string`           | Agent IMEI                     |
+| `ifsc`       | `string`           | Agent IFSC                     |
+| `os`         | `iOS` or `Android` | Initiating device OS           |
+| `app`        | `string`           | Initiating app name            |
+
+## Initiating Channel & Required Agent parameters
+
+| Channel    | Agent parameters                             |
+| ---------- | -------------------------------------------- |
+| `BNKBRNCH` | `ifsc`,`mobile`,`geocode`,`postalCode`       |
+| `MOB`      | `ip`,`imei`,`os`,`app`                       |
+| `MOBB`     | `ip`,`imei`,`os`,`app`                       |
+| `INT`      | `ip`,`mac`                                   |
+| `INTB`     | `ip`,`mac`                                   |
+| `ATM`      | `terminalId`                                 |
+| `KIOSK`    | `terminalId`                                 |
+| `AGT`      | `terminalId`,`mobile`,`geocode`,`postalCode` |
+| `BSC`      | `terminalId`,`mobile`,`geocode`,`postalCode` |
+
+## Initiating Channel & Eligible Payment modes
+
+| Payment Mode     | INT | INTB | MOB | MOBB | ATM | BNKBRNCH | KIOSK | AGT | BSC |
+| ---------------- | --- | ---- | --- | ---- | --- | -------- | ----- | --- | --- |
+| Cash             | N   | N    | N   | N    | N   | Y        | Y     | Y   | Y   |
+| Internet Banking | Y   | Y    | Y   | Y    | Y   | N        | N     | N   | N   |
+| Credit Card      | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
+| Debit Card       | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
+| Prepaid Card     | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
+| IMPS             | Y   | Y    | Y   | Y    | N   | Y        | N     | Y   | Y   |
+| NEFT             | Y   | Y    | Y   | Y    | Y   | Y        | N     | Y   | Y   |
+| UPI              | Y   | Y    | Y   | Y    | N   | Y        | N     | Y   | Y   |
+| Wallet           | Y   | Y    | Y   | Y    | N   | Y        | Y     | Y   | Y   |
+| AEPS             | N   | N    | Y   | N    | N   | Y        | N     | Y   | Y   |
+| Account Transfer | N   | N    | N   | N    | N   | Y        | N     | N   | Y   |
+| Bharat QR        | N   | N    | Y   | Y    | N   | Y        | N     | Y   | Y   |
+| USSD             | N   | N    | Y   | Y    | N   | N        | N     | N   | N   |
+
+## Failure Reason
+
+| parameter | type                               | description                                                                                        |
+| --------- | ---------------------------------- | -------------------------------------------------------------------------------------------------- |
+| code      | `string`                           | Error codes includes Application, Banking and BBPS error codes                                     |
+| message   | `string`                           | Error code description                                                                             |
+| type      | `FUND_TRANSFER` or `BBPS` or `APP` | Error Type. BBPS errors are due to BBPS, and code and message field contain the actual BBPS error. |
+
+## Payment Details
+
+| parameter    | type                          | description                          |
+| ------------ | ----------------------------- | ------------------------------------ |
+| mode         | [Payment Mode](#payment-mode) | Payment Mode                         |
+| paymentRefId | `string` (6 - 35 characters)  | Payment Reference ID tagged by agent |
+| amount       | `integer`                     | Amount in paise                      |
+| timestamp    | `date-time`                   | Timestamp                            |
+
+## Bill Status
+
+| type         | description                                       |
+| ------------ | ------------------------------------------------- |
+| `Processing` | Fetching a bill (or) Paying a bill is in progress |
+| `Success`    | Successfully fetched a bill (or) paid a bill      |
+| `Failure`    | Unable to fetch a bill or pay a bill              |
+
+## Transaction Status
+
+| type         | description                |
+| ------------ | -------------------------- |
+| `Processing` | Transaction is in progress |
+| `Success`    | Transaction is successful  |
+| `Error`      | Transaction has failed     |
+
+## Dispute Status
+
+| type              | description                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `INITIALIZED`     | Initialized                                                                                                                                             |
+| `ASSIGNED`        | Complaint has been accepted.                                                                                                                            |
+| `RE_ASSIGNED`     | When Customer BBPOU re assigned the complaint to the Biller BBPOU.                                                                                      |
+| `ASSIGNED_TO_BOU` | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
+| `ASSIGNED_TO_COU` | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
+| `ASSIGNED_TO_OU`  | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
+| `RESOLVED`        | Once the BBPOU resolves the customer related complaint, the BBPOU updates the system.                                                                   |
+| `UNRESOLVED`      | If the BBPOU does not respond to the complaint within the specified TAT (Super escalation), the complaint status changed to unresolved.                 |
+
+## Bill Period
+
+| type          |
+| ------------- |
+| `ONETIME`     |
+| `DAILY`       |
+| `WEEKLY`      |
+| `BIMONTHLY`   |
+| `MONTHLY`     |
+| `QUARTERLY`   |
+| `HALFYEARLY`  |
+| `YEARLY`      |
+| `ASPRESENTED` |
+| `NA`          |
+
+## Bill Data
+
+| parameter    | type                        | description                                                                              |
+| ------------ | --------------------------- | ---------------------------------------------------------------------------------------- |
+| customerName | `string`                    | Bill owner                                                                               |
+| amount       | `integer`                   | Bill amount in paise                                                                     |
+| dueDate      | `date`                      | Bill due date                                                                            |
+| billDate     | `date`                      | Bill date                                                                                |
+| billNumber   | `string`                    | Bill number                                                                              |
+| billPeriod   | [Bill Period](#bill-period) | Bill period of the bill fetch / payment requested. `NA` when bill period is unavailable. |
+
+## Exactness
+
+Amount acceptance by the biller.
+
+| type              | description           |
+| ----------------- | --------------------- |
+| `Exact`           | Exact amount          |
+| `Exact and below` | Exact amount or below |
+| `Exact and above` | Exact amount or above |
+| `Any`             | Any exactness         |
+
+## Payment Limit
+
+| parameter             | type                          | description                                             |
+| --------------------- | ----------------------------- | ------------------------------------------------------- |
+| paymentMode           | [Payment Mode](#payment-mode) | payment mode                                            |
+| supportsPendingStatus | `bool`                        | Whether payment mode for biller supports pending status |
+| minLimit              | `integer` or `null`           | Minimum acceptable amount in paise                      |
+| maxLimit              | `integer` or `null`           | Maximum acceptable amount in paise                      |
+
+## Dispute Type
+
+| type                                                    | description                                                                |
+| ------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `account-not-updated`                                   | Transaction Successful, account not updated                                |
+| `double-payment`                                        | Double payment updated                                                     |
+| `paid-to-wrong-account`                                 | Erroneously paid in wrong account                                          |
+| `amount-deducted-biller-credited-no-transaction-id`     | Amount deducted, biller account credited but transaction ID not received   |
+| `amount-deducted-biller-not-credited-no-transaction-id` | Amount deducted, biller account not credited & transaction ID not received |
+| `amount-deducted-multiple-times`                        | Amount deducted multiple times                                             |
+| `others`                                                | Other reason                                                               |
+
+## Biller Customer Params
+
+| parameter  | type                        | description                                                      |
+| ---------- | --------------------------- | ---------------------------------------------------------------- |
+| dataType   | `NUMERIC` or `ALPHANUMERIC` | Value format                                                     |
+| maxLength  | `integer` or `null`         | Value's max length                                               |
+| minLength  | `integer` or `null`         | Value's min length                                               |
+| optional   | `bool`                      | Is the parameter optional                                        |
+| paramName  | `string`                    | Parameter name                                                   |
+| regex      | `string` (Regex)            | Value Regex                                                      |
+| values     | `string`                    | Possible default values                                          |
+| visibility | `bool`                      | Visibility of the customer parameter in COU/AIs front-end screen |
+
+## Fetch API Type
+
+| type            | description                                                             |
+| --------------- | ----------------------------------------------------------------------- |
+| `BILL_FETCH`    | Biller can accept a Bill Fetch request.                                 |
+| `BILL_VALIDATE` | Biller can accept a Bill Validate request.                              |
+| `BILL_DIRECT`   | Biller can accept direct payment without a Bill Fetch or Bill Validate. |
+
+## Biller Payment Channel
+
+Maxium amount accepted by the biller for the [Payment Channel](#payment-channel).
+
+| parameter             | type                                | description                                                |
+| --------------------- | ----------------------------------- | ---------------------------------------------------------- |
+| paymentChannel        | [Payment Channel](#payment-channel) | Payment Channel                                            |
+| supportsPendingStatus | `bool`                              | Whether payment channel for biller supports pending status |
+| minLimit              | `integer` or `null`                 | Minimum acceptable amount in paise                         |
+| maxLimit              | `integer` or `null`                 | Maximum acceptable amount in paise                         |
+
+## Biller Plan Information
+
+| parameter       | type                   | description                              |
+| --------------- | ---------------------- | ---------------------------------------- |
+| amount          | `integer`              | Plan amount in paise                     |
+| id              | `string`               | Plan ID                                  |
+| categoryType    | `string`               | Plan Category defined by the biller.     |
+| categorySubType | `string`               | Plan Sub-Category defined by the biller. |
+| description     | `string`               | Plan description                         |
+| effectiveFrom   | `date`                 | Plan effective from                      |
+| effectiveTo     | `date`                 | Plan effective to                        |
+| status          | `ACTIVE` or `DEACTIVE` | Plan status                              |
+
+<hr class="primary" />
+
+## Transaction
+
+`/transactions`
+
+### Query Parameters
+
+| parameter | type                                      | description                                                                                                                                                   |
+| --------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| limit     | `integer`                                 | Default: `250`, Maximum: `1000`, Minimum: `1`                                                                                                                 |
+| after     | `string`                                  |                                                                                                                                                               |
+| startDate | `date`                                    | start date of the timestamp provided by the partner while making the request. Full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21 |
+| endDate   | `date`                                    | end date of the timestamp provided by the partner while making the request. Full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21   |
+| billerId  | `string`                                  | Transaction's Biller ID                                                                                                                                       |
+| status    | [Transaction Status](#transaction-status) | Transaction Status                                                                                                                                            |
+| mobile    | `string` (6, 10 and 20 digits)            | Customer Mobile Number                                                                                                                                        |
+
+### Response
+
+| parameter            | type                                      | description                          |
+| -------------------- | ----------------------------------------- | ------------------------------------ |
+| refId                | `string`                                  | BBPS Reference ID                    |
+| status               | [Transaction Status](#transaction-status) | Transaction Status                   |
+| transactionId        | `string`                                  | Setu Transaction ID                  |
+| partnerRefId         | `string` (6 - 35 characters)              | Payment Reference ID tagged by agent |
+| billerId             | `string`                                  | BBPS Biller ID                       |
+| amount               | `integer`                                 | Amount in paise                      |
+| customerMobileNumber | `string` (6, 10 and 20 digits)            | Customer Mobile Number               |
+| timestamp            | `date-time`                               | Transaction timestamp                |
+
+<hr class="primary" />
+
+## Dispute
+
+`/disputes`
+
+### Query Parameters
+
+| parameter            | type                              | description                                   |
+| -------------------- | --------------------------------- | --------------------------------------------- |
+| status               | [Dispute Status](#dispute-status) | Dispute status                                |
+| limit                | `integer`                         | Default: `250`, Maximum: `1000`, Minimum: `1` |
+| after                | `string`                          |                                               |
+| transactionIds       | `string[]`                        | Disputes' Setu Transaction IDs                |
+| partnerRefIds        | `string[]`                        | Disputes' Partner Transaction IDs             |
+| billerIds            | `string[]`                        | DIsputes' Biller ID                           |
+| customerMobileNumber | `string` (6, 10 and 20 digits)    | Customer Mobile Number                        |
+
+### Response
+
+| parameter            | type                              | description                                   |
+| -------------------- | --------------------------------- | --------------------------------------------- |
+| assigned             | `string`                          | BBPOU to which the complaint is assigned      |
+| billerId             | `string`                          | Dispute's Transaction Biller ID               |
+| complaintId          | `string`                          | Complaint ID for the dispute provided by BBPS |
+| complaintStatus      | [Dispute Status](#dispute-status) | BBPS Complaint status                         |
+| customerMobileNumber | `string` (6, 10 and 20 digits)    | Customer Mobile Number                        |
+| partnerRefId         | `string` (6 - 35 characters)      | Payment Reference ID tagged by agent          |
+| refId                | `string`                          | BBPS reference ID for the dispute request     |
+| remarks              | `string`                          | BBPS Remarks for the complaint                |
+| responseCode         | `string`                          | BBPS Response code for the dispute request    |
+| responseReason       | `string`                          | BBPS Response reason for the dispute request  |
+| transactionId        | `string`                          | Setu Transaction ID                           |
+
+<hr class="primary" />
+
+## Biller MDM
+
+`/billers`
+
+### Query Parameters
+
+| parameter      | type                                    | description                                                                                                             |
+| -------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| categoryName   | `string[]`                              | Category of the biller                                                                                                  |
+| ids            | `string[]`                              | biller Ids                                                                                                              |
+| limit          | `integer`                               | Default: `250`, Maximum: `1000`, Minimum: `1`                                                                           |
+| after          | `string`                                | Billers are sorted via the Biller ID. Providing a biller Id fetches billers right after this biller in a paginated way. |
+| search         | `string`                                | searches the provided text over biller name and biller alias                                                            |
+| pincode        | `string`                                |                                                                                                                         |
+| coverage       | `string`                                | BBPS coverage. Used to search billers having a specific coverage area                                                   |
+| country        | `string`                                | BBPS Country Code. Used to search billers operating in a certain country                                                |
+| state          | `string`                                | BBPS state code. Used to search billers operating in a certain state                                                    |
+| city           | `string`                                | city name, used to search billers operating in a certain city                                                           |
+| updatedSince   | `date-time`                             | Fetch billers updated on or after the provided timestamp                                                                |
+| tags           | `string`                                |                                                                                                                         |
+| paymentChannel | [Payment Channel](#payment-channel)`[]` |                                                                                                                         |
+| paymentMode    | [Payment Mode](#payment-mode)`[]`       |                                                                                                                         |
+
+### Response
+
+| parameter               | type                                                    | description                                                                                                                             |
+| ----------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| categoryName            | `string`                                                | Biller Category                                                                                                                         |
+| city                    | `string`                                                | Biller City                                                                                                                             |
+| country                 | `string`                                                | Biller Country                                                                                                                          |
+| coverage                | `string`                                                | Biller coverage                                                                                                                         |
+| createdAt               | `date-time`                                             | Biller Created At                                                                                                                       |
+| customerParams          | [Biller Customer Params](#biller-customer-params)`[]`   | Customer Parameter format descrption                                                                                                    |
+| exactness               | [Exactness](#exactness)                                 | Biller Exactness                                                                                                                        |
+| fetchApiType            | [Fetch API Type](#fetch-api-type)                       | Biller Fetch API Type                                                                                                                   |
+| id                      | `string`                                                | Biller ID                                                                                                                               |
+| logo                    | `string`                                                | Biller logo                                                                                                                             |
+| modifiedAt              | `date-time`                                             | Biller Modified At                                                                                                                      |
+| name                    | `string`                                                | Biller Name                                                                                                                             |
+| payWithoutFetchAllowed  | `bool`                                                  | Whether biller allows bill payment without a fetch or not. Even in case of `BILL_FETCH` API type, certain bills make the fetch optional |
+| paymentChannels         | [Biller Payment Channel](#bill-payment-channel)`[]`     | Payment Channel limits set by the biller.                                                                                               |
+| paymentModes            | [Payment Limit](#payment-limit)`[]`                     | Payment mode limits set by the biller.                                                                                                  |
+| pincode                 | `string`                                                | Biller Pincode                                                                                                                          |
+| supportsPendingStatus   | `bool`                                                  | Whether the biller supports pending status. In this case, a payment can be in progress for up to 2 days.                                |
+| tags                    | `string`                                                | Additional Tags of the biller.                                                                                                          |
+| state                   | `string`                                                | Biller State                                                                                                                            |
+| plans                   | [Biller-Plan-Information](#biller-plan-information)`[]` | Plans provided by the biller.                                                                                                           |
+| enforcesSameDayFetchPay | `bool`                                                  | Whether the biller requires bill payment to be on the same calendar day as bill fetch.                                                  |
+| bbpsUpdateTimestamp     | `date-time`                                             | Last updated date-time of the Biller accurate to the nearest day.                                                                       |
+<hr class="primary" />
+
+## Dispute Request
+
+`/bills/dispute/request`
+
+### Request Body
+
+| parameter      | type                          | description         |
+| -------------- | ----------------------------- | ------------------- |
+| txnReferenceId | `string`                      | Setu Transaction ID |
+| disputeType    | [Dispute Type](#dispute-type) | Dispute type        |
+| description    | `string` (100 characters)     | Dispute description |
+
+<hr class="primary" />
+
+## Dispute Response
+
+`/bills/dispute/response`
+
+### Response Body
+
+| parameter  | type                              | description                                    |
+| ---------- | --------------------------------- | ---------------------------------------------- |
+| refId      | `string`                          | BBPS Reference ID                              |
+| disputeId  | `string`                          | Dispute ID used for the complaint              |
+| status     | [Dispute Status](#dispute-status) | Dispute Status                                 |
+| assignedTo | `string`                          | The entity who has this complaint assigned to. |
+| remarks    | `string`                          | Remarks of the complaint                       |
+
+<hr class="primary" />
+
+## Fetch Request
+
+`/bills/fetch/request`
+
+### Request Body
+
+| parameter | type                  | description                                                         |
+| --------- | --------------------- | ------------------------------------------------------------------- |
+| customer  | [Customer](#customer) | Customer Object                                                     |
+| biller    | [Biller](#biller)     | Biller Object                                                       |
+| Agent     | [Agent](#agent)       | Agent Object                                                        |
+
+<hr class="primary" />
+
+## Fetch Response
+
+`/bills/fetch/response`
+
+### Response Body
+
+| parameter      | type                                | description                                             |
+| -------------- | ----------------------------------- | ------------------------------------------------------- |
+| refId          | `string`                            | BBPS reference ID for the fetch request.                |
+| status         | [Bill Status](#bill-status)         | Bill fetch request status.                              |
+| failureReason  | [Failure Reason](#failure-reason)   | Failure reason on status `Failure`                      |
+| bill           | [Bill Data](#bill-data)             | Bill                                                    |
+| additionalInfo | `{"name":"value"}[]`                | Additional information of the bill sent by the biller   |
+| billerRefId    | `string`                            | Biller reference ID used by the biller for the request. |
+| exactness      | [Exactness](#exactness)             | Biller Exactness                                        |
+| paymentLimits  | [Payment Limit](#payment-limit)`[]` | Payment limits                                          |
+
+<hr class="primary" />
+
+## Payment Request
+
+`/bills/payment/request`
+
+### Request Body
+
+| parameter      | type                                | description                                              |
+| -------------- | ----------------------------------- | -------------------------------------------------------- |
+| customer       | [Customer](#customer)               | Customer Object                                          |
+| Biller         | [Biller](#biller)                   | Biller Object                                            |
+| Agent          | [Agent](#agent)                     | Agent Object                                             |
+| refId          | `string`                            | BBPS Reference ID of Fetch Request for non-adhoc billers |
+| paymentDetails | [Payment Details](#payment-details) | Payment information for paying the bill                  |
+
+<hr class="primary" />
+
+## Payment Response
+
+`/bills/payment/response`
+
+### Response Body
+
+| parameter      | type                                | description                                                     |
+| -------------- | ----------------------------------- | --------------------------------------------------------------- |
+| refId          | `string`                            | BBPS Reference ID                                               |
+| status         | [Bill Status](#bill-status)         | Transaction Status                                              |
+| failureReason  | [Failure Reason](#failure-reason)   | Failure information in case of Transaction failure              |
+| transactionId  | `string`                            | Setu Transaction ID                                             |
+| billerRefId    | `string`                            | Internal reference number used by the Biller for a transaction. |
+| billerId       | `string`                            | BBPS Biller ID                                                  |
+| paymentDetails | [Payment Details](#payment-details) | Payment Details for the transaction                             |
+| additionalInfo | `{"name":"value"}[]`                | Additional information of the bill sent by the biller           |
+| refundStatus   | [Refund Status](#refund-status)     | Refund status if the payment failed and the amount was debited. |
+
+<WasPageHelpful />

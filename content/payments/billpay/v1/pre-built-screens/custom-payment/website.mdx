@@ -1,0 +1,92 @@
+---
+sidebar_title: Website
+page_title: BBPS Billpay website integration for custom payment
+order: 2
+visible_in_sidebar: true
+---
+
+## Web integration with your own payment gateway
+
+<Callout type="tip">
+  This quickstart explains how to integrate when you opt for your own payment
+  gateway. Use{" "}
+  <a href="/payments/billpay/quickstart/website" target="_blank">
+    this guide
+  </a>{" "}
+  for Setu’s default UPI payment option.
+</Callout>
+
+### The payment flow
+
+The following steps describe a typical payment scenario—
+
+1. User initiates bill payment on Setu’s pre-built screen
+2. Setu calls the <a href="/payments/billpay/pre-built-screens/custom-payment/website#get-payment-link-api">Get payment link API</a> from Setu backend to your backend—you give us a one time link where we can redirect your customer for payment
+3. User is redirected to the one time link, and the payment is handled by you
+4. User completes payment
+5. We get webhook event confirming payment
+6. You redirect the user back to the post payment URL, depending on success or failure of payment.
+
+<img
+  src="https://storage.googleapis.com/strapi-assets/latest/COU_WL_custom_payment_web_(1)/COU_WL_custom_payment_web_(1).gif"
+  width="100%"
+/>
+
+<hr class="tertiary" />
+
+#### Get payment link API
+
+You need to implement the following API for this purpose
+
+**URL**
+
+As you provided by you, with the suffix: `/setu/v1/getPaymentLink`.
+
+For example, if the URL provided by you is `https://example.com`, the URL for this API will be `https://example.com/setu/v1/getPaymentLink`.
+
+**Headers**
+
+<CodeBlockWithCopy language="bash">
+  {`X-SETU-BILLPAY-API-KEY: 77kxHrhbKNYXMwzHWFranymXV2xRkSRE
+Content-Type: application/json`}
+</CodeBlockWithCopy>
+
+Note that the API key is issued by you
+
+**Request**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "orderId": "je9V7wWs9N3w",
+  "amount": 1201.00,
+  "customerMobileNumber": "9481773053",
+  "postPaymentUrl": "https://billpay.setu.co/payment/post-payment/c4e154e6-7b2b-4e0a-9749-60499b61ce93",
+  "allowedPaymentModes": [
+    "CASH", "UPI", "CREDIT CARD" // list of allowed values for "paymentMode" in webhooks
+  ]
+}`}
+</CodeBlockWithCopy>
+
+**Response**
+
+<CodeBlockWithCopy language="json">
+  {`{
+  "code": "success",
+  "data": {
+    "link": "https://example.com/onetimepayment-link"
+  }
+}`}
+</CodeBlockWithCopy>
+
+The following codes are supported by Setu—
+
+- `success`
+- `invalid-mobile-number`
+- `insufficient-balance`
+
+The user will proceed to pay on the link. Once the payment is done, the following steps need to be completed by you—
+
+1. Send Setu the webhook event for payment.
+2. Redirect the user to post payment page at `postPaymentUrl` provided above.
+
+<WasPageHelpful />
