@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Setu Billpay - White label solution",
-    "description": "Enable easy BBPS bill payments in your App",
-    "version": "2.0.0"
+    "title": "Setu BBPS BillPay - White label solution",
+    "version": "v2",
+    "description": "Enable easy BBPS bill payments in your App"
   },
   "servers": [
     {
@@ -20,172 +20,7 @@
     }
   ],
   "paths": {
-    "/v2/auth/token": {
-      "post": {
-        "tags": [
-          "Token API"
-        ],
-        "description": "Fetch token to be used to authorize all Setu APIs",
-        "operationId": "fetchToken",
-        "requestBody": {
-          "description": "The API key pair",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "clientID": {
-                    "type": "string",
-                    "description": "clientID from the API key pair"
-                  },
-                  "secret": {
-                    "type": "string",
-                    "description": "secret from the API key pair"
-                  }
-                },
-                "description": "Fetch Token API payload"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Auth token response",
-            "headers": {
-              "X-Frame-Options": {
-                "description": "X Frame options",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Strict-Transport-Security": {
-                "description": "Strict transport security",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Cache-Control": {
-                "description": "Cache control",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-Content-Type-Options": {
-                "description": "X Content type options",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Content-Security-Policy": {
-                "description": "Content security policy",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Pragma": {
-                "description": "Pragma",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-XSS-Protection": {
-                "description": "X Xss Protection",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "required": [
-                        "expiresIn",
-                        "token"
-                      ],
-                      "type": "object",
-                      "properties": {
-                        "expiresIn": {
-                          "type": "integer",
-                          "description": "Token expiry duration in seconds"
-                        },
-                        "token": {
-                          "type": "string",
-                          "description": "Token to be used in subsequent requests"
-                        }
-                      }
-                    },
-                    {
-                      "required": [
-                        "success",
-                        "traceId"
-                      ],
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean",
-                          "example": true
-                        },
-                        "traceId": {
-                          "type": "string",
-                          "example": "C3SFG0O6N88R6UI7EQ"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": [
-                    "error",
-                    "success",
-                    "traceId"
-                  ],
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "required": [
-                        "code",
-                        "message"
-                      ],
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Input is invalid"
-                        }
-                      }
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "x-codegen-request-body-name": "fetchTokenPayload"
-      }
-    },
-    "/v2/webhooks/payment-event": {
+    "/api/v2/webhooks/payment-event": {
       "post": {
         "tags": [
           "Custom Payment Webhook"
@@ -403,7 +238,7 @@
         "x-codegen-request-body-name": "CouCustomPaymentWebhook"
       }
     },
-    "/v2/ethereal/link": {
+    "/api/v2/ethereal/link": {
       "post": {
         "tags": [
           "Link Generation"
@@ -663,6 +498,171 @@
         },
         "security": [],
         "x-codegen-request-body-name": "EtherealLinkCreateRequest"
+      }
+    },
+    "/api/v2/auth/token": {
+      "post": {
+        "tags": [
+          "Token API"
+        ],
+        "description": "Fetch token to be used to authorize all Setu APIs",
+        "operationId": "fetchToken",
+        "requestBody": {
+          "description": "The API key pair",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "clientID": {
+                    "type": "string",
+                    "description": "clientID from the API key pair"
+                  },
+                  "secret": {
+                    "type": "string",
+                    "description": "secret from the API key pair"
+                  }
+                },
+                "description": "Fetch Token API payload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Auth token response",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "required": [
+                        "expiresIn",
+                        "token"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "expiresIn": {
+                          "type": "integer",
+                          "description": "Token expiry duration in seconds"
+                        },
+                        "token": {
+                          "type": "string",
+                          "description": "Token to be used in subsequent requests"
+                        }
+                      }
+                    },
+                    {
+                      "required": [
+                        "success",
+                        "traceId"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "traceId": {
+                          "type": "string",
+                          "example": "C3SFG0O6N88R6UI7EQ"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "fetchTokenPayload"
       }
     }
   },
