@@ -1,11 +1,15 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Setu Billpay - White label solution",
-    "description": "Enable easy BBPS bill payments in your App",
-    "version": "2.0.0"
+    "title": "Setu BBPS BillPay - White label solution",
+    "version": "v2",
+    "description": "Enable easy BBPS bill payments in your App"
   },
   "servers": [
+    {
+      "url": "https://coudc.setu.co",
+      "description": "Production server"
+    },
     {
       "url": "https://sandbox-coudc.setu.co",
       "description": "Sandbox server"
@@ -13,16 +17,494 @@
     {
       "url": "https://qa-coudc.setu.co",
       "description": "QA server"
-    },
-    {
-      "url": "https://coudc.setu.co",
-      "description": "Production server"
     }
   ],
   "paths": {
-    "/v2/auth/token": {
+    "/api/v2/webhooks/payment-event": {
       "post": {
-        "tags": ["Token API"],
+        "tags": [
+          "Custom Payment Webhook"
+        ],
+        "description": "Custom payment webhook API",
+        "operationId": "CouCustomPaymentWebhook",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "amount",
+                  "orderId",
+                  "paymentDateTime",
+                  "paymentMode",
+                  "paymentStatus",
+                  "transactionId"
+                ],
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "example": "SUCCESS"
+                  },
+                  "orderId": {
+                    "type": "string",
+                    "example": "ORDID12345"
+                  },
+                  "paymentDateTime": {
+                    "type": "string",
+                    "example": "ORDID12345"
+                  },
+                  "paymentMode": {
+                    "type": "string",
+                    "example": "ORDID12345"
+                  },
+                  "paymentStatus": {
+                    "type": "string",
+                    "example": "SUCCESS"
+                  },
+                  "transactionId": {
+                    "type": "string",
+                    "example": "ORDID12345"
+                  }
+                },
+                "x-omitempty": true,
+                "x-go-name": "CouCustomPaymentWebhook"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "status"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "acknowledged"
+                    }
+                  },
+                  "x-go-name": "CouCustomPaymentWebhookResponse",
+                  "x-omitempty": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "CouCustomPaymentWebhook"
+      }
+    },
+    "/api/v2/ethereal/link": {
+      "post": {
+        "tags": [
+          "Link Generation"
+        ],
+        "description": "Ethereal link create request API",
+        "operationId": "EtherealLinkRequest",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "orgId"
+                ],
+                "type": "object",
+                "properties": {
+                  "categoryName": {
+                    "type": "string",
+                    "example": "Water"
+                  },
+                  "custID": {
+                    "type": "string",
+                    "example": "12345"
+                  },
+                  "mobileNumber": {
+                    "maxLength": 20,
+                    "minLength": 6,
+                    "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
+                    "type": "string",
+                    "description": "Mobile number with 6, 10 and 20 digits are valid.",
+                    "example": "9481773053"
+                  },
+                  "orgId": {
+                    "type": "string",
+                    "example": "1.22337203685477E14"
+                  },
+                  "redirectTo": {
+                    "type": "string",
+                    "example": "transactions",
+                    "enum": [
+                      "transactions",
+                      "disputes"
+                    ]
+                  },
+                  "additionalInfo": {
+                    "type": "object",
+                    "properties": {},
+                    "description": "Additional Session information"
+                  },
+                  "billParams": {
+                    "type": "array",
+                    "items": {
+                      "required": [
+                        "name",
+                        "value"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "The display name of the parameter. This has to match what is sent in fields.",
+                          "example": "Loan Number"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "The value of the customer parameter",
+                          "example": "1895159"
+                        }
+                      }
+                    }
+                  },
+                  "billerId": {
+                    "type": "string",
+                    "example": "MAHI0000001"
+                  }
+                },
+                "x-omitempty": true,
+                "x-go-name": "EtherealLinkCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "link": {
+                      "type": "string",
+                      "example": "link"
+                    },
+                    "sessionId": {
+                      "type": "string",
+                      "example": "sessionId"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  },
+                  "x-go-name": "EtherealLinkCreateResponse",
+                  "x-omitempty": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-codegen-request-body-name": "EtherealLinkCreateRequest"
+      }
+    },
+    "/api/v2/auth/token": {
+      "post": {
+        "tags": [
+          "Token API"
+        ],
         "description": "Fetch token to be used to authorize all Setu APIs",
         "operationId": "fetchToken",
         "requestBody": {
@@ -99,7 +581,10 @@
                 "schema": {
                   "allOf": [
                     {
-                      "required": ["expiresIn", "token"],
+                      "required": [
+                        "expiresIn",
+                        "token"
+                      ],
                       "type": "object",
                       "properties": {
                         "expiresIn": {
@@ -113,7 +598,10 @@
                       }
                     },
                     {
-                      "required": ["success", "traceId"],
+                      "required": [
+                        "success",
+                        "traceId"
+                      ],
                       "type": "object",
                       "properties": {
                         "success": {
@@ -136,11 +624,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "required": ["error", "success", "traceId"],
+                  "required": [
+                    "error",
+                    "success",
+                    "traceId"
+                  ],
                   "type": "object",
                   "properties": {
                     "error": {
-                      "required": ["code", "message"],
+                      "required": [
+                        "code",
+                        "message"
+                      ],
                       "type": "object",
                       "properties": {
                         "code": {
@@ -169,441 +664,6 @@
         },
         "x-codegen-request-body-name": "fetchTokenPayload"
       }
-    },
-    "/v2/webhooks/payment-event": {
-      "post": {
-        "tags": ["Custom Payment Webhook"],
-        "description": "Custom payment webhook API",
-        "operationId": "CouCustomPaymentWebhook",
-        "parameters": [
-          {
-            "name": "X-PARTNER-ID",
-            "in": "header",
-            "description": "Partner ID",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "required": [
-                  "amount",
-                  "orderId",
-                  "paymentDateTime",
-                  "paymentMode",
-                  "paymentStatus",
-                  "transactionId"
-                ],
-                "type": "object",
-                "properties": {
-                  "orderId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                  },
-                  "paymentDateTime": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                  },
-                  "paymentMode": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                  },
-                  "paymentStatus": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                  },
-                  "transactionId": {
-                    "type": "string",
-                    "example": "ORDID12345"
-                  },
-                  "amount": {
-                    "type": "string",
-                    "example": "SUCCESS"
-                  }
-                },
-                "x-go-name": "CouCustomPaymentWebhook",
-                "x-omitempty": true
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "headers": {
-              "X-Frame-Options": {
-                "description": "X Frame options",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Strict-Transport-Security": {
-                "description": "Strict transport security",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Cache-Control": {
-                "description": "Cache control",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-Content-Type-Options": {
-                "description": "X Content type options",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Content-Security-Policy": {
-                "description": "Content security policy",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Pragma": {
-                "description": "Pragma",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-XSS-Protection": {
-                "description": "X Xss Protection",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": ["status"],
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "acknowledged"
-                    }
-                  },
-                  "x-go-name": "CouCustomPaymentWebhookResponse",
-                  "x-omitempty": true
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": ["error", "success", "traceId"],
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "required": ["code", "message"],
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Input is invalid"
-                        }
-                      }
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": ["error", "success", "traceId"],
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "required": ["code", "message"],
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Input is invalid"
-                        }
-                      }
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "x-codegen-request-body-name": "CouCustomPaymentWebhook"
-      }
-    },
-    "/v2/ethereal/link": {
-      "post": {
-        "tags": ["Link Generation"],
-        "description": "Ethereal link create request API",
-        "operationId": "EtherealLinkRequest",
-        "parameters": [
-          {
-            "name": "X-PARTNER-ID",
-            "in": "header",
-            "description": "Partner ID",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "required": ["orgId"],
-                "type": "object",
-                "properties": {
-                  "custID": {
-                    "type": "string",
-                    "example": "12345"
-                  },
-                  "mobileNumber": {
-                    "maxLength": 20,
-                    "minLength": 6,
-                    "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
-                    "type": "string",
-                    "description": "Mobile number with 6, 10 and 20 digits are valid.",
-                    "example": "9481773053"
-                  },
-                  "orgId": {
-                    "type": "string",
-                    "example": "1.22337203685477E14"
-                  },
-                  "redirectTo": {
-                    "type": "string",
-                    "example": "transactions",
-                    "enum": ["transactions", "disputes"]
-                  },
-                  "additionalInfo": {
-                    "type": "object",
-                    "properties": {},
-                    "description": "Additional Session information"
-                  },
-                  "billParams": {
-                    "type": "array",
-                    "items": {
-                      "required": ["name", "value"],
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "description": "The display name of the parameter. This has to match what is sent in fields.",
-                          "example": "Loan Number"
-                        },
-                        "value": {
-                          "type": "string",
-                          "description": "The value of the customer parameter",
-                          "example": "1895159"
-                        }
-                      }
-                    }
-                  },
-                  "billerId": {
-                    "type": "string",
-                    "example": "MAHI0000001"
-                  },
-                  "categoryName": {
-                    "type": "string",
-                    "example": "Water"
-                  }
-                },
-                "x-go-name": "EtherealLinkCreateRequest",
-                "x-omitempty": true
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "headers": {
-              "X-Frame-Options": {
-                "description": "X Frame options",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Strict-Transport-Security": {
-                "description": "Strict transport security",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Cache-Control": {
-                "description": "Cache control",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-Content-Type-Options": {
-                "description": "X Content type options",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Content-Security-Policy": {
-                "description": "Content security policy",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Pragma": {
-                "description": "Pragma",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-XSS-Protection": {
-                "description": "X Xss Protection",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": ["success", "traceId"],
-                  "type": "object",
-                  "properties": {
-                    "link": {
-                      "type": "string",
-                      "example": "link"
-                    },
-                    "sessionId": {
-                      "type": "string",
-                      "example": "sessionId"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  },
-                  "x-go-name": "EtherealLinkCreateResponse",
-                  "x-omitempty": true
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": ["error", "success", "traceId"],
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "required": ["code", "message"],
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Input is invalid"
-                        }
-                      }
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": ["error", "success", "traceId"],
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "required": ["code", "message"],
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Input is invalid"
-                        }
-                      }
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [],
-        "x-codegen-request-body-name": "EtherealLinkCreateRequest"
-      }
     }
   },
   "components": {
@@ -625,7 +685,10 @@
       "fetchTokenResponse": {
         "allOf": [
           {
-            "required": ["expiresIn", "token"],
+            "required": [
+              "expiresIn",
+              "token"
+            ],
             "type": "object",
             "properties": {
               "expiresIn": {
@@ -639,7 +702,10 @@
             }
           },
           {
-            "required": ["success", "traceId"],
+            "required": [
+              "success",
+              "traceId"
+            ],
             "type": "object",
             "properties": {
               "success": {
@@ -655,7 +721,10 @@
         ]
       },
       "successAndTracerDetails": {
-        "required": ["success", "traceId"],
+        "required": [
+          "success",
+          "traceId"
+        ],
         "type": "object",
         "properties": {
           "success": {
