@@ -9,7 +9,7 @@
         "description": "Process flow for prepaid recharge payments."
       },
       "schemes": ["https"],
-
+  
   "servers": [
     {
       "url": "https://prepaid.setu.co",
@@ -21,7 +21,7 @@
     }
   ],
       "paths": {
-        "/mobile-prepaid-recharge/fetch_operator_details": {
+        "/fetch_operator_details": {
           "post": {
             "tags": ["Fetch"],
             "summary": "API to fetch operator details for mobile number",
@@ -165,7 +165,7 @@
               }
             },
             "422": {
-              "description": "422",
+              "description": "Invalid Request Parameters",
               "headers": {
                 "content-length": {
                   "schema": {
@@ -241,7 +241,7 @@
               }
             },
             "500": {
-              "description": "500",
+              "description": "Upstream API Connectivity Error",
               "headers": {
                 "content-length": {
                   "schema": {
@@ -382,7 +382,7 @@
             ]
           }
         },
-        "/mobile-prepaid-recharge/fetch_plans":{
+        "/fetch_plans":{
             "post": {
               "tags": ["Fetch"],
               "summary": "API to fetch prepaid plans for a mobile number",
@@ -449,7 +449,7 @@
                   "description": "Response"
                 },
                 "400": {
-              "description": "400 / 400 / 400 / Fetch Plans",
+              "description": "Invalid Request",
               "headers": {
                 "content-length": {
                   "schema": {
@@ -536,7 +536,7 @@
               }
             },
             "500": {
-              "description": "Fetch Plans",
+              "description": "Upstream API connectivity error",
               "headers": {
                 "content-length": {
                   "schema": {
@@ -645,22 +645,56 @@
                         "properties": {
                           "billParameters": {
                             "type": "array",
-                            "items": {
-                              "type": "object",
-                              "required":["name","value"],
-                              "properties": {
-                                "name": {
-                                  "type": "string",
-                                  "example": "Mobile Number",
-                                  "description": "The display name of the parameter."
-                                },
-                                "value": {
-                                  "type": "string",
-                                  "example": "7066573353",
-                                  "description": "The value of the customer mobile number or related info like Operator and Location."
-                                }
-                              }
-                            },
+                            "items": [
+                    {
+                      "type": "object",
+                      "required": ["name", "value"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "Mobile Number",
+                          "description": "The display name of the parameter."
+                        },
+                        "value": {
+                          "type": "string",
+                          "example": "7066573353",
+                          "description": "The value of the customer mobile number or related info like Operator and Location."
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["name", "value"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "Operator",
+                          "description": "The display name of the parameter."
+                        },
+                        "value": {
+                          "type": "string",
+                          "example": "jio",
+                          "description": "The operator for the customer."
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["name", "value"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "Location",
+                          "description": "The display name of the parameter."
+                        },
+                        "value": {
+                          "type": "string",
+                          "example": "Maharashtra",
+                          "description": "The location or region of the customer."
+                        }
+                      }
+                    }
+                  ],
                             "description": "Parameters for fetching prepaid plans, including Mobile Number, Operator, and Location."
                           }
                         },
@@ -672,7 +706,7 @@
               ]
             }
           },
-          "/mobile-prepaid-recharge/recharge/request":{
+          "/recharge/request":{
             "post": {
               "tags": ["Recharge"],
               "summary": "API to initiate a prepaid recharge request for a mobile number",
@@ -720,7 +754,7 @@
                   "description": "Response"
                 },
                 "422": {
-                  "description": "422",
+                  "description": "Invalid Request Parameters",
                   "headers": {
                     "content-length": {
                       "schema": {
@@ -796,7 +830,7 @@
                   }
                 },
                 "500": {
-                  "description": "500 / 500 / 400",
+                  "description": "Upstream API Connectivity Error",
                   "headers": {
                     "content-length": {
                       "schema": {
@@ -982,7 +1016,7 @@
               ]
             }
           },
-    "/mobile-prepaid-recharge/recharge/status": {
+    "/recharge/status": {
     "post": {
       "tags": ["Recharge"],
       "summary": "API to check the status of a prepaid recharge transaction",
@@ -1065,7 +1099,7 @@
       ]
     }
   },
-  "/mobile-prepaid-recharge/wallet/balance": {
+  "/wallet/balance": {
     "get": {
       "tags": ["Wallet"],
       "summary": "API to fetch the balance of the wallet",
@@ -1125,7 +1159,7 @@
       ]
     }
   },
-  "/mobile-prepaid-recharge/transaction": {
+  "/transaction": {
     "get": {
       "tags": ["Transaction"],
       "summary": "API to fetch transaction details",
@@ -1252,7 +1286,20 @@
     }
   }
     },
-
+    "components": {
+  "securitySchemes": {
+      "bbps": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "http://localhost:8080/auth/realms/enzo/protocol/openid-connect/token",
+            "scopes": {
+              "bbps:partner": "Allow partner flows (flows that restricted to API Partners)"
+            }
+          }
+        }
+      }
+    }},
     "swagger": "2.0",
     "definitions": {}
 }
