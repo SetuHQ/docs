@@ -619,4 +619,142 @@ To solve for these use cases, AA framework provides a way for FIUs to communicat
   </Portion>
 </Row>
 
+<hr class="primary" />
+
+### Get Last Fetch Status
+
+This API retrieves the last data fetch status for a given consent ID. It provides details about the most recent data fetch operation associated with the consent, including the timestamp of the fetch, the data range covered, and the identifiers of the financial information providers (FIPs) involved.
+
+###### Request
+
+<table>
+  <tbody>
+    <tr>
+      <th>Base URL</th>
+      <td>
+        Sandbox: <code>https://fiu-sandbox.setu.co</code>
+        <br />
+        Production: <code>https://fiu.setu.co</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Path</th>
+      <td>
+        <code>/v2/consents/:consent_request_id/fetch/status</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>GET</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Headers</th>
+      <td>
+        <code>Content-Type</code>: <code>application/json</code> <br />
+        <code>Authorization</code>: Bearer <code>access_token</code> <br />
+        <code>x-product-instance-id</code>: <code>product-instance-id</code> <br />
+        <code>Params</code>: <code>consent_request_id</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<br />
+
+<Callout type="tip">This is a GET API without any request body</Callout>
+
+<br />
+
+###### Sample Response
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: <Badge type="success">SUCCESS</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "lastFetchedAt": "2024-11-21T07:48:16.404Z",
+    "dataRange": {
+        "from": "2022-01-01T00:00:00.000Z",
+        "to": "2024-06-01T00:00:00.000Z"
+    },
+    "lastFetchedFips": [
+        "setu-fip",
+        "setu-fip",
+        "setu-fip",
+        "setu-fip",
+        "setu-fip",
+        "setu-fip",
+        "setu-fip-2",
+        "setu-fip-2",
+        "setu-fip-2",
+        "setu-fip-2"
+    ],
+    "traceId": "1-673ee5c2-5e4e353d5d08c03372b26f6c"
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: <Badge type="failure">FAIL - Wrong Product Instance ID</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "traceId": "1-673ee602-2e59a47b6fbdd39138066e6c",
+    "errorCode": "NotFound",
+    "errorMsg": "Config not found for provided product instance. Please check the product instance id"
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: <Badge type="failure">FAIL - Consent not found</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "traceId": "1-673ee626-6e113df859cc8d1b4469957f",
+    "errorCode": "NotFound",
+    "errorMsg": "Consent not found"
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: <Badge type="failure">FAIL - No Date Sessions Fetched yet</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+    "consentId": "4a2e2ba2-3285-4242-b05a-e4ccdd4679a1",
+    "dataSessions": [],
+    "traceId": "1-673ee63f-107b2a674068fc237a10d52c"
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    />
+  </Portion>
+</Row>
+
 <WasPageHelpful />
