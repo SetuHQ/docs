@@ -127,12 +127,23 @@ Details pertaining to the Agent which initiates the transaction. Values of the f
 
 ## Payment Details
 
-| parameter    | type                          | description                          |
-| ------------ | ----------------------------- | ------------------------------------ |
-| mode         | [Payment Mode](#payment-mode) | Payment Mode                         |
-| paymentRefId | `string` (6 - 35 characters)  | Payment Reference ID tagged by agent |
-| amount       | `integer`                     | Amount in paise                      |
-| timestamp    | `date-time`                   | Timestamp                            |
+| parameter              | type                                                    | description                          |
+| ---------------------- | ------------------------------------------------------- | ------------------------------------ |
+| mode                   | [Payment Mode](#payment-mode)                           | Payment Mode                         |
+| paymentRefId           | `string` (6 - 35 characters)                            | Payment Reference ID tagged by agent |
+| amount                 | `integer`                                               | Amount in paise                      |
+| timestamp              | `date-time`                                             | Timestamp                            |
+| selectedPaymentOptions | [Selected Payment Option](#selected-payment-option)`[]` | Array of selected payment options    |
+
+## Payment Bill
+
+The Payment Bill object contains information about a specific bill to be paid.
+
+| Parameter    | Type      | Description                                   |
+| ------------ | --------- | --------------------------------------------- |
+| `billNumber` | `string`  | Unique identifier for the bill                |
+| `amount`     | `integer` | Amount to be paid for the bill in paise       |
+
 
 ## Bill Status
 
@@ -178,27 +189,67 @@ Details pertaining to the Agent which initiates the transaction. Values of the f
 | `ASPRESENTED` |
 | `NA`          |
 
-## Bill Data
+## Biller Selection Type
 
-| parameter    | type                        | description                                                                              |
-| ------------ | --------------------------- | ---------------------------------------------------------------------------------------- |
-| customerName | `string`                    | Bill owner                                                                               |
-| amount       | `integer`                   | Bill amount in paise                                                                     |
-| dueDate      | `date`                      | Bill due date                                                                            |
-| billDate     | `date`                      | Bill date                                                                                |
-| billNumber   | `string`                    | Bill number                                                                              |
-| billPeriod   | [Bill Period](#bill-period) | Bill period of the bill fetch / payment requested. `NA` when bill period is unavailable. |
+| type       | description                                                       |
+|------------|-------------------------------------------------------------------|
+| `SINGLE`   | User can pay only one bill from the fetch response                |
+| `MULTIPLE` | User can pay any combination of bills from the fetch response     |
+| `ALL`      | User must pay all bills in the fetch response                     |
+
+## Biller Response Type
+
+| type         | description                                               |
+|--------------|-----------------------------------------------------------|
+| `SINGLE`     | Biller returns a single bill in the fetch response        |
+| `LIST`       | Biller returns multiple bills in the fetch response       |
+| `SELECTIVE`  | Biller returns bills based on specific criteria           |
+
+## Fetched Bill
+
+| parameter      | type                                  | description                                                                              |
+| -------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| customerName   | `string`                              | Bill owner                                                                               |
+| amount         | `integer`                             | Bill amount in paise                                                                     |
+| dueDate        | `date`                                | Bill due date                                                                            |
+| billDate       | `date`                                | Bill date                                                                                |
+| billNumber     | `string`                              | Bill number                                                                              |
+| billPeriod     | [Bill Period](#bill-period)           | Bill period of the bill fetch / payment requested. `NA` when bill period is unavailable. |
+| label          | `string`                              | Additional label for the bill                                                            |
+| minAmount      | `integer`                             | Minimum amount that can be paid for this bill in paise                                   |
+| maxAmount      | `integer`                             | Maximum amount that can be paid for this bill in paise                                   |
+| amountMultiple | `integer`                             | Bill payment amount should be multiple of this value in paise                            |
+| paymentOptions | [Payment Option](#payment-option)`[]` | Array of payment options available for this bill                                         |
+
+## Payment Option
+
+| Parameter      | Type      | Description                                                          |
+| -------------- | --------- | -------------------------------------------------------------------- |
+| name           | `string`  | The display name of the option                                       |
+| amount         | `integer` | The amount that can be paid for this option in paise                 |
+| minAmount      | `integer` | The minimum amount that can be paid for this option in paise         |
+| maxAmount      | `integer` | The maximum amount that can be paid for this option in paise         |
+| amountMultiple | `integer` | The payment amount should be a multiple of this value in paise       |
+
+
+## Selected Payment Option
+
+| Parameter | Type      | Description                                    |
+| --------- | --------- | ---------------------------------------------- |
+| name      | `string`  | The display name of the option from bill fetch |
+| amount    | `integer` | The amount being paid for this option in paise |
 
 ## Exactness
 
-Amount acceptance by the biller.
+Limits on acceptable payment amounts set by the biller.
 
-| type              | description           |
-| ----------------- | --------------------- |
-| `Exact`           | Exact amount          |
-| `Exact and below` | Exact amount or below |
-| `Exact and above` | Exact amount or above |
-| `Any`             | Any exactness         |
+| type              | description                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| `Exact`           | Only the exact amount specified in fetched bill can be paid                           |
+| `Exact and below` | Amount specified in fetched bill or less can be paid                                  |
+| `Exact and above` | Amount specified in fetched bill or more can be paid                                  |
+| `Any`             | Any amount can be paid                                                                |
+| `RANGE`           | Amount within specified minAmount and maxAmount specified in fetched bill can be paid |
 
 ## Payment Limit
 
@@ -292,6 +343,7 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 | status               | [Transaction Status](#transaction-status) | Transaction Status                   |
 | transactionId        | `string`                                  | Setu Transaction ID                  |
 | partnerRefId         | `string` (6 - 35 characters)              | Payment Reference ID tagged by agent |
+| bills                | [Payment Bill](#payment-bill)`[]`         | Details of bills paid                |
 | billerId             | `string`                                  | BBPS Biller ID                       |
 | amount               | `integer`                                 | Amount in paise                      |
 | customerMobileNumber | `string` (6, 10 and 20 digits)            | Customer Mobile Number               |
@@ -382,6 +434,9 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 | plans                   | [Biller-Plan-Information](#biller-plan-information)`[]` | Plans provided by the biller.                                                                                                           |
 | enforcesSameDayFetchPay | `bool`                                                  | Whether the biller requires bill payment to be on the same calendar day as bill fetch.                                                  |
 | bbpsUpdateTimestamp     | `date-time`                                             | Last updated date-time of the Biller accurate to the nearest day.                                                                       |
+| responseType            | [Biller Response Type](#biller-response-type)           | Indicates how the biller provides bill information in the fetch response                                                                |
+| selectionType           | [Biller Selection Type](#biller-selection-type)         | Specifies how users can select bills for payment (only applicable for LIST response type)                                               |
+
 <hr class="primary" />
 
 ## Dispute Request
@@ -434,16 +489,21 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 
 ### Response Body
 
-| parameter      | type                                | description                                             |
-| -------------- | ----------------------------------- | ------------------------------------------------------- |
-| refId          | `string`                            | BBPS reference ID for the fetch request.                |
-| status         | [Bill Status](#bill-status)         | Bill fetch request status.                              |
-| failureReason  | [Failure Reason](#failure-reason)   | Failure reason on status `Failure`                      |
-| bill           | [Bill Data](#bill-data)             | Bill                                                    |
-| additionalInfo | `{"name":"value"}[]`                | Additional information of the bill sent by the biller   |
-| billerRefId    | `string`                            | Biller reference ID used by the biller for the request. |
-| exactness      | [Exactness](#exactness)             | Biller Exactness                                        |
-| paymentLimits  | [Payment Limit](#payment-limit)`[]` | Payment limits                                          |
+| parameter           | type                                            | description                                                                               |
+| ------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| refId               | `string`                                        | BBPS reference ID for the fetch request.                                                  |
+| status              | [Bill Status](#bill-status)                     | Bill fetch request status.                                                                |
+| failureReason       | [Failure Reason](#failure-reason)               | Failure reason on status `Failure`                                                        |
+| bill                | [Fetched Bill](#fetched-bill)                   | Single fetched bill. Used when `billerResponseType` is 'SINGLE'.                          |
+| bills               | [Fetched Bill](#fetched-bill)`[]`               | Array of fetched bills. Used when `billerResponseType` is 'LIST'.                         |
+| additionalInfo      | `{"name":"value"}[]`                            | Additional information of the bill sent by the biller                                     |
+| billerRefId         | `string`                                        | Biller reference ID used by the biller for the request.                                   |
+| exactness           | [Exactness](#exactness)                         | Biller Exactness                                                                          |
+| paymentLimits       | [Payment Limit](#payment-limit)`[]`             | Payment limits                                                                            |
+| billerResponseType  | [Biller Response Type](#biller-response-type)   | Indicates whether the biller provides a single bill ('SINGLE') or multiple bills ('LIST') |
+| billerSelectionType | [Biller Selection Type](#biller-selection-type) | Specifies how users can select bills for payment (only applicable for LIST response type) |
+
+**Note:** The `billerResponseType` field indicates which bill data field to use. For 'SINGLE' type, use the `bill` field (contains zero or one bill). For 'LIST' type, use the `bills` field (contains one or more bills in an array).
 
 <hr class="primary" />
 
@@ -453,13 +513,21 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 
 ### Request Body
 
-| parameter      | type                                | description                                              |
-| -------------- | ----------------------------------- | -------------------------------------------------------- |
-| customer       | [Customer](#customer)               | Customer Object                                          |
-| Biller         | [Biller](#biller)                   | Biller Object                                            |
-| Agent          | [Agent](#agent)                     | Agent Object                                             |
-| refId          | `string`                            | BBPS Reference ID of Fetch Request for non-adhoc billers |
-| paymentDetails | [Payment Details](#payment-details) | Payment information for paying the bill                  |
+| parameter      | type                                | description                                                                           |
+| -------------- | ----------------------------------- | ------------------------------------------------------------------------------------- |
+| refId          | `string`                            | BBPS Reference ID from previous bill fetch request. Mandatory for non-adhoc payments. |
+| agent          | [Agent](#agent)                     | Details of agent processing the payment. Mandatory for adhoc payments.                |
+| biller         | [Biller](#biller)                   | Details of biller receiving the payment. Mandatory for adhoc payments.                |
+| customer       | [Customer](#customer)               | Details of the customer making the payment. Mandatory for adhoc payments.             |
+| bills          | [Payment Bill](#payment-bill)`[]`   | Details of bills to be paid. Mandatory for LIST billers only.                         |
+| paymentDetails | [Payment Details](#payment-details) | Details specific to the payment being made. Mandatory for all payments.               |
+
+<hr class="primary" />
+
+**Note:**
+
+- For non-adhoc payments, only `refId`, `paymentDetails`, and potentially `bills` (for LIST billers) are required.
+- For adhoc payments, `agent`, `biller`, `customer`, and `paymentDetails` are mandatory. `refId` and `bills` are not applicable.
 
 <hr class="primary" />
 
@@ -480,5 +548,6 @@ Maxium amount accepted by the biller for the [Payment Channel](#payment-channel)
 | paymentDetails | [Payment Details](#payment-details) | Payment Details for the transaction                             |
 | additionalInfo | `{"name":"value"}[]`                | Additional information of the bill sent by the biller           |
 | refundStatus   | [Refund Status](#refund-status)     | Refund status if the payment failed and the amount was debited. |
+| bills          | [Payment Bill](#payment-bill)`[]`   | Details of bills paid. Present for LIST billers only.           |
 
 <WasPageHelpful />
