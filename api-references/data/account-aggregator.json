@@ -30,6 +30,54 @@
     }
   ],
   "paths": {
+    "/users/login": {
+      "servers": [
+        {
+          "url": "https://orgservice-prod.setu.co/v1"
+        }
+      ],
+      "post": {
+        "parameters": [
+          {
+            "in": "header",
+            "name": "client",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "enum": ["bridge"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenAPIResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BAD_REQUEST"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenAPIRequest"
+              }
+            }
+          }
+        },
+        "summary": "Get Token",
+        "operationId": "getToken"
+      }
+    },
     "/v2/fips": {
       "get": {
         "parameters": [
@@ -107,18 +155,9 @@
         "parameters": [
           {
             "in": "header",
-            "name": "x-client_id",
+            "name": "Authorization",
             "required": true,
-            "description": "Client ID for authentication",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "x-client-secret",
-            "required": true,
-            "description": "Client secret for authentication",
+            "description": "Authorization Bearer token",
             "schema": {
               "type": "string"
             }
@@ -719,6 +758,38 @@
   },
   "components": {
     "schemas": {
+      "TokenAPIResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "Bearer token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Bearer token"
+          }
+        },
+        "required": ["access_token"]
+      },
+      "TokenAPIRequest": {
+        "type": "object",
+        "properties": {
+          "clientID": {
+            "type": "string",
+            "description": "client_id obtained from bridge"
+          },
+          "grant_type": {
+            "type": "string",
+            "enum": ["client_credentials"]
+          },
+          "secret": {
+            "type": "string",
+            "description": "client secret obtained from bridge"
+          }
+        },
+        "required": ["clientID", "grant_type", "secret"]
+      },
       "DataRefreshSuccessResponse": {
         "type": "object",
         "properties": {
