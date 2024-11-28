@@ -1,0 +1,363 @@
+---
+sidebar_title: Migration Guide to v2
+page_title: BBPS COU — Migration Guide to v2
+order: 5
+visible_in_sidebar: true
+---
+
+## Migration guide to v2
+
+The changes below will help you plan your migration from v1 to v2 specs.
+
+### Bill Fetch Request
+
+Following changes were made to this <a href="https://docs.setu.co/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchRequestV2" target="_blank">API</a>
+
+| Type | Old                       | New                       |
+| ---- | ------------------------- | ------------------------- |
+| Body | `customer.billParameters` | `customer.customerParams` |
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+{
+    "agent": {
+        "channel": "INTB",
+        "id": "AX01AX26INBU00000001",
+        "ip": "124.170.23.24",
+        "mac": "48-4D-7E-CB-DB-6F"
+    },
+    "customer": {
+        "mobile": "8484943081",
+-        "billParameters": [
++        "customerParams": [
+            {
+                "name": "Account Number",
+                "value": "1234567890"
+            },
+            {
+                "name": "Number with STD Code (without 0)",
+                "value": "1234567890"
+            }
+        ]
+    },
+    "biller": {
+        "id": "AX513LINDNAT02"
+    },
+    "autoFetch": true
+}
+`}</CodeBlockWithCopy>
+
+### Bill Fetch Response
+
+Following changes were made to this <a href="https://docs.setu.co/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchResponseV2" target="_blank">API</a>
+
+| Type | Old                  | New            |
+| ---- | -------------------- | -------------- |
+| Body | `data.bill`          | `data.bills[]` |
+| Body | `data.paymentLimits` |                |
+
+<br />
+
+<CodeBlockWithCopy language="diff">
+  {`
+{
+    "data": {
+         "autoFetchHash": d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a,
+-        "bill": {
++        "bills": [{
+            "amount": 795200,
+            "billDate": "2023-07-17",
+            "billNumber": "6335383640061391882",
+            "billPeriod": "Monthly",
+            "customerName": "Aiden Anderson",
+            "dueDate": "2023-07-30"
+-        },
++        }],
+        "billerRefId": "6506500547",
+        "exactness": "Any",
+-        "paymentLimits": [
+-            {
+-                "maxLimit": 100000000,
+-                "minLimit": 1,
+-                "paymentMode": "Internet Banking",
+-                "supportsPendingStatus": false
+-            }
+-        ],
+        "refId": "CISB5GK91PA96LI47QR0VNE753032010936",
+        "status": "Success"
+    },
+    "success": true,
+    "traceId": "CISB5HC91PA96LI47QTG"
+}`}
+</CodeBlockWithCopy>
+
+### Bill Pay Request
+
+Following changes were made to this <a href="https://docs.setu.co/payments/billpay/api-integration/api-reference#/category~Pay/operation~PaymentRequestV2" target="_blank">API</a>
+
+| Type | Old                       | New                       |
+| ---- | ------------------------- | ------------------------- |
+| Body | `customer.billParameters` | `customer.customerParams` |
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+{
+    "customer": {
+        "mobile": "9505987798",
+-        "billParameters": [
++        "customerParams": [
+            {
+                "name": "a",
+                "value": "123"
+            },
+            {
+                "name": "a b",
+                "value": "123"
+            },
+            {
+                "name": "a b c",
+                "value": "123"
+            },
+            {
+                "name": "a b c d",
+                "value": "123"
+            },
+            {
+                "name": "a b c d e",
+                "value": "123"
+            }
+        ]
+    },
+    "agent": {
+        "app": "SmartPay",
+        "channel": "INT",
+        "geocode": "19.0139,72.8254",
+        "id": "AX01AX26INBU00000001",
+        "ifsc": "ICIC0000152",
+        "imei": "123456789012345",
+        "ip": "124.170.23.24",
+        "mac": "48-4D-7E-CB-DB-6F",
+        "mobile": "9481773011",
+        "os": "iOS",
+        "postalCode": "600001",
+        "terminalId": "6000011234"
+    },
+    "biller": {
+        "id": "AX5110005XXZ43"
+    },
+    "paymentDetails": {
+        "mode": "Internet Banking",
+        "paymentRefId": "N2001121212344",
+        "amount": 10000,
+        "timestamp": "2020-12-12T13:12:00+05:30"
+    }
+}
+`}</CodeBlockWithCopy>
+
+### Bill Pay response
+
+Following changes were made to this <a href="https://docs.setu.co/payments/billpay/api-integration/api-reference#/category~Pay/path~/api/v2/bbps/bills/payment/response/post" target="_blank">API</a>
+
+| Type | Old                 | New |
+| ---- | ------------------- | --- |
+| Body | `data.refundStatus` |     |
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+{
+    "data": {
+        "billerId": "AX5110005XXZ43",
+        "billerRefId": "1707084506905086465",
+        "paymentDetails": {
+            "amount": 10000,
+            "mode": "Internet Banking",
+            "paymentRefId": "N2001121212344",
+            "timestamp": "2020-12-12T13:12:00.000+05:30"
+        },
+        "failureReason": {
+            "code": "ERR004",
+            "message": "Customer not found",
+            "type": "BBPS"
+        },
+        "refId": "CISB9JS91PA96LI47RIGPYZ227K32010945",
+        "status": "Failure",
+-       "refundStatus": Required,
+        "transactionId": "AS01320109451110R5LL"
+    },
+    "success": true,
+    "traceId": "CISB9KK91PA96LI47RK0"
+}
+`}</CodeBlockWithCopy>
+
+### Bill Dispute request
+
+Following changes were made to this <a href="https://docs.setu.co/payments/billpay/api-integration/api-reference#/category~Dispute/operation~DisputeRequestV2" target="_blank">API</a>
+
+| Type | Old              | New             |
+| ---- | ---------------- | --------------- |
+| Body | `txnReferenceId` | `transactionId` |
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+{
+-  "txnReferenceId": "AS01320109451110R5LL",
++  "transactionId": "AS01320109451110R5LL",
+  "disputeType": "account-not-updated",
+  "description": "test-description"
+}
+`}</CodeBlockWithCopy>
+
+### List Billers
+
+Following changes were made to this <a href="https://docs.setu.co/payments/billpay/api-integration/api-reference#/category~List/operation~getBillersV2" target="_blank">API</a>
+
+| Type             | Old              | New            |
+| ---------------- | ---------------- | -------------- |
+| Query Parameters | `categoryName[]` | `categoryName` |
+| Body             | `plans[]`        |                |
+| Body             | `tags`           |                |
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+- GET /billers?categoryName=Loan+Repayment&categoryName=Education+Fees
++ GET /billers?categoryName=Loan+Repayment
+`}</CodeBlockWithCopy>
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+{
+    "data": {
+        "billers": [
+            {
+                "categoryName": "Loan Repayment",
+                "coverage": "IND",
+                "createdAt": "2021-04-08T00:00:00.000+05:30",
+                "customerParams": [
+                    {
+                        "dataType": "ALPHANUMERIC",
+                        "maxLength": 8,
+                        "minLength": 8,
+                        "optional": false,
+                        "paramName": "Application ID",
+                        "regex": "^[a-zA-Z0-9]+$",
+                        "values": null,
+                        "visibility": false
+                    }
+                ],
+                "customerParamsGroups": [],
+                "exactness": "Any",
+                "fetchApiType": "BILL_FETCH",
+                "id": "AADH00000NATPT",
+                "logo": "https://logo.s3.amazonaws.com/AADH00000NATPT.png",
+                "modifiedAt": "2023-07-19T12:00:01.086+05:30",
+                "name": "Badhar Housing Finance Limited",
+                "payWithoutFetchAllowed": false,
+                "paymentChannels": [
+                    {
+                        "maxLimit": 99999900,
+                        "minLimit": 100,
+                        "paymentChannel": "INT",
+                        "supportsPendingStatus": false
+                    }
+                ],
+                "paymentModes": [
+                    {
+                        "maxLimit": null,
+                        "minLimit": 1,
+                        "paymentMode": "Internet Banking",
+                        "supportsPendingStatus": false
+                    }
+                ],
+-                "plans": [],
+-                "tags": "",
+                "supportsPendingStatus": false
+            }
+    }
+}
+`}</CodeBlockWithCopy>
+
+## List Disputes
+
+Following changes were made to this <a href="https://docs.setu.co/payments/billpay/api-integration/api-reference#/category~List/operation~getDisputesV2" target="_blank">API</a>
+
+| Type            | Old                    | New             |
+| --------------- | ---------------------- | --------------- |
+| Query Parameter | `partnerRefIds`        | `paymentRefIds` |
+| Query Parameter | `customerMobileNumber` | `mobile`        |
+| Body            | `customerMobileNumber` | `mobile`        |
+| Body            | `partnerRefId`         | `paymentRefId`  |
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+- GET /disputes?partnerRefIds=N2001121212344&customerMobileNumber=9505987798
++ GET /disputes?paymentRefIds=N2001121212344&mobile=9505987798
+`}</CodeBlockWithCopy>
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+{
+    "data": {
+        "disputes": [
+            {
+                "assigned": "OP Two Two",
+                "billerId": "AX5110005XXZ43",
+                "complaintId": "AS013201095300ZKXR6T",
+                "complaintStatus": "RESOLVED",
+                "createdAt": "2023-07-20T09:52:58.979+05:30",
+-                "customerMobileNumber": "9505987798",
++                "mobile": "9505987798",
+                "lastModifiedAt": "2023-07-20T10:00:02.041+05:30",
+-                "partnerRefId": "N2001121212344",
++                "paymentRefId": "N2001121212344",
+                "refId": "CISBD8K91PAFS2D4NPR0JNR1JE532010952",
+                "remarks": "Hahaha no way we will resolve complaints",
+                "responseCode": "001",
+                "responseReason": "SUCCESS",
+                "transactionId": "AS01320109451110R5LL"
+            }
+        ]
+    }
+}
+`}</CodeBlockWithCopy>
+
+### List transactions
+
+Following changes were made to this <a href="https://docs.setu.co/payments/billpay/api-integration/api-reference#/category~List/operation~getTxnsV2" target="_blank">API</a>
+
+| Type | Old                    | New            |
+| ---- | ---------------------- | -------------- |
+| Body | `customerMobileNumber` | `mobile`       |
+| Body | `partnerRefId`         | `paymentRefId` |
+
+<br />
+
+<CodeBlockWithCopy language="diff">{`
+{
+    "data": {
+        "transactions": [
+            {
+                "amount": 10000,
+                "billerId": "AX5110005XXZ43",
+-                "customerMobileNumber": "9505987798",
++                "mobile": "9505987798",
+-                "partnerRefId": "N2001121212344",
++                "paymentRefId": "N2001121212344",
+                "refId": "CISB9JS91PA96LI47RIGPYZ227K32010945",
+                "status": "Success",
+                "timestamp": "2020-12-12T13:12:00.000+05:30",
+                "transactionId": "AS01320109451110R5LL"
+            }
+        ]
+    }
+}
+`}</CodeBlockWithCopy>
+
+<WasPageHelpful />
