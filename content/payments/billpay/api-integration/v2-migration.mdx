@@ -7,19 +7,17 @@ visible_in_sidebar: true
 
 The changes below will help you plan your migration from V1 to V2 specs.
 
-
 ## Core APIs
 
 ### Bill Fetch Request
 
-
-| Type | Old                       | New                      |
-|------|---------------------------|--------------------------|
+| Type | Old                       | New                       |
+| ---- | ------------------------- | ------------------------- |
 | Body | `customer.billParameters` | `customer.customerParams` |
 
+<br />
 
-
-```diff
+<CodeBlockWithCopy language="diff">{`
 {
     "agent": {
         "channel": "INTB",
@@ -46,19 +44,19 @@ The changes below will help you plan your migration from V1 to V2 specs.
     },
     "autoFetch": true
 }
-```
+`}</CodeBlockWithCopy>
 
 ### Bill Fetch Response
 
 | Type | Old                  | New            |
-|------|----------------------|----------------|
+| ---- | -------------------- | -------------- |
 | Body | `data.bill`          | `data.bills[]` |
 | Body | `data.paymentLimits` |                |
 
- 
+<br />
 
-
-```diff
+<CodeBlockWithCopy language="diff">
+  {`
 {
     "data": {
          "autoFetchHash": d28ca210e0267a13fa0db18ee96a349dc4578f032e5902192af762763224204a,
@@ -87,18 +85,18 @@ The changes below will help you plan your migration from V1 to V2 specs.
     },
     "success": true,
     "traceId": "CISB5HC91PA96LI47QTG"
-}
-```
+}`}
+</CodeBlockWithCopy>
 
 ### Bill Pay Request
 
-
 | Type | Old                       | New                       |
-|------|---------------------------|---------------------------|
+| ---- | ------------------------- | ------------------------- |
 | Body | `customer.billParameters` | `customer.customerParams` |
 
+<br />
 
-```diff
+<CodeBlockWithCopy language="diff">{`
 {
     "customer": {
         "mobile": "9505987798",
@@ -150,18 +148,17 @@ The changes below will help you plan your migration from V1 to V2 specs.
         "timestamp": "2020-12-12T13:12:00+05:30"
     }
 }
-```
+`}</CodeBlockWithCopy>
 
 ### Bill Pay response
 
 | Type | Old                 | New |
-|------|---------------------|-----|
+| ---- | ------------------- | --- |
 | Body | `data.refundStatus` |     |
 
- 
+<br/>
 
-
-```diff
+<CodeBlockWithCopy language="diff">{`
 {
     "data": {
         "billerId": "AX5110005XXZ43",
@@ -185,46 +182,45 @@ The changes below will help you plan your migration from V1 to V2 specs.
     "success": true,
     "traceId": "CISB9KK91PA96LI47RK0"
 }
-```
-
+`}</CodeBlockWithCopy>
 
 ### Bill Dispute request
 
 | Type | Old              | New             |
-|------|------------------|-----------------|
+| ---- | ---------------- | --------------- |
 | Body | `txnReferenceId` | `transactionId` |
 
+<br/>
 
-```diff
+<CodeBlockWithCopy language="diff">{`
 {
 -  "txnReferenceId": "AS01320109451110R5LL",
 +  "transactionId": "AS01320109451110R5LL",
-  "disputeType": "account-not-updated", 
+  "disputeType": "account-not-updated",
   "description": "test-description"
 }
-```
+`}</CodeBlockWithCopy>
 
 ## List APIs
 
 ### List Billers
 
 | Type             | Old              | New            |
-|------------------|------------------|----------------|
+| ---------------- | ---------------- | -------------- |
 | Query Parameters | `categoryName[]` | `categoryName` |
 | Body             | `plans[]`        |                |
 | Body             | `tags`           |                |
 
+<br />
 
- 
-
-
-```diff
+<CodeBlockWithCopy language="diff">{`
 - GET /billers?categoryName=Loan+Repayment&categoryName=Education+Fees
 + GET /billers?categoryName=Loan+Repayment
-```
+`}</CodeBlockWithCopy>
 
+<br/>
 
-```diff
+<CodeBlockWithCopy language="diff">{`
 {
     "data": {
         "billers": [
@@ -274,25 +270,27 @@ The changes below will help you plan your migration from V1 to V2 specs.
             }
     }
 }
-```
-
+`}</CodeBlockWithCopy>
 
 ## List Disputes
 
 | Type            | Old                    | New             |
-|-----------------|------------------------|-----------------|
+| --------------- | ---------------------- | --------------- |
 | Query Parameter | `partnerRefIds`        | `paymentRefIds` |
 | Query Parameter | `customerMobileNumber` | `mobile`        |
 | Body            | `customerMobileNumber` | `mobile`        |
 | Body            | `partnerRefId`         | `paymentRefId`  |
 
+<br/>
 
-```diff
+<CodeBlockWithCopy language="diff">{`
 - GET /disputes?partnerRefIds=N2001121212344&customerMobileNumber=9505987798
 + GET /disputes?paymentRefIds=N2001121212344&mobile=9505987798
-```
+`}</CodeBlockWithCopy>
 
-```diff
+<br/>
+
+<CodeBlockWithCopy language="diff">{`
 {
     "data": {
         "disputes": [
@@ -316,17 +314,18 @@ The changes below will help you plan your migration from V1 to V2 specs.
         ]
     }
 }
-```
+`}</CodeBlockWithCopy>
 
 ### List transactions
 
 | Type | Old                    | New            |
-|------|------------------------|----------------|
+| ---- | ---------------------- | -------------- |
 | Body | `customerMobileNumber` | `mobile`       |
 | Body | `partnerRefId`         | `paymentRefId` |
 
+<br/>
 
-```diff
+<CodeBlockWithCopy language="diff">{`
 {
     "data": {
         "transactions": [
@@ -345,4 +344,6 @@ The changes below will help you plan your migration from V1 to V2 specs.
         ]
     }
 }
-```
+`}</CodeBlockWithCopy>
+
+<WasPageHelpful />
