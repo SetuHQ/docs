@@ -64,9 +64,40 @@ You have to provide a `redirectUrl` in the request, which has to be a valid publ
 
 It will also be used by Setu to send back relevant information about a request. By default Setu includes the `success` flag of the user consent and DigiLocker request `id`.
 
-- For a failed user consent, we will send back—`<redirectUrl>?success={false}&id={Digilocker_request.id}&errCode={code}&errMessage={message}`
-- For a successful signature—`<redirect_url>?success={true}&id={Digilocker_request.id}`
+It also includes a scope parameter, which provides the information about the documents the user has consented to during their UI journey. The possible values are `ADHAR` for Aadhar, `PANCR` for PAN and `DRVLC` for Driver's License.
+<br />
+<table>
+  <tbody>
+    <tr>
+      <th> Consent state </th>
+      <th> Redirect URL </th>
+    </tr>
+    <tr>
+      <td>Failed user consent </td>
+      <td><code>&lt;redirectUrl&gt;?success=&#123;False&#125;&amp;id=&#123;Digilocker_request.id&#125;&amp;errCode=&#123;code&#125;&errMessage=&#123;message&#125;</code></td>    
+    </tr>
+    <tr>
+      <td>User Consent to Aadhaar </td>
+      <td> 
+        <code>&lt;redirectUrl&gt;?success=&#123;True&#125;&amp;id=Digilocker_request.id&amp;scope=ADHAR </code>
+      </td>
+    </tr>
+    <tr>
+      <td>User consent to all three documents </td>
+      <td>
+        <code>&lt;redirectUrl&gt;?success=&#123;True&#125;&amp;id=Digilocker_request.id&amp;scope=ADHAR%2BPANCR%2BDRVLC </code>
+      </td>
+    </tr>
+    <tr>
+      <td>User journey completed without selecting any document </td>
+      <td> 
+        <code>&lt;redirectUrl&gt;?success=&#123;True&#125;&amp;id=Digilocker_request.id&amp;scope= </code>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
+<br />
 <Callout type="tip">
   You can also add custom query params such as <code>session id</code> from your
   end. You would append this to the provided URL, like so—
