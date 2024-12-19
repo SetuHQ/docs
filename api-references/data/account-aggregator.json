@@ -45,7 +45,9 @@
             "description": "",
             "schema": {
               "type": "string",
-              "enum": ["bridge"]
+              "enum": [
+                "bridge"
+              ]
             }
           }
         ],
@@ -520,6 +522,70 @@
         }
       ]
     },
+    "/v2/consents/{consent_id}/data-sessions": {
+      "get": {
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "description": "Bearer token for authorization.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-product-instance-id",
+            "required": true,
+            "description": "Product instance ID of the Financial Information User (FIU).",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSessionsListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSessionsListErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get data sessions by consent ID",
+        "description": "Retrieve all non-expired data sessions associated with the specified consent ID. Each session includes its unique ID, status, and creation timestamp.",
+        "tags": [
+          "Consent V2 APIs"
+        ]
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "consent_id",
+          "required": true,
+          "description": "Unique ID of the consent whose data sessions are to be retrieved.",
+          "schema": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      ]
+    },
     "/v2/sessions": {
       "post": {
         "parameters": [
@@ -770,7 +836,9 @@
             "description": "Bearer token"
           }
         },
-        "required": ["access_token"]
+        "required": [
+          "access_token"
+        ]
       },
       "TokenAPIRequest": {
         "type": "object",
@@ -781,14 +849,20 @@
           },
           "grant_type": {
             "type": "string",
-            "enum": ["client_credentials"]
+            "enum": [
+              "client_credentials"
+            ]
           },
           "secret": {
             "type": "string",
             "description": "client secret obtained from bridge"
           }
         },
-        "required": ["clientID", "grant_type", "secret"]
+        "required": [
+          "clientID",
+          "grant_type",
+          "secret"
+        ]
       },
       "DataRefreshSuccessResponse": {
         "type": "object",
@@ -998,6 +1072,73 @@
           "data",
           "linkRefNumber",
           "maskedAccNumber"
+        ]
+      },
+      "DataSessionsListResponse": {
+        "type": "object",
+        "properties": {
+          "consentId": {
+            "type": "string",
+            "description": "Unique identifier for the consent."
+          },
+          "dataSessions": {
+            "type": "array",
+            "description": "List of data sessions associated with the consent.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sessionId": {
+                  "type": "string",
+                  "description": "Unique identifier for the data fetch session."
+                },
+                "status": {
+                  "type": "string",
+                  "description": "Current status of the session (e.g., 'PENDING', 'COMPLETED', 'FAILED')."
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Timestamp when the session was created, in ISO 8601 format."
+                }
+              },
+              "required": [
+                "sessionId",
+                "status",
+                "created_at"
+              ]
+            }
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID for tracking the request across logs and systems."
+          }
+        },
+        "required": [
+          "consentId",
+          "dataSessions",
+          "traceId"
+        ]
+      },
+      "DataSessionsListErrorResponse": {
+        "type": "object",
+        "properties": {
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID for tracking the request."
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Error code indicating the type of failure."
+          },
+          "errorMsg": {
+            "type": "string",
+            "description": "Detailed message describing the error."
+          }
+        },
+        "required": [
+          "traceId",
+          "errorCode",
+          "errorMsg"
         ]
       },
       "FIFetchDecrpytedResponseFIItemDataItemData": {
