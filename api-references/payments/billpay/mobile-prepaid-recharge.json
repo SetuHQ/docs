@@ -725,47 +725,91 @@
               "produces": ["application/json"],
               "responses": {
                 "200": {
-                  "content": {
-                    "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "required": ["success", "data", "trace_id"],
-                    "properties": {
-                      "success": {
-                        "type": "boolean",
-                        "example": "true",
-                        "description": "Status of API call"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "transactionId": {
-                            "type": "string",
-                            "example": "TXN12345",
-                            "description": "Unique identifier for the recharge transaction"
-                          },
-                          "status": {
-                            "type": "string",
-                            "example": "SUCCESS",
-                            "description": "Status of the recharge request (e.g., SUCCESS, PENDING, FAILED)"
-                          },
-                          "operatorResponse": {
-                            "type": "string",
-                            "example": "Recharge successful",
-                            "description": "Message returned by the operator for this request"
-                          }
-                        },
-                        "description": "Details of the recharge transaction"
-                      },
-                      "traceId": {
-                        "type": "string",
-                        "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
-                        "description": "Identifier associated with this response for debug purposes"
-                      }
-                    }
-                  }}},
-                  "description": "Ok"
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "object",
+        "required": ["success", "data", "trace_id"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true,
+            "description": "Status of API call"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": ["string", "null"],
+                "example": null,
+                "description": "Error details if any, otherwise null"
+              },
+              "details": {
+                "type": "object",
+                "properties": {
+                  "mobile_number": {
+                    "type": "string",
+                    "example": "vi",
+                    "description": "Mobile number associated with the transaction"
+                  },
+                  "provider": {
+                    "type": "string",
+                    "example": "vi",
+                    "description": "Provider name"
+                  },
+                  "service_type": {
+                    "type": "string",
+                    "example": "M",
+                    "description": "Service type (e.g., Mobile)"
+                  },
+                  "is_postpaid": {
+                    "type": "boolean",
+                    "example": false,
+                    "description": "Indicates if the mobile number is postpaid"
+                  },
+                  "is_special": {
+                    "type": "boolean",
+                    "example": false,
+                    "description": "Indicates if this is a special service"
+                  }
                 },
+                "description": "Additional details about the recharge"
+              },
+              "amount": {
+                "type": "integer",
+                "example": 1900,
+                "description": "Recharge amount"
+              },
+              "transactionRefId": {
+                "type": "string",
+                "example": "CYJSTPM37695672",
+                "description": "Unique reference ID for the transaction"
+              },
+              "status": {
+                "type": "string",
+                "example": "Success",
+                "description": "Status of the recharge transaction"
+              },
+              "operatorRefId": {
+                "type": "string",
+                "example": "F3MV358Q19",
+                "description": "Reference ID provided by the operator"
+              }
+            },
+            "description": "Details of the recharge transaction"
+          },
+          "trace_id": {
+            "type": "string",
+            "example": "cu7it2r6nmjg00e34e8g",
+            "description": "Identifier associated with this response for debugging purposes"
+          }
+        }
+      }
+    }
+  },
+  "description": "Ok"
+}
+,
                 "422": {
                   "description": "Invalid Request Parameters",
                   "headers": {
