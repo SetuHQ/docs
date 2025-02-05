@@ -5,7 +5,7 @@ order: 2
 visible_in_sidebar: true
 ---
 
-## Reserve (UPI IPO)
+## Reserve (One Time Mandates)
 
 <Text size="small" weight="600">
   PREREQUISITES&nbsp;
@@ -18,15 +18,19 @@ visible_in_sidebar: true
 
 ### What is a UPI Reserve?
 
-UPI Reserve is a specialized subproduct within our UPI OneShot (UPI Autopay) solution, designed specifically for Initial Public Offerings (IPOs). It is purpose-built to cater to brokers' and financial institutions' unique needs involved in the IPO process.
-
-UPI Reserve leverages the UPI infrastructure to facilitate higher-value transactions, making it easier for customers to participate in IPOs through a streamlined, digital process.
+UPI Reserve is a specialized One-Time Mandate product within our UPI Autopay Solution that enables any merchant to provide "Auth & Capture" over UPI.
+<br />
+Reserve allows a merchant to block funds upto ₹1 lakh for all MCCs except 6211 and debit either the full amount or a partial amount from the customer. If a partial debit is done, remaining funds are unblocked in the customer bank A/C without any additional need for refund/reversal.
+<br /><br />
+<Callout type="tip">
+MCC 6211 - Capital Markets & Securities Brokers merchants can block upto ₹5 lakhs on UPI via Reserve
+</Callout>
 
 <br />
 
 <img
   src="https://storage.googleapis.com/strapi-assets/latest/UPI_IPO_customer_flow_diagramwith_person/UPI_IPO_customer_flow_diagramwith_person.png"
-  alt="UPI_IPO"
+  alt="UPI_Reserve_Flow"
 />
 
 <br />
@@ -35,9 +39,9 @@ UPI Reserve leverages the UPI infrastructure to facilitate higher-value transact
 
 ### What can I do with this product?
 
-- Provide seamless digital IPO Journeys supporting upto ₹5 lakhs per transaction
-- Leverage the efficiency and wide userbase of the robust UPI ecosystem
-- Single API integration as a sub-product within our UPI Recur Solution
+- Provide seamless digital IPO Journeys supporting upto ₹5 lakhs per transaction via UPI
+- Replace deposits with non-revocable fund blocks for rental use cases with variable debit
+- Integrate conditional payments where funds are debited only on confirmation of delivery
 
 <hr class="primary" />
 
@@ -47,22 +51,12 @@ UPI Reserve leverages the UPI infrastructure to facilitate higher-value transact
 
 ###### Step 1 — Create a recurring mandate
 
-1. **Merchant** sends UPI IPO mandate details to **UPI Setu** and receives a unique recurring mandate creation intent link / QR to send to their Customer
-2. **Customer** clicks the recurring mandate creation intent link, chooses the preferred UPI app / scans the QR on the preferred UPI app, and enters mPIN to initiate IPO Mandate Creation.
-3. **UPI Setu** triggers a webhook notification on recurring mandate creation initiation which the merchant can use to update recurring mandate status at their end.
-4. **UPI Setu**, gets confirmation from NPCI on Mandate Creation, and funds are blocked in the customer’s bank account for the IPO.
+1. **Merchant** sends UPI Reserve mandate details to **UPI Setu** and receives a unique one time mandate creation intent link / QR to send to their Customer
+2. **Customer** clicks the one-time mandate creation intent link, chooses their UPI app / scans the QR on their UPI app, and enters mPIN to initiate Reserve Creation.
+3. **UPI Setu** triggers a webhook notification on one-time mandate creation initiation which the merchant can use to update recurring mandate status at their end.
+4. **UPI Setu**, gets confirmation from NPCI on Mandate Creation, and funds are blocked in the customer’s bank account for the Reserve usecase.
 5. Once the mandate is **LIVE**, **UPI Setu** triggers another webhook notification which the merchant can use to mark the mandate status as **LIVE** at their end.
 
-<br />
-
-###### Mandatory Conditions for UPI IPO
-
-| Condition         | Value |
-| ----------------- | ----- |
-| MCC code          | 6211  |
-| Purpose code      | 01    |
-| BlockFunds        | Yes   |
-| Mandate frequency | one   |
 
 <hr class="tertiary" />
 
@@ -76,11 +70,11 @@ UPI Reserve leverages the UPI infrastructure to facilitate higher-value transact
 
 <br />
 
-- **Merchant** triggers a call to the execution API only if IPO is allotted and the customer’s account is debited depending on the level of allocation.
+- **Merchant** triggers a call to the execution API only if serice is provided and the customer’s account is debited depending on the level of usage.
 
-- If IPO is partially allotted, merchant can trigger execution API and specify execution amount according to the value of partially allotted shares.
+- If Block is partially used, merchant can trigger execution API and specify execution amount according to the value of partially used funds.
 
-- If IPO is not allotted to customer, then merchant can cancel the mandate to unblock the customer’s funds
+- If Block is not used by customer, then merchant can cancel the mandate to unblock the customer’s funds in their bank account.
 
 <hr class="tertiary" />
 
@@ -97,10 +91,9 @@ Other operations that can be performed on a single block multi-debit mandate onc
 
 <Text>
   <ul>
-    <li>Updating a single block multi debit mandate</li>
-    <li>Revoking a single block multi debit mandate</li>
-    <li>Pausing a single block multi debit mandate</li>
-    <li>Unpausing a paused single block multi debit mandate</li>
+    <li>Revoking a Reserve mandate</li>
+    <li>Pausing a Reserve mandate</li>
+    <li>Unpausing a paused Reserve mandate</li>
   </ul>
 </Text>
 
