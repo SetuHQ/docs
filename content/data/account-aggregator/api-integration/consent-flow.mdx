@@ -185,7 +185,8 @@ The following steps are handled by Setu’s screens—
 - Setu sends notification to you to confirm consent approval. At this point, consent `status` is APPROVED or REJECTED
 
 <Callout type="tip">
-  Use Setu FIP and get access to mock financial data on staging{" "}
+  Use Setu FIP or Setu FIP-2 to get access to mock financial data on staging. We have created these accounts to mock the FIP data schema based on the FIType chosen.
+  <br />Also, please note that Setu FIP has a dynamic OTP sent to the phone number with which you have created a consent, but Setu FIP-2 has a static OTP '123456'{" "}
 </Callout>
 
 <hr class="primary" />
@@ -415,7 +416,7 @@ In the Account Aggregator (AA) ecosystem in India, the multi consent feature all
     <tr>
       <th>Path</th>
       <td>
-        <code>/v2/consents/consents/collection</code>
+        <code>/v2/consents/collection</code>
       </td>
     </tr>
     <tr>
@@ -752,6 +753,103 @@ This API retrieves the last data fetch status for a given consent ID. It provide
             </>
           ),
         },
+      ]}
+    />
+  </Portion>
+</Row>
+
+<hr class="primary" />
+
+### Get Data Sessions by Consent ID
+
+This API retrieves the list of all non-expired data sessions associated with a given consent ID. It provides details such as the session ID, current status, and the creation timestamp. Sessions are sorted in descending order of creation time.
+
+###### Request
+
+<table>
+  <tbody>
+    <tr>
+      <th>Base URL</th>
+      <td>
+        Sandbox: <code>https://fiu-sandbox.setu.co</code>
+        <br />
+        Production: <code>https://fiu.setu.co</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Path</th>
+      <td>
+        <code>/v2/consents/:consent_id/data-sessions</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Method</th>
+      <td>
+        <code>GET</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Headers</th>
+      <td>
+        <code>Content-Type</code>: <code>application/json</code> <br />
+        <code>Authorization</code>: Bearer <code>access_token</code> <br />
+        <code>x-product-instance-id</code>: <code>product-instance-id</code> <br />
+        <code>Params</code>: <code>consent_request_id</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<br />
+
+<Callout type="tip">This is a GET API without any request body</Callout>
+
+<br />
+
+###### Sample Response
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: <Badge type="success">SUCCESS</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+  "consentId": "e2304f07-6dae-4867-a0d7-8077cfbe2f87",
+  "dataSessions": [
+    {
+      "sessionId": "39faa19a-1f6a-4e10-85ad-2d5c6aa69257",
+      "status": "PENDING",
+      "created_at": "2024-12-17T12:14:26.537Z"
+    }
+  ],
+  "traceId": "064b8a84-accb-4303-9ddb-1447cb63b2b4"
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: <Badge type="failure">FAIL - No Sessions Found</Badge>,
+          content: (
+            <>
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+  "consentId": "e2304f07-6dae-4867-a0d7-8077cfbe2f879",
+  "dataSessions": [],
+  "traceId": "e26bed44-ecab-4b7a-af09-02069d9a9ced"
+}`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        }
       ]}
     />
   </Portion>

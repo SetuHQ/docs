@@ -5,11 +5,11 @@ order: 2
 visible_in_sidebar: true
 ---
 
-# API Integration
+## API Integration
 
 Below is a quick summary of the APIs you need to start integrating with for bank verification using Reverse Penny Drop (RPD).
 
-Here are the few things you would need for this integration—
+Here are the things you will need for this integration—
 
 -   Sandbox — `https://dg-sandbox.setu.co`
 -   Production — `https://dg.setu.co`
@@ -27,28 +27,44 @@ Here are the few things you would need for this integration—
 
 <hr class="primary" />
 
-#### Create reverse penny drop request
+### Create reverse penny drop request
 
 Send a `POST` request to the `/api/verify/ban/reverse` endpoint to create a reverse penny drop request.
-Optionally you can pass `additionalData` with header `Content-Type` as `application/json`.
 
-`additionalData` should be simple key-value pairs (string value only).
-E.g:
+#### Request Body
 
-<CodeBlockWithCopy language="json">
-    {`
-    "additionalData": {
-        "key1": "value1",
-        "key2": "value2"
-    }
-  `}
-</CodeBlockWithCopy>
+You can include the following parameters in the request body:
 
+##### Optional Parameters
+
+-   `redirectionConfig`: Configuration for redirect behavior after transaction completion
+    -   `redirectUrl`: The URL where the user will be redirected after the transaction (e.g., "https://example.com")
+    -   `timeout`: Duration in seconds to wait before redirection occurs (e.g., 30)
+
+-   `additionalData`: Additional information to be included with the request. `additionalData` should be simple key-value pairs (string value only).
 <Callout type="warning">
-    You can expect this `additionalData` as part of a JSON body when we notify
+    You can expect this additionalData as part of a JSON body when we notify
     you with bank account verification details over webhook, or when you use our{" "}
     <code>GET</code> details API.
 </Callout>
+
+##### Request Headers
+
+`Content-Type`: `application/json` (optional, required when sending request body)
+
+##### Example Request
+
+<CodeBlockWithCopy language="json">
+    {`
+        "additionalData": {
+            "customField": "value"
+        },
+        "redirectionConfig": {
+            "redirectUrl": "https://example.com",
+            "timeout": 30
+        }
+    `}
+</CodeBlockWithCopy>
 <br />
 
 If successful, you will get a JSON response. Two of the fields in the response would be
@@ -56,7 +72,7 @@ If successful, you will get a JSON response. Two of the fields in the response w
 -   `upiLink`, a UPI intent link starting with `upi://`
 -   `shortUrl`, a link starting with `https://` and an image with a QR code
 
-We recommend showing the QR code on desktop devices so that a user can use their phone to scan QR and pay. For mobile phones, it's recommended to use the UPI intent link to pay on the same device.
+<b>We recommend showing the QR code on desktop devices so that a user can use their phone to scan QR and pay. For mobile phones, it's recommended to use the UPI intent link to pay on the same device.</b>
 
 -   If you want PSP specific link. Read the <a target="_blank" href="/data/bav/reverse-penny-drop/quickstart#faqs">FAQ</a>.
 
@@ -83,8 +99,8 @@ We recommend showing the QR code on desktop devices so that a user can use their
 -   `BAV_REVERSE_PENNY_DROP_PAYMENT_FAILED`, when an issue occurs during payment by your user or at Setu’s banking partner’s end. The payment, if made, will be auto-refunded.
 
 <Callout type="warning">
-    In some cases when our banking partner doesn't send us credit alerts the
-    status still may show as <code>BAV_REVERSE_PENNY_DROP_CREATED</code>.
+    In some cases when our banking partner doesn't send us credit alerts, the
+    status may still show as <code>BAV_REVERSE_PENNY_DROP_CREATED</code>.
 </Callout>
 
 <br />
@@ -219,7 +235,7 @@ We recommend showing the QR code on desktop devices so that a user can use their
 
 <hr class="tertiary" />
 
-#### Mock payment
+### Mock payment
 
 This API lets you test the end to end flow without an actual payment. This will send a webhook to the callback URL you have configured with us.
 
@@ -333,9 +349,26 @@ This API lets you test the end to end flow without an actual payment. This will 
 
 <hr class="tertiary" />
 
-#### Notifications / Webhooks
+### Redirection Behavior
 
-Below are the summary of the notifications which need to be processed on your server by exposing an endpoint for Setu to send an HTTP POST request with 5 exponential backoff retries
+After the transaction is completed, the user will be automatically redirected to the specified `redirectUrl` based on the transaction status:
+
+-   Successful transaction: Redirection after 5 seconds
+-   Failed transaction: Redirection after 5 seconds
+-   Timeout: Redirection occurs after the specified timeout period (in seconds)
+
+<Callout type="tip">
+   When using the <b>shortUrl</b> on mobile devices <b>(not recommended)</b>, notify your <b>mobile users</b> that
+   they will need to manually return to their browser after completing the payment
+   in their UPI app to be redirected to the specified <b>redirectUrl</b>.
+   The redirection will not happen automatically when the user is in the UPI app.
+</Callout>
+
+<hr class="tertiary" />
+
+### Notifications / Webhooks
+
+Below is a summary of the notifications that need to be processed on your server by exposing an endpoint for Setu to send an HTTP POST request with 5 exponential backoff retries.
 
 <Callout type="tip">
     Please send back HTTP 200 status code if the request sent was processed
@@ -363,7 +396,7 @@ _`accountType` can be `BANK_ACCOUNT`, `PPI` or `UNKNOWN`_
     If the bank account is classified as PPI, then it is for sure a PPI
     instrument and for majority of the use cases consider it an invalid bank
     account since money movement doesn't happen when trying to deposit an amount
-    through IMPS/NEFT/RTGS. There can be PPI instruments which come up as
+    through IMPS/NEFT/RTGS. There can be PPI instruments that come up as
     <code>UNKNOWN</code>, please notify us at [support@setu.co](support@setu.co)
 </Callout>
 
