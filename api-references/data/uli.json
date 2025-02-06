@@ -1,0 +1,765 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Unified Lending Interface (ULI) API",
+    "description": "API specification for integrating with ULI data providers, account aggregators, and traditional credit bureaus.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://uli.setu.co",
+      "description": "Production Server"
+    },
+    {
+      "url": "https://uli-dev.setu.co",
+      "description": "Sandbox Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Customer",
+      "description": "Customer onboarding and management operations"
+    },
+    {
+      "name": "Data",
+      "description": "Financial and alternate data operations"
+    },
+    {
+      "name": "Underwriting",
+      "description": "Loan underwriting and decisioning operations"
+    }
+  ],
+  "paths": {
+    "/customer/onboard": {
+      "post": {
+        "summary": "Customer Identification & Onboarding",
+        "description": "Captures applicant details and performs initial credit segmentation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerOnboardingRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client Secret provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product Instance ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer onboarding successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOnboardingResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Customer"]
+      }
+    },
+    "/customer/onboard/{customer_id}": {
+      "get": {
+        "summary": "Get Customer Onboarding Status",
+        "description": "Retrieves the status and result of a customer onboarding request",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique identifier of the onboarding request"
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client Secret provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product Instance ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer onboarding status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOnboardingGETResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Customer"]
+      }
+    },
+    "/data/fetch": {
+      "post": {
+        "summary": "Fetch Financial & Alternate Data",
+        "description": "Retrieves financial data from bureaus, account aggregators, and ULI sources.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataFetchRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client Secret provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product Instance ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Financial data fetched successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataFetchResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Data"]
+      }
+    },
+    "/data/fetch/{fi_data_id}": {
+      "get": {
+        "summary": "Get Data Fetch Status",
+        "description": "Retrieves the status and result of a data fetch request",
+        "parameters": [
+          {
+            "name": "fi_data_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique identifier of the data fetch request"
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client Secret provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product Instance ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data fetch status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataFetchGETResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Data"]
+      }
+    },
+    "/underwriting/decision": {
+      "post": {
+        "summary": "Underwriting & Loan Decisioning",
+        "description": "Generates underwriting insights based on fetched data.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnderwritingRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client Secret provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product Instance ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Underwriting decision made.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnderwritingResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Underwriting"]
+      }
+    },
+    "/underwriting/decision/{underwriting_id}": {
+      "get": {
+        "summary": "Get Underwriting Decision Status",
+        "description": "Retrieves the status and result of an underwriting decision request",
+        "parameters": [
+          {
+            "name": "underwriting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique identifier of the underwriting request"
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client Secret provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product Instance ID provided by Setu",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Underwriting decision status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fi_data_id": { "type": "string" },
+                    "status": {
+                      "type": "string",
+                      "enum": ["pending", "completed", "failed"]
+                    },
+                    "result": {
+                      "$ref": "#/components/schemas/UnderwritingResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Underwriting"]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CustomerOnboardingRequest": {
+        "type": "object",
+        "properties": {
+          "loan_type": {
+            "type": "string",
+            "enum": ["trade_financing", "retail_loans", "msme"]
+          },
+          "customer_details": {
+            "type": "object",
+            "required": ["name", "date_of_birth", "pan", "email", "mobile"],
+            "properties": {
+              "name": { "type": "string" },
+              "date_of_birth": { "type": "string", "format": "date" },
+              "pan": {
+                "type": "string",
+                "pattern": "[A-Z]{5}[0-9]{4}[A-Z]{1}"
+              },
+              "email": { "type": "string", "format": "email" },
+              "mobile": { "type": "string", "pattern": "^[6-9]\\d{9}$" },
+              "address": {
+                "type": "object",
+                "properties": {
+                  "line1": { "type": "string" },
+                  "line2": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" },
+                  "pincode": { "type": "string", "pattern": "^[1-9][0-9]{5}$" }
+                }
+              },
+              "employment_type": {
+                "type": "string",
+                "enum": ["salaried", "self_employed", "business"]
+              },
+              "monthly_income": { "type": "number", "minimum": 0 },
+              "business_details": {
+                "type": "object",
+                "properties": {
+                  "business_name": { "type": "string" },
+                  "business_type": {
+                    "type": "string",
+                    "enum": [
+                      "proprietorship",
+                      "partnership",
+                      "private_limited",
+                      "public_limited",
+                      "llp"
+                    ]
+                  },
+                  "gstin": {
+                    "type": "string",
+                    "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
+                  },
+                  "date_of_incorporation": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "business_address": {
+                    "type": "object",
+                    "properties": {
+                      "line1": { "type": "string" },
+                      "line2": { "type": "string" },
+                      "city": { "type": "string" },
+                      "state": { "type": "string" },
+                      "pincode": {
+                        "type": "string",
+                        "pattern": "^[1-9][0-9]{5}$"
+                      }
+                    }
+                  },
+                  "industry_type": { "type": "string" },
+                  "annual_turnover": { "type": "number", "minimum": 0 }
+                }
+              }
+            }
+          },
+          "kyc_documents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["document_type", "document_id", "file_url"],
+              "properties": {
+                "document_type": {
+                  "type": "string",
+                  "enum": [
+                    "aadhaar",
+                    "pan_card",
+                    "voter_id",
+                    "driving_license",
+                    "passport",
+                    "utility_bill"
+                  ]
+                },
+                "document_id": { "type": "string" },
+                "file_url": { "type": "string", "format": "uri" },
+                "verification_status": {
+                  "type": "string",
+                  "enum": ["pending", "verified", "failed"]
+                },
+                "expiry_date": { "type": "string", "format": "date" }
+              }
+            }
+          }
+        },
+        "required": ["loan_type", "customer_details", "kyc_documents"]
+      },
+      "CustomerOnboardingResponse": {
+        "type": "object",
+        "properties": {
+          "customer_id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "failed"]
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        },
+        "required": ["customer_id", "status"]
+      },
+      "CustomerOnboardingGETResponse": {
+        "type": "object",
+        "properties": {
+          "customer_id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "failed"]
+          },
+          "loan_type": {
+            "type": "string",
+            "enum": ["trade_financing", "retail_loans", "msme"]
+          },
+          "customer_details": {
+            "type": "object",
+            "required": ["name", "date_of_birth", "pan", "email", "mobile"],
+            "properties": {
+              "name": { "type": "string" },
+              "date_of_birth": { "type": "string", "format": "date" },
+              "pan": {
+                "type": "string",
+                "pattern": "[A-Z]{5}[0-9]{4}[A-Z]{1}"
+              },
+              "email": { "type": "string", "format": "email" },
+              "mobile": { "type": "string", "pattern": "^[6-9]\\d{9}$" },
+              "address": {
+                "type": "object",
+                "properties": {
+                  "line1": { "type": "string" },
+                  "line2": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" },
+                  "pincode": { "type": "string", "pattern": "^[1-9][0-9]{5}$" }
+                }
+              },
+              "employment_type": {
+                "type": "string",
+                "enum": ["salaried", "self_employed", "business"]
+              },
+              "monthly_income": { "type": "number", "minimum": 0 },
+              "business_details": {
+                "type": "object",
+                "properties": {
+                  "business_name": { "type": "string" },
+                  "business_type": {
+                    "type": "string",
+                    "enum": [
+                      "proprietorship",
+                      "partnership",
+                      "private_limited",
+                      "public_limited",
+                      "llp"
+                    ]
+                  },
+                  "gstin": {
+                    "type": "string",
+                    "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
+                  },
+                  "date_of_incorporation": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "business_address": {
+                    "type": "object",
+                    "properties": {
+                      "line1": { "type": "string" },
+                      "line2": { "type": "string" },
+                      "city": { "type": "string" },
+                      "state": { "type": "string" },
+                      "pincode": {
+                        "type": "string",
+                        "pattern": "^[1-9][0-9]{5}$"
+                      }
+                    }
+                  },
+                  "industry_type": { "type": "string" },
+                  "annual_turnover": { "type": "number", "minimum": 0 }
+                },
+                "required": ["business_name", "business_type", "gstin"]
+              }
+            }
+          },
+          "kyc_documents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["document_type", "document_id", "file_url"],
+              "properties": {
+                "document_type": {
+                  "type": "string",
+                  "enum": [
+                    "aadhaar",
+                    "pan_card",
+                    "voter_id",
+                    "driving_license",
+                    "passport",
+                    "utility_bill"
+                  ]
+                },
+                "document_id": { "type": "string" },
+                "file_url": { "type": "string", "format": "uri" },
+                "verification_status": {
+                  "type": "string",
+                  "enum": ["pending", "verified", "failed"]
+                },
+                "expiry_date": { "type": "string", "format": "date" }
+              }
+            }
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        },
+        "required": ["customer_id", "status"]
+      },
+      "DataFetchRequest": {
+        "type": "object",
+        "required": ["customer_id", "consents"],
+        "properties": {
+          "customer_id": { "type": "string" },
+          "consents": {
+            "type": "object",
+            "properties": {
+              "credit_bureau": { "type": "boolean" },
+              "account_aggregator": { "type": "boolean" },
+              "uli_data": { "type": "boolean" },
+              "kyc_verification": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "DataFetchResponse": {
+        "type": "object",
+        "required": ["fi_data_id", "status"],
+        "properties": {
+          "fi_data_id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "failed"]
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      },
+      "DataFetchGETResponse": {
+        "type": "object",
+        "required": ["fi_data_id", "status"],
+        "properties": {
+          "fi_data_id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "failed"]
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "credit_score": { "type": "integer" },
+              "financial_data": {
+                "type": "object",
+                "properties": {
+                  "bank_statements": {
+                    "type": "array",
+                    "items": { "type": "object" }
+                  },
+                  "gst_returns": {
+                    "type": "array",
+                    "items": { "type": "object" }
+                  }
+                }
+              },
+              "uli_data": {
+                "type": "object",
+                "properties": {
+                  "trade_invoices": {
+                    "type": "array",
+                    "items": { "type": "object" }
+                  },
+                  "supplier_contracts": {
+                    "type": "array",
+                    "items": { "type": "object" }
+                  },
+                  "cash_flow_analysis": {
+                    "type": "array",
+                    "items": { "type": "object" }
+                  }
+                }
+              },
+              "kyc_verification": {
+                "type": "object",
+                "properties": {
+                  "aadhaar_status": { "type": "string" },
+                  "pan_status": { "type": "string" },
+                  "gst_status": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "UnderwritingRequest": {
+        "type": "object",
+        "properties": {
+          "customer_id": { "type": "string" },
+          "fi_data_id": { "type": "string" }
+        },
+        "required": ["customer_id", "fi_data_id"]
+      },
+      "UnderwritingResponse": {
+        "type": "object",
+        "properties": {
+          "underwriting_id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "failed"]
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      },
+      "UnderwritingGETResponse": {
+        "type": "object",
+        "properties": {
+          "risk_score": { "type": "number" },
+          "approval_status": {
+            "type": "string",
+            "enum": ["approved", "rejected", "needs review"]
+          }
+        }
+      }
+    }
+  }
+}
