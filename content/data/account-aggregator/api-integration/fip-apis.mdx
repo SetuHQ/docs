@@ -12,6 +12,7 @@ The GET Active FIP List API is the new version of our API to call the list of Ac
 -   Dynamically activates and deactivates FIPs based on performance.
 -   Can be used to simply check the status of FIPs that are active or inactive on the ecosystem.
 -   Can be used by FIUs as a mode of selection of FIPs/providers where a user has an account.
+-   Provides real-time success rates to help FIUs make data-driven decisions about creating consents, allowing them to route users to alternate data collection methods when FIP performance is poor.
 
 #### Details Shared in the FIP List API
 
@@ -21,7 +22,7 @@ These key details can be used by you for purposes like - offering a list of FIPs
 <table>
     <tr>
         <th>
-            <strong>Status</strong>
+            <strong>Field</strong>
         </th>
         <th>
             <strong>Description</strong>
@@ -29,7 +30,7 @@ These key details can be used by you for purposes like - offering a list of FIPs
     </tr>
     <tr>
         <td>
-            <code>Name</code>
+            <code>name</code>
         </td>
         <td>
             The name of the FIP - this is typically their brand name in camel
@@ -38,7 +39,7 @@ These key details can be used by you for purposes like - offering a list of FIPs
     </tr>
     <tr>
         <td>
-            <code>FIP ID</code>
+            <code>fipId</code>
         </td>
         <td>
             The unique identifier for the FIP in the central registry of
@@ -50,24 +51,32 @@ These key details can be used by you for purposes like - offering a list of FIPs
     </tr>
     <tr>
         <td>
-            <code>FIP TYPES</code>
+            <code>fiTypes</code>
         </td>
         <td>
             This refers to the type of data available via the FIP. For example,
-            an FIP with FIP_Types “DEPOSITS “ will have Savings or Current
+            an FIP with fiTypes “DEPOSITS “ will have Savings or Current
             Accounts available and be able to share bank statements upon user
             consent
         </td>
     </tr>
     <tr>
         <td>
-            <code>Status</code>
+            <code>status</code>
         </td>
         <td>
             The Status field gives you the up-to-date status of the FIP. This
             will determine whether the FIP’s accounts can be discovered and
             whether data can be fetched from this FIP. More details on the
             statuses in the next section.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <code>successRate</code>
+        </td>
+        <td>
+            The data fetch success rate (in %) for the FIP in the last 1 hour. This can be used by FIUs to make informed decisions about creating consents. A null value indicates insufficient data points in the last hour to calculate the success rate.
         </td>
     </tr>
 </table>
@@ -146,7 +155,8 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                 "DEPOSIT"
             ],
             "institutionType": "BANK",
-            "status": "ACTIVE"
+            "status": "ACTIVE",
+            "successRate": 98.55
         },
         {
             "name": "Federal Bank",
@@ -155,7 +165,8 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                 "DEPOSIT"
             ],
             "institutionType": "BANK",
-            "status": "ACTIVE"
+            "status": "ACTIVE",
+            "successRate": 95.25
         },
         {
             "name": "IndusInd Bank Ltd.",
@@ -166,7 +177,8 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                 "RECURRING_DEPOSIT"
             ],
             "institutionType": "BANK",
-            "status": "TEMPORARILY_INACTIVE"
+            "status": "TEMPORARILY_INACTIVE",
+            "successRate": 45.20
         },
         {
             "name": "HDFC Bank",
@@ -175,7 +187,8 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                 "DEPOSIT"
             ],
             "institutionType": "BANK",
-            "status": "INACTIVE"
+            "status": "INACTIVE",
+            "successRate": null
         }
    ],
    "traceId": "1-64313583-255e3a0705424652664584b2"
@@ -227,13 +240,14 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                                 {`{
     "data": [
         {
-            "name": "HDFC Bank",
-            "fipId": "HDFC-FIP",
+            "name": "Axis Bank",
+            "fipId": "AXIS001",
             "fiTypes": [
                 "DEPOSIT"
             ],
             "institutionType": "BANK",
-            "status": "INACTIVE"
+            "status": "ACTIVE",
+            "successRate": 98.55
         }
     ],
     "traceId": "1-66ff79c7-46029a1f1aaa59083489fd46"
@@ -291,7 +305,8 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                 "DEPOSIT"
             ],
             "institutionType": "BANK",
-            "status": "ACTIVE"
+            "status": "ACTIVE",
+            "successRate": 98.55
         },
         {
             "name": "Federal Bank",
@@ -300,7 +315,8 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
                 "DEPOSIT"
             ],
             "institutionType": "BANK",
-            "status": "ACTIVE"
+            "status": "ACTIVE",
+            "successRate": 95.25
         }
     ],
     "traceId": "1-64313583-255e3a0705424652664584b2"
