@@ -2,26 +2,26 @@
 sidebar_title: API Integration
 page_title: Aadhaar OKYC Redundancy API Integration
 order: 1
-visible_in_sidebar: true
+visible_in_sidebar: false
 ---
 
 ## Aadhaar OKYC Redundancy API Integration
 
-The following guide describes the redundancy implementation of our Aadhaar OKYC APIs. Due to intermittent issues on our supply partner's end, we have introduced an Aadhaar Redundancy 
-API, which uses either supply partner to perform Aadhaar Verification and fetch a user's Aadhaar details, depending on uptimes. 
+The following guide describes the redundancy implementation of our Aadhaar OKYC APIs. Due to intermittent issues on our supply partner's end, we have introduced an Aadhaar Redundancy
+API, which uses either supply partner to perform Aadhaar Verification and fetch a user's Aadhaar details, depending on uptimes.
 You will need the following 2 APIs—
 
--   **Create Aadhaar Verification Request**—This lets you initiate a verification request.
--   **GET Aadhaar Verification Details**—This lets you check the status associated with the verification request, and if complete, fetch the verification details.
+- **Create Aadhaar Verification Request**—This lets you initiate a verification request.
+- **GET Aadhaar Verification Details**—This lets you check the status associated with the verification request, and if complete, fetch the verification details.
 
 Here are the URLs you would need for this integration—
 
--   Sandbox—`https://dg-sandbox.setu.co`
--   Production—`https://dg.setu.co`
--   Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
-    -   `x-client-id`
-    -   `x-client-secret`
-    -   `x-product-instance-id`
+- Sandbox—`https://dg-sandbox.setu.co`
+- Production—`https://dg.setu.co`
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+  - `x-product-instance-id`
 
 <hr class="primary" />
 
@@ -29,113 +29,112 @@ Here are the URLs you would need for this integration—
 
 Call this API to initiate Aadhaar Verification for your end customer. A quick explanation of the request params—
 
--   `redirectUrl` Endpoint to which your end customer will be redirected to, post completion of verification flow.
+- `redirectUrl` Endpoint to which your end customer will be redirected to, post completion of verification flow.
 
 <br />
 
 <Row>
-    <Portion desktopSpan="whole">
-        <Tabs
-            tabs={[
-                {
-                    key: "1",
-                    label: "200",
-                    content: (
-                        <>
-                            <p>
-                                <Badge type="success">SUCCESS</Badge> Your
-                                Aadhaar Verification request was created successfully
-                            </p>
-                            <hr className="tertiary" />
-                            <h5>Request</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`POST  /api/aadhaar/verify
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Your Aadhaar Verification
+                request was created successfully
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST  /api/aadhaar/verify
  
 {
     "redirectUrl": "https://setu.co"
 } `}
-                            </CodeBlockWithCopy>
-                            <hr className="tertiary" />
-                            <h5>Response</h5>
-                            <p>
-                                You get an <code>id</code> associated with the
-                                Aadhaar verification request, which you can use to check
-                                verification status in the <code>Get Aadhaar Verification Details</code> API.
-                            </p>
-                            <CodeBlockWithCopy language="json">
-                                {`{
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You get an <code>id</code> associated with the Aadhaar
+                verification request, which you can use to check verification
+                status in the <code>Get Aadhaar Verification Details</code> API.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{
     "id": "be896113-6ad1-4741-80e3-56e67e794959",
     "status": "pending",
     "url": "https://dg.setu.co/digilocker/login/be896113-6ad1-4741-80e3-56e67e794959?path=L2Y3ZDdjOTk2LWEzNmQtNDQ0Mi1iMTliLTY3MDQ5NTE5Mjc0Yy8=",
     "validUpto": "2023-11-15T06:52:01+05:30",
     "traceId": "1-6540a411-48c3a26c1442b1580f6e6bf9"
 }`}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-            ]}
-        ></Tabs>
-    </Portion>
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    ></Tabs>
+  </Portion>
 </Row>
-
 
 ### Get Aadhaar Verification Details
 
 Call this API to fetch the details and status of the Aadhaar Verification request. A quick explanation of the query params—
 
--   `request_id` The `id` returned in the `Create Aadhaar Verification request` response
+- `request_id` The `id` returned in the `Create Aadhaar Verification request` response
 
 <br />
 
 <Row>
-    <Portion desktopSpan="whole">
-        <Tabs
-            tabs={[
-                {
-                    key: "1",
-                    label: "200",
-                    content: (
-                        <>
-                            <hr className="tertiary" />
-                            <h5>Request</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`GET  /api/aadhaar/verify/:request_id`}
-                            </CodeBlockWithCopy>
-                            <hr className="tertiary" />
-                            <h5>Response</h5>
-                            <p>
-                                If <code>status</code> is pending.
-                            </p>
-                            <CodeBlockWithCopy language="json">
-                                {`{
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET  /api/aadhaar/verify/:request_id`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                If <code>status</code> is pending.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`{
     "id": "be896113-6ad1-4741-80e3-56e67e794959",
     "status": "pending",
     "url": "https://dg.setu.co/digilocker/login/be896113-6ad1-4741-80e3-56e67e794959?path=L2Y3ZDdjOTk2LWEzNmQtNDQ0Mi1iMTliLTY3MDQ5NTE5Mjc0Yy8=",
     "validUpto": "2023-11-15T06:52:01+05:30",
     "traceId": "1-6540a411-48c3a26c1442b1580f6e6bf9"
 }`}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-                {
-                    key: "2",
-                    label: "200",
-                    content: (
-                        <>
-                            <hr className="tertiary" />
-                            <h5>Request</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`GET  /api/aadhaar/verify/:request_id`}
-                            </CodeBlockWithCopy>
-                            <hr className="tertiary" />
-                            <h5>Response</h5>
-                            <p>
-                                If <code>status</code> is complete.
-                            </p>
-                            <CodeBlockWithCopy language="json">
-                                {`
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "200",
+          content: (
+            <>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET  /api/aadhaar/verify/:request_id`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                If <code>status</code> is complete.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`
 { 
   "aadhaar_data": { 
         "address": { 
@@ -176,27 +175,25 @@ Call this API to fetch the details and status of the Aadhaar Verification reques
       "id": "be896113-6ad1-4741-80e3-56e67e794959"
 } 
 `}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-                {
-                    key: "3",
-                    label: "500",
-                    content: (
-                        <>
-                            <hr className="tertiary" />
-                            <h5>Request</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`GET  /api/aadhaar/verify/:request_id`}
-                            </CodeBlockWithCopy>
-                            <hr className="tertiary" />
-                            <h5>Response</h5>
-                            <p>
-                                Internal Server Error.
-                            </p>
-                            <CodeBlockWithCopy language="json">
-{`{
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "3",
+          label: "500",
+          content: (
+            <>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET  /api/aadhaar/verify/:request_id`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>Internal Server Error.</p>
+              <CodeBlockWithCopy language="json">
+                {`{
     "error": 
         {
             "code": "internal_server_error", 
@@ -204,27 +201,25 @@ Call this API to fetch the details and status of the Aadhaar Verification reques
             "traceId": "1-6540b2f5-7576e9986b0b59ac02f4f831"
         }
 }`}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                },
-                {
-                    key: "4",
-                    label: "500",
-                    content: (
-                        <>
-                            <hr className="tertiary" />
-                            <h5>Request</h5>
-                            <CodeBlockWithCopy language="json">
-                                {`GET  /api/aadhaar/verify/:request_id`}
-                            </CodeBlockWithCopy>
-                            <hr className="tertiary" />
-                            <h5>Response</h5>
-                            <p>
-                                Upstream Service Error.
-                            </p>
-                            <CodeBlockWithCopy language="json">
-{`{
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "4",
+          label: "500",
+          content: (
+            <>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`GET  /api/aadhaar/verify/:request_id`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>Upstream Service Error.</p>
+              <CodeBlockWithCopy language="json">
+                {`{
     "error": 
         {
             "code": "upstream_server_error", 
@@ -232,11 +227,11 @@ Call this API to fetch the details and status of the Aadhaar Verification reques
             "traceId": "1-6540b2f5-7576e9986b0b59ac02f4f831"
         }
 }`}
-                            </CodeBlockWithCopy>
-                        </>
-                    ),
-                }
-            ]}
-        ></Tabs>
-    </Portion>
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    ></Tabs>
+  </Portion>
 </Row>
