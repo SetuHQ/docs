@@ -1,9 +1,9 @@
 {
-  "openapi": "3.0.2",
+  "openapi": "3.1.0",
   "info": {
-    "title": "Setu Insights",
-    "description": "Setu’s Insights API gives you actionable insights from a customer's bank statement about their income, expenditure and financial history.",
-    "version": "0.1.0"
+    "title": "Setu Insights API",
+    "description": "Setu’s Insights API gives you actionable insights from a customer's bank statement about their income, expenditure, and financial history.",
+    "version": "1.0.0"
   },
   "servers": [
     {
@@ -16,27 +16,48 @@
     }
   ],
   "paths": {
-    "/v1/fiData": {
+
+    "/v2/fiData": {
       "post": {
-        "tags": ["Data ingestion"],
-        "summary": "Create FIData block (FIU Webhook)",
-        "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent in the future.",
-        "operationId": "create_fi_data_v1_fiData_post",
+        "tags": [
+          "Data ingestion"
+        ],
+        "summary": "Create FIData block",
+        "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent.",
+        "operationId": "create_fi_data_v2_fiData_post",
         "parameters": [
           {
             "required": false,
             "schema": {
-              "title": "Refid",
-              "type": "string"
+              "type": "string",
+              "title": "Refid"
             },
             "name": "refId",
             "in": "query"
           },
           {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "authorization"
+            },
+            "name": "authorization",
+            "in": "header"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "x-product-instance-id"
+            },
+            "name": "x-product-instance-id",
+            "in": "header"
+          },
+          {
             "required": true,
             "schema": {
-              "title": "x-client-id",
-              "type": "string"
+              "type": "string",
+              "title": "x-client-id"
             },
             "name": "x-client-id",
             "in": "header"
@@ -44,19 +65,10 @@
           {
             "required": true,
             "schema": {
-              "title": "x-client-secret",
-              "type": "string"
+              "type": "string",
+              "title": "x-client-secret"
             },
             "name": "x-client-secret",
-            "in": "header"
-          },
-          {
-            "required": true,
-            "schema": {
-              "title": "x-product-instance-id",
-              "type": "string"
-            },
-            "name": "x-product-instance-id",
             "in": "header"
           }
         ],
@@ -64,12 +76,12 @@
           "content": {
             "application/json": {
               "schema": {
-                "title": "FI Data as defined by ReBIT schema",
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/FIData"
+                    "$ref": "#/components/schemas/FIDataList"
                   }
-                ]
+                ],
+                "title": "FI Data as defined by ReBIT schema"
               }
             }
           },
@@ -168,227 +180,38 @@
         }
       }
     },
-    "/v1/insight": {
-      "get": {
-        "tags": ["Insight generation"],
-        "summary": "Get Insights",
-        "description": "Call this API with the report-id to get the created Insights",
-        "operationId": "get_insights_v1_insight_get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Report ID for which insights are needed",
-              "type": "string"
-            },
-            "name": "reportId",
-            "in": "query"
-          },
-          {
-            "required": true,
-            "schema": {
-              "title": "x-client-id",
-              "type": "string"
-            },
-            "name": "x-client-id",
-            "in": "header"
-          },
-          {
-            "required": true,
-            "schema": {
-              "title": "x-client-secret",
-              "type": "string"
-            },
-            "name": "x-client-secret",
-            "in": "header"
-          },
-          {
-            "required": true,
-            "schema": {
-              "title": "x-product-instance-id",
-              "type": "string"
-            },
-            "name": "x-product-instance-id",
-            "in": "header"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response 200 Get Insights V1 Insight Get",
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/ReportJobCreateResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/InsightGetResponse"
-                    }
-                  ]
-                },
-                "examples": {
-                  "InsightGetResponse": {
-                    "summary": "InsightGetResponse",
-                    "value": {
-                      "status": "Success",
-                      "body": {
-                        "name": "Redacted Services",
-                        "dob": "2006-06-27",
-                        "email": "redacted@gmail.com",
-                        "pan": "redacted",
-                        "ckyc_compliance": false,
-                        "mobile": 9999912345,
-                        "bank_branch": "NARKATIAGANJ BH",
-                        "bank_account_number": "XXXXXXXXXXX1234",
-                        "bank_account_type": "CURRENT",
-                        "opening_date": "2019-02-26",
-                        "closing_balance": 27929.84,
-                        "end_of_month_balances": {
-                          "2021": {
-                            "9": 245676.89,
-                            "10": 48650.54,
-                            "11": 145487.41,
-                            "12": 97725.67
-                          },
-                          "2022": {
-                            "1": 9152.09,
-                            "2": 5957.19,
-                            "3": 545.59,
-                            "4": 1282299.18,
-                            "5": 134376.04,
-                            "6": 84468.46,
-                            "7": 135585.11,
-                            "8": 3346.11,
-                            "9": 268766.7,
-                            "10": 50049.84,
-                            "11": 27929.84
-                          }
-                        },
-                        "balances_on_10th": {
-                          "2021": {
-                            "12": 55387.41
-                          },
-                          "2022": {
-                            "1": 2426.67,
-                            "2": 9629.59,
-                            "3": 97487.45,
-                            "4": 1641.09,
-                            "5": 52517.54,
-                            "6": 72084.28,
-                            "7": 165864.04,
-                            "8": 63465.11,
-                            "9": 11226.11,
-                            "10": 418535.81,
-                            "11": 27929.84
-                          }
-                        },
-                        "average_end_of_day_balance": 297715.03,
-                        "maximum_end_of_day_balance": 1818766.7,
-                        "total_credits": 153,
-                        "total_credits_value": 44810341.06,
-                        "total_debits": 473,
-                        "total_debits_value": 45178088.11,
-                        "quarterly_salary_average": {
-                          "2021": {
-                            "4": 15072
-                          }
-                        },
-                        "cash_deposit_x_total_credit": {
-                          "2021": {
-                            "12": 0.0095
-                          },
-                          "2022": {
-                            "3": 0.0018
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "AuthenticationErrorResponse": {
-                    "summary": "AuthenticationErrorResponse",
-                    "value": {
-                      "errorCode": "401",
-                      "errorMsg": "Unable to fetch FIU config",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "ValidationErrorResponse": {
-                    "summary": "ValidationErrorResponse",
-                    "value": {
-                      "errorCode": "422",
-                      "errorMsg": "field required -> account",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "ServerErrorResponse": {
-                    "summary": "ServerErrorResponse",
-                    "value": {
-                      "errorCode": "500",
-                      "errorMsg": "Internal Server Error",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
+    "/v2/insight": {
       "post": {
-        "tags": ["Insight generation"],
+        "tags": [
+          "Insight generation"
+        ],
         "summary": "Create Insights",
         "description": "Call this API with the template-id received from Setu along with a list of data-ids, to trigger an Report generation job. The FI Datablocks can belong to multiple bank accounts.The created Report will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to fetch the generated Report.",
-        "operationId": "process_insights_v1_insight_post",
+        "operationId": "process_insights_v2_insight_post",
         "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "authorization"
+            },
+            "name": "authorization",
+            "in": "header"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "x-product-instance-id"
+            },
+            "name": "x-product-instance-id",
+            "in": "header"
+          },
           {
             "required": true,
             "schema": {
-              "title": "x-client-id",
-              "type": "string"
+              "type": "string",
+              "title": "x-client-id"
             },
             "name": "x-client-id",
             "in": "header"
@@ -396,19 +219,10 @@
           {
             "required": true,
             "schema": {
-              "title": "x-client-secret",
-              "type": "string"
+              "type": "string",
+              "title": "x-client-secret"
             },
             "name": "x-client-secret",
-            "in": "header"
-          },
-          {
-            "required": true,
-            "schema": {
-              "title": "x-product-instance-id",
-              "type": "string"
-            },
-            "name": "x-product-instance-id",
             "in": "header"
           }
         ],
@@ -416,7 +230,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_process_insights_v1_insight_post"
+                "$ref": "#/components/schemas/Body_process_insights_v2_insight_post"
               }
             }
           },
@@ -555,42 +369,253 @@
             }
           }
         }
-      }
-    },
-    "/v1/accounts": {
-      "post": {
-        "description": "List accounts",
-        "tags": ["List accounts"],
-        "summary": "List accounts",
-        "operationId": "accounts-list",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/requests.ListAccountsRequest"
-              }
-            }
+      },
+      "get": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "Get Insights",
+        "description": "Call this API with the report-id to get the created Insights",
+        "operationId": "get_insights_v2_insight_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report ID for which insights are needed"
+            },
+            "name": "reportId",
+            "in": "query"
           },
-          "description": "account identifiers and filters",
-          "required": true
-        },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "authorization"
+            },
+            "name": "authorization",
+            "in": "header"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "x-product-instance-id"
+            },
+            "name": "x-product-instance-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-id"
+            },
+            "name": "x-client-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-secret"
+            },
+            "name": "x-client-secret",
+            "in": "header"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responses.ListAccountsResponse"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ReportJobCreateResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InsightGetResponse"
+                    }
+                  ],
+                  "title": "Response 200 Get Insights V2 Insight Get"
+                },
+                "examples": {
+                  "InsightGetResponse": {
+                    "summary": "InsightGetResponse",
+                    "value": {
+                      "status": "Success",
+                      "body": {
+                        "name": "Redacted Services",
+                        "dob": "2006-06-27",
+                        "email": "redacted@gmail.com",
+                        "pan": "redacted",
+                        "ckyc_compliance": false,
+                        "mobile": 9999912345,
+                        "bank_branch": "NARKATIAGANJ BH",
+                        "bank_account_number": "XXXXXXXXXXX1234",
+                        "bank_account_type": "CURRENT",
+                        "opening_date": "2019-02-26",
+                        "closing_balance": 27929.84,
+                        "end_of_month_balances": {
+                          "2021": {
+                            "9": 245676.89,
+                            "10": 48650.54,
+                            "11": 145487.41,
+                            "12": 97725.67
+                          },
+                          "2022": {
+                            "1": 9152.09,
+                            "2": 5957.19,
+                            "3": 545.59,
+                            "4": 1282299.18,
+                            "5": 134376.04,
+                            "6": 84468.46,
+                            "7": 135585.11,
+                            "8": 3346.11,
+                            "9": 268766.7,
+                            "10": 50049.84,
+                            "11": 27929.84
+                          }
+                        },
+                        "balances_on_10th": {
+                          "2021": {
+                            "12": 55387.41
+                          },
+                          "2022": {
+                            "1": 2426.67,
+                            "2": 9629.59,
+                            "3": 97487.45,
+                            "4": 1641.09,
+                            "5": 52517.54,
+                            "6": 72084.28,
+                            "7": 165864.04,
+                            "8": 63465.11,
+                            "9": 11226.11,
+                            "10": 418535.81,
+                            "11": 27929.84
+                          }
+                        },
+                        "average_end_of_day_balance": 297715.03,
+                        "maximum_end_of_day_balance": 1818766.7,
+                        "total_credits": 153,
+                        "total_credits_value": 44810341.06,
+                        "total_debits": 473,
+                        "total_debits_value": 45178088.11,
+                        "quarterly_salary_average": {
+                          "2021": {
+                            "4": 15072
+                          }
+                        },
+                        "cash_deposit_x_total_credit": {
+                          "2021": {
+                            "12": 0.0095
+                          },
+                          "2022": {
+                            "3": 0.0018
+                          }
+                        },
+                        "run_amt_last_1m_min_q2": {
+                          "meta": {
+                            "refKey": "run_amt_last_1m_min_q2",
+                            "lastNMonths": 5,
+                            "aggregateFunction": "COUNT"
+                          },
+                          "value": 125
+                        },
+                        "run_amt_last_1m_min_q3": {
+                          "meta": {
+                            "refKey": "run_amt_last_1m_min_q3",
+                            "lastNMonths": 5,
+                            "aggregateFunction": "SUM"
+                          },
+                          "value": 918017.6299999999
+                        },
+                        "ratio_run_amt_last_1m_min_q2_q3": {
+                          "meta": {
+                            "id": "cd81abf3-37df-4fcd-9a88-874884982f48",
+                            "name": "test",
+                            "formula": "run_amt_last_1m_min_q2 * run_amt_last_1m_min_q3",
+                            "refKey": "ratio_run_amt_last_1m_min_q2_q3",
+                            "description": "test",
+                            "reqInsights": [
+                              "run_amt_last_1m_min_q2",
+                              "run_amt_last_1m_min_q3"
+                            ],
+                            "insightId": "e2a127a0-6d0b-45e0-973d-430b16b99e79"
+                          },
+                          "value": 114752203.74999999
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "401": {
+            "description": "Authentication Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responses.Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "AuthenticationErrorResponse": {
+                    "summary": "AuthenticationErrorResponse",
+                    "value": {
+                      "errorCode": "401",
+                      "errorMsg": "Unable to fetch FIU config",
+                      "timestamp": "2023-04-18T17:10:12.904153",
+                      "ver": "1",
+                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ValidationErrorResponse": {
+                    "summary": "ValidationErrorResponse",
+                    "value": {
+                      "errorCode": "422",
+                      "errorMsg": "field required -> account",
+                      "timestamp": "2023-04-18T17:10:12.904153",
+                      "ver": "1",
+                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ServerErrorResponse": {
+                    "summary": "ServerErrorResponse",
+                    "value": {
+                      "errorCode": "500",
+                      "errorMsg": "Internal Server Error",
+                      "timestamp": "2023-04-18T17:10:12.904153",
+                      "ver": "1",
+                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                    }
+                  }
                 }
               }
             }
@@ -598,205 +623,150 @@
         }
       }
     },
-    "/v1/deposit/transactions": {
-      "post": {
-        "description": "List deposit transactions",
-        "tags": ["List transactions"],
-        "summary": "List deposit transactions",
-        "operationId": "list-deposit-transactions",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/requests.ListDepositTransactionsRequest"
-              }
-            }
+    "/v2/insight/master": {
+      "get": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "Get Insights Master List",
+        "description": "Get all available Insights that can be included in a template",
+        "operationId": "get_insight_masters_v2_insight_master_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "authorization"
+            },
+            "name": "authorization",
+            "in": "header"
           },
-          "description": "Query details",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/responses.ListDepositTransactionsResponse"
-                }
-              }
-            }
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "x-product-instance-id"
+            },
+            "name": "x-product-instance-id",
+            "in": "header"
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/responses.Error"
-                }
-              }
-            }
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-id"
+            },
+            "name": "x-client-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-secret"
+            },
+            "name": "x-client-secret",
+            "in": "header"
           }
-        }
-      }
-    },
-    "/v1/equities/transactions": {
-      "post": {
-        "description": "List equities transactions",
-        "tags": ["List transactions"],
-        "summary": "List equities transactions",
-        "operationId": "list-equities-transactions",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/requests.ListEquitiesTransactionsRequest"
-              }
-            }
-          },
-          "description": "Query details",
-          "required": true
-        },
+        ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responses.ListEquitiesTransactionsResponse"
+                  "$ref": "#/components/schemas/InsightMasterGetResponse"
+                },
+                "examples": {
+                  "InsightMasterGetResponse": {
+                    "summary": "InsightMasterGetResponse",
+                    "value": {
+                      "status": "Success",
+                      "body": [
+                        {
+                          "insightId": "a8cdd272-9fae-49ee-b96c-492d6903c43e",
+                          "name": "name",
+                          "title": "Name"
+                        },
+                        {
+                          "insightId": "3325a61a-e0e4-46c4-801d-fd8389a547d7",
+                          "name": "current_quarterly_average_eod_balance",
+                          "title": "Average End-of-day Balance for Current Quarter"
+                        },
+                        {
+                          "insightId": "c15d1325-b6ae-4e7f-a661-873284ab5b35",
+                          "name": "quarterly_salary_average",
+                          "title": "3-months Salary Average"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "401": {
+            "description": "Authentication Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responses.Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/etf/transactions": {
-      "post": {
-        "description": "List etf transactions",
-        "tags": ["List transactions"],
-        "summary": "List etf transactions",
-        "operationId": "list-etf-transactions",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/requests.ListETFTransactionsRequest"
-              }
-            }
-          },
-          "description": "Query details",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/responses.ListETFTransactionsResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "AuthenticationErrorResponse": {
+                    "summary": "AuthenticationErrorResponse",
+                    "value": {
+                      "errorCode": "401",
+                      "errorMsg": "Unable to fetch FIU config",
+                      "timestamp": "2023-04-18T17:10:12.904153",
+                      "ver": "1",
+                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                    }
+                  }
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responses.Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-
-    "/v1/mutual-funds/transactions": {
-      "post": {
-        "description": "List mutual-funds transactions",
-        "tags": ["List transactions"],
-        "summary": "List mutual-funds transactions",
-        "operationId": "list-mutual-funds-transactions",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsRequest"
-              }
-            }
-          },
-          "description": "Query details",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/responses.ListMutualFundsTransactionsResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ValidationErrorResponse": {
+                    "summary": "ValidationErrorResponse",
+                    "value": {
+                      "errorCode": "422",
+                      "errorMsg": "field required -> account",
+                      "timestamp": "2023-04-18T17:10:12.904153",
+                      "ver": "1",
+                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                    }
+                  }
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "500": {
+            "description": "Internal Server Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responses.Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/purge": {
-      "delete": {
-        "description": "Purge account and transactions data",
-        "tags": ["Purge"],
-        "summary": "Purge data",
-        "operationId": "data-purge",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/requests.PurgeDataRequest"
-              }
-            }
-          },
-          "description": "purging identifiers",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/responses.PurgeDataResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/responses.Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ServerErrorResponse": {
+                    "summary": "ServerErrorResponse",
+                    "value": {
+                      "errorCode": "500",
+                      "errorMsg": "Internal Server Error",
+                      "timestamp": "2023-04-18T17:10:12.904153",
+                      "ver": "1",
+                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                    }
+                  }
                 }
               }
             }
@@ -807,586 +777,259 @@
   },
   "components": {
     "schemas": {
-      "Account": {
-        "title": "Account",
-        "type": "object",
+      "AccountTS": {
         "properties": {
           "profile": {
-            "$ref": "#/components/schemas/Profile"
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Profile"
           },
           "summary": {
-            "$ref": "#/components/schemas/Summary"
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Summary"
           },
           "transactions": {
-            "$ref": "#/components/schemas/Transactions"
-          },
-          "type": {
-            "title": "Type",
-            "type": "string",
-            "default": "deposit"
-          },
-          "maskedAccNumber": {
-            "title": "Maskedaccnumber",
-            "type": "string"
-          },
-          "version": {
-            "title": "Version",
-            "type": "number"
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Transactions"
           },
           "linkedAccRef": {
-            "title": "Linkedaccref",
-            "type": "string"
+            "type": "string",
+            "title": "Linkedaccref"
+          },
+          "maskedAccNumber": {
+            "type": "string",
+            "title": "Maskedaccnumber"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "etf"
           }
-        }
+        },
+        "type": "object",
+        "required": [
+          "linkedAccRef",
+          "maskedAccNumber",
+          "version"
+        ],
+        "title": "AccountTS"
       },
       "AccountType": {
-        "title": "AccountType",
-        "enum": ["SAVINGS", "CURRENT"],
         "type": "string",
+        "enum": [
+          "SAVINGS",
+          "CURRENT"
+        ],
+        "title": "AccountType",
         "description": "An enumeration."
       },
-      "Body_process_insights_v1_insight_post": {
-        "title": "Body_process_insights_v1_insight_post",
-        "required": ["templateId"],
-        "type": "object",
-        "properties": {
-          "templateId": {
-            "title": "Template ID for which insights are needed",
-            "type": "string"
-          },
-          "dataIds": {
-            "title": "List of data blocks to process",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "refIds": {
-            "title": "Refids",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "linkedAccRefs": {
-            "title": "Linkedaccrefs",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
+      "AggregationFunctions": {
+        "type": "string",
+        "enum": [
+          "MIN",
+          "MAX",
+          "AVG",
+          "SUM",
+          "SD",
+          "COUNT",
+          "CV",
+          "AVG_RATIO",
+          "INC",
+          "DEC",
+          "COUNT_LT_10"
+        ],
+        "title": "AggregationFunctions",
+        "description": "An enumeration."
       },
-      "Body_process_pdf_insights_v1_insight_post": {
-        "title": "Body_process_pdf_insights_v1_insight_post",
-        "required": ["template_id", "bankName", "applicantName", "dataFile"],
-        "type": "object",
-        "properties": {
-          "template_id": {
-            "title": "Template ID for which insights are needed",
-            "type": "string"
-          },
-          "bankName": {
-            "title": "Name of Bank of associated PDF",
-            "type": "string",
-            "description": "Bank name is case sensitive and should be in list pf supported banks. Supported banks can be fetched from /pdf/supported_banks"
-          },
-          "applicantName": {
-            "title": "Name of Account Holder in associated PDF",
-            "type": "string",
-            "description": "Can be any place holder string, But it is suggested to provide unique applicant name, to trace references in future in case of repeated usage"
-          },
-          "password": {
-            "title": "Password for reading associated PDF",
-            "type": "string",
-            "description": "The field is Optional, but if the PDF document is password protected, then password should be provided for reading the file."
-          },
-          "dataFile": {
-            "multipart/form-data": {
-              "schema": {
-                "required": ["file", "name"],
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string",
-                    "description": "Name of file uploaded"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "DepositData": {
-        "title": "DepositData",
-        "required": ["account"],
-        "type": "object",
-        "properties": {
-          "account": {
-            "$ref": "#/components/schemas/Account"
-          }
-        }
-      },
-      "ErrorResponse": {
-        "title": "ErrorResponse",
-        "required": ["errorCode", "errorMsg"],
-        "type": "object",
-        "properties": {
-          "errorCode": {
-            "title": "Errorcode",
-            "type": "string"
-          },
-          "errorMsg": {
-            "title": "Errormsg",
-            "type": "string"
-          },
-          "timestamp": {
-            "title": "Timestamp",
-            "type": "string",
-            "format": "date-time"
-          },
-          "ver": {
-            "title": "Ver",
-            "type": "string",
-            "default": "1"
-          },
-          "txnid": {
-            "title": "Txnid",
-            "type": "string",
-            "default": ""
-          }
-        }
-      },
-      "FIData": {
-        "$ref": "#/components/schemas/DepositData",
-        "title": "FIData"
-      },
-      "FIDataBlockCreateResponse": {
-        "title": "FIDataBlockCreateResponse",
-        "required": ["body"],
-        "type": "object",
-        "properties": {
-          "status": {
-            "title": "Status",
-            "type": "string",
-            "default": "Success"
-          },
-          "statusDescription": {
-            "title": "Statusdescription",
-            "type": "string"
-          },
-          "body": {
-            "$ref": "#/components/schemas/FIDataBlockResponse"
-          }
-        }
-      },
-      "FIDataBlockGetResponse": {
-        "title": "FIDataBlockGetResponse",
-        "required": ["body"],
-        "type": "object",
-        "properties": {
-          "status": {
-            "title": "Status",
-            "type": "string",
-            "default": "Success"
-          },
-          "statusDescription": {
-            "title": "Statusdescription",
-            "type": "string"
-          },
-          "body": {
-            "title": "Body",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FIDataBlockResponse"
-            }
-          }
-        }
-      },
-      "FIDataBlockResponse": {
-        "title": "FIDataBlockResponse",
-        "required": ["dataId", "fiSchema", "expiryDate"],
-        "type": "object",
-        "properties": {
-          "dataId": {
-            "title": "Dataid",
-            "type": "string",
-            "format": "uuid"
-          },
-          "refId": {
-            "type": "string",
-            "title": "Refid"
-          },
-          "fiSchema": {
-            "title": "Fischema",
-            "type": "string"
-          },
-          "expiryDate": {
-            "title": "Expirydate",
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "Holder": {
-        "title": "Holder",
-        "required": ["nominee", "ckycCompliance"],
-        "type": "object",
+      "Body_create_template_v1_template_post": {
         "properties": {
           "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "dob": {
-            "title": "Dob",
             "type": "string",
-            "format": "date"
+            "title": "Name"
           },
-          "mobile": {
-            "title": "Mobile",
-            "type": "integer"
-          },
-          "nominee": {
-            "$ref": "#/components/schemas/HoldingNominee"
-          },
-          "landline": {
-            "title": "Landline",
-            "type": "string"
-          },
-          "address": {
-            "title": "Address",
-            "type": "string"
-          },
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
-          "pan": {
-            "title": "Pan",
-            "type": "string"
-          },
-          "ckycCompliance": {
-            "title": "Ckyccompliance",
-            "type": "boolean"
-          }
-        }
-      },
-      "Holders": {
-        "title": "Holders",
-        "required": ["holder", "type"],
-        "type": "object",
-        "properties": {
-          "holder": {
-            "title": "Holder",
-            "type": "array",
+          "insights": {
             "items": {
-              "$ref": "#/components/schemas/Holder"
-            }
-          },
-          "type": {
-            "$ref": "#/components/schemas/HoldersType"
+              "type": "string"
+            },
+            "type": "array",
+            "title": "List of Insight masters to be included in the template"
           }
-        }
-      },
-      "HoldersType": {
-        "title": "HoldersType",
-        "enum": ["SINGLE", "JOINT"],
-        "type": "string",
-        "description": "An enumeration."
-      },
-      "HoldingNominee": {
-        "title": "HoldingNominee",
-        "enum": ["REGISTERED", "NOT-REGISTERED"],
-        "type": "string",
-        "description": "An enumeration."
-      },
-      "InsightGetResponse": {
-        "title": "InsightGetResponse",
-        "required": ["body"],
+        },
         "type": "object",
-        "properties": {
-          "status": {
-            "title": "Status",
-            "type": "string",
-            "default": "Success"
-          },
-          "statusDescription": {
-            "title": "Statusdescription",
-            "type": "string"
-          },
-          "body": {
-            "title": "Body",
-            "type": "object"
-          }
-        }
-      },
-      "Pending": {
-        "title": "Pending",
-        "required": ["amount"],
-        "type": "object",
-        "properties": {
-          "transactionType": {
-            "$ref": "#/components/schemas/TransactionType"
-          },
-          "amount": {
-            "title": "Amount",
-            "type": "number"
-          }
-        }
-      },
-      "Profile": {
-        "title": "Profile",
-        "type": "object",
-        "properties": {
-          "holders": {
-            "$ref": "#/components/schemas/Holders"
-          }
-        }
-      },
-      "ReportJob": {
-        "title": "ReportJob",
-        "required": ["reportId", "status"],
-        "type": "object",
-        "properties": {
-          "reportId": {
-            "title": "Reportid",
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          }
-        }
-      },
-      "ReportJobCreateResponse": {
-        "title": "ReportJobCreateResponse",
-        "required": ["body"],
-        "type": "object",
-        "properties": {
-          "status": {
-            "title": "Status",
-            "type": "string",
-            "default": "Success"
-          },
-          "statusDescription": {
-            "title": "Statusdescription",
-            "type": "string"
-          },
-          "body": {
-            "$ref": "#/components/schemas/ReportJob"
-          }
-        }
-      },
-      "StatusTypes": {
-        "title": "StatusTypes",
-        "enum": ["ACTIVE", "INACTIVE"],
-        "type": "string",
-        "description": "An enumeration."
-      },
-      "Summary": {
-        "title": "Summary",
-        "type": "object",
-        "properties": {
-          "pending": {
-            "$ref": "#/components/schemas/Pending"
-          },
-          "currentBalance": {
-            "title": "Currentbalance",
-            "type": "string"
-          },
-          "currency": {
-            "title": "Currency",
-            "type": "string"
-          },
-          "exchgeRate": {
-            "title": "Exchgerate",
-            "type": "string"
-          },
-          "balanceDateTime": {
-            "title": "Balancedatetime",
-            "type": "string",
-            "format": "date-time"
-          },
-          "type": {
-            "$ref": "#/components/schemas/AccountType"
-          },
-          "branch": {
-            "title": "Branch",
-            "type": "string"
-          },
-          "facility": {
-            "$ref": "#/components/schemas/SummaryFacility"
-          },
-          "ifscCode": {
-            "title": "Ifsccode",
-            "type": "string"
-          },
-          "micrCode": {
-            "title": "Micrcode",
-            "type": "string"
-          },
-          "openingDate": {
-            "title": "Openingdate",
-            "type": "string",
-            "format": "date"
-          },
-          "currentODLimit": {
-            "title": "Currentodlimit",
-            "type": "string"
-          },
-          "drawingLimit": {
-            "title": "Drawinglimit",
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/StatusTypes"
-          }
-        }
-      },
-      "SummaryFacility": {
-        "title": "SummaryFacility",
-        "enum": ["OD", "CC"],
-        "type": "string",
-        "description": "An enumeration."
-      },
-      "Transaction": {
-        "title": "Transaction",
         "required": [
-          "type",
-          "mode",
-          "amount",
-          "currentBalance",
-          "transactionTimestamp",
-          "valueDate",
-          "txnId",
-          "narration"
+          "name",
+          "insights"
         ],
-        "type": "object",
+        "title": "Body_create_template_v1_template_post"
+      },
+      "Body_create_template_v2_template_post": {
         "properties": {
-          "type": {
-            "$ref": "#/components/schemas/TransactionType"
-          },
-          "mode": {
-            "$ref": "#/components/schemas/TransactionMode"
-          },
-          "amount": {
-            "title": "Amount",
-            "type": "number"
-          },
-          "currentBalance": {
-            "title": "Currentbalance",
-            "type": "string"
-          },
-          "transactionTimestamp": {
-            "title": "Transactiontimestamp",
+          "name": {
             "type": "string",
-            "format": "date-time"
+            "title": "Name"
           },
-          "valueDate": {
-            "title": "Valuedate",
-            "type": "string",
-            "format": "date"
-          },
-          "txnId": {
-            "title": "Txnid",
-            "type": "string"
-          },
-          "narration": {
-            "title": "Narration",
-            "type": "string"
-          },
-          "reference": {
-            "title": "Reference",
-            "type": "string"
-          }
-        }
-      },
-      "TransactionMode": {
-        "title": "TransactionMode",
-        "enum": ["CASH", "ATM", "CARD", "UPI", "FT", "OTHERS"],
-        "type": "string",
-        "description": "An enumeration."
-      },
-      "TransactionType": {
-        "title": "TransactionType",
-        "enum": ["CREDIT", "DEBIT"],
-        "type": "string",
-        "description": "An enumeration."
-      },
-      "Transactions": {
-        "title": "Transactions",
-        "type": "object",
-        "properties": {
-          "transaction": {
-            "title": "Transaction",
-            "type": "array",
+          "keywordMaps": {
             "items": {
-              "$ref": "#/components/schemas/Transaction"
-            }
-          },
-          "startDate": {
-            "title": "Startdate",
-            "type": "string",
-            "format": "date"
-          },
-          "endDate": {
-            "title": "Enddate",
-            "type": "string",
-            "format": "date"
-          }
-        }
-      },
-      "TransactionGetResponse": {
-        "title": "TransactionGetResponse",
-        "required": ["body"],
-        "type": "object",
-        "properties": {
-          "status": {
-            "title": "Status",
-            "type": "string",
-            "default": "Success"
-          },
-          "statusDescription": {
-            "title": "Statusdescription",
-            "type": "string"
-          },
-          "body": {
-            "$ref": "#/components/schemas/TransactionResponse"
-          }
-        }
-      },
-      "TransactionResponse": {
-        "title": "TransactionResponse",
-        "required": ["totalCount", "transactions"],
-        "type": "object",
-        "properties": {
-          "totalCount": {
-            "title": "Totalcount",
-            "type": "integer"
-          },
-          "dataIdStatus": {
-            "title": "Dataidstatus",
+              "type": "integer"
+            },
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TransactionJobStatus"
-            }
+            "title": "List of ids of keyword category maps to be included in the template",
+            "default": []
           },
-          "transactions": {
-            "title": "Transactions",
-            "type": "array",
+          "categorisationMode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CategorisationMode"
+              }
+            ],
+            "title": "Categorisation Mode to use client provided maps strictly or inclusively",
+            "default": "INCLUSIVE"
+          },
+          "staticInsights": {
             "items": {
-              "$ref": "#/components/schemas/DepositTransaction"
-            }
+              "type": "string"
+            },
+            "type": "array",
+            "title": "List of Insight masters to be included in the template",
+            "default": []
+          },
+          "configurableInsights": {
+            "items": {
+              "$ref": "#/components/schemas/InsightMap"
+            },
+            "type": "array",
+            "title": "List of congurable insight masters with their configurations to be included in the template",
+            "default": []
+          },
+          "compoundInsights": {
+            "items": {
+              "$ref": "#/components/schemas/CompoundMasterRequest"
+            },
+            "type": "array",
+            "title": "List of compound insight masters with their formula to be included in the template",
+            "default": []
           }
-        }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Body_create_template_v2_template_post"
+      },
+      "Body_process_insights_v1_insight_post": {
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Template ID for which insights are needed"
+          },
+          "dataIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "List of data blocks to process"
+          },
+          "refIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Refids"
+          },
+          "linkedAccRefs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Linkedaccrefs"
+          },
+          "additionalInfo": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Additionalinfo"
+          },
+          "filters": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateInsightsFilters"
+              }
+            ],
+            "title": "Filters for PFM",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "templateId"
+        ],
+        "title": "Body_process_insights_v1_insight_post"
+      },
+      "Body_process_insights_v2_insight_post": {
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Template ID for which insights are needed"
+          },
+          "refIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Refids"
+          },
+          "linkedAccRefs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Linkedaccrefs"
+          },
+          "additionalInfo": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Additionalinfo"
+          },
+          "filters": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateInsightsFilters"
+              }
+            ],
+            "title": "Filters for PFM",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "templateId"
+        ],
+        "title": "Body_process_insights_v2_insight_post"
       },
       "Body_process_pdf_insights_v1_insight_pdf_post": {
         "properties": {
@@ -1426,1175 +1069,2640 @@
           }
         },
         "type": "object",
-        "required": ["templateId", "applicantName", "dataFile"],
+        "required": [
+          "templateId",
+          "applicantName",
+          "dataFile"
+        ],
         "title": "Body_process_pdf_insights_v1_insight_pdf_post"
       },
-      "TransactionJobStatus": {
-        "title": "TransactionJobStatus",
-        "required": ["dataId", "status"],
-        "type": "object",
+      "Body_retry_report_v1_retry_post": {
         "properties": {
-          "dataId": {
-            "title": "Dataid",
-            "type": "string"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
+          "reportId": {
+            "type": "string",
+            "title": "Report ID which needs to be re-processed"
           }
-        }
-      },
-      "DepositTransaction": {
-        "title": "DepositTransaction",
+        },
         "type": "object",
+        "required": [
+          "reportId"
+        ],
+        "title": "Body_retry_report_v1_retry_post"
+      },
+      "Body_update_fi_data_v1_fiData_put": {
         "properties": {
-          "fiuId": {
-            "title": "Fiuid",
-            "type": "string",
-            "format": "uuid"
+          "dataIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "List of data blocks to process"
           },
-          "dataId": {
-            "title": "Dataid",
+          "refId": {
             "type": "string",
-            "format": "uuid"
+            "title": "Refid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refId"
+        ],
+        "title": "Body_update_fi_data_v1_fiData_put"
+      },
+      "CategorisationMode": {
+        "type": "string",
+        "enum": [
+          "STRICT",
+          "STRICT_W_SALARY",
+          "KW_INCLUSIVE",
+          "INCLUSIVE"
+        ],
+        "title": "CategorisationMode",
+        "description": "An enumeration."
+      },
+      "Category": {
+        "type": "string",
+        "enum": [
+          "Cash Deposit",
+          "Cash Withdrawal",
+          "Bounced Cheque",
+          "Salary",
+          "Salary Paid",
+          "Bank Charges",
+          "Credit Card",
+          "Dividend",
+          "Education",
+          "Entertainment",
+          "Food & Drinks",
+          "Health",
+          "Investments",
+          "Jewellery",
+          "Loan",
+          "Pension",
+          "Reimbursement",
+          "Shopping",
+          "Sports",
+          "Subsidy",
+          "Tax",
+          "Travel and Transport",
+          "Utility Payments",
+          "Others",
+          "Gifts, Celebrations",
+          "Charity",
+          "Business Expense",
+          "Interest",
+          "Transfer",
+          "Transfer to Individual",
+          "Cash Withdrawals",
+          "Rent",
+          "Vehicle",
+          "Groceries",
+          "Transportation",
+          "Insurance",
+          "Refunds",
+          "Professional Services",
+          "Counseling",
+          "Donations",
+          "Fines",
+          "Bounced I/W Cheque",
+          "Bounced O/W Cheque",
+          "Bonus",
+          "Business Income",
+          "Bill",
+          "Gaming",
+          "Other Bank Charge",
+          "Fund Transfer",
+          "Account Verification",
+          "Self Transfer"
+        ],
+        "title": "Category",
+        "description": "An enumeration."
+      },
+      "CompoundMasterRequest": {
+        "properties": {
+          "fiu_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Fiu Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "formula": {
+            "type": "string",
+            "title": "Formula"
+          },
+          "ref_key": {
+            "type": "string",
+            "title": "Ref Key"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "req_insights": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Req Insights"
+          },
+          "insight": {
+            "type": "string",
+            "title": "Insight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "formula",
+          "ref_key",
+          "req_insights",
+          "insight"
+        ],
+        "title": "CompoundMasterRequest"
+      },
+      "CreateInsightsFilters": {
+        "properties": {
+          "dateRange": {
+            "$ref": "#/components/schemas/DateRangeFilter"
+          },
+          "accounts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Accounts"
+          }
+        },
+        "type": "object",
+        "title": "CreateInsightsFilters"
+      },
+      "DateRangeFilter": {
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Enddate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "startDate",
+          "endDate"
+        ],
+        "title": "DateRangeFilter"
+      },
+      "DepositData": {
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__Account"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account"
+        ],
+        "title": "DepositData"
+      },
+      "ETFData": {
+        "properties": {
+          "account": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Account"
+              },
+              {
+                "$ref": "#/components/schemas/AccountTS"
+              }
+            ],
+            "title": "Account"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account"
+        ],
+        "title": "ETFData"
+      },
+      "EquitiesData": {
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Account"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account"
+        ],
+        "title": "EquitiesData"
+      },
+      "EquityCategory": {
+        "type": "string",
+        "enum": [
+          "EQUITY"
+        ],
+        "title": "EquityCategory",
+        "description": "An enumeration."
+      },
+      "ErrorResponse": {
+        "properties": {
+          "errorCode": {
+            "type": "string",
+            "title": "Errorcode"
+          },
+          "errorMsg": {
+            "type": "string",
+            "title": "Errormsg"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "ver": {
+            "type": "string",
+            "title": "Ver",
+            "default": "1"
+          },
+          "txnid": {
+            "type": "string",
+            "title": "Txnid",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "errorCode",
+          "errorMsg"
+        ],
+        "title": "ErrorResponse"
+      },
+      "FIData": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DepositData"
+          },
+          {
+            "$ref": "#/components/schemas/MutualFundsData"
+          },
+          {
+            "$ref": "#/components/schemas/EquitiesData"
+          },
+          {
+            "$ref": "#/components/schemas/ETFData"
+          }
+        ],
+        "title": "FIData"
+      },
+      "FIDataBlockCreateResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          },
+          "body": {
+            "$ref": "#/components/schemas/FIDataBlockResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "FIDataBlockCreateResponse"
+      },
+      "FIDataBlockResponse": {
+        "properties": {
+          "dataId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Dataid"
           },
           "refId": {
             "type": "string",
             "title": "Refid"
           },
+          "fiSchema": {
+            "type": "string",
+            "title": "Fischema"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expirydate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fiSchema"
+        ],
+        "title": "FIDataBlockResponse"
+      },
+      "FIDataList": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DepositData"
+          },
+          {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DepositData"
+                },
+                {
+                  "$ref": "#/components/schemas/MutualFundsData"
+                },
+                {
+                  "$ref": "#/components/schemas/EquitiesData"
+                },
+                {
+                  "$ref": "#/components/schemas/ETFData"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        ],
+        "title": "FIDataList"
+      },
+      "FIUConfig": {
+        "properties": {
+          "fiuId": {
+            "type": "string",
+            "title": "Fiuid"
+          },
+          "notificationEndpoint": {
+            "type": "string",
+            "title": "Notificationendpoint"
+          },
+          "webhookId": {
+            "type": "string",
+            "title": "Webhookid"
+          },
+          "expiryDelta": {
+            "type": "integer",
+            "title": "Expirydelta",
+            "default": 30
+          },
+          "bertSalaryEnabled": {
+            "type": "boolean",
+            "title": "Bertsalaryenabled",
+            "default": true
+          },
+          "account_ids_path": {
+            "type": "string",
+            "title": "Account Ids Path"
+          },
+          "webhookAuthMechanism": {
+            "type": "string",
+            "title": "Webhookauthmechanism",
+            "default": "None"
+          },
+          "webhookAuthParams": {
+            "type": "object",
+            "title": "Webhookauthparams",
+            "default": {}
+          },
+          "isVLLMInferenceEnabled": {
+            "type": "boolean",
+            "title": "Isvllminferenceenabled",
+            "default": false
+          },
+          "transactionTTLDays": {
+            "type": "integer",
+            "title": "Transactionttldays"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fiuId",
+          "notificationEndpoint",
+          "account_ids_path"
+        ],
+        "title": "FIUConfig"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HoldersType": {
+        "type": "string",
+        "enum": [
+          "SINGLE",
+          "JOINT",
+          "PROPRIETOR",
+          "OTHERS"
+        ],
+        "title": "HoldersType",
+        "description": "An enumeration."
+      },
+      "InsightGetResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          },
+          "body": {
+            "type": "object",
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "InsightGetResponse"
+      },
+      "InsightMap": {
+        "properties": {
+          "ref_key": {
+            "type": "string",
+            "title": "Ref Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "params": {
+            "$ref": "#/components/schemas/InsightParam"
+          },
+          "insight": {
+            "type": "string",
+            "title": "Insight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ref_key",
+          "title",
+          "params",
+          "insight"
+        ],
+        "title": "InsightMap"
+      },
+      "InsightMaster": {
+        "properties": {
+          "insightId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Insightid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "insightId",
+          "name",
+          "title"
+        ],
+        "title": "InsightMaster"
+      },
+      "InsightMasterGetResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          },
+          "body": {
+            "items": {
+              "$ref": "#/components/schemas/InsightMaster"
+            },
+            "type": "array",
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "InsightMasterGetResponse"
+      },
+      "InsightParam": {
+        "properties": {
+          "refKey": {
+            "type": "string",
+            "title": "Refkey"
+          },
+          "lastNMonths": {
+            "type": "integer",
+            "title": "Lastnmonths"
+          },
+          "offsetMonths": {
+            "type": "integer",
+            "title": "Offsetmonths",
+            "default": 0
+          },
+          "aggregateFunction": {
+            "$ref": "#/components/schemas/AggregationFunctions"
+          },
+          "transactionType": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__TransactionType"
+          },
+          "transactionMode": {
+            "$ref": "#/components/schemas/TransactionMode"
+          },
+          "transactionCategory": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Enddate"
+          }
+        },
+        "type": "object",
+        "title": "InsightParam"
+      },
+      "KeywordMap": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "map": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "additionalProperties": {
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Map"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "map"
+        ],
+        "title": "KeywordMap"
+      },
+      "KeywordMapCreate": {
+        "properties": {
+          "fiu_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Fiu Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "map": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "additionalProperties": {
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Map"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "map"
+        ],
+        "title": "KeywordMapCreate"
+      },
+      "KeywordMapCreateResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          },
+          "body": {
+            "$ref": "#/components/schemas/KeywordMap"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "KeywordMapCreateResponse"
+      },
+      "MutualFundsData": {
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Account"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account"
+        ],
+        "title": "MutualFundsData"
+      },
+      "NotificationSchema": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "Type of the notification"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "Timestamp of sending the notification"
+          },
+          "reportId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Reportid",
+            "description": "Reference ID of the insights generation report"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Signifies whether the notification is a successful one or not",
+            "default": true
+          },
+          "data": {
+            "type": "object",
+            "title": "Data",
+            "description": "Data for the notification"
+          },
+          "error": {
+            "type": "object",
+            "title": "Error",
+            "description": "Error for the notification"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "reportId"
+        ],
+        "title": "NotificationSchema"
+      },
+      "Pending": {
+        "properties": {
+          "transactionType": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__TransactionType"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount"
+        ],
+        "title": "Pending"
+      },
+      "ReportJobCreateResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          },
+          "body": {
+            "$ref": "#/components/schemas/ReportJobResponseBody"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "ReportJobCreateResponse"
+      },
+      "ReportJobResponseBody": {
+        "properties": {
+          "reportId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Reportid"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "default": "NA"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reportId",
+          "status"
+        ],
+        "title": "ReportJobResponseBody"
+      },
+      "SchemeOption": {
+        "type": "string",
+        "enum": [
+          "REINVEST",
+          "PAYOUT",
+          "GROWTH_TYPE"
+        ],
+        "title": "SchemeOption",
+        "description": "An enumeration."
+      },
+      "SchemePlan": {
+        "type": "string",
+        "enum": [
+          "DIRECT",
+          "REGULAR"
+        ],
+        "title": "SchemePlan",
+        "description": "An enumeration."
+      },
+      "SchemeTypes": {
+        "type": "string",
+        "enum": [
+          "EQUITY_SCHEMES",
+          "DEBT_SCHEMES",
+          "HYBRID_SCHEMES",
+          "SOLUTION_ORIENTED_SCHEMES",
+          "OTHER_SCHEMES"
+        ],
+        "title": "SchemeTypes",
+        "description": "An enumeration."
+      },
+      "StatusTypes": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "INACTIVE"
+        ],
+        "title": "StatusTypes",
+        "description": "An enumeration."
+      },
+      "SuccessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          }
+        },
+        "type": "object",
+        "title": "SuccessResponse"
+      },
+      "SummaryFacility": {
+        "type": "string",
+        "enum": [
+          "OD",
+          "CC",
+          "CURRENT",
+          "SAVING"
+        ],
+        "title": "SummaryFacility",
+        "description": "An enumeration."
+      },
+      "SupportedBanksGetResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          },
+          "body": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "SupportedBanksGetResponse"
+      },
+      "TemplateCreateResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          },
+          "body": {
+            "$ref": "#/components/schemas/TemplateResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "TemplateCreateResponse"
+      },
+      "TemplateGetResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Success"
+          },
+          "statusDescription": {
+            "type": "string",
+            "title": "Statusdescription"
+          },
+          "body": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateResponse"
+            },
+            "type": "array",
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "TemplateGetResponse"
+      },
+      "TemplateResponse": {
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Templateid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "insights": {
+            "items": {
+              "$ref": "#/components/schemas/InsightMaster"
+            },
+            "type": "array",
+            "title": "Insights"
+          }
+        },
+        "type": "object",
+        "required": [
+          "templateId",
+          "name",
+          "insights"
+        ],
+        "title": "TemplateResponse"
+      },
+      "TransactionMode": {
+        "type": "string",
+        "enum": [
+          "CASH",
+          "ATM",
+          "CARD",
+          "UPI",
+          "FT",
+          "OTHERS",
+          "NEFT",
+          "IMPS",
+          "ONLINE",
+          "CHEQUE",
+          "BRANCH",
+          "INB",
+          "CARD_PAYMENT"
+        ],
+        "title": "TransactionMode",
+        "description": "An enumeration."
+      },
+      "TransactionSymbol": {
+        "type": "string",
+        "enum": [
+          "BSE",
+          "NSE",
+          "OTHERS"
+        ],
+        "title": "TransactionSymbol",
+        "description": "An enumeration."
+      },
+      "TransactionTS": {
+        "properties": {
+          "txnId": {
+            "type": "string",
+            "title": "Txnid"
+          },
+          "orderId": {
+            "type": "string",
+            "title": "Orderid"
+          },
+          "companyName": {
+            "type": "string",
+            "title": "Companyname"
+          },
+          "txnDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Txndatetime"
+          },
+          "exchange": {
+            "$ref": "#/components/schemas/TransactionSymbol"
+          },
+          "isin": {
+            "type": "string",
+            "title": "Isin"
+          },
+          "isinDescription": {
+            "type": "string",
+            "title": "Isindescription"
+          },
+          "equityCategory": {
+            "$ref": "#/components/schemas/EquityCategory"
+          },
+          "narration": {
+            "type": "string",
+            "title": "Narration"
+          },
+          "exchangeRate": {
+            "type": "string",
+            "title": "Exchangerate"
+          },
+          "type": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__TransactionType"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units"
+          }
+        },
+        "type": "object",
+        "required": [
+          "txnId",
+          "companyName",
+          "txnDateTime",
+          "isin",
+          "equityCategory",
+          "type",
+          "units"
+        ],
+        "title": "TransactionTS"
+      },
+      "TransactionWithTSDetails": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__TransactionType"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/TransactionMode"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "currentBalance": {
+            "type": "string",
+            "title": "Currentbalance"
+          },
+          "transactionTimestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Transactiontimestamp"
+          },
+          "valueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ],
+            "title": "Valuedate"
+          },
+          "txnId": {
+            "type": "string",
+            "title": "Txnid"
+          },
+          "narration": {
+            "type": "string",
+            "title": "Narration"
+          },
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "fipId": {
+            "type": "string",
+            "title": "Fipid"
+          },
+          "categoryL1": {
+            "type": "string",
+            "title": "Categoryl1"
+          },
+          "categoryL2": {
+            "type": "string",
+            "title": "Categoryl2"
+          },
           "linkedAccRef": {
             "type": "string",
             "title": "Linkedaccref"
           },
-          "narration": {
-            "title": "Narration",
-            "type": "string"
-          },
-          "amount": {
-            "title": "Amount",
-            "type": "string"
-          },
-          "currentBalance": {
-            "title": "Currentbalance",
-            "type": "string"
-          },
-          "txnMode": {
-            "title": "Txnmode",
-            "type": "string"
-          },
-          "reference": {
-            "title": "Reference",
-            "type": "string"
-          },
-          "txnId": {
-            "title": "Txnid",
-            "type": "string"
-          },
-          "txnType": {
-            "title": "Txntype",
-            "type": "string"
-          },
-          "txnValueDate": {
-            "title": "Txnvaluedate",
+          "transactionMode": {
             "type": "string",
-            "format": "date"
-          },
-          "txnTimestamp": {
-            "title": "Txntimestamp",
-            "type": "string",
-            "format": "date-time"
-          },
-          "categoryL1": {
-            "title": "Categoryl1",
-            "type": "string"
-          },
-          "categoryL2": {
-            "title": "Categoryl2",
-            "type": "string"
-          }
-        }
-      },
-      "SupportedBanksGetResponse": {
-        "title": "SupportedBanksGetResponse",
-        "required": ["body"],
-        "type": "object",
-        "properties": {
-          "status": {
-            "title": "Status",
-            "type": "string",
-            "default": "Success"
-          },
-          "statusDescription": {
-            "title": "Statusdescription",
-            "type": "string"
-          },
-          "body": {
-            "title": "Body",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "requests.AccountData": {
-        "type": "object",
-        "properties": {
-          "decryptedFI": {
-            "$ref": "#/components/schemas/requests.DecryptedFI"
-          },
-          "linkRefNumber": {
-            "type": "string"
-          },
-          "maskedAccNumber": {
-            "type": "string"
+            "title": "Transactionmode"
           },
           "refId": {
-            "type": "string"
+            "type": "string",
+            "title": "Refid"
+          },
+          "categoryManual": {
+            "type": "string",
+            "title": "Categorymanual"
           }
-        }
-      },
-      "requests.DecryptedFI": {
+        },
         "type": "object",
-        "properties": {
-          "account": {
-            "$ref": "#/components/schemas/requests.DecryptedFIAccount"
-          }
-        }
+        "required": [
+          "type",
+          "mode",
+          "amount",
+          "currentBalance",
+          "transactionTimestamp",
+          "txnId"
+        ],
+        "title": "TransactionWithTSDetails"
       },
-      "requests.DecryptedFIAccount": {
-        "type": "object",
+      "ValidationError": {
         "properties": {
-          "linkedAccRef": {
-            "type": "string"
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
           },
-          "maskedAccNumber": {
-            "type": "string"
-          },
-          "profile": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "summary": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "transactions": {
-            "$ref": "#/components/schemas/requests.DecryptedFIAccountTransactions"
+          "msg": {
+            "type": "string",
+            "title": "Message"
           },
           "type": {
-            "type": "string"
-          },
-          "version": {
-            "type": "string"
+            "type": "string",
+            "title": "Error Type"
           }
-        }
-      },
-      "requests.DecryptedFIAccountTransactions": {
+        },
         "type": "object",
-        "properties": {
-          "endDate": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "transaction": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          }
-        }
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       },
-      "requests.FIData": {
-        "type": "object",
+      "VaultSecret": {
         "properties": {
           "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.AccountData"
-            }
-          },
-          "fipID": {
-            "type": "string"
+            "$ref": "#/components/schemas/VaultSecretData"
           }
-        }
-      },
-      "requests.Identifiers": {
+        },
         "type": "object",
-        "properties": {
-          "consentIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "linkAccRefs": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "refIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
+        "required": [
+          "data"
+        ],
+        "title": "VaultSecret"
       },
-      "requests.IngestFIDataRequest": {
-        "type": "object",
-        "properties": {
-          "consentId": {
-            "type": "string"
-          },
-          "dataId": {
-            "type": "string"
-          },
-          "fiData": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.FIData"
-            }
-          },
-          "refId": {
-            "type": "string"
-          }
-        }
-      },
-      "requests.ListAccountRequestFilters": {
-        "type": "object",
-        "properties": {
-          "fiTypes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "requests.ListAccountsRequest": {
-        "type": "object",
-        "properties": {
-          "filters": {
-            "$ref": "#/components/schemas/requests.ListAccountRequestFilters"
-          },
-          "identifiers": {
-            "$ref": "#/components/schemas/requests.Identifiers"
-          }
-        }
-      },
-      "requests.ListDepositTransactionsOrderBy": {
-        "type": "object",
-        "properties": {
-          "field": {
-            "type": "string"
-          },
-          "order": {
-            "type": "string"
-          }
-        }
-      },
-      "requests.ListDepositTransactionsRequest": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer"
-          },
-          "offset": {
-            "type": "integer"
-          },
-          "orderBy": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.ListDepositTransactionsOrderBy"
-            }
-          },
-          "refIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "where": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.ListDepositTransactionsWhere"
-            }
-          }
-        }
-      },
-      "requests.ListDepositTransactionsWhere": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "number"
-          },
-          "amount_gte": {
-            "type": "number"
-          },
-          "amount_lte": {
-            "type": "number"
-          },
-          "categoryL1": {
-            "type": "string"
-          },
-          "categoryL1_list": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "categoryL2": {
-            "type": "string"
-          },
-          "categoryL2_list": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "categoryManual": {
-            "type": "string"
-          },
-          "categoryManual_list": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "currentBalance": {
-            "type": "number"
-          },
-          "narration": {
-            "type": "string"
-          },
-          "reference": {
-            "type": "string"
-          },
-          "txnId": {
-            "type": "string"
-          },
-          "txnMode": {
-            "type": "string"
-          },
-          "txnTimestamp": {
-            "type": "string"
-          },
-          "txnTimestamp_gte": {
-            "type": "string"
-          },
-          "txnTimestamp_lte": {
-            "type": "string"
-          },
-          "txnType": {
-            "type": "string"
-          },
-          "txnValueDate": {
-            "type": "string"
-          }
-        }
-      },
-      "requests.ListETFTransactionsOrderBy": {
-        "type": "object",
-        "properties": {
-          "field": {
-            "type": "string"
-          },
-          "order": {
-            "type": "string"
-          }
-        }
-      },
-      "requests.ListETFTransactionsRequest": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer"
-          },
-          "offset": {
-            "type": "integer"
-          },
-          "orderBy": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.ListETFTransactionsOrderBy"
-            }
-          },
-          "refIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "where": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.ListETFTransactionsWhere"
-            }
-          }
-        }
-      },
-      "requests.ListETFTransactionsWhere": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "number"
-          },
-          "amount_gte": {
-            "type": "number"
-          },
-          "amount_lte": {
-            "type": "number"
-          },
-          "brokerCode": {
-            "type": "string"
-          },
-          "dematId": {
-            "type": "string"
-          },
-          "isin": {
-            "type": "string"
-          },
-          "isinDescription": {
-            "type": "string"
-          },
-          "narration": {
-            "type": "string"
-          },
-          "nav": {
-            "type": "number"
-          },
-          "nav_gte": {
-            "type": "number"
-          },
-          "nav_lte": {
-            "type": "number"
-          },
-          "transactionDateTime": {
-            "type": "string"
-          },
-          "transactionDateTime_gte": {
-            "type": "string"
-          },
-          "transactionDateTime_lte": {
-            "type": "string"
-          },
-          "txnId": {
-            "type": "string"
-          },
-          "txnType": {
-            "type": "string"
-          },
-          "units": {
-            "type": "number"
-          },
-          "units_gte": {
-            "type": "number"
-          },
-          "units_lte": {
-            "type": "number"
-          }
-        }
-      },
-      "requests.ListEquitiesTransactionsOrderBy": {
-        "type": "object",
-        "properties": {
-          "field": {
-            "type": "string"
-          },
-          "order": {
-            "type": "string"
-          }
-        }
-      },
-      "requests.ListEquitiesTransactionsRequest": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer"
-          },
-          "offset": {
-            "type": "integer"
-          },
-          "orderBy": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.ListEquitiesTransactionsOrderBy"
-            }
-          },
-          "refIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "where": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.ListEquitiesTransactionsWhere"
-            }
-          }
-        }
-      },
-      "requests.ListEquitiesTransactionsWhere": {
-        "type": "object",
-        "properties": {
-          "companyName": {
-            "type": "string"
-          },
-          "dematId": {
-            "type": "string"
-          },
-          "equityCategory": {
-            "type": "string"
-          },
-          "exchange": {
-            "type": "string"
-          },
-          "exchangeRate": {
-            "type": "number"
-          },
-          "exchangeRate_gte": {
-            "type": "number"
-          },
-          "exchangeRate_lte": {
-            "type": "number"
-          },
-          "isin": {
-            "type": "string"
-          },
-          "isinDescription": {
-            "type": "string"
-          },
-          "narration": {
-            "type": "string"
-          },
-          "orderId": {
-            "type": "string"
-          },
-          "transactionDateTime_gte": {
-            "type": "string"
-          },
-          "transactionDateTime_lte": {
-            "type": "string"
-          },
-          "txnDateTime": {
-            "type": "string"
-          },
-          "txnId": {
-            "type": "string"
-          },
-          "txnType": {
-            "type": "string"
-          },
-          "units": {
-            "type": "number"
-          },
-          "units_gte": {
-            "type": "number"
-          },
-          "units_lte": {
-            "type": "number"
-          }
-        }
-      },
-      "requests.ListMutualFundsTransactionsOrderBy": {
-        "type": "object",
-        "properties": {
-          "field": {
-            "type": "string"
-          },
-          "order": {
-            "type": "string"
-          }
-        }
-      },
-      "requests.ListMutualFundsTransactionsRequest": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer"
-          },
-          "offset": {
-            "type": "integer"
-          },
-          "orderBy": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsOrderBy"
-            }
-          },
-          "refIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "where": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsWhere"
-            }
-          }
-        }
-      },
-      "requests.ListMutualFundsTransactionsWhere": {
-        "type": "object",
-        "properties": {
-          "amc": {
-            "type": "string"
-          },
-          "amcFullName": {
-            "type": "string"
-          },
-          "amfiCode": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "number"
-          },
-          "amount_gte": {
-            "type": "number"
-          },
-          "amount_lte": {
-            "type": "number"
-          },
-          "isin": {
-            "type": "string"
-          },
-          "isinDescription": {
-            "type": "string"
-          },
-          "lockInDays": {
-            "type": "string"
-          },
-          "lockInFlag": {
-            "type": "string"
-          },
-          "mutualFundName": {
-            "type": "string"
-          },
-          "narration": {
-            "type": "string"
-          },
-          "nav": {
-            "type": "number"
-          },
-          "navDate": {
-            "type": "string"
-          },
-          "nav_gte": {
-            "type": "number"
-          },
-          "nav_lte": {
-            "type": "number"
-          },
-          "registrar": {
-            "type": "string"
-          },
-          "schemeCode": {
-            "type": "string"
-          },
-          "schemePlan": {
-            "type": "string"
-          },
-          "txnDate": {
-            "type": "string"
-          },
-          "txnDate_gte": {
-            "type": "string"
-          },
-          "txnDate_lte": {
-            "type": "string"
-          },
-          "txnId": {
-            "type": "string"
-          },
-          "txnMode": {
-            "type": "string"
-          },
-          "txnType": {
-            "type": "string"
-          },
-          "ucc": {
-            "type": "string"
-          },
-          "units": {
-            "type": "number"
-          },
-          "units_gte": {
-            "type": "number"
-          },
-          "units_lte": {
-            "type": "number"
-          }
-        }
-      },
-      "requests.PurgeDataRequest": {
-        "type": "object",
-        "properties": {
-          "identifiers": {
-            "$ref": "#/components/schemas/requests.Identifiers"
-          }
-        }
-      },
-      "responses.Error": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          }
-        }
-      },
-      "responses.FIDataResponseData": {
-        "type": "object",
-        "properties": {
-          "fipId": {
-            "type": "string"
-          },
-          "profileStatus": {
-            "type": "string"
-          },
-          "summaryStatus": {
-            "type": "string"
-          },
-          "transactions": {
-            "$ref": "#/components/schemas/responses.TransactionsResponseData"
-          }
-        }
-      },
-      "responses.IngestFIDataResponse": {
-        "type": "object",
+      "VaultSecretData": {
         "properties": {
           "data": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/responses.FIDataResponseData"
-            }
+            "$ref": "#/components/schemas/FIUConfig"
           }
-        }
-      },
-      "responses.ListAccountsResponse": {
+        },
         "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/responses.ListAccountsResponseData"
-            }
-          },
-          "totalCount": {
-            "type": "integer"
-          }
-        }
+        "required": [
+          "data"
+        ],
+        "title": "VaultSecretData"
       },
-      "responses.ListAccountsResponseData": {
-        "type": "object",
+      "amon_amarth__schema__rebit__deposit__Account": {
         "properties": {
-          "consentId": {
-            "type": "string"
-          },
-          "dataId": {
-            "type": "string"
-          },
-          "fiType": {
-            "type": "string"
-          },
-          "fipId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "linkedAccRef": {
-            "type": "string"
-          },
-          "maskedAccNumber": {
-            "type": "string"
-          },
           "profile": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "refId": {
-            "type": "string"
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__Profile"
           },
           "summary": {
-            "type": "object",
-            "additionalProperties": true
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__Summary"
           },
-          "txnsEndDate": {
-            "type": "string"
+          "transactions": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__Transactions"
           },
-          "txnsStartDate": {
-            "type": "string"
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "deposit"
+          },
+          "maskedAccNumber": {
+            "type": "string",
+            "title": "Maskedaccnumber"
+          },
+          "masked_account_number": {
+            "type": "string",
+            "title": "Masked Account Number"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "linkedAccRef": {
+            "type": "string",
+            "title": "Linkedaccref"
+          },
+          "fipId": {
+            "type": "string",
+            "title": "Fipid"
           }
-        }
-      },
-      "responses.ListDepositTransactionsData": {
+        },
         "type": "object",
+        "required": [
+          "maskedAccNumber"
+        ],
+        "title": "Account"
+      },
+      "amon_amarth__schema__rebit__deposit__Holder": {
         "properties": {
-          "amount": {
-            "type": "number"
+          "name": {
+            "type": "string",
+            "title": "Name"
           },
-          "categoryL1": {
-            "type": "string"
+          "dob": {
+            "type": "string",
+            "format": "date",
+            "title": "Dob"
           },
-          "categoryL2": {
-            "type": "string"
+          "mobile": {
+            "type": "string",
+            "title": "Mobile"
           },
-          "categoryManual": {
-            "type": "string"
+          "nominee": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__HoldingNominee"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Nominee"
           },
-          "consentId": {
-            "type": "string"
+          "landline": {
+            "type": "string",
+            "title": "Landline"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "pan": {
+            "type": "string",
+            "title": "Pan"
+          },
+          "ckycCompliance": {
+            "type": "boolean",
+            "title": "Ckyccompliance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "ckycCompliance"
+        ],
+        "title": "Holder"
+      },
+      "amon_amarth__schema__rebit__deposit__Holders": {
+        "properties": {
+          "holder": {
+            "items": {
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__Holder"
+            },
+            "type": "array",
+            "title": "Holder"
+          },
+          "type": {
+            "$ref": "#/components/schemas/HoldersType"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holder"
+        ],
+        "title": "Holders"
+      },
+      "amon_amarth__schema__rebit__deposit__HoldingNominee": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "NOT-REGISTERED"
+        ],
+        "title": "HoldingNominee",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__deposit__Profile": {
+        "properties": {
+          "holders": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__Holders"
+          }
+        },
+        "type": "object",
+        "title": "Profile"
+      },
+      "amon_amarth__schema__rebit__deposit__Summary": {
+        "properties": {
+          "pending": {
+            "$ref": "#/components/schemas/Pending"
           },
           "currentBalance": {
-            "type": "number"
+            "type": "string",
+            "title": "Currentbalance"
           },
-          "dataId": {
-            "type": "string"
+          "currency": {
+            "type": "string",
+            "title": "Currency"
           },
-          "fipId": {
-            "type": "string"
+          "exchgeRate": {
+            "type": "string",
+            "title": "Exchgerate"
           },
-          "id": {
-            "type": "string"
+          "balanceDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Balancedatetime"
           },
-          "linkedAccRef": {
-            "type": "string"
+          "type": {
+            "$ref": "#/components/schemas/AccountType"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "facility": {
+            "$ref": "#/components/schemas/SummaryFacility"
+          },
+          "ifscCode": {
+            "type": "string",
+            "title": "Ifsccode"
+          },
+          "micrCode": {
+            "type": "string",
+            "title": "Micrcode"
+          },
+          "openingDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ],
+            "title": "Openingdate"
+          },
+          "currentODLimit": {
+            "type": "string",
+            "title": "Currentodlimit"
+          },
+          "drawingLimit": {
+            "type": "string",
+            "title": "Drawinglimit"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusTypes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "currentBalance"
+        ],
+        "title": "Summary"
+      },
+      "amon_amarth__schema__rebit__deposit__Transaction": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__TransactionType"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/TransactionMode"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "currentBalance": {
+            "type": "string",
+            "title": "Currentbalance"
+          },
+          "transactionTimestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Transactiontimestamp"
+          },
+          "valueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ],
+            "title": "Valuedate"
+          },
+          "txnId": {
+            "type": "string",
+            "title": "Txnid"
           },
           "narration": {
-            "type": "string"
-          },
-          "refId": {
-            "type": "string"
+            "type": "string",
+            "title": "Narration"
           },
           "reference": {
-            "type": "string"
-          },
-          "txnId": {
-            "type": "string"
-          },
-          "txnMode": {
-            "type": "string"
-          },
-          "txnTimestamp": {
-            "type": "string"
-          },
-          "txnType": {
-            "type": "string"
-          },
-          "txnValueDate": {
-            "type": "string"
+            "type": "string",
+            "title": "Reference"
           }
-        }
-      },
-      "responses.ListDepositTransactionsResponse": {
+        },
         "type": "object",
+        "required": [
+          "type",
+          "mode",
+          "amount",
+          "currentBalance",
+          "transactionTimestamp",
+          "txnId"
+        ],
+        "title": "Transaction"
+      },
+      "amon_amarth__schema__rebit__deposit__TransactionType": {
+        "type": "string",
+        "enum": [
+          "CREDIT",
+          "DEBIT",
+          "REVERSAL"
+        ],
+        "title": "TransactionType",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__deposit__Transactions": {
         "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/responses.ListDepositTransactionsData"
-            }
+          "transaction": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TransactionWithTSDetails"
+                },
+                "type": "array"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/amon_amarth__schema__rebit__deposit__Transaction"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Transaction"
           },
-          "totalCount": {
-            "type": "integer"
+          "startDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ],
+            "title": "Startdate"
+          },
+          "endDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ],
+            "title": "Enddate"
           }
-        }
-      },
-      "responses.ListETFTransactionsData": {
+        },
         "type": "object",
+        "title": "Transactions"
+      },
+      "amon_amarth__schema__rebit__equities__Account": {
         "properties": {
-          "amount": {
-            "type": "number"
+          "profile": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Profile"
           },
-          "brokerCode": {
-            "type": "string"
+          "summary": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Summary"
           },
-          "consentId": {
-            "type": "string"
-          },
-          "dataId": {
-            "type": "string"
-          },
-          "dematId": {
-            "type": "string"
-          },
-          "fipId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "isin": {
-            "type": "string"
-          },
-          "isinDescription": {
-            "type": "string"
+          "transactions": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Transactions"
           },
           "linkedAccRef": {
-            "type": "string"
+            "type": "string",
+            "title": "Linkedaccref"
           },
-          "narration": {
-            "type": "string"
+          "maskedDematId": {
+            "type": "string",
+            "title": "Maskeddematid"
           },
-          "nav": {
-            "type": "number"
+          "version": {
+            "type": "string",
+            "title": "Version"
           },
-          "refId": {
-            "type": "string"
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "equities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "linkedAccRef",
+          "version"
+        ],
+        "title": "Account"
+      },
+      "amon_amarth__schema__rebit__equities__Holder": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
           },
-          "transactionDateTime": {
-            "type": "string"
+          "dob": {
+            "type": "string",
+            "format": "date",
+            "title": "Dob"
           },
-          "txnId": {
-            "type": "string"
+          "mobile": {
+            "type": "integer",
+            "title": "Mobile"
           },
-          "txnType": {
-            "type": "string"
+          "nominee": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__HoldingNominee"
+          },
+          "dematId": {
+            "type": "string",
+            "title": "Dematid"
+          },
+          "landline": {
+            "type": "string",
+            "title": "Landline"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "pan": {
+            "type": "string",
+            "title": "Pan"
+          },
+          "kycCompliance": {
+            "type": "boolean",
+            "title": "Kyccompliance"
+          },
+          "brokerName": {
+            "type": "string",
+            "title": "Brokername"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "mobile",
+          "dematId"
+        ],
+        "title": "Holder"
+      },
+      "amon_amarth__schema__rebit__equities__Holders": {
+        "properties": {
+          "holder": {
+            "items": {
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Holder"
+            },
+            "type": "array",
+            "title": "Holder"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holder"
+        ],
+        "title": "Holders"
+      },
+      "amon_amarth__schema__rebit__equities__Holding": {
+        "properties": {
+          "issuerName": {
+            "type": "string",
+            "title": "Issuername"
+          },
+          "isin": {
+            "type": "string",
+            "title": "Isin"
+          },
+          "isinDescription": {
+            "type": "string",
+            "title": "Isindescription"
           },
           "units": {
-            "type": "number"
+            "type": "integer",
+            "title": "Units"
+          },
+          "lastTradedPrice": {
+            "type": "string",
+            "title": "Lasttradedprice"
           }
-        }
-      },
-      "responses.ListETFTransactionsResponse": {
+        },
         "type": "object",
+        "required": [
+          "isin",
+          "units"
+        ],
+        "title": "Holding"
+      },
+      "amon_amarth__schema__rebit__equities__HoldingMode": {
+        "type": "string",
+        "enum": [
+          "DEMAT",
+          "PHYSICAL"
+        ],
+        "title": "HoldingMode",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__equities__HoldingNominee": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "NOT-REGISTERED"
+        ],
+        "title": "HoldingNominee",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__equities__Holdings": {
         "properties": {
-          "data": {
-            "type": "array",
+          "holding": {
             "items": {
-              "$ref": "#/components/schemas/responses.ListETFTransactionsData"
-            }
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Holding"
+            },
+            "type": "array",
+            "title": "Holding"
           },
-          "totalCount": {
-            "type": "integer"
+          "type": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__HoldingMode"
           }
-        }
-      },
-      "responses.ListEquitiesTransactionsData": {
+        },
         "type": "object",
+        "required": [
+          "holding"
+        ],
+        "title": "Holdings"
+      },
+      "amon_amarth__schema__rebit__equities__Investment": {
         "properties": {
-          "companyName": {
-            "type": "string"
+          "holdings": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Holdings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holdings"
+        ],
+        "title": "Investment"
+      },
+      "amon_amarth__schema__rebit__equities__Profile": {
+        "properties": {
+          "holders": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Holders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holders"
+        ],
+        "title": "Profile"
+      },
+      "amon_amarth__schema__rebit__equities__Summary": {
+        "properties": {
+          "investment": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Investment"
           },
-          "consentId": {
-            "type": "string"
-          },
-          "dataId": {
-            "type": "string"
-          },
-          "dematId": {
-            "type": "string"
-          },
-          "equityCategory": {
-            "type": "string"
-          },
-          "exchange": {
-            "type": "string"
-          },
-          "exchangeRate": {
-            "type": "number"
-          },
-          "fipId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "isin": {
-            "type": "string"
-          },
-          "isinDescription": {
-            "type": "string"
-          },
-          "linkedAccRef": {
-            "type": "string"
-          },
-          "narration": {
-            "type": "string"
+          "currentValue": {
+            "type": "string",
+            "title": "Currentvalue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "investment"
+        ],
+        "title": "Summary"
+      },
+      "amon_amarth__schema__rebit__equities__Transaction": {
+        "properties": {
+          "txnId": {
+            "type": "string",
+            "title": "Txnid"
           },
           "orderId": {
-            "type": "string"
+            "type": "string",
+            "title": "Orderid"
           },
-          "refId": {
-            "type": "string"
+          "companyName": {
+            "type": "string",
+            "title": "Companyname"
           },
-          "txnDateTime": {
-            "type": "string"
+          "transactionDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Transactiondatetime"
           },
-          "txnId": {
-            "type": "string"
-          },
-          "txnType": {
-            "type": "string"
-          },
-          "units": {
-            "type": "number"
-          }
-        }
-      },
-      "responses.ListEquitiesTransactionsResponse": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/responses.ListEquitiesTransactionsData"
-            }
-          },
-          "totalCount": {
-            "type": "integer"
-          }
-        }
-      },
-      "responses.ListMutualFundsTransactionsData": {
-        "type": "object",
-        "properties": {
-          "amc": {
-            "type": "string"
-          },
-          "amcFullName": {
-            "type": "string"
-          },
-          "amfiCode": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "number"
-          },
-          "consentId": {
-            "type": "string"
-          },
-          "dataId": {
-            "type": "string"
-          },
-          "fipId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
+          "exchange": {
+            "$ref": "#/components/schemas/TransactionSymbol"
           },
           "isin": {
-            "type": "string"
+            "type": "string",
+            "title": "Isin"
           },
           "isinDescription": {
-            "type": "string"
+            "type": "string",
+            "title": "Isindescription"
           },
-          "linkedAccRef": {
-            "type": "string"
-          },
-          "lockInDays": {
-            "type": "string"
-          },
-          "lockInFlag": {
-            "type": "string"
-          },
-          "mutualFundName": {
-            "type": "string"
+          "equityCategory": {
+            "$ref": "#/components/schemas/EquityCategory"
           },
           "narration": {
-            "type": "string"
+            "type": "string",
+            "title": "Narration"
           },
-          "nav": {
-            "type": "number"
+          "rate": {
+            "type": "string",
+            "title": "Rate"
           },
-          "navDate": {
-            "type": "string"
-          },
-          "refId": {
-            "type": "string"
-          },
-          "registrar": {
-            "type": "string"
-          },
-          "schemeCode": {
-            "type": "string"
-          },
-          "schemePlan": {
-            "type": "string"
-          },
-          "txnDate": {
-            "type": "string"
-          },
-          "txnId": {
-            "type": "string"
-          },
-          "txnMode": {
-            "type": "string"
-          },
-          "txnType": {
-            "type": "string"
-          },
-          "ucc": {
-            "type": "string"
+          "type": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__TransactionType"
           },
           "units": {
-            "type": "number"
+            "type": "integer",
+            "title": "Units"
           }
-        }
-      },
-      "responses.ListMutualFundsTransactionsResponse": {
+        },
         "type": "object",
+        "required": [
+          "txnId",
+          "companyName",
+          "transactionDateTime",
+          "isin",
+          "equityCategory",
+          "type",
+          "units"
+        ],
+        "title": "Transaction"
+      },
+      "amon_amarth__schema__rebit__equities__TransactionType": {
+        "type": "string",
+        "enum": [
+          "BUY",
+          "SELL",
+          "BONUS",
+          "SPLIT",
+          "DIVIDEND",
+          "RIGHTS",
+          "OTHERS"
+        ],
+        "title": "TransactionType",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__equities__Transactions": {
         "properties": {
-          "data": {
-            "type": "array",
+          "transaction": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/amon_amarth__schema__rebit__equities__Transaction"
+                },
+                "type": "array"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TransactionTS"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Transaction"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Enddate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "startDate",
+          "endDate"
+        ],
+        "title": "Transactions"
+      },
+      "amon_amarth__schema__rebit__etf__Account": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Profile"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Summary"
+          },
+          "transactions": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Transactions"
+          },
+          "linkedAccRef": {
+            "type": "string",
+            "title": "Linkedaccref"
+          },
+          "maskedDematId": {
+            "type": "string",
+            "title": "Maskeddematid"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "etf"
+          }
+        },
+        "type": "object",
+        "required": [
+          "linkedAccRef",
+          "maskedDematId",
+          "version"
+        ],
+        "title": "Account"
+      },
+      "amon_amarth__schema__rebit__etf__Holder": {
+        "properties": {
+          "dematId": {
+            "type": "string",
+            "title": "Dematid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "pan": {
+            "type": "string",
+            "title": "Pan"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date",
+            "title": "Dob"
+          },
+          "landline": {
+            "type": "string",
+            "title": "Landline"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "nominee": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__HoldingNominee"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "mobile": {
+            "type": "string",
+            "title": "Mobile"
+          },
+          "kycCompliance": {
+            "type": "boolean",
+            "title": "Kyccompliance"
+          },
+          "brokerName": {
+            "type": "string",
+            "title": "Brokername"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dematId",
+          "name",
+          "pan",
+          "address",
+          "mobile"
+        ],
+        "title": "Holder"
+      },
+      "amon_amarth__schema__rebit__etf__Holders": {
+        "properties": {
+          "holder": {
             "items": {
-              "$ref": "#/components/schemas/responses.ListMutualFundsTransactionsData"
-            }
-          },
-          "totalCount": {
-            "type": "integer"
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Holder"
+            },
+            "type": "array",
+            "title": "Holder"
           }
-        }
-      },
-      "responses.PurgeDataResponse": {
+        },
         "type": "object",
-        "properties": {
-          "purgedCounts": {
-            "$ref": "#/components/schemas/responses.PurgeDataResponseCounts"
-          }
-        }
+        "required": [
+          "holder"
+        ],
+        "title": "Holders"
       },
-      "responses.PurgeDataResponseCounts": {
-        "type": "object",
+      "amon_amarth__schema__rebit__etf__Holding": {
         "properties": {
-          "accounts": {
-            "type": "integer"
+          "folioNo": {
+            "type": "string",
+            "title": "Foliono"
           },
-          "depositTransactions": {
-            "type": "integer"
+          "units": {
+            "type": "integer",
+            "title": "Units"
           },
-          "equitiesTransactions": {
-            "type": "integer"
+          "isin": {
+            "type": "string",
+            "title": "Isin"
           },
-          "etfTransactions": {
-            "type": "integer"
+          "isinDescription": {
+            "type": "string",
+            "title": "Isindescription"
           },
-          "mutualFundsTransactions": {
-            "type": "integer"
+          "nav": {
+            "type": "string",
+            "title": "Nav"
+          },
+          "lastNavDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Lastnavdate"
           }
-        }
+        },
+        "type": "object",
+        "required": [
+          "units",
+          "isin",
+          "isinDescription"
+        ],
+        "title": "Holding"
       },
-      "responses.TransactionsResponseData": {
-        "type": "object",
+      "amon_amarth__schema__rebit__etf__HoldingNominee": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "NOT-REGISTERED"
+        ],
+        "title": "HoldingNominee",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__etf__Holdings": {
         "properties": {
-          "insertedCount": {
-            "type": "integer"
-          },
-          "totalCount": {
-            "type": "integer"
-          },
-          "updatedCount": {
-            "type": "integer"
+          "holding": {
+            "items": {
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Holding"
+            },
+            "type": "array",
+            "title": "Holding"
           }
-        }
+        },
+        "type": "object",
+        "required": [
+          "holding"
+        ],
+        "title": "Holdings"
+      },
+      "amon_amarth__schema__rebit__etf__Investment": {
+        "properties": {
+          "holdings": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Holdings"
+          }
+        },
+        "type": "object",
+        "title": "Investment"
+      },
+      "amon_amarth__schema__rebit__etf__Profile": {
+        "properties": {
+          "holders": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Holders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holders"
+        ],
+        "title": "Profile"
+      },
+      "amon_amarth__schema__rebit__etf__Summary": {
+        "properties": {
+          "investment": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Investment"
+          },
+          "currentValue": {
+            "type": "number",
+            "title": "Currentvalue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "investment",
+          "currentValue"
+        ],
+        "title": "Summary"
+      },
+      "amon_amarth__schema__rebit__etf__Transaction": {
+        "properties": {
+          "txnId": {
+            "type": "string",
+            "title": "Txnid"
+          },
+          "isin": {
+            "type": "string",
+            "title": "Isin"
+          },
+          "isinDescription": {
+            "type": "string",
+            "title": "Isindescription"
+          },
+          "transactionDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Transactiondatetime"
+          },
+          "units": {
+            "type": "number",
+            "title": "Units"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "nav": {
+            "type": "number",
+            "title": "Nav"
+          },
+          "type": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__TransactionType"
+          },
+          "narration": {
+            "type": "string",
+            "title": "Narration"
+          },
+          "brokerCode": {
+            "type": "string",
+            "title": "Brokercode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "txnId",
+          "isin",
+          "isinDescription",
+          "transactionDateTime",
+          "units",
+          "type"
+        ],
+        "title": "Transaction"
+      },
+      "amon_amarth__schema__rebit__etf__TransactionType": {
+        "type": "string",
+        "enum": [
+          "BUY",
+          "SELL",
+          "BOUNS",
+          "SPLIT",
+          "OTHERS"
+        ],
+        "title": "TransactionType",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__etf__Transactions": {
+        "properties": {
+          "transaction": {
+            "items": {
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__etf__Transaction"
+            },
+            "type": "array",
+            "title": "Transaction"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Enddate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction",
+          "startDate",
+          "endDate"
+        ],
+        "title": "Transactions"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Account": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Profile"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Summary"
+          },
+          "transactions": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Transactions"
+          },
+          "linkedAccRef": {
+            "type": "string",
+            "title": "Linkedaccref"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "default": "1.0.0"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "mutualfunds"
+          },
+          "maskedDematID": {
+            "type": "string",
+            "title": "Maskeddematid",
+            "description": "Demat ID assigned or issued to investor"
+          },
+          "maskedFolioNo": {
+            "type": "string",
+            "title": "Maskedfoliono",
+            "description": "Folio Number of Investor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "linkedAccRef"
+        ],
+        "title": "Account"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Holder": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of primary holder operating the account"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date",
+            "title": "Dob",
+            "description": "Date of birth of primary account holder"
+          },
+          "mobile": {
+            "type": "string",
+            "title": "Mobile",
+            "description": "Primary mobile number of account holder"
+          },
+          "nominee": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__HoldingNominee"
+              }
+            ],
+            "description": "This field will indicate whether a nominee is registered"
+          },
+          "dematId": {
+            "type": "string",
+            "title": "Dematid",
+            "description": "Demat ID assigned or issued to investor"
+          },
+          "folioNo": {
+            "type": "string",
+            "title": "Foliono",
+            "description": "Folio Number of Investor"
+          },
+          "landline": {
+            "type": "string",
+            "title": "Landline",
+            "description": "Landline number of primary account holder"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address",
+            "description": "Address of primary account holder"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Email ID of primary account holder"
+          },
+          "pan": {
+            "type": "string",
+            "title": "Pan",
+            "description": "PAN number of primary account holder"
+          },
+          "kycCompliance": {
+            "type": "string",
+            "title": "Kyccompliance",
+            "description": "KYC status whether its completed or pending"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "address",
+          "pan"
+        ],
+        "title": "Holder"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Holders": {
+        "properties": {
+          "holder": {
+            "items": {
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Holder"
+            },
+            "type": "array",
+            "title": "Holder"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holder"
+        ],
+        "title": "Holders"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Holding": {
+        "properties": {
+          "amc": {
+            "type": "string",
+            "title": "Amc",
+            "description": "Name of asset management company associated with investment"
+          },
+          "registrar": {
+            "type": "string",
+            "title": "Registrar",
+            "description": "Trust or institution registering and maintaining the detailed records"
+          },
+          "schemeCode": {
+            "type": "string",
+            "title": "Schemecode",
+            "description": "Code of scheme chosen by person for the investment"
+          },
+          "schemeOption": {
+            "$ref": "#/components/schemas/SchemeOption"
+          },
+          "schemeTypes": {
+            "$ref": "#/components/schemas/SchemeTypes"
+          },
+          "schemeCategory": {
+            "type": "string",
+            "title": "Schemecategory"
+          },
+          "isin": {
+            "type": "string",
+            "title": "Isin",
+            "description": "International Securities Identification Number"
+          },
+          "isinDescription": {
+            "type": "string",
+            "title": "Isindescription",
+            "description": "Long Name of ISIN"
+          },
+          "ucc": {
+            "type": "string",
+            "title": "Ucc",
+            "description": "Unique Client Code generated by Stock Exchanges"
+          },
+          "amfiCode": {
+            "type": "string",
+            "title": "Amficode",
+            "description": "AMFI code associated with investment"
+          },
+          "folioNo": {
+            "type": "string",
+            "title": "Foliono",
+            "description": "Unique folio number associated with investment"
+          },
+          "FatcaStatus": {
+            "type": "string",
+            "title": "Fatcastatus",
+            "description": "FATCA compliance status"
+          },
+          "closingUnits": {
+            "type": "string",
+            "title": "Closingunits",
+            "description": "Units allotted in folio till date"
+          },
+          "lienUnits": {
+            "type": "string",
+            "title": "Lienunits",
+            "description": "The number of units which have been marked as Lien"
+          },
+          "nav": {
+            "type": "number",
+            "title": "Nav",
+            "description": "NAV is current market rate of security held as on date"
+          },
+          "navDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Navdate",
+            "description": "Last Available NAV date for the scheme of investment"
+          },
+          "lockinUnits": {
+            "type": "string",
+            "title": "Lockinunits",
+            "description": "Units which are locked and not available for sale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amc",
+          "registrar",
+          "closingUnits",
+          "lienUnits",
+          "nav",
+          "navDate",
+          "lockinUnits"
+        ],
+        "title": "Holding"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__HoldingMode": {
+        "type": "string",
+        "enum": [
+          "DEMAT",
+          "PHYSICAL"
+        ],
+        "title": "HoldingMode",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__mutual_funds__HoldingNominee": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "NOT-REGISTERED"
+        ],
+        "title": "HoldingNominee",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Holdings": {
+        "properties": {
+          "holding": {
+            "items": {
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Holding"
+            },
+            "type": "array",
+            "title": "Holding"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holding"
+        ],
+        "title": "Holdings"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Investment": {
+        "properties": {
+          "holdings": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Holdings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holdings"
+        ],
+        "title": "Investment"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Profile": {
+        "properties": {
+          "holders": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Holders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holders"
+        ],
+        "title": "Profile"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Summary": {
+        "properties": {
+          "investment": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Investment"
+          },
+          "costValue": {
+            "type": "string",
+            "title": "Costvalue",
+            "description": "Principal or Actual amount of investment"
+          },
+          "currentValue": {
+            "type": "string",
+            "title": "Currentvalue",
+            "description": "Current value of investment as on date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "investment"
+        ],
+        "title": "Summary"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Transaction": {
+        "properties": {
+          "txnId": {
+            "type": "string",
+            "title": "Txnid",
+            "description": "Transaction ID recorded or captured for investment made"
+          },
+          "amc": {
+            "type": "string",
+            "title": "Amc",
+            "description": "Asset Management company which is operating the fund"
+          },
+          "registrar": {
+            "type": "string",
+            "title": "Registrar"
+          },
+          "schemeCode": {
+            "type": "string",
+            "title": "Schemecode"
+          },
+          "schemePlan": {
+            "$ref": "#/components/schemas/SchemePlan"
+          },
+          "isin": {
+            "type": "string",
+            "title": "Isin"
+          },
+          "amfiCode": {
+            "type": "string",
+            "title": "Amficode"
+          },
+          "ucc": {
+            "type": "string",
+            "title": "Ucc"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "nav": {
+            "type": "number",
+            "title": "Nav"
+          },
+          "navDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Navdate"
+          },
+          "type": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__TransactionType"
+          },
+          "lockInFlag": {
+            "type": "string",
+            "title": "Lockinflag"
+          },
+          "lockInDays": {
+            "type": "string",
+            "title": "Lockindays"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__HoldingMode"
+          },
+          "narration": {
+            "type": "string",
+            "title": "Narration"
+          },
+          "isinDescription": {
+            "type": "string",
+            "title": "Isindescription"
+          },
+          "units": {
+            "type": "string",
+            "title": "Units"
+          },
+          "transactionDate": {
+            "type": "string",
+            "title": "Transactiondate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "txnId",
+          "amc",
+          "registrar",
+          "nav",
+          "navDate",
+          "type",
+          "lockInDays",
+          "mode"
+        ],
+        "title": "Transaction"
+      },
+      "amon_amarth__schema__rebit__mutual_funds__TransactionType": {
+        "type": "string",
+        "enum": [
+          "BUY",
+          "SELL",
+          "OTHERS"
+        ],
+        "title": "TransactionType",
+        "description": "An enumeration."
+      },
+      "amon_amarth__schema__rebit__mutual_funds__Transactions": {
+        "properties": {
+          "transaction": {
+            "items": {
+              "$ref": "#/components/schemas/amon_amarth__schema__rebit__mutual_funds__Transaction"
+            },
+            "type": "array",
+            "title": "Transaction"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate",
+            "description": "The date from which the Financial Information was requested"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Enddate",
+            "description": "The date till which the Financial Information was requested"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction",
+          "startDate",
+          "endDate"
+        ],
+        "title": "Transactions"
       }
     }
   }

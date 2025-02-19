@@ -1,0 +1,388 @@
+---
+sidebar_title: API integration
+page_title: Setu Insights Postman integration
+order: 1
+visible_in_sidebar: true
+---
+
+## API integration
+
+Here are the URLs you would need for calling Setu Insights APIs—
+
+- Sandbox—https://di-uat.setu.co
+- Production—https://insights.setu.co
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains—
+  - `x-client-id`
+  - `x-client-secret`
+  - `x-product-instance-id`
+
+<hr class="primary" />
+
+### Data ingestion APIs
+
+#### Create FI Data block API
+
+Call this API to create an FI data block for the user data you would like to feed into Setu Insights.
+
+###### Request
+
+Send the financial data as payload in the body. The payload should be same as the data provided by the FIP. The payload is validated against the <a href="https://api.rebit.org.in/schema" target="_blank">ReBIT schema</a>.
+
+<CodeBlockWithCopy language="json">
+  {`POST /v1/fiData 
+{
+  account: {
+    profile: {
+      holders: {
+        holder: [
+          {
+            name: 'string',
+            dob: '2019-08-24',
+            mobile: 0,
+            nominee: 'REGISTERED',
+            landline: 'string',
+            address: 'string',
+            email: 'string',
+            pan: 'string',
+            ckycCompliance: true
+          }
+        ],
+        type: 'SINGLE'
+      }
+    },
+    summary: {
+      pending: {transactionType: 'CREDIT', amount: 0},
+      currentBalance: 'string',
+      currency: 'string',
+      exchgeRate: 'string',
+      balanceDateTime: '2019-08-24T14:15:22Z',
+      type: 'SAVINGS',
+      branch: 'string',
+      facility: 'OD',
+      ifscCode: 'string',
+      micrCode: 'string',
+      openingDate: '2019-08-24',
+      currentODLimit: 'string',
+      drawingLimit: 'string',
+      status: 'ACTIVE'
+    },
+    transactions: {
+      transaction: [
+        {
+          type: 'CREDIT',
+          mode: 'CASH',
+          amount: 0,
+          currentBalance: 'string',
+          transactionTimestamp: '2019-08-24T14:15:22Z',
+          valueDate: '2019-08-24',
+          txnId: 'string',
+          narration: 'string',
+          reference: 'string'
+        }
+      ],
+      startDate: '2019-08-24',
+      endDate: '2019-08-24'
+    },
+    type: 'deposit',
+    maskedAccNumber: 'string',
+    version: 0,
+    linkedAccRef: 'string'
+  }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Response
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Success",
+      content: (
+        <>
+          <p>
+            A <code>dataId</code> is assigned for this FI data block for usage
+            in other APIs.
+          </p>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "status": "Success",
+  "statusDescription": "statusDescription",
+  "body": {
+    "dataId": "4e0ba220-9575-11eb-a8b3-0242ac130003",
+    "fiSchema": "deposit",
+    "expiryDate": "2023-05-16T09:23:39.115Z"
+  }
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "tab2",
+      label: "Error",
+      content: (
+        <CodeBlockWithCopy language="json">
+          {`{
+  "errorCode": "errorCode",
+  "errorMsg": "errorMsg",
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "ver": "1",
+  "txnid": "txnid"
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+<hr class="tertiary" />
+
+#### Get FI data blocks API
+
+Call this API to get a list of all FI data blocks created by you.
+
+###### Request
+
+<CodeBlockWithCopy language="json">{`GET /v1/fiData`}</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Response
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Success",
+      content: (
+        <>
+          <p>An array of FI data blocks created by you is returned.</p>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "status": "Success",
+  "statusDescription": "statusDescription",
+  "body": [
+    {
+      "dataId": "4e0ba220-9575-11eb-a8b3-0242ac130003",
+      "fiSchema": "deposit",
+      "expiryDate": "2023-05-16T10:16:53.334Z"
+    }
+  ]
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "tab2",
+      label: "Error",
+      content: (
+        <CodeBlockWithCopy language="json">
+          {`{
+  "errorCode": "errorCode",
+  "errorMsg": "errorMsg",
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "ver": "1",
+  "txnid": "txnid"
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+<hr class="primary" />
+
+### Insight generation APIs
+
+#### Create Insight report
+
+Call this API to generate an Insights report based on the FI data block created earlier. Each FI data block is identified by it's `dataId`.  Pass the `templateId` obtained from template creation step, which will determine the ouput insights parameters that will be present in the report.
+
+###### Request
+
+Send the list of FI data block IDs and the template ID as the payload.
+
+<Callout type="warning">Currently, only one <code>dataId</code> is supported in the request body.</Callout>
+<br />
+
+
+<CodeBlockWithCopy language="json">
+{`POST /v1/insight
+{
+  "templateId": "4777db7e-e604-4c0c-a410-51be9d17d00b",
+  "dataIds": [
+    "cfbd63ef-ea1a-44b2-a9e8-9f834214f5c6"
+  ]
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Response
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Success",
+      content: (
+        <>
+          <p>
+            A <code>reportId</code> is returned along with the status of the Insights generation job. A notification will be posted after successful generation of insights. See <a href="/data/insights/notifications" target="_blank">notifications</a>.<br /><br />  The <code>reportId</code> also can be used fetch the Insights report using <b>Get Insight report</b> API, if the report status is <code>Success</code>.
+          </p>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "status": "Success",
+  "body": {
+    "reportId": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d",
+    "status": "in-progress"
+  }
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "tab2",
+      label: "Error",
+      content: (
+        <CodeBlockWithCopy language="json">
+          {`{
+  "errorCode": "errorCode",
+  "errorMsg": "errorMsg",
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "ver": "1",
+  "txnid": "txnid"
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+<hr class="tertiary" />
+
+#### Get Insight report
+
+Call this API to fetch the Insights report. Pass the `reportId` as a URL parameter, which was returned in the response body of **Create Insight report** API.
+
+###### Request
+
+<CodeBlockWithCopy language="json">
+{`GET /v1/insight?reportId=4b108e83-07b6-47a4-84cd-a77d0e9e2b3d`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Response
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Success",
+      content: (
+        <>
+          <p>A dictionary, where insight names are keys and insights are values, is returned</p>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "status": "Success",
+  "body": {
+    "name": "Redacted Services",
+    "dob": "2006-06-27",
+    "email": "redacted@gmail.com",
+    "pan": "redacted",
+    "ckyc_compliance": false,
+    "mobile": 9999912345,
+    "bank_branch": "NARKATIAGANJ BH",
+    "bank_account_number": "XXXXXXXXXXX1234",
+    "bank_account_type": "CURRENT",
+    "opening_date": "2019-02-26",
+    "closing_balance": 27929.84,
+    "end_of_month_balances": {
+      "2021": {
+        "9": 245676.89,
+        "10": 48650.54,
+        "11": 145487.41,
+        "12": 97725.67
+      },
+      "2022": {
+        "1": 9152.09,
+        "2": 5957.19,
+        "3": 545.59,
+        "4": 1282299.18,
+        "5": 134376.04,
+        "6": 84468.46,
+        "7": 135585.11,
+        "8": 3346.11,
+        "9": 268766.7,
+        "10": 50049.84,
+        "11": 27929.84
+      }
+    },
+    "balances_on_10th": {
+      "2021": {
+        "12": 55387.41
+      },
+      "2022": {
+        "1": 2426.67,
+        "2": 9629.59,
+        "3": 97487.45,
+        "4": 1641.09,
+        "5": 52517.54,
+        "6": 72084.28,
+        "7": 165864.04,
+        "8": 63465.11,
+        "9": 11226.11,
+        "10": 418535.81,
+        "11": 27929.84
+      }
+    },
+    "average_end_of_day_balance": 297715.03,
+    "maximum_end_of_day_balance": 1818766.7,
+    "total_credits": 153,
+    "total_credits_value": 44810341.06,
+    "total_debits": 473,
+    "total_debits_value": 45178088.11,
+    "quarterly_salary_average": {
+      "2021": {
+        "4": 15072
+      }
+    },
+    "cash_deposit_x_total_credit": {
+      "2021": {
+        "12": 0.0095
+      },
+      "2022": {
+        "3": 0.0018
+      }
+    }
+  }
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "tab2",
+      label: "Error",
+      content: (
+        <CodeBlockWithCopy language="json">
+          {`{
+  "errorCode": "errorCode",
+  "errorMsg": "errorMsg",
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "ver": "1",
+  "txnid": "txnid"
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+<WasPageHelpful />

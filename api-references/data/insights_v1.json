@@ -1,0 +1,2602 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+      "title": "Setu Insights",
+      "description": "Setu’s Insights API gives you actionable insights from a customer's bank statement about their income, expenditure and financial history.",
+      "version": "0.1.0"
+    },
+    "servers": [
+      {
+        "url": "https://di-uat.setu.co/",
+        "description": "Sandbox"
+      },
+      {
+        "url": "https://insights.setu.co/",
+        "description": "Production"
+      }
+    ],
+    "paths": {
+      "/v1/fiData": {
+        "post": {
+          "tags": ["Data ingestion"],
+          "summary": "Create FIData block (FIU Webhook)",
+          "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent in the future.",
+          "operationId": "create_fi_data_v1_fiData_post",
+          "parameters": [
+            {
+              "required": false,
+              "schema": {
+                "title": "Refid",
+                "type": "string"
+              },
+              "name": "refId",
+              "in": "query"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-id",
+                "type": "string"
+              },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-product-instance-id",
+                "type": "string"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "FI Data as defined by ReBIT schema",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/FIData"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "201": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/FIDataBlockCreateResponse"
+                  },
+                  "examples": {
+                    "FIDataBlockCreateResponse": {
+                      "summary": "FIDataBlockCreateResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": {
+                          "dataId": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
+                          "fiSchema": "deposit",
+                          "expiryDate": "2023-03-11T06:52:36.457745"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/insight": {
+        "get": {
+          "tags": ["Insight generation"],
+          "summary": "Get Insights",
+          "description": "Call this API with the report-id to get the created Insights",
+          "operationId": "get_insights_v1_insight_get",
+          "parameters": [
+            {
+              "required": true,
+              "schema": {
+                "title": "Report ID for which insights are needed",
+                "type": "string"
+              },
+              "name": "reportId",
+              "in": "query"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-id",
+                "type": "string"
+              },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-product-instance-id",
+                "type": "string"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "title": "Response 200 Get Insights V1 Insight Get",
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/ReportJobCreateResponse"
+                      },
+                      {
+                        "$ref": "#/components/schemas/InsightGetResponse"
+                      }
+                    ]
+                  },
+                  "examples": {
+                    "InsightGetResponse": {
+                      "summary": "InsightGetResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": {
+                          "name": "Redacted Services",
+                          "dob": "2006-06-27",
+                          "email": "redacted@gmail.com",
+                          "pan": "redacted",
+                          "ckyc_compliance": false,
+                          "mobile": 9999912345,
+                          "bank_branch": "NARKATIAGANJ BH",
+                          "bank_account_number": "XXXXXXXXXXX1234",
+                          "bank_account_type": "CURRENT",
+                          "opening_date": "2019-02-26",
+                          "closing_balance": 27929.84,
+                          "end_of_month_balances": {
+                            "2021": {
+                              "9": 245676.89,
+                              "10": 48650.54,
+                              "11": 145487.41,
+                              "12": 97725.67
+                            },
+                            "2022": {
+                              "1": 9152.09,
+                              "2": 5957.19,
+                              "3": 545.59,
+                              "4": 1282299.18,
+                              "5": 134376.04,
+                              "6": 84468.46,
+                              "7": 135585.11,
+                              "8": 3346.11,
+                              "9": 268766.7,
+                              "10": 50049.84,
+                              "11": 27929.84
+                            }
+                          },
+                          "balances_on_10th": {
+                            "2021": {
+                              "12": 55387.41
+                            },
+                            "2022": {
+                              "1": 2426.67,
+                              "2": 9629.59,
+                              "3": 97487.45,
+                              "4": 1641.09,
+                              "5": 52517.54,
+                              "6": 72084.28,
+                              "7": 165864.04,
+                              "8": 63465.11,
+                              "9": 11226.11,
+                              "10": 418535.81,
+                              "11": 27929.84
+                            }
+                          },
+                          "average_end_of_day_balance": 297715.03,
+                          "maximum_end_of_day_balance": 1818766.7,
+                          "total_credits": 153,
+                          "total_credits_value": 44810341.06,
+                          "total_debits": 473,
+                          "total_debits_value": 45178088.11,
+                          "quarterly_salary_average": {
+                            "2021": {
+                              "4": 15072
+                            }
+                          },
+                          "cash_deposit_x_total_credit": {
+                            "2021": {
+                              "12": 0.0095
+                            },
+                            "2022": {
+                              "3": 0.0018
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "tags": ["Insight generation"],
+          "summary": "Create Insights",
+          "description": "Call this API with the template-id received from Setu along with a list of data-ids, to trigger an Report generation job. The FI Datablocks can belong to multiple bank accounts.The created Report will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to fetch the generated Report.",
+          "operationId": "process_insights_v1_insight_post",
+          "parameters": [
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-id",
+                "type": "string"
+              },
+              "name": "x-client-id",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-client-secret",
+                "type": "string"
+              },
+              "name": "x-client-secret",
+              "in": "header"
+            },
+            {
+              "required": true,
+              "schema": {
+                "title": "x-product-instance-id",
+                "type": "string"
+              },
+              "name": "x-product-instance-id",
+              "in": "header"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Body_process_insights_v1_insight_post"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "202": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ReportJobCreateResponse"
+                  },
+                  "examples": {
+                    "ReportJobCreateResponse": {
+                      "summary": "ReportJobCreateResponse",
+                      "value": {
+                        "status": "Success",
+                        "body": {
+                          "reportId": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "RequestErrorResponse": {
+                      "summary": "RequestErrorResponse",
+                      "value": {
+                        "errorCode": "400",
+                        "errorMsg": "Empty data_ids input",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Authentication Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "AuthenticationErrorResponse": {
+                      "summary": "AuthenticationErrorResponse",
+                      "value": {
+                        "errorCode": "401",
+                        "errorMsg": "Unable to fetch FIU config",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "NotFoundResponse": {
+                      "summary": "NotFoundResponse",
+                      "value": {
+                        "errorCode": "404",
+                        "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ValidationErrorResponse": {
+                      "summary": "ValidationErrorResponse",
+                      "value": {
+                        "errorCode": "422",
+                        "errorMsg": "field required -> account",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  },
+                  "examples": {
+                    "ServerErrorResponse": {
+                      "summary": "ServerErrorResponse",
+                      "value": {
+                        "errorCode": "500",
+                        "errorMsg": "Internal Server Error",
+                        "timestamp": "2023-04-18T17:10:12.904153",
+                        "ver": "1",
+                        "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/accounts": {
+        "post": {
+          "description": "List accounts",
+          "tags": ["List accounts"],
+          "summary": "List accounts",
+          "operationId": "accounts-list",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/requests.ListAccountsRequest"
+                }
+              }
+            },
+            "description": "account identifiers and filters",
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.ListAccountsResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/deposit/transactions": {
+        "post": {
+          "description": "List deposit transactions",
+          "tags": ["List transactions"],
+          "summary": "List deposit transactions",
+          "operationId": "list-deposit-transactions",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/requests.ListDepositTransactionsRequest"
+                }
+              }
+            },
+            "description": "Query details",
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.ListDepositTransactionsResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/equities/transactions": {
+        "post": {
+          "description": "List equities transactions",
+          "tags": ["List transactions"],
+          "summary": "List equities transactions",
+          "operationId": "list-equities-transactions",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/requests.ListEquitiesTransactionsRequest"
+                }
+              }
+            },
+            "description": "Query details",
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.ListEquitiesTransactionsResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/etf/transactions": {
+        "post": {
+          "description": "List etf transactions",
+          "tags": ["List transactions"],
+          "summary": "List etf transactions",
+          "operationId": "list-etf-transactions",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/requests.ListETFTransactionsRequest"
+                }
+              }
+            },
+            "description": "Query details",
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.ListETFTransactionsResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+  
+      "/v1/mutual-funds/transactions": {
+        "post": {
+          "description": "List mutual-funds transactions",
+          "tags": ["List transactions"],
+          "summary": "List mutual-funds transactions",
+          "operationId": "list-mutual-funds-transactions",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsRequest"
+                }
+              }
+            },
+            "description": "Query details",
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.ListMutualFundsTransactionsResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/purge": {
+        "delete": {
+          "description": "Purge account and transactions data",
+          "tags": ["Purge"],
+          "summary": "Purge data",
+          "operationId": "data-purge",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/requests.PurgeDataRequest"
+                }
+              }
+            },
+            "description": "purging identifiers",
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.PurgeDataResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/responses.Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Account": {
+          "title": "Account",
+          "type": "object",
+          "properties": {
+            "profile": {
+              "$ref": "#/components/schemas/Profile"
+            },
+            "summary": {
+              "$ref": "#/components/schemas/Summary"
+            },
+            "transactions": {
+              "$ref": "#/components/schemas/Transactions"
+            },
+            "type": {
+              "title": "Type",
+              "type": "string",
+              "default": "deposit"
+            },
+            "maskedAccNumber": {
+              "title": "Maskedaccnumber",
+              "type": "string"
+            },
+            "version": {
+              "title": "Version",
+              "type": "number"
+            },
+            "linkedAccRef": {
+              "title": "Linkedaccref",
+              "type": "string"
+            }
+          }
+        },
+        "AccountType": {
+          "title": "AccountType",
+          "enum": ["SAVINGS", "CURRENT"],
+          "type": "string",
+          "description": "An enumeration."
+        },
+        "Body_process_insights_v1_insight_post": {
+          "title": "Body_process_insights_v1_insight_post",
+          "required": ["templateId"],
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "title": "Template ID for which insights are needed",
+              "type": "string"
+            },
+            "dataIds": {
+              "title": "List of data blocks to process",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "refIds": {
+              "title": "Refids",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "linkedAccRefs": {
+              "title": "Linkedaccrefs",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "Body_process_pdf_insights_v1_insight_post": {
+          "title": "Body_process_pdf_insights_v1_insight_post",
+          "required": ["template_id", "bankName", "applicantName", "dataFile"],
+          "type": "object",
+          "properties": {
+            "template_id": {
+              "title": "Template ID for which insights are needed",
+              "type": "string"
+            },
+            "bankName": {
+              "title": "Name of Bank of associated PDF",
+              "type": "string",
+              "description": "Bank name is case sensitive and should be in list pf supported banks. Supported banks can be fetched from /pdf/supported_banks"
+            },
+            "applicantName": {
+              "title": "Name of Account Holder in associated PDF",
+              "type": "string",
+              "description": "Can be any place holder string, But it is suggested to provide unique applicant name, to trace references in future in case of repeated usage"
+            },
+            "password": {
+              "title": "Password for reading associated PDF",
+              "type": "string",
+              "description": "The field is Optional, but if the PDF document is password protected, then password should be provided for reading the file."
+            },
+            "dataFile": {
+              "multipart/form-data": {
+                "schema": {
+                  "required": ["file", "name"],
+                  "type": "object",
+                  "properties": {
+                    "file": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Name of file uploaded"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "DepositData": {
+          "title": "DepositData",
+          "required": ["account"],
+          "type": "object",
+          "properties": {
+            "account": {
+              "$ref": "#/components/schemas/Account"
+            }
+          }
+        },
+        "ErrorResponse": {
+          "title": "ErrorResponse",
+          "required": ["errorCode", "errorMsg"],
+          "type": "object",
+          "properties": {
+            "errorCode": {
+              "title": "Errorcode",
+              "type": "string"
+            },
+            "errorMsg": {
+              "title": "Errormsg",
+              "type": "string"
+            },
+            "timestamp": {
+              "title": "Timestamp",
+              "type": "string",
+              "format": "date-time"
+            },
+            "ver": {
+              "title": "Ver",
+              "type": "string",
+              "default": "1"
+            },
+            "txnid": {
+              "title": "Txnid",
+              "type": "string",
+              "default": ""
+            }
+          }
+        },
+        "FIData": {
+          "$ref": "#/components/schemas/DepositData",
+          "title": "FIData"
+        },
+        "FIDataBlockCreateResponse": {
+          "title": "FIDataBlockCreateResponse",
+          "required": ["body"],
+          "type": "object",
+          "properties": {
+            "status": {
+              "title": "Status",
+              "type": "string",
+              "default": "Success"
+            },
+            "statusDescription": {
+              "title": "Statusdescription",
+              "type": "string"
+            },
+            "body": {
+              "$ref": "#/components/schemas/FIDataBlockResponse"
+            }
+          }
+        },
+        "FIDataBlockGetResponse": {
+          "title": "FIDataBlockGetResponse",
+          "required": ["body"],
+          "type": "object",
+          "properties": {
+            "status": {
+              "title": "Status",
+              "type": "string",
+              "default": "Success"
+            },
+            "statusDescription": {
+              "title": "Statusdescription",
+              "type": "string"
+            },
+            "body": {
+              "title": "Body",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/FIDataBlockResponse"
+              }
+            }
+          }
+        },
+        "FIDataBlockResponse": {
+          "title": "FIDataBlockResponse",
+          "required": ["dataId", "fiSchema", "expiryDate"],
+          "type": "object",
+          "properties": {
+            "dataId": {
+              "title": "Dataid",
+              "type": "string",
+              "format": "uuid"
+            },
+            "refId": {
+              "type": "string",
+              "title": "Refid"
+            },
+            "fiSchema": {
+              "title": "Fischema",
+              "type": "string"
+            },
+            "expiryDate": {
+              "title": "Expirydate",
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "Holder": {
+          "title": "Holder",
+          "required": ["nominee", "ckycCompliance"],
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "dob": {
+              "title": "Dob",
+              "type": "string",
+              "format": "date"
+            },
+            "mobile": {
+              "title": "Mobile",
+              "type": "integer"
+            },
+            "nominee": {
+              "$ref": "#/components/schemas/HoldingNominee"
+            },
+            "landline": {
+              "title": "Landline",
+              "type": "string"
+            },
+            "address": {
+              "title": "Address",
+              "type": "string"
+            },
+            "email": {
+              "title": "Email",
+              "type": "string"
+            },
+            "pan": {
+              "title": "Pan",
+              "type": "string"
+            },
+            "ckycCompliance": {
+              "title": "Ckyccompliance",
+              "type": "boolean"
+            }
+          }
+        },
+        "Holders": {
+          "title": "Holders",
+          "required": ["holder", "type"],
+          "type": "object",
+          "properties": {
+            "holder": {
+              "title": "Holder",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            },
+            "type": {
+              "$ref": "#/components/schemas/HoldersType"
+            }
+          }
+        },
+        "HoldersType": {
+          "title": "HoldersType",
+          "enum": ["SINGLE", "JOINT"],
+          "type": "string",
+          "description": "An enumeration."
+        },
+        "HoldingNominee": {
+          "title": "HoldingNominee",
+          "enum": ["REGISTERED", "NOT-REGISTERED"],
+          "type": "string",
+          "description": "An enumeration."
+        },
+        "InsightGetResponse": {
+          "title": "InsightGetResponse",
+          "required": ["body"],
+          "type": "object",
+          "properties": {
+            "status": {
+              "title": "Status",
+              "type": "string",
+              "default": "Success"
+            },
+            "statusDescription": {
+              "title": "Statusdescription",
+              "type": "string"
+            },
+            "body": {
+              "title": "Body",
+              "type": "object"
+            }
+          }
+        },
+        "Pending": {
+          "title": "Pending",
+          "required": ["amount"],
+          "type": "object",
+          "properties": {
+            "transactionType": {
+              "$ref": "#/components/schemas/TransactionType"
+            },
+            "amount": {
+              "title": "Amount",
+              "type": "number"
+            }
+          }
+        },
+        "Profile": {
+          "title": "Profile",
+          "type": "object",
+          "properties": {
+            "holders": {
+              "$ref": "#/components/schemas/Holders"
+            }
+          }
+        },
+        "ReportJob": {
+          "title": "ReportJob",
+          "required": ["reportId", "status"],
+          "type": "object",
+          "properties": {
+            "reportId": {
+              "title": "Reportid",
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "title": "Status",
+              "type": "string"
+            }
+          }
+        },
+        "ReportJobCreateResponse": {
+          "title": "ReportJobCreateResponse",
+          "required": ["body"],
+          "type": "object",
+          "properties": {
+            "status": {
+              "title": "Status",
+              "type": "string",
+              "default": "Success"
+            },
+            "statusDescription": {
+              "title": "Statusdescription",
+              "type": "string"
+            },
+            "body": {
+              "$ref": "#/components/schemas/ReportJob"
+            }
+          }
+        },
+        "StatusTypes": {
+          "title": "StatusTypes",
+          "enum": ["ACTIVE", "INACTIVE"],
+          "type": "string",
+          "description": "An enumeration."
+        },
+        "Summary": {
+          "title": "Summary",
+          "type": "object",
+          "properties": {
+            "pending": {
+              "$ref": "#/components/schemas/Pending"
+            },
+            "currentBalance": {
+              "title": "Currentbalance",
+              "type": "string"
+            },
+            "currency": {
+              "title": "Currency",
+              "type": "string"
+            },
+            "exchgeRate": {
+              "title": "Exchgerate",
+              "type": "string"
+            },
+            "balanceDateTime": {
+              "title": "Balancedatetime",
+              "type": "string",
+              "format": "date-time"
+            },
+            "type": {
+              "$ref": "#/components/schemas/AccountType"
+            },
+            "branch": {
+              "title": "Branch",
+              "type": "string"
+            },
+            "facility": {
+              "$ref": "#/components/schemas/SummaryFacility"
+            },
+            "ifscCode": {
+              "title": "Ifsccode",
+              "type": "string"
+            },
+            "micrCode": {
+              "title": "Micrcode",
+              "type": "string"
+            },
+            "openingDate": {
+              "title": "Openingdate",
+              "type": "string",
+              "format": "date"
+            },
+            "currentODLimit": {
+              "title": "Currentodlimit",
+              "type": "string"
+            },
+            "drawingLimit": {
+              "title": "Drawinglimit",
+              "type": "string"
+            },
+            "status": {
+              "$ref": "#/components/schemas/StatusTypes"
+            }
+          }
+        },
+        "SummaryFacility": {
+          "title": "SummaryFacility",
+          "enum": ["OD", "CC"],
+          "type": "string",
+          "description": "An enumeration."
+        },
+        "Transaction": {
+          "title": "Transaction",
+          "required": [
+            "type",
+            "mode",
+            "amount",
+            "currentBalance",
+            "transactionTimestamp",
+            "valueDate",
+            "txnId",
+            "narration"
+          ],
+          "type": "object",
+          "properties": {
+            "type": {
+              "$ref": "#/components/schemas/TransactionType"
+            },
+            "mode": {
+              "$ref": "#/components/schemas/TransactionMode"
+            },
+            "amount": {
+              "title": "Amount",
+              "type": "number"
+            },
+            "currentBalance": {
+              "title": "Currentbalance",
+              "type": "string"
+            },
+            "transactionTimestamp": {
+              "title": "Transactiontimestamp",
+              "type": "string",
+              "format": "date-time"
+            },
+            "valueDate": {
+              "title": "Valuedate",
+              "type": "string",
+              "format": "date"
+            },
+            "txnId": {
+              "title": "Txnid",
+              "type": "string"
+            },
+            "narration": {
+              "title": "Narration",
+              "type": "string"
+            },
+            "reference": {
+              "title": "Reference",
+              "type": "string"
+            }
+          }
+        },
+        "TransactionMode": {
+          "title": "TransactionMode",
+          "enum": ["CASH", "ATM", "CARD", "UPI", "FT", "OTHERS"],
+          "type": "string",
+          "description": "An enumeration."
+        },
+        "TransactionType": {
+          "title": "TransactionType",
+          "enum": ["CREDIT", "DEBIT"],
+          "type": "string",
+          "description": "An enumeration."
+        },
+        "Transactions": {
+          "title": "Transactions",
+          "type": "object",
+          "properties": {
+            "transaction": {
+              "title": "Transaction",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            },
+            "startDate": {
+              "title": "Startdate",
+              "type": "string",
+              "format": "date"
+            },
+            "endDate": {
+              "title": "Enddate",
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "TransactionGetResponse": {
+          "title": "TransactionGetResponse",
+          "required": ["body"],
+          "type": "object",
+          "properties": {
+            "status": {
+              "title": "Status",
+              "type": "string",
+              "default": "Success"
+            },
+            "statusDescription": {
+              "title": "Statusdescription",
+              "type": "string"
+            },
+            "body": {
+              "$ref": "#/components/schemas/TransactionResponse"
+            }
+          }
+        },
+        "TransactionResponse": {
+          "title": "TransactionResponse",
+          "required": ["totalCount", "transactions"],
+          "type": "object",
+          "properties": {
+            "totalCount": {
+              "title": "Totalcount",
+              "type": "integer"
+            },
+            "dataIdStatus": {
+              "title": "Dataidstatus",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TransactionJobStatus"
+              }
+            },
+            "transactions": {
+              "title": "Transactions",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/DepositTransaction"
+              }
+            }
+          }
+        },
+        "Body_process_pdf_insights_v1_insight_pdf_post": {
+          "properties": {
+            "templateId": {
+              "type": "string",
+              "title": "Template ID for which insights are needed"
+            },
+            "applicantName": {
+              "type": "string",
+              "title": "Applicant Name for associated PDF"
+            },
+            "applicantType": {
+              "type": "string",
+              "title": "Applicant Type for associated PDF",
+              "default": "retail"
+            },
+            "bankCode": {
+              "type": "string",
+              "title": "Bank Code for associated PDF",
+              "default": ""
+            },
+            "bankName": {
+              "type": "string",
+              "title": "Bank Name for associated PDF",
+              "default": ""
+            },
+            "password": {
+              "type": "string",
+              "title": "Password for associated PDF",
+              "default": ""
+            },
+            "dataFile": {
+              "type": "string",
+              "format": "binary",
+              "title": "PDF Bank Statement",
+              "description": "Upload the pdf-file to process"
+            }
+          },
+          "type": "object",
+          "required": ["templateId", "applicantName", "dataFile"],
+          "title": "Body_process_pdf_insights_v1_insight_pdf_post"
+        },
+        "TransactionJobStatus": {
+          "title": "TransactionJobStatus",
+          "required": ["dataId", "status"],
+          "type": "object",
+          "properties": {
+            "dataId": {
+              "title": "Dataid",
+              "type": "string"
+            },
+            "status": {
+              "title": "Status",
+              "type": "string"
+            }
+          }
+        },
+        "DepositTransaction": {
+          "title": "DepositTransaction",
+          "type": "object",
+          "properties": {
+            "fiuId": {
+              "title": "Fiuid",
+              "type": "string",
+              "format": "uuid"
+            },
+            "dataId": {
+              "title": "Dataid",
+              "type": "string",
+              "format": "uuid"
+            },
+            "refId": {
+              "type": "string",
+              "title": "Refid"
+            },
+            "linkedAccRef": {
+              "type": "string",
+              "title": "Linkedaccref"
+            },
+            "narration": {
+              "title": "Narration",
+              "type": "string"
+            },
+            "amount": {
+              "title": "Amount",
+              "type": "string"
+            },
+            "currentBalance": {
+              "title": "Currentbalance",
+              "type": "string"
+            },
+            "txnMode": {
+              "title": "Txnmode",
+              "type": "string"
+            },
+            "reference": {
+              "title": "Reference",
+              "type": "string"
+            },
+            "txnId": {
+              "title": "Txnid",
+              "type": "string"
+            },
+            "txnType": {
+              "title": "Txntype",
+              "type": "string"
+            },
+            "txnValueDate": {
+              "title": "Txnvaluedate",
+              "type": "string",
+              "format": "date"
+            },
+            "txnTimestamp": {
+              "title": "Txntimestamp",
+              "type": "string",
+              "format": "date-time"
+            },
+            "categoryL1": {
+              "title": "Categoryl1",
+              "type": "string"
+            },
+            "categoryL2": {
+              "title": "Categoryl2",
+              "type": "string"
+            }
+          }
+        },
+        "SupportedBanksGetResponse": {
+          "title": "SupportedBanksGetResponse",
+          "required": ["body"],
+          "type": "object",
+          "properties": {
+            "status": {
+              "title": "Status",
+              "type": "string",
+              "default": "Success"
+            },
+            "statusDescription": {
+              "title": "Statusdescription",
+              "type": "string"
+            },
+            "body": {
+              "title": "Body",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "requests.AccountData": {
+          "type": "object",
+          "properties": {
+            "decryptedFI": {
+              "$ref": "#/components/schemas/requests.DecryptedFI"
+            },
+            "linkRefNumber": {
+              "type": "string"
+            },
+            "maskedAccNumber": {
+              "type": "string"
+            },
+            "refId": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.DecryptedFI": {
+          "type": "object",
+          "properties": {
+            "account": {
+              "$ref": "#/components/schemas/requests.DecryptedFIAccount"
+            }
+          }
+        },
+        "requests.DecryptedFIAccount": {
+          "type": "object",
+          "properties": {
+            "linkedAccRef": {
+              "type": "string"
+            },
+            "maskedAccNumber": {
+              "type": "string"
+            },
+            "profile": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "summary": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "transactions": {
+              "$ref": "#/components/schemas/requests.DecryptedFIAccountTransactions"
+            },
+            "type": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.DecryptedFIAccountTransactions": {
+          "type": "object",
+          "properties": {
+            "endDate": {
+              "type": "string"
+            },
+            "startDate": {
+              "type": "string"
+            },
+            "transaction": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "requests.FIData": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.AccountData"
+              }
+            },
+            "fipID": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.Identifiers": {
+          "type": "object",
+          "properties": {
+            "consentIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "linkAccRefs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "refIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "requests.IngestFIDataRequest": {
+          "type": "object",
+          "properties": {
+            "consentId": {
+              "type": "string"
+            },
+            "dataId": {
+              "type": "string"
+            },
+            "fiData": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.FIData"
+              }
+            },
+            "refId": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.ListAccountRequestFilters": {
+          "type": "object",
+          "properties": {
+            "fiTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "requests.ListAccountsRequest": {
+          "type": "object",
+          "properties": {
+            "filters": {
+              "$ref": "#/components/schemas/requests.ListAccountRequestFilters"
+            },
+            "identifiers": {
+              "$ref": "#/components/schemas/requests.Identifiers"
+            }
+          }
+        },
+        "requests.ListDepositTransactionsOrderBy": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "order": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.ListDepositTransactionsRequest": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "orderBy": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.ListDepositTransactionsOrderBy"
+              }
+            },
+            "refIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "where": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.ListDepositTransactionsWhere"
+              }
+            }
+          }
+        },
+        "requests.ListDepositTransactionsWhere": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number"
+            },
+            "amount_gte": {
+              "type": "number"
+            },
+            "amount_lte": {
+              "type": "number"
+            },
+            "categoryL1": {
+              "type": "string"
+            },
+            "categoryL1_list": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "categoryL2": {
+              "type": "string"
+            },
+            "categoryL2_list": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "categoryManual": {
+              "type": "string"
+            },
+            "categoryManual_list": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "currentBalance": {
+              "type": "number"
+            },
+            "narration": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "txnId": {
+              "type": "string"
+            },
+            "txnMode": {
+              "type": "string"
+            },
+            "txnTimestamp": {
+              "type": "string"
+            },
+            "txnTimestamp_gte": {
+              "type": "string"
+            },
+            "txnTimestamp_lte": {
+              "type": "string"
+            },
+            "txnType": {
+              "type": "string"
+            },
+            "txnValueDate": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.ListETFTransactionsOrderBy": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "order": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.ListETFTransactionsRequest": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "orderBy": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.ListETFTransactionsOrderBy"
+              }
+            },
+            "refIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "where": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.ListETFTransactionsWhere"
+              }
+            }
+          }
+        },
+        "requests.ListETFTransactionsWhere": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number"
+            },
+            "amount_gte": {
+              "type": "number"
+            },
+            "amount_lte": {
+              "type": "number"
+            },
+            "brokerCode": {
+              "type": "string"
+            },
+            "dematId": {
+              "type": "string"
+            },
+            "isin": {
+              "type": "string"
+            },
+            "isinDescription": {
+              "type": "string"
+            },
+            "narration": {
+              "type": "string"
+            },
+            "nav": {
+              "type": "number"
+            },
+            "nav_gte": {
+              "type": "number"
+            },
+            "nav_lte": {
+              "type": "number"
+            },
+            "transactionDateTime": {
+              "type": "string"
+            },
+            "transactionDateTime_gte": {
+              "type": "string"
+            },
+            "transactionDateTime_lte": {
+              "type": "string"
+            },
+            "txnId": {
+              "type": "string"
+            },
+            "txnType": {
+              "type": "string"
+            },
+            "units": {
+              "type": "number"
+            },
+            "units_gte": {
+              "type": "number"
+            },
+            "units_lte": {
+              "type": "number"
+            }
+          }
+        },
+        "requests.ListEquitiesTransactionsOrderBy": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "order": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.ListEquitiesTransactionsRequest": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "orderBy": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.ListEquitiesTransactionsOrderBy"
+              }
+            },
+            "refIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "where": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.ListEquitiesTransactionsWhere"
+              }
+            }
+          }
+        },
+        "requests.ListEquitiesTransactionsWhere": {
+          "type": "object",
+          "properties": {
+            "companyName": {
+              "type": "string"
+            },
+            "dematId": {
+              "type": "string"
+            },
+            "equityCategory": {
+              "type": "string"
+            },
+            "exchange": {
+              "type": "string"
+            },
+            "exchangeRate": {
+              "type": "number"
+            },
+            "exchangeRate_gte": {
+              "type": "number"
+            },
+            "exchangeRate_lte": {
+              "type": "number"
+            },
+            "isin": {
+              "type": "string"
+            },
+            "isinDescription": {
+              "type": "string"
+            },
+            "narration": {
+              "type": "string"
+            },
+            "orderId": {
+              "type": "string"
+            },
+            "transactionDateTime_gte": {
+              "type": "string"
+            },
+            "transactionDateTime_lte": {
+              "type": "string"
+            },
+            "txnDateTime": {
+              "type": "string"
+            },
+            "txnId": {
+              "type": "string"
+            },
+            "txnType": {
+              "type": "string"
+            },
+            "units": {
+              "type": "number"
+            },
+            "units_gte": {
+              "type": "number"
+            },
+            "units_lte": {
+              "type": "number"
+            }
+          }
+        },
+        "requests.ListMutualFundsTransactionsOrderBy": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "order": {
+              "type": "string"
+            }
+          }
+        },
+        "requests.ListMutualFundsTransactionsRequest": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "orderBy": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsOrderBy"
+              }
+            },
+            "refIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "where": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsWhere"
+              }
+            }
+          }
+        },
+        "requests.ListMutualFundsTransactionsWhere": {
+          "type": "object",
+          "properties": {
+            "amc": {
+              "type": "string"
+            },
+            "amcFullName": {
+              "type": "string"
+            },
+            "amfiCode": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            },
+            "amount_gte": {
+              "type": "number"
+            },
+            "amount_lte": {
+              "type": "number"
+            },
+            "isin": {
+              "type": "string"
+            },
+            "isinDescription": {
+              "type": "string"
+            },
+            "lockInDays": {
+              "type": "string"
+            },
+            "lockInFlag": {
+              "type": "string"
+            },
+            "mutualFundName": {
+              "type": "string"
+            },
+            "narration": {
+              "type": "string"
+            },
+            "nav": {
+              "type": "number"
+            },
+            "navDate": {
+              "type": "string"
+            },
+            "nav_gte": {
+              "type": "number"
+            },
+            "nav_lte": {
+              "type": "number"
+            },
+            "registrar": {
+              "type": "string"
+            },
+            "schemeCode": {
+              "type": "string"
+            },
+            "schemePlan": {
+              "type": "string"
+            },
+            "txnDate": {
+              "type": "string"
+            },
+            "txnDate_gte": {
+              "type": "string"
+            },
+            "txnDate_lte": {
+              "type": "string"
+            },
+            "txnId": {
+              "type": "string"
+            },
+            "txnMode": {
+              "type": "string"
+            },
+            "txnType": {
+              "type": "string"
+            },
+            "ucc": {
+              "type": "string"
+            },
+            "units": {
+              "type": "number"
+            },
+            "units_gte": {
+              "type": "number"
+            },
+            "units_lte": {
+              "type": "number"
+            }
+          }
+        },
+        "requests.PurgeDataRequest": {
+          "type": "object",
+          "properties": {
+            "identifiers": {
+              "$ref": "#/components/schemas/requests.Identifiers"
+            }
+          }
+        },
+        "responses.Error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "responses.FIDataResponseData": {
+          "type": "object",
+          "properties": {
+            "fipId": {
+              "type": "string"
+            },
+            "profileStatus": {
+              "type": "string"
+            },
+            "summaryStatus": {
+              "type": "string"
+            },
+            "transactions": {
+              "$ref": "#/components/schemas/responses.TransactionsResponseData"
+            }
+          }
+        },
+        "responses.IngestFIDataResponse": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/components/schemas/responses.FIDataResponseData"
+              }
+            }
+          }
+        },
+        "responses.ListAccountsResponse": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/responses.ListAccountsResponseData"
+              }
+            },
+            "totalCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "responses.ListAccountsResponseData": {
+          "type": "object",
+          "properties": {
+            "consentId": {
+              "type": "string"
+            },
+            "dataId": {
+              "type": "string"
+            },
+            "fiType": {
+              "type": "string"
+            },
+            "fipId": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "linkedAccRef": {
+              "type": "string"
+            },
+            "maskedAccNumber": {
+              "type": "string"
+            },
+            "profile": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "refId": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "txnsEndDate": {
+              "type": "string"
+            },
+            "txnsStartDate": {
+              "type": "string"
+            }
+          }
+        },
+        "responses.ListDepositTransactionsData": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number"
+            },
+            "categoryL1": {
+              "type": "string"
+            },
+            "categoryL2": {
+              "type": "string"
+            },
+            "categoryManual": {
+              "type": "string"
+            },
+            "consentId": {
+              "type": "string"
+            },
+            "currentBalance": {
+              "type": "number"
+            },
+            "dataId": {
+              "type": "string"
+            },
+            "fipId": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "linkedAccRef": {
+              "type": "string"
+            },
+            "narration": {
+              "type": "string"
+            },
+            "refId": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "txnId": {
+              "type": "string"
+            },
+            "txnMode": {
+              "type": "string"
+            },
+            "txnTimestamp": {
+              "type": "string"
+            },
+            "txnType": {
+              "type": "string"
+            },
+            "txnValueDate": {
+              "type": "string"
+            }
+          }
+        },
+        "responses.ListDepositTransactionsResponse": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/responses.ListDepositTransactionsData"
+              }
+            },
+            "totalCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "responses.ListETFTransactionsData": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number"
+            },
+            "brokerCode": {
+              "type": "string"
+            },
+            "consentId": {
+              "type": "string"
+            },
+            "dataId": {
+              "type": "string"
+            },
+            "dematId": {
+              "type": "string"
+            },
+            "fipId": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "isin": {
+              "type": "string"
+            },
+            "isinDescription": {
+              "type": "string"
+            },
+            "linkedAccRef": {
+              "type": "string"
+            },
+            "narration": {
+              "type": "string"
+            },
+            "nav": {
+              "type": "number"
+            },
+            "refId": {
+              "type": "string"
+            },
+            "transactionDateTime": {
+              "type": "string"
+            },
+            "txnId": {
+              "type": "string"
+            },
+            "txnType": {
+              "type": "string"
+            },
+            "units": {
+              "type": "number"
+            }
+          }
+        },
+        "responses.ListETFTransactionsResponse": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/responses.ListETFTransactionsData"
+              }
+            },
+            "totalCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "responses.ListEquitiesTransactionsData": {
+          "type": "object",
+          "properties": {
+            "companyName": {
+              "type": "string"
+            },
+            "consentId": {
+              "type": "string"
+            },
+            "dataId": {
+              "type": "string"
+            },
+            "dematId": {
+              "type": "string"
+            },
+            "equityCategory": {
+              "type": "string"
+            },
+            "exchange": {
+              "type": "string"
+            },
+            "exchangeRate": {
+              "type": "number"
+            },
+            "fipId": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "isin": {
+              "type": "string"
+            },
+            "isinDescription": {
+              "type": "string"
+            },
+            "linkedAccRef": {
+              "type": "string"
+            },
+            "narration": {
+              "type": "string"
+            },
+            "orderId": {
+              "type": "string"
+            },
+            "refId": {
+              "type": "string"
+            },
+            "txnDateTime": {
+              "type": "string"
+            },
+            "txnId": {
+              "type": "string"
+            },
+            "txnType": {
+              "type": "string"
+            },
+            "units": {
+              "type": "number"
+            }
+          }
+        },
+        "responses.ListEquitiesTransactionsResponse": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/responses.ListEquitiesTransactionsData"
+              }
+            },
+            "totalCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "responses.ListMutualFundsTransactionsData": {
+          "type": "object",
+          "properties": {
+            "amc": {
+              "type": "string"
+            },
+            "amcFullName": {
+              "type": "string"
+            },
+            "amfiCode": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            },
+            "consentId": {
+              "type": "string"
+            },
+            "dataId": {
+              "type": "string"
+            },
+            "fipId": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "isin": {
+              "type": "string"
+            },
+            "isinDescription": {
+              "type": "string"
+            },
+            "linkedAccRef": {
+              "type": "string"
+            },
+            "lockInDays": {
+              "type": "string"
+            },
+            "lockInFlag": {
+              "type": "string"
+            },
+            "mutualFundName": {
+              "type": "string"
+            },
+            "narration": {
+              "type": "string"
+            },
+            "nav": {
+              "type": "number"
+            },
+            "navDate": {
+              "type": "string"
+            },
+            "refId": {
+              "type": "string"
+            },
+            "registrar": {
+              "type": "string"
+            },
+            "schemeCode": {
+              "type": "string"
+            },
+            "schemePlan": {
+              "type": "string"
+            },
+            "txnDate": {
+              "type": "string"
+            },
+            "txnId": {
+              "type": "string"
+            },
+            "txnMode": {
+              "type": "string"
+            },
+            "txnType": {
+              "type": "string"
+            },
+            "ucc": {
+              "type": "string"
+            },
+            "units": {
+              "type": "number"
+            }
+          }
+        },
+        "responses.ListMutualFundsTransactionsResponse": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/responses.ListMutualFundsTransactionsData"
+              }
+            },
+            "totalCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "responses.PurgeDataResponse": {
+          "type": "object",
+          "properties": {
+            "purgedCounts": {
+              "$ref": "#/components/schemas/responses.PurgeDataResponseCounts"
+            }
+          }
+        },
+        "responses.PurgeDataResponseCounts": {
+          "type": "object",
+          "properties": {
+            "accounts": {
+              "type": "integer"
+            },
+            "depositTransactions": {
+              "type": "integer"
+            },
+            "equitiesTransactions": {
+              "type": "integer"
+            },
+            "etfTransactions": {
+              "type": "integer"
+            },
+            "mutualFundsTransactions": {
+              "type": "integer"
+            }
+          }
+        },
+        "responses.TransactionsResponseData": {
+          "type": "object",
+          "properties": {
+            "insertedCount": {
+              "type": "integer"
+            },
+            "totalCount": {
+              "type": "integer"
+            },
+            "updatedCount": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  }
+  
