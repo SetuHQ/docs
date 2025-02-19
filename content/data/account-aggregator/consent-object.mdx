@@ -11,15 +11,20 @@ The consent object is the core of the AA framework. When an FIU requires data ab
 
 Consent object contains the information about all the different types of data the FIU needs, the purpose of the data, and how the FIU plans to use the data and so on.
 
-<Callout type type="warning">
+<Callout type="warning">
   As specified in the table below, some parameters have to be passed mandatorily
   when creating a consent.
 </Callout>
 
 <br />
 
-<Callout type="info">
-  Tagging helps you organize and track consent requests, reports, and analytics more effectively. With this feature, you can add relevant labels (tags) to different consent requests and data-fetch reports without creating separate product instances. Tags make it easier to segment, analyze, and track data for different use cases, such as monitoring traffic for specific partners or campaigns.
+<Callout type="tip">
+  Tagging helps you organize and track consent requests, reports, and analytics
+  more effectively. With this feature, you can add relevant labels (tags) to
+  different consent requests and data-fetch reports without creating separate
+  product instances. Tags make it easier to segment, analyze, and track data for
+  different use cases, such as monitoring traffic for specific partners or
+  campaigns.
 </Callout>
 
 <br />
@@ -34,7 +39,7 @@ Consent object contains the information about all the different types of data th
 | `fetchType`                                                   | Enum to specify either `ONETIME` or `PERIODIC` fetch of data.                                                                                                                                                                                                                                                                                                                                                | Yes                                                        |
 | `consentTypes`                                                | Specifies the type of data being requested for, from your user—<br/><li>`PROFILE`—Personal details such as mobile number, date of birth, PAN etc.</li><li>`SUMMARY`—Information like mutual fund summary for total amount invested, current value, number of MFs and more.</li><li>`TRANSACTIONS`—List of records against some financial data—e.g., a bank statement.</li>                                   | Yes                                                        |
 | `fiTypes`                                                     | Specifies the type of financial information being requested for. Possible enums—`DEPOSIT`, `MUTUAL_FUNDS`, `INSURANCE_POLICIES`, `TERM_DEPOSIT`, `RECURRING_DEPOSIT`, `SIP`, `GOVT_SECURITIES`, `EQUITIES`, `BONDS`, `DEBENTURES`, `ETF`, and more. Click <a href="/data/account-aggregator/fi-data-types" target="_blank">here</a> to learn more about the data types.                                      | Yes                                                        |
-| `vua`                                                         | Virtual user address (VUA) that identifies your customer when they login to the Account Aggregator.<br/>It can be either mobile number or mobile number with handle (**{customer_mobile_number}@onemoney**)<br/><li>If mobile@handle is used, consent will be created for the specified AA</li><li>If mobile is used, a best performing AA is selected for consent creation</li>                                                                                                                                                                                                  | Yes                                                        |
+| `vua`                                                         | Virtual user address (VUA) that identifies your customer when they login to the Account Aggregator.<br/>It can be either mobile number or mobile number with handle (**{customer_mobile_number}@onemoney**)<br/><li>If mobile@handle is used, consent will be created for the specified AA</li><li>If mobile is used, a best performing AA is selected for consent creation</li>                             | Yes                                                        |
 | `purpose`                                                     | This is used to indicate the purpose of requesting for data. As per the AA spec, the following codes are supported—<br/><li>`101`—Wealth management service</li><li>`102`—Customer spending patterns, budget or other reportings</li><li>`103`—Aggregated statement</li><li>`104`—Explicit consent to monitor the accounts</li><li>`105`—Explicit one-time consent for accessing data from the accounts</li> | Yes                                                        |
 | `dataRange`                                                   | This is used to specify the `from` and `to` date-time range for querying financial information. It is mandatory only when the `consentTypes` array includes `TRANSACTIONS`.                                                                                                                                                                                                                                  | Mandatory                                                  |
 | `dataLife`                                                    | This is the time period for which you are allowed to process the data. Choose between `MONTH`, `YEAR`, `DAY`, `INF` as the `unit` and define a numeric `value` alongside. <br /> For more details on the difference between Data life and Data Storage, please see [Sahamati guidelines](https://sahamati.org.in/aa-community-guidelines-v1/storage-of-data/) (see SD001 in the table)                       | Yes                                                        |
@@ -101,19 +106,20 @@ Consent object contains the information about all the different types of data th
 • Tags are visible in consent and data-fetch reports, and serve as filters in analytics dashboards. Use them to track user journeys, monitor failures, analyze behavior, measure campaign performance, and generate custom insights.
 
 • Key limitations and rules:
-  - Tags are case-insensitive (e.g., "partnerA" = "PartnerA")
-  - Duplicate tags are not allowed
-  - Bulk tagging for historical data is not supported
-  - Number of tags per FIU is configurable
-  - Invalid characters will trigger errors
-  - System issues may prevent tag application (with error notifications)
+
+- Tags are case-insensitive (e.g., "partnerA" = "PartnerA")
+- Duplicate tags are not allowed
+- Bulk tagging for historical data is not supported
+- Number of tags per FIU is configurable
+- Invalid characters will trigger errors
+- System issues may prevent tag application (with error notifications)
 
 • Best practice: Use clear, consistent, and easily understandable tag names for effective tracking.
 
 • To add tags to a consent request, include them under the `additionalParams` field:
 
 <CodeBlockWithCopy language="json">
-{`{
+  {`{
   "consentDetail": {
     ...
   },
