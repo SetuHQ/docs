@@ -18,6 +18,12 @@ Consent object contains the information about all the different types of data th
 
 <br />
 
+<Callout type="info">
+  Tagging helps you organize and track consent requests, reports, and analytics more effectively. With this feature, you can add relevant labels (tags) to different consent requests and data-fetch reports without creating separate product instances. Tags make it easier to segment, analyze, and track data for different use cases, such as monitoring traffic for specific partners or campaigns.
+</Callout>
+
+<br />
+
 ### Consent request object
 
 | Property name                                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                  | Mandatory?                                                 |
@@ -36,6 +42,7 @@ Consent object contains the information about all the different types of data th
 | `dataFilter`                                                  | Allows you to specify conditions for filtering the data being fetched. For example, fetch transactions where the `TRANSACTIONAMOUNT` is greater than or equal to INR 20,000. You can use the `type`, `operator` like `>, <, <=, >=` and `value` like `5000` keys to set the filters.                                                                                                                         | No                                                         |
 | `redirectUrl`                                                 | Redirect your users back to your application once the consent is reviewed. By default, the redirectURL is https://setu.co/.                                                                                                                                                                                                                                                                                  | Yes                                                        |
 | `context`                                                     | Allows you to specify an FIP OR Account type (Current, Savings, Insurance, etc) as a key value pair for you to be able to customise the accounts fetched on the consent flow. We support the context filters `accounttype` which takes the Key as `accounttype` where values can be `CURRENT` or `SAVINGS` and `fipid` with the `FIP ID` as the value(s).                                                    | No                                                         |
+| `additionalParams`                                            | Allows you to specify additional parameters for the consent request. Currently, we have `tags` specified under it.                                                                                                                                                                                                                                                                                           | No                                                         |
 
 #### Context property examples
 
@@ -82,5 +89,41 @@ Consent object contains the information about all the different types of data th
 | `url`         | Redirect your users to Setu AA screens to initiate consent review flow using this url                                                                      |
 | `status`      | Consent status of the consent request `id`. This will be `PENDING` for a newly created consent.                                                            |
 | `Usage`       | This field specifies `lastUsed` and `count` which corresponds to data fetches against the consent id. It is also available in Get Consent Status response. |
+
+<hr class="primary" />
+
+### Understanding Tags in AA Framework
+
+• Tags must first be created at the product instance level before they can be used in any requests.
+
+• Tags can be created and managed while setting up or updating a product instance. They are unique identifiers (max 100 characters) that can be linked to multiple product instances.
+
+• Tags are visible in consent and data-fetch reports, and serve as filters in analytics dashboards. Use them to track user journeys, monitor failures, analyze behavior, measure campaign performance, and generate custom insights.
+
+• Key limitations and rules:
+  - Tags are case-insensitive (e.g., "partnerA" = "PartnerA")
+  - Duplicate tags are not allowed
+  - Bulk tagging for historical data is not supported
+  - Number of tags per FIU is configurable
+  - Invalid characters will trigger errors
+  - System issues may prevent tag application (with error notifications)
+
+• Best practice: Use clear, consistent, and easily understandable tag names for effective tracking.
+
+• To add tags to a consent request, include them under the `additionalParams` field:
+
+<CodeBlockWithCopy language="json">
+{`{
+  "consentDetail": {
+    ...
+  },
+  ...,
+  "additionalParams": {
+    "tags": ["Loan_Tracking", "Partner_X"]
+  }
+}`}
+</CodeBlockWithCopy>
+
+<br />
 
 <WasPageHelpful />
