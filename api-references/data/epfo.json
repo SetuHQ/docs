@@ -1,0 +1,552 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+          "title": "Data Gateway - EPFO APIs",
+          "description": "Build the data flow you need for background verifications.\n\n[See on Setu docs](https://docs.setu.co/data)\n\n\n**EPF APIs**\nFetch UAN by user's mobile number and EPF details of the user by UAN",
+          "contact": {},
+          "version": "1.0"
+      },
+    "servers": [
+      {
+        "url": "https://dg-sandbox.setu.co",
+        "description": "Sandbox"
+      },
+      {
+        "url": "https://dg.setu.co",
+        "description": "Production"
+      }
+    ],
+    "paths": {
+      "/api/epf/uanLookup": {
+          "post": {
+              "tags": [
+                  "EPF"
+                ],
+              "summary": "UAN Lookup",
+              "operationId": "UANLookup",
+              "parameters": [
+                  {
+                      "name": "x-client-id",
+                      "in": "header",
+                      "description": "",
+                      "required": true,
+                      "style": "simple",
+                      "schema": {
+                          "type": "string",
+                          "example": "{{x-client-id}}"
+                      }
+                  },
+                  {
+                      "name": "x-client-secret",
+                      "in": "header",
+                      "description": "",
+                      "required": true,
+                      "style": "simple",
+                      "schema": {
+                          "type": "string",
+                          "example": "{{x-client-secret}}"
+                      }
+                  },
+                  {
+                      "name": "x-product-instance-id",
+                      "in": "header",
+                      "description": "",
+                      "required": true,
+                      "style": "simple",
+                      "schema": {
+                          "type": "string",
+                          "example": "{{x-product-instance-id}}"
+                      }
+                  }
+              ],
+              "requestBody": {
+                  "description": "",
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/UANLookup"
+                          },
+                          "example": {
+                              "mobileNumber": "9555xxxxxx"
+                                                          }
+                      }
+                  },
+                  "required": true
+              },
+              "responses": {
+                  "200": {
+                      "description": "OK",
+                      "headers": {},
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/SuccessLookup-ValidMobile"
+                              },
+                              "example": {
+                                  "data": {
+                                      "uan":"123456789012"
+                                  },
+                                  "requestId": "e347e79b-dddc-49c1-b266-afb2c44843e8",
+                                  "statusCode": 200,
+                                  "traceId": "1-6346a91a-620cf6cc4f68d2e30316881e"
+                              }
+                          }
+                      }
+                  },
+                  "500": {
+                      "description": "Internal Server Error",
+                      "headers": {},
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Failure-InternalServerError1"
+                              },
+                              "example": {
+                                  "error": {
+                                      "code": "internal_server_error",
+                                      "detail": "Internal Server Error. Please reach out to support along with the traceId.",
+                                      "traceId": "7097e53a-ba29-48a2-983d-878433b4f33e"
+                                  }
+                              }
+                          }
+                      }
+                  }
+              },
+              "deprecated": false,
+              "security": []
+          }
+      },
+      "/api/epf/uanDetails":{
+          "post": {
+            "tags": [
+                "EPF"
+              ],
+              "summary": "UAN Details",
+              "operationId": "UANDetails",
+              "parameters": [
+                  {
+                      "name": "x-client-id",
+                      "in": "header",
+                      "description": "",
+                      "required": true,
+                      "style": "simple",
+                      "schema": {
+                          "type": "string",
+                          "example": "{{x-client-id}}"
+                      }
+                  },
+                  {
+                      "name": "x-client-secret",
+                      "in": "header",
+                      "description": "",
+                      "required": true,
+                      "style": "simple",
+                      "schema": {
+                          "type": "string",
+                          "example": "{{x-client-secret}}"
+                      }
+                  },
+                  {
+                      "name": "x-product-instance-id",
+                      "in": "header",
+                      "description": "",
+                      "required": true,
+                      "style": "simple",
+                      "schema": {
+                          "type": "string",
+                          "example": "{{x-product-instance-id}}"
+                      }
+                  }
+              ],
+              "requestBody": {
+                  "description": "",
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/UANDetails"
+                          },
+                          "example": {
+                               "uan": "123456789012"
+                                                          }
+                      }
+                  },
+                  "required": true
+              },
+              "responses": {
+                  "200": {
+                      "description": "OK",
+                      "headers": {},
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/SuccessDetails-ValidUAN"
+                              },
+                              "example": {
+                                  "data": {
+                                          "uan": "123456789012",       
+                                          "employers": [
+                                            {
+                                              "startMonthYear": "12-JUN-2022",
+                                              "lastMonthYear": "",
+                                              "establishmentId": "",
+                                              "establishmentName": "",
+                                              "memberId": ""      }
+                                          ],
+                                          "personalDetails": {
+                                            "name": "Walter White",
+                                            "fatherOrHusbandName": "",
+                                            "aadhaarVerificationStatus": "-1",
+                                            "contactNo": ""
+                                          },
+                                          "summary": {
+                                            "minimumWorkExperienceInMonths": 33,
+                                            "lastEmployer": {
+                                              "employerName": "A1A PRIVATE LIMITED",
+                                              "startMonthYear": "12-JUN-2022",
+                                              "lastMonthYear": "12-JUN-2022",
+                                              "vintageInMonths": 33
+                                            }
+                                          }
+                                        },
+                                        "requestId": "e347e79b-dddc-49c1-b266-afb2c44843e8",
+                                        "statusCode": 200 
+                                  },
+                                  "requestId": "e347e79b-dddc-49c1-b266-afb2c44843e8",
+                                  "statusCode": 200,
+                                  "traceId": "1-6346a91a-620cf6cc4f68d2e30316881e"
+                              }
+                          }
+                      }
+                  },
+                  "500": {
+                      "description": "Internal Server Error",
+                      "headers": {},
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Failure-InternalServerError1"
+                              },
+                              "example": {
+                                  "error": {
+                                      "code": "internal_server_error",
+                                      "detail": "Internal Server Error. Please reach out to support along with the traceId.",
+                                      "traceId": "7097e53a-ba29-48a2-983d-878433b4f33e"
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      },
+    "components": {
+      "schemas": {
+        "UANLookup": {
+          "title": "UANLookupRequestRequest",
+          "required": [
+            "mobileNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "mobileNumber": {
+              "type": "string",
+              "description":"Valid registered Mobile Number with EPFO"
+            }
+          },
+          "example": {
+            "mobileNumber": "9555xxxxxx"
+          }
+        },
+        "SuccessLookup-ValidMobile":{
+                  "title": "SuccessLookup-ValidMobile",
+                  "required": ["data", "requestId", "statusCode", "traceId"],
+                  "type": "object",
+                  "properties": {
+                      "data": {
+                          "type": "object",
+                          "properties": {
+                              "uan": {
+                                  "type": "string",
+                                  "description": "UAN associated with the mobile number"
+                          }
+                      },
+                      "required": ["uan"]
+                  },
+                      "requestId": {
+                          "type": "string"
+                      },
+                      "statusCode": {
+                          "type": "string"
+                      },
+                      "traceId": {
+                          "type": "string"
+                      }
+                  },
+                  "example": {
+                      "data": {
+                          "uan":"123456789012"
+                      },
+                      "requestId": "e347e79b-dddc-49c1-b266-afb2c44843e8",
+                      "statusCode": "200",
+                      "traceId": "1-6346a91a-620cf6cc4f68d2e30316881e"
+                  }
+              },
+        "FetchUANDetailsRequestRequest": {
+          "title": "FetchUANDetailsRequestRequest",
+          "required": [
+            "uan"
+          ],
+          "type": "object",
+          "properties": {
+            "uan": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "uan": "123456789012"
+          }
+        },
+        
+        "UANDetails":{
+          "title": "UANDetails",
+          "required": ["uan"],
+          "type": "object",
+          "properties": {
+              "uan": {
+                  "type": "string",
+                  "description":"Valid 12 digit UAN assigned to EPF account holder"
+              }
+          },
+          "example": {
+              "uan": "123456789012"
+          }
+      },
+      "SuccessDetails-ValidUAN":{
+          "title": "SuccessDetails-ValidUAN",
+          "required": ["data", "requestId", "statusCode", "traceId"],
+          "type": "object",
+          "properties": {
+              "data": {
+                  "$ref":"#/components/schemas/UANdata"
+          },
+              "requestId": {
+                  "type": "string"
+              },
+              "statusCode": {
+                  "type": "string"
+              },
+              "traceId": {
+                  "type": "string"
+              }
+          },
+          "example": {
+              "data": {
+                  "uan": "123456789012",       
+                  "employers": [
+                  {
+                      "startMonthYear": "12-JUN-2022",
+                      "lastMonthYear": "",
+                      "establishmentId": "",
+                      "establishmentName": "",
+                      "memberId": ""      }
+                  ],
+                  "personalDetails": {
+                  "name": "Walter White",
+                  "fatherOrHusbandName": "",
+                  "aadhaarVerificationStatus": "-1",
+                  "contactNo": ""
+                  },
+                  "summary": {
+                  "minimumWorkExperienceInMonths": 33,
+                  "lastEmployer": {
+                      "employerName": "A1A PRIVATE LIMITED",
+                      "startMonthYear": "12-JUN-2022",
+                      "lastMonthYear": "12-JUN-2022",
+                      "vintageInMonths": 33
+                  }
+                  }
+              },
+              "requestId": "e347e79b-dddc-49c1-b266-afb2c44843e8",
+              "statusCode": "200",
+              "traceId": "1-6346a91a-620cf6cc4f68d2e30316881e"
+          }
+      },
+      "UANdata": {
+          "title": "UANdata",
+          "type": "object",
+          "required": ["uan", "employers", "personalDetails", "summary"],
+          "properties": {
+              "uan": {
+              "type": "string",
+              "description": "UAN passed in the request"
+              },
+              "employers": {
+              "type": "array",
+              "items": {
+                  "type": "object",
+                  "required": ["startMonthYear", "lastMonthYear", "establishmentId", "establishmentName", "memberId"],
+                  "properties": {
+                  "startMonthYear": {
+                      "type": "string",
+                      "description": "Date of joining"
+
+                  },
+                  "lastMonthYear": {
+                      "type": "string",
+                      "description": "Date of exit"
+
+                  },
+                  "establishmentId": {
+                      "type": "string",
+                      "description": "Employer's Company ID"
+
+                  },
+                  "establishmentName": {
+                      "type": "string",
+                      "description": "Company Name"
+
+                  },
+                  "memberId": {
+                      "type": "string",
+                      "description": "User ID associated with the company at EPFO"
+
+                  }
+                  }
+              }
+              },
+              "personalDetails": {
+              "type": "object",
+              "required": ["name", "fatherOrHusbandName", "aadhaarVerificationStatus", "contactNo"],
+              "properties": {
+                  "name": {
+                  "type": "string"
+                  },
+                  "fatherOrHusbandName": {
+                  "type": "string"
+                  },
+                  "aadhaarVerificationStatus": {
+                  "type": "string"
+                  },
+                  "contactNo": {
+                  "type": "string"
+                  }
+              }
+              },
+              "summary": {
+              "type": "object",
+              "required": ["minimumWorkExperienceInMonths", "lastEmployer"],
+              "properties": {
+                  "minimumWorkExperienceInMonths": {
+                  "type": "number"
+                  },
+                  "lastEmployer": {
+                  "type": "object",
+                  "required": ["employerName", "startMonthYear", "lastMonthYear", "vintageInMonths"],
+                  "properties": {
+                      "employerName": {
+                      "type": "string",
+                      "description": "Company Name"
+                      },
+                      "startMonthYear": {
+                      "type": "string",
+                      "description": "Date of joining"
+                      },
+                      "lastMonthYear": {
+                      "type": "string",
+                      "description": "Date of Exit"
+
+                      },
+                      "vintageInMonths": {
+                      "type": "number",
+                      "description": "Duration of employment in months at the organisation."
+                      }
+                  }
+                  }
+              }
+              }
+          },
+          "example": {
+              "uan": "123456789012",
+              "employers": [
+              {
+                  "startMonthYear": "12-JUN-2022",
+                  "lastMonthYear": "",
+                  "establishmentId": "",
+                  "establishmentName": "",
+                  "memberId": ""
+              }
+              ],
+              "personalDetails": {
+              "name": "Walter White",
+              "fatherOrHusbandName": "",
+              "aadhaarVerificationStatus": "-1",
+              "contactNo": ""
+              },
+              "summary": {
+              "minimumWorkExperienceInMonths": 33,
+              "lastEmployer": {
+                  "employerName": "A1A PRIVATE LIMITED",
+                  "startMonthYear": "12-JUN-2022",
+                  "lastMonthYear": "12-JUN-2022",
+                  "vintageInMonths": 33
+              }
+              }
+          }
+      },
+        "Failure-InternalServerError1": {
+          "title": "Failure-InternalServerError1",
+          "required": ["error"],
+          "type": "object",
+          "properties": {
+              "error": {
+                  "$ref": "#/components/schemas/Error"
+              }
+          },
+          "example": {
+              "error": {
+                  "code": "internal_server_error",
+                  "detail": "Internal Server Error. Please reach out to support along with the traceId.",
+                  "traceId": "7097e53a-ba29-48a2-983d-878433b4f33e"
+              }
+          }
+      },
+      "Error": {
+                  "title": "Error",
+                  "required": ["code", "detail", "traceId"],
+                  "type": "object",
+                  "properties": {
+                      "code": {
+                          "type": "string"
+                      },
+                      "detail": {
+                          "type": "string"
+                      },
+                      "traceId": {
+                          "type": "string"
+                      }
+                  },
+                  "example": {
+                      "code": "invalid_document",
+                      "detail": "The document Id is already being used in a signature",
+                      "traceId": ""
+                  }
+              }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "tags": [
+      {
+        "name": "EPF"
+      }
+    ]
+  }
