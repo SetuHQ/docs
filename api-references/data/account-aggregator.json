@@ -85,6 +85,15 @@
         "parameters": [
           {
             "in": "query",
+            "name": "aa",
+            "required": false,
+            "description": "AA entity handle to filter FIPs for a specific AA",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "status",
             "required": false,
             "description": "Status of the FIP by which the FIPs are to be filtered",
@@ -122,7 +131,21 @@
     },
     "/v2/fips/{fip_id}": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "aa",
+            "required": false,
+            "description": "AA entity handle to filter FIPs for a specific AA",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
+          "400": {
+            "$ref": "#/components/responses/BAD_REQUEST"
+          },
           "200": {
             "description": "OK",
             "content": {
@@ -138,19 +161,19 @@
         "description": "This API is used to get a FIP by its ID.",
         "tags": [
           "AA participants APIs"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "fip_id",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
         ]
-      }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "fip_id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      ]
     },
     "/v2/consents": {
       "post": {
@@ -4161,9 +4184,22 @@
             ],
             "description": "Current status of the FIP"
           },
-          "successRate": {
+          "consentConversionRate": {
+            "type": "number",
+            "description": "Consent conversion rate of the FIP in last 1 hour"
+          },
+          "dataFetchSuccessRate": {
             "type": "number",
             "description": "Data fetch success rate of the FIP in percentage for the last 1 hour"
+          },
+          "aaWiseSuccessRate": {
+            "type": "array",
+            "default": null,
+            "nullable": true,
+            "description": "AA wise success rate of the FIP",
+            "items": {
+              "$ref": "#/components/schemas/AASuccessRate"
+            }
           }
         },
         "required": [
@@ -4173,6 +4209,21 @@
           "name",
           "status"
         ]
+      },
+      "AASuccessRate": {
+        "type": "object",
+        "properties": {
+          "dataFetchSuccessRate": {
+            "type": "number",
+            "description": "Data fetch success rate of the FIP in percentage for the last 1 hour"
+          },
+          "aa": {
+            "type": "string"
+          },
+          "consentConversionRate": {
+            "type": "number"
+          }
+        }
       }
     },
     "responses": {
