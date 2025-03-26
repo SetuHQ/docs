@@ -1,0 +1,150 @@
+---
+sidebar_title: Secure Data Add-On
+page_title: Setu Encrypted APIs
+order: 2
+visible_in_sidebar: true
+---
+
+## Setu Encrypted APIs
+
+### Overview
+
+Our secure data add-on is designed to be integrated with any KYC API to enhance the protection of sensitive data during transmission.  
+With this add-on, non-sensitive fields (such as `id` and `traceId`) remain visible for tracking and logging, while all sensitive information is securely packaged inside the `encrypted_data` field.  
+Setu’s public key, fetched dynamically, is used to secure the sensitive data in your request. The response from Setu will also be secured, and you must decrypt it to reconstruct the complete message.
+
+---
+
+## Integration Steps
+
+### 1. Public Key Exchange
+
+Before transmitting any secured data, you must retrieve Setu's latest public key dynamically.  
+This ensures that all secured requests use the current key, as keys are rotated periodically.
+
+<CodeBlockWithCopy language="http">
+GET /v2/public-key
+</CodeBlockWithCopy>
+
+**Sample Response:**
+
+<CodeBlockWithCopy language="json">
+{`{
+  "public-key": {
+    "ECIES": "03d…",
+    "RSA": "MIIBI…"
+  },
+  "traceId": "1-67dbb.."
+}`}
+</CodeBlockWithCopy>
+
+*Note: The public key may be updated over time.*
+
+---
+
+### 2. Securing Sensitive Data (Request)
+
+Use Setu's public key (obtained from the previous step) to secure your request payload. Below are the two available methods for securing the sensitive data in your request.
+
+#### Method 1: ECIES
+
+- **Process:**  
+  The sensitive payload is directly secured using the ECIES mechanism and Setu’s public key.
+- **Request Message Structure:**  
+
+<CodeBlockWithCopy language="json">
+{`{
+  "id": "unique-request-id-123",
+  "encrypted_data": "Encrypted_Payload"
+}`}
+</CodeBlockWithCopy>
+
+#### Method 2: AES-RSA (Hybrid)
+
+- **Process:**  
+  1. A temporary AES key is generated.  
+  2. The sensitive payload is encrypted using this AES key.  
+  3. The AES key is then encrypted using Setu’s RSA public key.
+- **Request Message Structure:**  
+
+<CodeBlockWithCopy language="json">
+{`{
+  "id": "unique-request-id-123",
+  "encrypted_data": "Base64_Encrypted_Payload",
+  "encrypted_key": "Base64_Encrypted_AES_Key"
+}`}
+</CodeBlockWithCopy>
+
+*Note: In your secured request, use Setu's public key (from section 1) to secure the data.*
+
+---
+
+### 3. Response Handling
+
+Setu's response will include unprotected fields (like `id` and `traceId`) along with the secured sensitive data. Depending on the method used:
+
+- **For ECIES:**  
+  The response will include an `encrypted_data` field.  
+  To recover the sensitive payload, decrypt the `encrypted_data` using your ECIES private key.
+
+<CodeBlockWithCopy language="json">
+{`{
+  "id": "unique-request-id-123",
+  "traceId": "trace-id-456",
+  "encrypted_data": "Encrypted_Payload"
+}`}
+</CodeBlockWithCopy>
+
+- **For AES-RSA (Hybrid):**  
+  The response will include both `encrypted_data` and `encrypted_key` fields.  
+  First, unwrap the AES key by decrypting `encrypted_key` using your RSA private key.  
+  Then, use the recovered AES key to decrypt the `encrypted_data` and retrieve the sensitive payload.
+
+<CodeBlockWithCopy language="json">
+{`{
+  "id": "unique-request-id-123",
+  "traceId": "trace-id-456",
+  "encrypted_data": "Base64_Encrypted_Payload",
+  "encrypted_key": "Base64_Encrypted_AES_Key"
+}`}
+</CodeBlockWithCopy>
+
+After decryption, merge the recovered sensitive data with the unprotected fields to reconstruct the complete response.
+
+*Note: Store your private keys securely and share your public key to setu*
+
+---
+
+## Code Examples
+
+<Tabs
+  tabs={[
+    {
+      key: "1",
+      label: "AES-RSA (Hybrid) in Python",
+      content: (
+        <CodeBlockWithCopy language="python">
+{`import base64\nimport os\nfrom Crypto.Cipher import AES, PKCS1_v1_5\nfrom Crypto.Util.Padding import pad, unpad\nfrom Crypto.PublicKey import RSA\nimport json\n\ndef generate_aes_key() -> str:\n\tkey = os.urandom(32)  # 256-bit key\n\treturn base64.b64encode(key).decode('utf-8')\n\ndef aes_encrypt(message: str, key_base64: str) -> str:\n\tkey = base64.b64decode(key_base64)\n\tiv = os.urandom(16)\n\tcipher = AES.new(key, AES.MODE_CBC, iv)\n\tciphertext = cipher.encrypt(pad(message.encode(), AES.block_size))\n\treturn base64.b64encode(iv + ciphertext).decode('utf-8')\n\ndef aes_decrypt(message: str, key_base64: str) -> str:\n\tkey = base64.b64decode(key_base64)\n\tencrypted_data = base64.b64decode(message)\n\tiv = encrypted_data[:16]\n\tciphertext = encrypted_data[16:]\n\tcipher = AES.new(key, AES.MODE_CBC, iv)\n\treturn unpad(cipher.decrypt(ciphertext), AES.block_size).decode('utf-8')\n\ndef rsa_encrypt(message, public_key_b64):\n\tpublic_key_der = base64.b64decode(public_key_b64)\n\tpublic_key = RSA.import_key(public_key_der)\n\tcipher = PKCS1_v1_5.new(public_key)\n\tencrypted = cipher.encrypt(message.encode())\n\treturn base64.b64encode(encrypted).decode('utf-8')\n\ndef rsa_decrypt(encrypted_message_b64, private_key_b64):\n\tprivate_key = RSA.import_key(base64.b64decode(private_key_b64))\n\tencrypted_message = base64.b64decode(encrypted_message_b64)\n\tcipher = PKCS1_v1_5.new(private_key)\n\tdecrypted_message = cipher.decrypt(encrypted_message, None).decode('utf-8')\n\treturn decrypted_message\n\ndef encrypt(rsa_public_key: str, data_str: str) -> dict:\n\taes_key = generate_aes_key()\n\tsecured_data = aes_encrypt(message=data_str, key_base64=aes_key)\n\twrapped_key = rsa_encrypt(message=aes_key, public_key_b64=rsa_public_key)\n\treturn {"encrypted_data": secured_data, "encrypted_key": wrapped_key}\n\ndef decrypt(rsa_private_key: str, encrypted_key: str, encrypted_data: str) -> dict:\n\taes_key = rsa_decrypt(encrypted_message_b64=encrypted_key, private_key_b64=rsa_private_key)\n\tdata = aes_decrypt(message=encrypted_data, key_base64=aes_key)\n\treturn json.loads(data)\n\n# Example usage:\nprivate_key = "<YOUR_RSA_PRIVATE_KEY>"\npublic_key = "<YOUR_RSA_PUBLIC_KEY>"\ndata = '{"ifsc":"ABCD0123456","accountNumber":"1234567890","narration":"test transaction","matchKey":"gaurav"}'\nsecured_response = encrypt(rsa_public_key=public_key, data_str=data)\nprint("Secured Request:", secured_response)\nrecovered_data = decrypt(rsa_private_key=private_key, encrypted_key=secured_response['encrypted_key'], encrypted_data=secured_response['encrypted_data'])\nprint("Recovered Data:", recovered_data)`}
+        </CodeBlockWithCopy>
+      )
+    },
+    {
+      key: "2",
+      label: "AES-RSA (Hybrid) in Java",
+      content: (
+        <CodeBlockWithCopy language="java">
+{`import javax.crypto.Cipher;\nimport javax.crypto.KeyGenerator;\nimport javax.crypto.SecretKey;\nimport javax.crypto.spec.IvParameterSpec;\nimport javax.crypto.spec.SecretKeySpec;\nimport java.security.*;\nimport java.security.spec.*;\nimport java.util.Base64;\nimport java.util.HashMap;\nimport java.util.Map;\nimport java.security.interfaces.RSAPrivateKey;\n\npublic class AesRsaExample {\n\n\t// AES Utility Methods\n\tpublic static String generateAESKey() {\n\t\ttry {\n\t\t\tKeyGenerator keyGen = KeyGenerator.getInstance("AES");\n\t\t\tkeyGen.init(256);\n\t\t\tSecretKey secretKey = keyGen.generateKey();\n\t\t\treturn Base64.getEncoder().encodeToString(secretKey.getEncoded());\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException("Error generating AES key", e);\n\t\t}\n\t}\n\n\tpublic static String aesEncrypt(String message, String keyBase64) {\n\t\ttry {\n\t\t\tbyte[] key = Base64.getDecoder().decode(keyBase64);\n\t\t\tbyte[] iv = new byte[16];\n\t\t\tnew SecureRandom().nextBytes(iv);\n\t\t\tCipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");\n\t\t\tSecretKeySpec secretKey = new SecretKeySpec(key, "AES");\n\t\t\tIvParameterSpec ivSpec = new IvParameterSpec(iv);\n\t\t\tcipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);\n\t\t\tbyte[] ciphertext = cipher.doFinal(message.getBytes());\n\t\t\tbyte[] encryptedData = new byte[iv.length + ciphertext.length];\n\t\t\tSystem.arraycopy(iv, 0, encryptedData, 0, iv.length);\n\t\t\tSystem.arraycopy(ciphertext, 0, encryptedData, iv.length, ciphertext.length);\n\t\t\treturn Base64.getEncoder().encodeToString(encryptedData);\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException("Error encrypting message", e);\n\t\t}\n\t}\n\n\tpublic static String aesDecrypt(String encryptedMessage, String keyBase64) {\n\t\ttry {\n\t\t\tbyte[] key = Base64.getDecoder().decode(keyBase64);\n\t\t\tbyte[] encryptedData = Base64.getDecoder().decode(encryptedMessage);\n\t\t\tbyte[] iv = new byte[16];\n\t\t\tbyte[] ciphertext = new byte[encryptedData.length - 16];\n\t\t\tSystem.arraycopy(encryptedData, 0, iv, 0, 16);\n\t\t\tSystem.arraycopy(encryptedData, 16, ciphertext, 0, ciphertext.length);\n\t\t\tCipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");\n\t\t\tSecretKeySpec secretKey = new SecretKeySpec(key, "AES");\n\t\t\tIvParameterSpec ivSpec = new IvParameterSpec(iv);\n\t\t\tcipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);\n\t\t\tbyte[] plaintext = cipher.doFinal(ciphertext);\n\t\t\treturn new String(plaintext);\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException("Error decrypting message", e);\n\t\t}\n\t}\n\n\t// RSA Utility Methods\n\tpublic static String[] generateRSAKeys() {\n\t\ttry {\n\t\t\tKeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");\n\t\t\tkeyGen.initialize(2048);\n\t\t\tKeyPair pair = keyGen.generateKeyPair();\n\t\t\tString privateKeyBase64 = Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded());\n\t\t\tString publicKeyBase64 = Base64.getEncoder().encodeToString(pair.getPublic().getEncoded());\n\t\t\treturn new String[]{privateKeyBase64, publicKeyBase64};\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException("Error generating RSA keys", e);\n\t\t}\n\t}\n\n\tpublic static String rsaEncrypt(String message, String publicKeyBase64) {\n\t\ttry {\n\t\t\tbyte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);\n\t\t\tKeyFactory keyFactory = KeyFactory.getInstance("RSA");\n\t\t\tPublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));\n\t\t\tCipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");\n\t\t\tcipher.init(Cipher.ENCRYPT_MODE, publicKey);\n\t\t\tbyte[] encryptedBytes = cipher.doFinal(message.getBytes());\n\t\t\treturn Base64.getEncoder().encodeToString(encryptedBytes);\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException("Error encrypting with RSA", e);\n\t\t}\n\t}\n\n\tpublic static String rsaDecrypt(String encryptedMessageBase64, String privateKeyBase64) {\n\t\ttry {\n\t\t\tbyte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);\n\t\t\tKeyFactory keyFactory = KeyFactory.getInstance("RSA");\n\t\t\tPrivateKey privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));\n\t\t\tbyte[] encryptedBytes = Base64.getDecoder().decode(encryptedMessageBase64);\n\t\t\tCipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");\n\t\t\tcipher.init(Cipher.DECRYPT_MODE, privateKey);\n\t\t\tbyte[] decryptedBytes = cipher.doFinal(encryptedBytes);\n\t\t\treturn new String(decryptedBytes);\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException("Error decrypting with RSA", e);\n\t\t}\n\t}\n\n\tpublic static String getPublicKeyFromPrivateKey(String privateKeyBase64) {\n\t\ttry {\n\t\t\tbyte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);\n\t\t\tKeyFactory keyFactory = KeyFactory.getInstance("RSA");\n\t\t\tPrivateKey privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));\n\t\t\tPublicKey publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(\n\t\t\t\t((RSAPrivateKey) privateKey).getModulus(),\n\t\t\t\t((RSAPrivateKey) privateKey).getPrivateExponent()\n\t\t\t));\n\t\t\treturn Base64.getEncoder().encodeToString(publicKey.getEncoded());\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException("Error extracting public key", e);\n\t\t}\n\t}\n\n\t// Hybrid Encryption Methods\n\tpublic static Map<String, String> encrypt(String rsaPublicKey, String dataStr) {\n\t\tString aesKey = generateAESKey();\n\t\tString encData = aesEncrypt(dataStr, aesKey);\n\t\tString encAESKey = rsaEncrypt(aesKey, rsaPublicKey);\n\t\tMap<String, String> result = new HashMap<>();\n\t\tresult.put("encrypted_data", encData);\n\t\tresult.put("encrypted_key", encAESKey);\n\t\treturn result;\n\t}\n\n\tpublic static String decrypt(String rsaPrivateKey, String encryptedKey, String encryptedData) {\n\t\tString aesKey = rsaDecrypt(encryptedKey, rsaPrivateKey);\n\t\treturn aesDecrypt(encryptedData, aesKey);\n\t}\n\n\tpublic static void main(String[] args) {\n\t\tString privateKey = "<YOUR_RSA_PRIVATE_KEY>";\n\t\tString publicKey = "<YOUR_RSA_PUBLIC_KEY>";\n\t\tString data = "{\"ifsc\":\"ABCD0123456\",\"accountNumber\":\"1234567890\",\"narration\":\"test transaction\",\"matchKey\":\"gaurav\"}";\n\t\tMap<String, String> encryptedResponse = encrypt(publicKey, data);\n\t\tSystem.out.println("Encrypted Response: " + encryptedResponse);\n\t\tString decryptedData = decrypt(privateKey, encryptedResponse.get("encrypted_key"), encryptedResponse.get("encrypted_data"));\n\t\tSystem.out.println("Decrypted Data: " + decryptedData);\n\t}\n}`}
+</CodeBlockWithCopy>
+      )
+    },
+    {
+      key: "3",
+      label: "ECIES in Python",
+      content: (
+        <CodeBlockWithCopy language="python">
+{`import ecies\nfrom ecies.utils import generate_key\n\ndef generate_key_pair():\n\tprivate_key = generate_key()\n\tpublic_key = private_key.public_key\n\treturn private_key.to_hex(), public_key.format(True).hex()\n\ndef encrypt_payload(public_key_hex, payload):\n\tencrypted_data = ecies.encrypt(public_key_hex, payload.encode())\n\treturn encrypted_data.hex()\n\ndef decrypt_payload(private_key_hex, encrypted_data_hex):\n\tdecrypted_data = ecies.decrypt(private_key_hex, bytes.fromhex(encrypted_data_hex))\n\treturn decrypted_data.decode()\n\nprivate_key, public_key = generate_key_pair()\npayload = '{"ifsc":"ABCD0123456","accountNumber":"1234567890","narration":"test transaction","matchKey":"gaurav"}'\nsecured_payload = encrypt_payload(public_key, payload)\nprint("Secured Payload:", secured_payload)\nrecovered_payload = decrypt_payload(private_key, secured_payload)\nprint("Recovered Payload:", recovered_payload)`}
+</CodeBlockWithCopy>
+      )
+    }
+  ]}
+/>
