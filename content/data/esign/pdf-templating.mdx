@@ -1,0 +1,514 @@
+---
+sidebar_title: Pdf templating guide
+page_title: Integration guide with pdf templating API's
+order: 10
+visible_in_sidebar: true
+---
+
+## Upload the PDF template
+
+The PDF templating API's can be used to upload a PDF with fillable form template. 
+Fill data into it the form and create unique PDFs for signing.
+ 
+Here’s a quick run through of the APIs—
+
+1. **Upload document**—Upload a PDF with fillable form. You get template `id` and form fields in reponse.
+2. **Render template**-Render the template with the data to be filled in the form. Returns a document `Id`. (Can be skipped) 
+3. **Create signature request**-Create a signature request with the rendered template. Get singing link in response.
+4. **Update template**-update the form fields/template doc with template `id`.
+4. **Get template**-get template doc and form fields with the template `id`. 
+
+
+
+The render template API can be skipped and task of rendering the document can be moved to the create signature request API itself, 
+by passing the form fields and templateId to the create signature request API.  
+
+
+<br />
+
+Here are the URLs you would need for these APIs— 
+
+- Sandbox—`https://dg-sandbox.setu.co`
+- Production—`https://dg.setu.co`
+- Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+  - `x-client-id`
+  - `x-client-secret`
+  - `x-product-instance-id`
+
+<hr class="primary" />
+
+### Upload PDF template
+
+Call this API to upload the document that has to be signed. The document and the document name would be passed as a multipart/form-data upload of the `files` and `name` parameters respectively.
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "201",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/documents 
+ 
+payload= { 
+    "name": "account opening form" 
+ } 
+ 
+files= [ 
+  ("document", ("aof.pdf", open("/Users/path/Aof.pdf", "rb"), "application/pdf")) 
+] `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You will get a unique <code>id</code> which is the{" "}
+                <code>temaplateId</code> from Setu for render template/signature request
+                creation.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {` {
+  "template_id": "2976a4f8-84a5-4f1f-bc49-4c4a71c07900",
+  "name": "account opening form",
+  "form_fields": {
+    "text": {
+      "dob": "",
+      "city": "",
+      "place": "",
+      "state": ""
+    },
+    "check_boxes": {
+      "#c.gender.F": "",
+      "#c.gender.M": "",
+      "#c.gender.U": "",
+      "#c.income.a": "",
+      "#c.income.b": "",
+      "#c.income.c": ""
+    },
+    "images": {
+      "#i.bank_proof": ""
+    }
+  },
+  "traceId": "1-67e51c57-74fbcff84f4ea1ee6cb27e27"
+}
+`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    ></Tabs>
+  </Portion>
+</Row>
+
+<hr class="primary" />
+
+### Render template request
+
+Render a template by filling form data. 
+Create a filled pdf file by passing in the form field data and the template `id` in the request.
+You get an document `id` in response, which you can use to create the signature request. 
+
+<Callout type="tip">Render template functtionality can also be clubbed up with create signature request.</Callout>
+
+<br/>
+
+Here is a quick description of the values required to call this API—
+
+- `template_id` the template id of the document, which you get from the Upload template API response.
+- `form_fields` The form fields with value to be filled in the template pdf
+
+<Callout type="warning">
+The image fields should be passed as base64 encoded string of jpeg/jpg.
+</Callout>
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "201",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/documents 
+ 
+payload= {
+  "template_id": "2976a4f8-84a5-4f1f-bc49-4c4a71c07900",
+  "form_fields": {
+    "text": {
+      "dob": "1998",
+      "city": "Delhi",
+      "place": "Chanakyapuri",
+      "state": "Delhi"
+    },
+    "check_boxes": {
+      "#c.gender.F": "/Yes",
+      "#c.gender.M": "",
+      "#c.gender.U": "",
+      "#c.income.a": "",
+      "#c.income.b": "/Yes",
+      "#c.income.c": ""
+    },
+    "images": {
+      "#i.bank_proof": "jpg image's base64 string"
+    }
+  }
+} 
+`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You will get a unique <code>id</code> which is the{" "}
+                <code>temaplateId</code> from Setu for render template/signature request
+                creation.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {` {
+    "documentType": "application/pdf",
+    "downloadUrl": "https://s3-link-goes-here.com",
+    "id": "d784d36c-88c8-4670-b320-d164cad73d8c",
+    "name": "account opening form"
+}
+`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    ></Tabs>
+  </Portion>
+</Row>
+
+
+<br/>
+
+<hr class="primary" />
+
+### Create signature request
+You can use the render template feature with our create signature API or pass the document id returned from render template API.
+The create request API can be used either with a flexible configId or generic sign placement keys like lower-left, upper-right etc.
+
+<hr class="tertiary" />
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+            <Text size="small" weight="600">Create request using documentId (you can also use configId)</Text>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request with documentId</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+                "documentId": "d784d36c-88c8-4670-b320-d164cad93d8v",
+                "redirectUrl": "http://setu.co",
+                "reason": "test",
+                "signers": [
+                    {
+                    "identifier": "7042484922",
+                    "displayName": "Rahul Roy",
+                    "geoCoordinate": "123.45, 56.7",
+                    "location": "patiala punjab",
+                    "signerNo": 1,
+                    "signature": {
+                                "height": 60,
+                                "onPages": [
+                                    "1"
+                                ],
+                                "position": "bottom-right",
+                                "width": 180
+                            }
+                    
+                    }
+                ]
+            }`}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {` {
+                "documentId": "54879ac9-18ed-424c-8191-56f24b8e89e0",
+                "id": "1ef895e5-a2d6-46a1-a415-297a5fe631b1",
+                "reason": "test",
+                "redirectUrl": "http://setu.co",
+                "signers": [
+                    {
+                        "birthYear": "None",
+                        "displayName": "Rahul Roy",
+                        "errCode": null,
+                        "id": "d54fe2d2-77b6-44aa-a216-6830fb9d043f",
+                        "identifier": "7042484922",
+                        "location": "patiala punjab",
+                        "signatureDetails": null,
+                        "status": "pending",
+                        "url": "http://localhost:8000/signature/preview?requestId=1ef895e5-a2d6-46a1-a415-297a5fe631b1&signerId=d54fe2d2-77b6-44aa-a216-6830fb9d043f"
+                    }
+                ],
+                "status": "sign_initiated",
+                "traceId": "a6e8af2b-31d6-454d-9325-009f2c144bd3"
+            } 
+            `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+        {
+          key: "2",
+          label: "200",
+          content: (
+            <>
+            <Text size="small" weight="600">Create request using templateId and form fields.</Text>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully. You will get signing link in response.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`
+                {
+                "redirectUrl": "http://setu.co",
+                "configId": "2581d3d6-ba9a-4be0-b6bc-ab4899e0dd08",
+                "templateId":"2976a4f8-84a5-4f1f-bc49-4c4a71c07900",
+                "formFields": {
+                    "text": {
+                    "dob": "1998",
+                    "city": "Delhi",
+                    "place": "Chanakyapuri",
+                    "state": "Delhi"
+                    },
+                    "check_boxes": {
+                    "#c.gender.F": "/Yes",
+                    "#c.gender.M": "",
+                    "#c.gender.U": "",
+                    "#c.income.a": "",
+                    "#c.income.b": "/Yes",
+                    "#c.income.c": ""
+                    },
+                    "images": {
+                    "#i.bank_proof": "jpg image's base64 string"
+                },
+                "reason": "Brokerage Account opening",
+                "signers": [
+                    {
+                    "identifier": "7042484933",
+                    "displayName": "Rahul Roy",
+                    "geoCoordinate": "123.45, 56.7",
+                    "location": "patiala punjab",
+                    "signerNo": 1
+                    }
+                ]
+                }
+            `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+                    "documentId": "89edaa02-076b-44e9-a993-8e5d4b5880e2",
+                    "id": "cdbf2f80-62bc-443b-b20f-102f92c9b9a2",
+                    "reason": "test",
+                    "redirectUrl": "http://setu.co",
+                    "signers": [
+                        {
+                            "birthYear": "None",
+                            "displayName": "Rahul Roy",
+                            "errCode": null,
+                            "id": "ab54f775-8f91-43b0-b3ec-b5e10b322deb",
+                            "identifier": "7042484933",
+                            "location": "patiala punjab",
+                            "signatureDetails": null,
+                            "status": "pending",
+                            "url": "https://dg.setu.co/signature/preview?requestId=cdbf2f80-62bc-443b-b20f-102f92c9b9a2&signerId=ab54f775-8f91-43b0-b3ec-b5e10b322deb"
+                        }
+                    ],
+                    "status": "sign_initiated",
+                    "traceId": "1-67e51e0a-1c005d0110441795624a557e"
+                } 
+            `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        }
+      ]}
+    ></Tabs>
+  </Portion>
+</Row>
+
+<hr class="primary" />
+
+
+### Update the PDF template
+
+This api can be use to update the pdf template. 
+The update API will behaves in this fashion:-
+  1) if just document is send in request then a new transformed form fields json will be created
+  which will overwrite the existing form fields json.
+  2) If just form fields are sent, then existing form fields json will be updated
+  with new form fields.
+  3) If both the form fields and template document are sent,
+  then existing form fields json will be updated with new form field, request's doc would be ignored.
+ 
+ This api uses verioned updates. You can use the get API to view older verions. 
+ While singing/rendering document just the latest version can be used.
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "201",
+          content: (
+            <>
+              <p>
+                <Badge type="success">SUCCESS</Badge> Setu has processed your
+                request successfully. You will get signing link in response.
+              </p>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <CodeBlockWithCopy language="json">
+                {`POST /api/documents 
+ 
+payload= { 
+    "name": "account opening form" 
+    "form_fields": {
+        "text":{
+                "dob": "", 
+                "city": "", 
+                "nominee3_guardian_address": "" 
+                }, 
+        "check_boxes": {
+                "#c.raa.r1": "", 
+                "#c.raa.r2": "" 
+                }, 
+        "images": { "#i.bank_proof": ""} 
+    } 
+ 
+files= [ 
+  ("document", ("aof.pdf", open("/Users/path/Aof_new.pdf", "rb"), "application/pdf")) 
+] `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <p>
+                You will get the updated form_fields and the doc url and version_no.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {` {
+    "template_id": "8bba0bea-0c63-4eb2-9da9-11b5114b579b",
+    "template_doc_url": "http://localhost:4566/dg-uat-persistent/b186f03d-3db2-4bf1-b75e-4b6fde0e27d8/69e1d94f-ece8-4536-8b29-e737b5b2b85a.pdf",
+    "name": "aof_groww",
+    "version_no": 2,
+    "form_fields": {
+        "text": {
+            "dob": "",
+            "city": "",
+            "bo_id": ""
+        },
+        "check_boxes": {
+            "#c.gender.F": "",
+            "#c.gender.M": "",
+            "#c.gender.U": "",
+            "#c.income.a": ""
+        },
+        "images": {
+            "#i.bank_proof": ""
+        }
+    },
+    "traceId": "ad143efa-d109-41ae-981f-14c673a7a48e"
+}
+`}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        },
+      ]}
+    ></Tabs>
+  </Portion>
+</Row>
+
+<hr class="primary" />
+
+
+### Get the PDF template
+
+Call this API to get a pdf template.
+
+<Row>
+  <Portion desktopSpan="whole">
+    <Tabs
+      tabs={[
+        {
+          key: "1",
+          label: "200",
+          content: (
+            <>
+              <hr className="tertiary" />
+              <h5>Request</h5>
+              <p>
+                Pass the template <code>id</code> and <code>version No</code> as a URL parameter.
+              </p>
+              <CodeBlockWithCopy language="json">
+                {`GET /api/templates/:id/:version_no `}
+              </CodeBlockWithCopy>
+              <hr className="tertiary" />
+              <h5>Response</h5>
+              <CodeBlockWithCopy language="json">
+                {`{
+                    "documentId": "89edaa02-076b-44e9-a993-8e5d4b5880e2",
+                    "id": "cdbf2f80-62bc-443b-b20f-102f92c9b9a2",
+                    "reason": "test",
+                    "redirectUrl": "http://setu.co",
+                    "signers": [
+                        {
+                            "birthYear": "None",
+                            "displayName": "Rahul Roy",
+                            "errCode": null,
+                            "id": "ab54f775-8f91-43b0-b3ec-b5e10b322deb",
+                            "identifier": "7042484933",
+                            "location": "patiala punjab",
+                            "signatureDetails": null,
+                            "status": "pending",
+                            "url": "https://dg.setu.co/signature/preview?requestId=cdbf2f80-62bc-443b-b20f-102f92c9b9a2&signerId=ab54f775-8f91-43b0-b3ec-b5e10b322deb"
+                        }
+                    ],
+                    "status": "sign_initiated",
+                    "traceId": "1-67e51e0a-1c005d0110441795624a557e"
+                } 
+            `}
+              </CodeBlockWithCopy>
+            </>
+          ),
+        }
+      ]}
+    ></Tabs>
+  </Portion>
+</Row>
+
+<WasPageHelpful />
