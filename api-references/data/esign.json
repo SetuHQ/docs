@@ -1363,6 +1363,103 @@
             }
         },
 
+        "/api/estamp/count": {
+            "post": {
+                "summary": "eStamp count",
+                "operationId": "estampcount",
+                "parameters": [
+                    {
+                        "name": "x-client-id",
+                        "in": "header",
+                        "description": "",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string",
+                            "example": "{{client_id}}"
+                        }
+                    },
+                    {
+                        "name": "x-client-secret",
+                        "in": "header",
+                        "description": "",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string",
+                            "example": "{{secret}}"
+                        }
+                    },
+                    {
+                        "name": "x-product-instance-id",
+                        "in": "header",
+                        "description": "",
+                        "required": true,
+                        "style": "simple",
+                        "schema": {
+                            "type": "string",
+                            "example": "{{x-product-instance-id}}"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "headers": {},
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/estampcount"
+                                },
+                                "example": {
+                "start_date": "2024-09-18",
+                "end_date": "2025-03-18",
+                "summary": [
+                {
+                    "value": 50,
+                    "total_available": 588,
+                    "total_consumed": 350,
+                    "total_locked": 55,
+                    "state": "delhi"
+                },
+                {
+                    "value": 20,
+                    "total_available": 38,
+                    "total_consumed": 12831,
+                    "total_locked": 16,
+                    "state": "puducherry"
+                }
+                ],
+                "data": [
+                {
+                    "procurement_date": "2025-03-17",
+                    "value": 50,
+                    "state": "delhi",
+                    "available": 588,
+                    "consumed": 350,
+                    "locked": 55
+                },
+                {
+                    "procurement_date": "2025-03-15",
+                    "value": 20,
+                    "state": "puducherry",
+                    "available": 0,
+                    "consumed": 100,
+                    "locked": 0
+                }
+                ],
+                "traceId": "1-67d9d039-09f299553c8e14eb0d7eb61e"
+            }
+                            }
+                        }
+                    }
+                },
+                "deprecated": false,
+                "security": [],
+                "tags": ["eStamp"]
+            }
+        },
+
         "/api/documents": {
             "post": {
                 "summary": "Upload Document",
@@ -3248,6 +3345,109 @@
                     "aadhaarSuffix": "5340"
                 }
             },
+            "estampcount": {
+               "title": "estampcount",
+                "type": "object",
+                "required": [
+                    "start date",
+                    "end date",
+                    "summary",
+                    "data"
+                ],
+                "properties": {
+                    "start date": {
+                    "type": "string"
+                    },
+                    "end date": {
+                    "type": "string"
+                    },
+                    "summary": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                        "value",
+                        "total_available",
+                        "total_consumed",
+                        "total_locked",
+                        "state"
+                        ],
+                        "properties": {
+                        "value": { "type": "number" },
+                        "total_available": { "type": "number" },
+                        "total_consumed": { "type": "number" },
+                        "total_locked": { "type": "number" },
+                        "state": { "type": "string" }
+                        }
+                    }
+                    },
+                    "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                        "procurement_date",
+                        "value",
+                        "state",
+                        "available",
+                        "consumed",
+                        "locked"
+                        ],
+                        "properties": {
+                        "procurement_date": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "value": { "type": "number" },
+                        "state": { "type": "string" },
+                        "available": { "type": "number" },
+                        "consumed": { "type": "number" },
+                        "locked": { "type": "number" }
+                        }
+                    }
+                }
+            },
+            "example": {
+                "start_date": "2024-09-18",
+                "end_date": "2025-03-18",
+                "summary": [
+                {
+                    "value": 50,
+                    "total_available": 588,
+                    "total_consumed": 350,
+                    "total_locked": 55,
+                    "state": "delhi"
+                },
+                {
+                    "value": 20,
+                    "total_available": 38,
+                    "total_consumed": 12831,
+                    "total_locked": 16,
+                    "state": "puducherry"
+                }
+                ],
+                "data": [
+                {
+                    "procurement_date": "2025-03-17",
+                    "value": 50,
+                    "state": "delhi",
+                    "available": 588,
+                    "consumed": 350,
+                    "locked": 55
+                },
+                {
+                    "procurement_date": "2025-03-15",
+                    "value": 20,
+                    "state": "puducherry",
+                    "available": 0,
+                    "consumed": 100,
+                    "locked": 0
+                }
+                ],
+                "traceId": "1-67d9d039-09f299553c8e14eb0d7eb61e"
+            }
+        },
+            
             "Downloaddocument": {
                 "title": "Downloaddocument",
                 "required": ["documentType", "downloadUrl", "id", "name"],
