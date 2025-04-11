@@ -34,6 +34,45 @@ Below are some sample accept and reject scenarios:
 3. If one name contains only initials (name1 = Rakesh Kumar Singh, name2 = R K S)
 4. If in the case of initials, the non-initial parts of the name do not match (name1 = Rakesh Kumar Singh, name2 = R K Sngh)
 
-Please note that this feature is independent, and should you not opt for it, there will be no changes to the normal eSign flow.
+Apart from rejecting an eSign request on the basis of name match we also provide the option for you to receive the fuzzy name match scores in our API responses.
+This way you will be able to take the call to either accept or reject the request on the basis of scores received. This feature can also be configured during your onboarding process.
+
+This data will be optionally available in the following ways:
+
+1. <a href="https://docs.setu.co/data/esign/api-reference#/operation~GetSignatureRequestbyRequestID" target="_blank">Get signature request status</a>
+2. <a href="https://docs.setu.co/data/esign/notifications#notifications" target="_blank">eSign notification</a>
+
+A sample name match data in API response and notification will look like this:
+
+```json
+......
+"signers": [
+    {
+        ......
+        "nameMatchDetails": {
+            "optimisticMatchOutput": {
+                "match_percentage": 100.0,
+                "match_type": "COMPLETE_MATCH"
+            },
+            "pessimisticMatchOutput": {
+                "match_percentage": 100.0,
+                "match_type": "COMPLETE_MATCH"
+            }
+        },
+        ......
+    }
+],
+......
+```
+
+Possible values for the `match_type` key:
+
+1. COMPLETE_MATCH
+2. HIGH_PARTIAL_MATCH
+3. MODERATE_PARTIAL_MATCH
+4. LOW_PARTIAL_MATCH
+5. NO_MATCH
+
+Please note that these features are independent, and should you not opt for it, there will be no changes to the normal eSign flow.
 
 <WasPageHelpful />
