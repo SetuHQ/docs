@@ -123,3 +123,7 @@ Create a similar `mdx` file inside `test-product-2` and we are done!
 List of all components and their usage can be found by visiting https://docs.setu.co/sample-category/sample-product/sample-page
 
 Code of these components can be found in `sample-category` folder in this repo
+
+# Uploading images
+
+If you wish to use images in docs, you can upload them directly to GCP Cloud storage in `strapi-assests` bucket as a public file. You can use the public URL in our docs content to render the required image.
