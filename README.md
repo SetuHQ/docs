@@ -65,6 +65,10 @@ You can now use Setu's pre-built editor to preview API references. [Visit the pr
 
 > Currently this only works for JSON files. Support for YAML is WIP and should be available soon.
 
+# API playground
+
+You can find API playground mock payload for [Setu API playground](https://api-playground.setu.co) in `/api-playground` folder. Please refer to this [detailed guide](./api-playground/README.md) on how to update the API playground mock request payloads
+
 # Versioning
 
 To add versions to any product in our docs, these steps need to be followed:

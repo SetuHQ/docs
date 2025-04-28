@@ -9,9 +9,11 @@ visible_in_sidebar: true
 
 The GET Active FIP List API is the new version of our API to call the list of Active FIPs from which your customers can discover accounts, and consent to share data. The Active FIP List API works in a manner that
 
--   Dynamically activates and deactivates FIPs based on performance.
+-   Dynamically activates and deactivates the status of FIPs based on performance.
 -   Can be used to simply check the status of FIPs that are active or inactive on the ecosystem.
 -   Can be used by FIUs as a mode of selection of FIPs/providers where a user has an account.
+-   Multi-AA Support: Now tracking OneMoney, Finvu, Anumati, Saafe, and more!
+-   Dual-Metric System: Combined data fetch + consent approval rates
 -   Provides real-time success rates to help FIUs make data-driven decisions about creating consents, allowing them to route users to alternate data collection methods when FIP performance is poor.
 
 #### Details Shared in the FIP List API
@@ -55,7 +57,7 @@ These key details can be used by you for purposes like - offering a list of FIPs
         </td>
         <td>
             This refers to the type of data available via the FIP. For example,
-            an FIP with fiTypes “DEPOSITS “ will have Savings or Current
+            an FIP with fiTypes “DEPOSITS“ will have Savings or Current
             Accounts available and be able to share bank statements upon user
             consent
         </td>
@@ -73,10 +75,26 @@ These key details can be used by you for purposes like - offering a list of FIPs
     </tr>
     <tr>
         <td>
-            <code>successRate</code>
+            <code>dataFetchSuccessRate</code>
         </td>
         <td>
-            The data fetch success rate (in %) for the FIP in the last 1 hour. This can be used by FIUs to make informed decisions about creating consents. A null value indicates insufficient data points in the last hour to calculate the success rate.
+            The data fetch success rate for any FIP is calculated based on successful data retrievals in the last 1 hour.<br/><br/>
+            Formula: (Number of successful data fetches / Total number of data sessions created) × 100<br/><br/>
+            Example: If data sessions are created for 100 FIP accounts and 80 are successfully fetched<br/>
+            Data Fetch Success Rate = (80/100) × 100 = 80%<br/><br/>
+            If data fetch success rate is unavailable (minimum 100 accounts fetched needed): System will return a null value
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <code>consentConversionRate</code>
+        </td>
+        <td>
+            The consent approval rate is calculated based on consent approvals in the last 1 hour.<br/><br/>
+            Formula: (Number of approved consents / Total number of opened consent) × 100<br/><br/>
+            Example: If 100 consents were opened with FIP specified in context filter and 70 were approved<br/>
+            Consent Approval Rate = (70/100) × 100 = 70%<br/><br/>
+            If consent approval rate data is unavailable (Minimum 20 opened consent needed): System will use only data fetch success rate
         </td>
     </tr>
 </table>
@@ -156,7 +174,20 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             ],
             "institutionType": "BANK",
             "status": "ACTIVE",
-            "successRate": 98.55
+            "consentConversionRate": 93.95, // Aggregate of all AA's
+            "dataFetchSuccessRate": 97.55,
+            "aaWiseSuccessRate": [
+                {
+                    "consentConversionRate": 95.35,
+                    "dataFetchSuccessRate": 98.55,
+                    "aa": "onemoney"
+                },
+                {
+                    "consentConversionRate": 92.55,
+                    "dataFetchSuccessRate": 96.55,
+                    "aa": "anumati"
+                }
+            ]
         },
         {
             "name": "Federal Bank",
@@ -166,7 +197,15 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             ],
             "institutionType": "BANK",
             "status": "ACTIVE",
-            "successRate": 95.25
+            "consentConversionRate": 95.25,
+            "dataFetchSuccessRate": 95.25,
+            "aaWiseSuccessRate": [
+                {
+                    "consentConversionRate": 95.25,
+                    "dataFetchSuccessRate": 95.25,
+                    "aa": "onemoney"
+                }
+            ]
         },
         {
             "name": "IndusInd Bank Ltd.",
@@ -178,7 +217,15 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             ],
             "institutionType": "BANK",
             "status": "TEMPORARILY_INACTIVE",
-            "successRate": 45.20
+            "consentConversionRate": 45.20,
+            "dataFetchSuccessRate": 9.20,
+            "aaWiseSuccessRate": [
+                {
+                    "consentConversionRate": 45.20,
+                    "dataFetchSuccessRate": 9.20,
+                    "aa": "finvu"
+                }
+            ]
         },
         {
             "name": "HDFC Bank",
@@ -188,7 +235,9 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             ],
             "institutionType": "BANK",
             "status": "INACTIVE",
-            "successRate": null
+            "consentConversionRate": null,
+            "dataFetchSuccessRate": null,
+            "aaWiseSuccessRate": []
         }
    ],
    "traceId": "1-64313583-255e3a0705424652664584b2"
@@ -247,7 +296,20 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             ],
             "institutionType": "BANK",
             "status": "ACTIVE",
-            "successRate": 98.55
+            "consentConversionRate": 93.95, // Aggregate of all AA's
+            "dataFetchSuccessRate": 97.55,
+            "aaWiseSuccessRate": [
+                {
+                    "consentConversionRate": 95.35,
+                    "dataFetchSuccessRate": 98.55,
+                    "aa": "onemoney"
+                },
+                {
+                    "consentConversionRate": 92.55,
+                    "dataFetchSuccessRate": 96.55,
+                    "aa": "anumati"
+                }
+            ]
         }
     ],
     "traceId": "1-66ff79c7-46029a1f1aaa59083489fd46"
@@ -306,7 +368,20 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             ],
             "institutionType": "BANK",
             "status": "ACTIVE",
-            "successRate": 98.55
+            "consentConversionRate": 93.95, // Aggregate of all AA's
+            "dataFetchSuccessRate": 97.55,
+            "aaWiseSuccessRate": [
+                {
+                    "consentConversionRate": 95.35,
+                    "dataFetchSuccessRate": 98.55,
+                    "aa": "onemoney"
+                },
+                {
+                    "consentConversionRate": 92.55,
+                    "dataFetchSuccessRate": 96.55,
+                    "aa": "anumati"
+                }
+            ]
         },
         {
             "name": "Federal Bank",
@@ -316,12 +391,80 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             ],
             "institutionType": "BANK",
             "status": "ACTIVE",
-            "successRate": 95.25
+            "consentConversionRate": 95.25,
+            "dataFetchSuccessRate": 95.25,
+            "aaWiseSuccessRate": [
+                {
+                    "consentConversionRate": 95.25,
+                    "dataFetchSuccessRate": 95.25,
+                    "aa": "onemoney"
+                }
+            ]
         }
     ],
     "traceId": "1-64313583-255e3a0705424652664584b2"
 }
 `}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "errorMsg": "string",
+  "errorCode": "string",
+  "txnid": "string",
+  "timestamp": "2023-03-30T08:20:31.367Z",
+  "ver": "string"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        />
+    </Portion>
+</Row>
+
+### Get FIPs by AA API
+
+###### Request
+
+<CodeBlockWithCopy language="json">{` GET v2/fips?aa={aaHandle} OR v2/fips/{fipId}?aa={aaHandle} `}</CodeBlockWithCopy>
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "data": [
+        {
+            "name": "Axis Bank",
+            "fipId": "AXIS001",
+            "fiTypes": [
+                "DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "ACTIVE",
+            "consentConversionRate": 95.35, // OneMoney's consent conversion rate if passed AA is OneMoney
+            "dataFetchSuccessRate": 98.55,
+        }
+    ],
+    "traceId": "1-67bbf88f-6153048b7fd4bc7913995114"
+}`}
                             </CodeBlockWithCopy>
                         </>
                     ),
