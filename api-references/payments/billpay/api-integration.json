@@ -292,7 +292,111 @@
                           }
                         },
                         "x-go-gen-location": "models",
-                        "x-go-name": "BillerDetails"
+                        "x-go-name": "BillerDetails",
+                        "mandate": {
+                          "type": "object",
+                          "description": "Optional. Include this object to initiate a UPMS registration alongside the bill fetch.",
+                          "required": [
+                            "registrationType"
+                          ],
+                          "properties": {
+                            "registrationType": {
+                              "type": "string",
+                              "description": "Type of UPMS registration.",
+                              "enum": [
+                                "VIEW_N_PAY",
+                                "AUTO_PAY"
+                              ]
+                            },
+                            "billPeriod": {
+                              "type": "string",
+                              "description": "Frequency of expected bills. Mandatory for some billers, optional for others.",
+                              "enum": [
+                                "ONETIME",
+                                "DAILY",
+                                "WEEKLY",
+                                "BIMONTHLY",
+                                "MONTHLY",
+                                "QUARTERLY",
+                                "HALFYEARLY",
+                                "YEARLY",
+                                "ASPRESENTED"
+                              ]
+                            },
+                            "toDate": {
+                              "type": "string",
+                              "format": "date",
+                              "description": "Expiry date of the registration (YYYY-MM-DD)."
+                            },
+                            "debitInfo": {
+                              "type": "object",
+                              "description": "Required only if registrationType is AUTO_PAY. Contains auto-debit parameters.",
+                              "required": [
+                                  "debitType",
+                                  "amount",
+                                  "currency",
+                                  "paymentMode"
+                              ],
+                              "properties": {
+                                "debitType": {
+                                  "type": "string",
+                                  "description": "The rule for auto-debit.",
+                                  "enum": [
+                                    "FIXED_AMOUNT",
+                                    "MAX_AMOUNT"
+                                  ]
+                                },
+                                "amount": {
+                                  "type": "integer",
+                                  "description": "The fixed or maximum amount for auto-debit, in paise."
+                                },
+                                "currency": {
+                                  "type": "integer",
+                                  "description": "Currency code (use 356 for INR).",
+                                  "example": 356
+                                },
+                                "paymentMode": {
+                                  "type": "string",
+                                  "description": "The payment method intended for auto-debit.",
+                                  "enum": [
+                                    "Cash",
+                                    "Internet Banking",
+                                    "Credit Card",
+                                    "Debit Card",
+                                    "Prepaid Card",
+                                    "IMPS",
+                                    "NEFT",
+                                    "UPI",
+                                    "Wallet",
+                                    "AEPS",
+                                    "Account Transfer",
+                                    "Bharat QR",
+                                    "USSD"
+                                  ]
+                                },
+                                "debitDate": {
+                                  "type": "string",
+                                  "description": "Preferred date format (DD-MMM, e.g., 10-Feb) for attempting auto-debit each cycle."
+                                }
+                              }
+                            },
+                            "billerParams": {
+                              "type": "array",
+                              "description": "Additional parameters specific to the biller for the mandate.",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     },
                     "x-omitempty": true
@@ -451,6 +555,46 @@
                         "refId": {
                           "type": "string",
                           "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                        },
+                        "upmsRegistration": {
+                           "type": "object",
+                           "description": "Status of the UPMS registration request processing by Setu. Present only if 'mandate' was included in the request.",
+                           "required": [
+                             "status"
+                           ],
+                           "properties": {
+                             "status": {
+                               "type": "string",
+                               "description": "Initial status of the registration request. Final status comes via webhook.",
+                               "enum": [
+                                 "PENDING",
+                                 "FAILED"
+                               ]
+                             },
+                             "refId": {
+                               "type": "string",
+                               "description": "Reference ID for the UPMS registration attempt. Use this to correlate with the registration callback. Only present if status is PENDING.",
+                               "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                             },
+                             "error": {
+                                "type": "object",
+                                "description": "Details of the error if the registration request failed synchronously (e.g., invalid mandate format). Only present if status is FAILED.",
+                                "required": [
+                                  "code",
+                                  "message"
+                                ],
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "example": "invalid-debit-info"
+                                  },
+                                  "message": {
+                                    "type": "string",
+                                    "example": "Invalid amount in debit info"
+                                  }
+                                }
+                             }
+                           }
                         }
                       }
                     },
