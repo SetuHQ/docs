@@ -1033,7 +1033,15 @@ When a new bill is available for a registered customer, the flow is:
 
 **Example `BILL_FETCH` Callback (for UPMS Presentment):**
 Note the presence of `upmsRegistrationRefId` indicating this is for a registered subscription.
-```json
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Callback Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
 {
   "event": "BILL_FETCH",
   "timeStamp": "2025-04-17T17:56:55.159+05:30",
@@ -1072,7 +1080,10 @@ Note the presence of `upmsRegistrationRefId` indicating this is for a registered
     "upmsRegistrationRefId": "D00EP9IJSBI05F06U9K0eBQWOq851071727"
   }
 }
-```
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 > **Note**: The same webhook endpoint receives notifications for both automatically presented bills (via UPMS) and bills retrieved through manual fetch requests (using separate Bill Fetch API). You can distinguish between these two scenarios by checking the `upmsRegistrationRefId` field within the callback's data object:
 >  - If `upmsRegistrationRefId` is present (not null), this callback represents an automatic bill presentment for a registered customer.
@@ -1102,7 +1113,15 @@ If a bill is paid elsewhere after presentation, you'll receive a `SKIP_PAYMENT` 
    - Locate and mark the bill as paid in your system.
 
 **Example `SKIP_PAYMENT` Callback:**
-```json
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Callback Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
 {
   "event": "SKIP_PAYMENT",
   "traceId": "D0508DIBJFBLCSGI36RG",
@@ -1112,7 +1131,10 @@ If a bill is paid elsewhere after presentation, you'll receive a `SKIP_PAYMENT` 
     "dateOfPayment": "2025-04-25T18:16:44+05:30"
   }
 }
-```
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 ### 6.2 Why Handle SKIP_PAYMENT Callbacks?
 
@@ -1172,56 +1194,110 @@ This asynchronous API allows you to manually trigger a `BILL_FETCH` callback for
 Confirms that the request to simulate the callback has been accepted.
 
 - **On Acceptance: HTTP 200 OK**
-  ```json
-  {
-    "success": true,
-    "traceId": "CV4PE82LTNJE9O014OE0"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **On Bad Request: HTTP 400 Bad Request** (e.g., Invalid `upmsRegistrationRefID` format).
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "invalid-registration-ref-id",
-      "message": "Invalid format for upmsRegistrationRefID"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE1"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "invalid-registration-ref-id",
+    "message": "Invalid format for upmsRegistrationRefID"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE1"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **On Forbidden: HTTP 403 Forbidden** - If attempted in the Production environment.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "forbidden-operation",
-      "message": "Simulation API not allowed in this environment"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE2"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "forbidden-operation",
+    "message": "Simulation API not allowed in this environment"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **On Not Found: HTTP 404 Not Found** - If the specified `upmsRegistrationRefID` does not exist or is not active.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "registration-not-found",
-      "message": "UPMS registration with the specified refId not found or inactive"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE3"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "registration-not-found",
+    "message": "UPMS registration with the specified refId not found or inactive"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE3"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **On Server Error: HTTP 500 Internal Server Error**.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "internal-error",
-      "message": "Internal Error"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE2"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 **Handling the Asynchronous Callback Outcome:**
 
@@ -1256,56 +1332,110 @@ This asynchronous API allows you to manually trigger a `SKIP_PAYMENT` callback f
 Confirms that the request to simulate the skip payment callback has been accepted.
 
 - **On Acceptance: HTTP 200 OK**
-  ```json
-  {
-    "success": true,
-    "traceId": "CV4PE82LTNJE9O014OE0"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **On Bad Request: HTTP 400 Bad Request** - e.g., Invalid `billRefId` format, or if the bill state is incompatible (e.g., already marked paid). May include specific codes like `invalid-bill`.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "invalid-bill",
-      "message": "Bill reference ID not found or inactive"
-    },
-    "traceId": "SIM4PE82LTNJE9O014OE0"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "invalid-bill",
+    "message": "Bill reference ID not found or inactive"
+  },
+  "traceId": "SIM4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **On Forbidden: HTTP 403 Forbidden** - If attempted in the Production environment.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "forbidden-operation",
-      "message": "Simulation API not allowed in this environment"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE2"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "forbidden-operation",
+    "message": "Simulation API not allowed in this environment"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **On Not Found: HTTP 404 Not Found** - If the specified `billRefId` does not exist.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "bill-not-found",
-      "message": "Bill with the specified refId not found"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE4"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "bill-not-found",
+    "message": "Bill with the specified refId not found"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE4"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **On Server Error: HTTP 500 Internal Server Error**.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "internal-error",
-      "message": "Internal Error"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE2"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 **Handling the Asynchronous Callback Outcome:**
 
@@ -1323,7 +1453,7 @@ Shortly after receiving the 200 OK acknowledgment, your configured webhook liste
   - Successful reception and processing of `SKIP_PAYMENT`.
   - Handling potential errors if simulation is called with non-existent `upmsRegistrationRefId` or `billRefId`.
 - **Correlation:** Pay attention to correlating the simulation API call with the resulting callback using `traceId` and the relevant reference IDs (`upmsRegistrationRefId`, `billRefId`).
-- **Idempotency:** While simulating, consider how your webhook handler deals with potentially receiving the same callback event more than once.
+- **Idempotency:** While simulating, ensure your webhook handler deals with potentially receiving the same callback event more than once.
 
 This concludes the guide on integrating with Setu's UPMS APIs.
 
