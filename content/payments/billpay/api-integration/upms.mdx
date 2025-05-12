@@ -121,10 +121,9 @@ You must set up and provide us with a secure HTTPS webhook endpoint URL. This en
 
 ### 3.1 Creating a Registration (Combined with Bill Fetch)
 
-This process leverages the existing **Bill Fetch API** endpoint (`POST /api/v2/bbps/bills/fetch/request`). To initiate a UPMS registration alongside fetching the current bill (if available), you simply include the `mandate` object in the standard Bill Fetch request.
+This process leverages the existing **Bill Fetch API** endpoint. To initiate a UPMS registration alongside fetching the current bill (if available), you simply include the `mandate` object in the standard Bill Fetch request.
 
-**Endpoint:** `POST /api/v2/bbps/bills/fetch/request`
-[See standard Bill Fetch API Reference](/content/payments/billpay/api-integration/apis.mdx#fetch-bill)
+**Endpoint:** `POST /api/v2/bbps/bills/fetch/request` <a href="/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchRequestV2">(See API Reference)</a>
 
 **Type:** Asynchronous
 
@@ -274,7 +273,7 @@ Two independent callbacks can be triggered following this API call:
 
 - **Registration Status Callback:** For registrations with initial status as `PENDING`, you will receive a `CREATE_UPMS_REGISTRATION` callback to inform you of the final outcome of the registration attempt identified by `upmsRegistration.refId` from the synchronous response.
 
-**`CREATE_UPMS_REGISTRATION` Callback:**
+**`CREATE_UPMS_REGISTRATION` Callback:** <a href="/payments/billpay/api-integration/webhooks#create-upms-registration-webhook">(See Webhook Reference)</a>
 
 - **Event Type:** `event: "CREATE_UPMS_REGISTRATION"`
 - **Timestamp:** `timeStamp` (ISO 8601 format)
@@ -415,7 +414,7 @@ Two independent callbacks can be triggered following this API call:
 
 This synchronous endpoint allows you to retrieve the current status and details of a specific, existing UPMS registration immediately.
 
-**Endpoint:** `GET /api/v2/upms/registrations/{upmsRegistrationRefID}`
+**Endpoint:** `GET /api/v2/upms/registrations/{upmsRegistrationRefID}` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~ViewUPMSRegistration">(See API Reference)</a>
 
 **Purpose:** To check the details and current status of a UPMS registration.
 
@@ -559,7 +558,7 @@ This synchronous endpoint allows you to retrieve the current status and details 
 
 This asynchronous endpoint allows modification of certain fields of an active UPMS registration.
 
-**Endpoint:** `PATCH /api/v2/upms/registrations/{upmsRegistrationRefID}`
+**Endpoint:** `PATCH /api/v2/upms/registrations/{upmsRegistrationRefID}` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~UpdateUPMSRegistration">(See API Reference)</a>
 
 **Purpose:** To modify specific details of an existing, active UPMS registration.
 
@@ -698,7 +697,7 @@ Confirms receipt and basic validation of the update request.
 
 You will receive an `UPDATE_UPMS_REGISTRATION` callback with the final outcome.
 
-**`UPDATE_UPMS_REGISTRATION` Callback:**
+**`UPDATE_UPMS_REGISTRATION` Callback:** <a href="/payments/billpay/api-integration/webhooks#update-upms-registration-webhook">(See Webhook Reference)</a>
 
 - **Event Type:** `event: "UPDATE_UPMS_REGISTRATION"`
 - **Timestamp:** `timeStamp`
@@ -801,7 +800,7 @@ You will receive an `UPDATE_UPMS_REGISTRATION` callback with the final outcome.
 
 This asynchronous endpoint permanently cancels an existing UPMS registration.
 
-**Endpoint:** `DELETE /api/v2/upms/registrations/{upmsRegistrationRefID}`
+**Endpoint:** `DELETE /api/v2/upms/registrations/{upmsRegistrationRefID}` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~CancelUPMSRegistration">(See API Reference)</a>
 
 **Purpose:**
 
@@ -934,7 +933,7 @@ Confirms receipt of the cancellation request.
 
 You will receive a `CANCEL_UPMS_REGISTRATION` callback confirming the outcome.
 
-**`CANCEL_UPMS_REGISTRATION` Callback Details:**
+**`CANCEL_UPMS_REGISTRATION` Callback Details:** <a href="/payments/billpay/api-integration/webhooks#cancel-upms-registration-webhook">(See Webhook Reference)</a>
 
 - **Event Type:** `event: "CANCEL_UPMS_REGISTRATION"`
 - **Timestamp:** `timeStamp`
@@ -1022,7 +1021,7 @@ When a new bill is available for a registered customer, the flow is:
 1. **Bill Generation**: The biller generates a new bill for the customer.
 2. **Push to BBPS**: The biller pushes the bill to the BBPS Central Unit.
 3. **Notification to COU**: BBPS identifies the UPMS registration and notifies us.
-4. **Callback to You**: We send a `BILL_FETCH` webhook with the bill details. ([See standard BILL_FETCH Callback Structure](/content/payments/billpay/api-integration/webhooks.mdx#bill-fetch-webhook))
+4. **Callback to You**: We send a `BILL_FETCH` webhook with the bill details. (<a href="/payments/billpay/api-integration/webhooks#bill-fetch-webhook">See Webhook Reference</a>)
 5. **Your Processing**:
    - Acknowledge with HTTP `200 OK`.
    - Parse the JSON payload.
@@ -1093,7 +1092,7 @@ Note the presence of `upmsRegistrationRefId` indicating this is for a registered
 
 When a user opts to pay a presented bill:
 
-1. **Invoke Payment API**: Construct and send a request to our BBPS Payment API endpoint. ([See Pay Bill API Reference](/content/payments/billpay/api-integration/apis.mdx#pay-bill))
+1. **Invoke Payment API**: Construct and send a request to our BBPS Payment API endpoint. (<a href="/payments/billpay/api-integration/api-reference#/category~Pay/operation~PaymentRequestV2">See API Reference</a>)
 2. **Follow Payment Flow**: Handle the response and subsequent steps (e.g., status checks, notifications) as defined in the Payment API documentation.
 
 ## 6. Handling Skipped Payments
@@ -1102,7 +1101,7 @@ Sometimes, a user might pay a bill through a different channel (e.g., directly o
 
 ### 6.1 SKIP_PAYMENT Callback Flow
 
-If a bill is paid elsewhere after presentation, you'll receive a `SKIP_PAYMENT` callback:
+If a bill is paid elsewhere after presentation, you'll receive a `SKIP_PAYMENT` callback: <a href="/payments/billpay/api-integration/webhooks#skip-payment-webhook">(See Webhook Reference)</a>
 
 1. **Payment Elsewhere**: User pays via another BBPS channel.
 2. **Notification to Us**: BBPS detects external payment and informs us.
@@ -1173,7 +1172,7 @@ To facilitate this, we provide Simulation APIs that allow you to manually trigge
 
 This asynchronous API allows you to manually trigger a `BILL_FETCH` callback for a specific, active UPMS registration.
 
-**Endpoint:** `POST /api/v2/upms/simulate/{upmsRegistrationRefID}/callbacks/bill`
+**Endpoint:** `POST /api/v2/upms/simulate/{upmsRegistrationRefID}/callbacks/bill` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~SimulateBillNotification">(See API Reference)</a>
 
 **Purpose:** To trigger the delivery of a simulated `BILL_FETCH` callback to your configured webhook endpoint for the specified `upmsRegistrationRefID`. This helps test how your system handles incoming bill presentments.
 
@@ -1311,7 +1310,7 @@ Shortly after receiving the 200 OK acknowledgment, your configured webhook liste
 
 This asynchronous API allows you to manually trigger a `SKIP_PAYMENT` callback for a specific bill reference ID.
 
-**Endpoint:** `POST /api/v2/upms/simulate/{billRefId}/callbacks/skip-payment`
+**Endpoint:** `POST /api/v2/upms/simulate/{billRefId}/callbacks/skip-payment` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~SimulateSkipPaymentNotification">(See API Reference)</a>
 
 **Purpose:** To trigger the delivery of a simulated `SKIP_PAYMENT` callback to your configured webhook endpoint for the specified `billRefId`. This helps test how your system handles notifications that a bill, previously presented, was paid via another channel.
 
@@ -1458,4 +1457,5 @@ Shortly after receiving the 200 OK acknowledgment, your configured webhook liste
 This concludes the guide on integrating with Setu's UPMS APIs.
 
 <WasPageHelpful />
+
 
