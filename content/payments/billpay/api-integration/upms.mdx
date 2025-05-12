@@ -84,7 +84,7 @@ UPMS supports two primary registration types:
 - **VIEW_N_PAY**: Standard presentment; your app receives bill notifications, displays them, and the user manually initiates payment.
 - **AUTO_PAY**: Auto-payment mandate already set up. When a bill is presented, your app initiates payment automatically using Setu's Payment APIs.
 
-### 2.4 Mandate (`mandate`)
+### 2.4 Mandate (mandate)
 
 A JSON object provided when creating/updating a registration, containing:
 
@@ -132,81 +132,139 @@ This process leverages the existing **Bill Fetch API** endpoint (`POST /api/v2/b
 
 **Request Structure:**
 Note the added `mandate` block for UPMS registration.
-```diff
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="diff">{`
 {
   "agent": { /* ... agent details ... */ },
   "biller": { /* ... biller details ... */ },
   "customer": { /* ... customer identifiers ... */ },
 + "mandate": { /* UPMS specific: details about the mandate as described in section 2.4 */
 +   "registrationType": "VIEW_N_PAY" | "AUTO_PAY",
-+   "billPeriod": "MONTHLY" | "ASPRESENTED" | …,
++   "billPeriod": "MONTHLY" | "ASPRESENTED" | ...,
 +   "toDate": "YYYY-MM-DD",
 +   "debitInfo": { /* required for AUTO_PAY */ }
 + }
 }
-```
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 **Synchronous Responses:**
 - **200 OK** (Accepted): Both bill fetch and UPMS registration initiated.
-  ```json
-  {
-    "success": true,
-    "data": {
-      // Your reference ID for tracking this specific bill fetch operation
-      "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102201", 
-      "upmsRegistration": {
-        // Status of the registration request processing by our system
-        "status": "PENDING", 
-        // The unique reference ID generated for this specific UPMS registration attempt.
-        // Use this ID to correlate with the registration callback.
-        "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-      }
-    },
-    "traceId": "CV4PE82LTNJE9O014OE0"
-  }
-  ```
-- **200 OK** (Invalid mandate): Bill fetch initiated, no UPMS registration.
-  ```json
-  {
-    "success": true,
-    "data": { 
-      "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102201", 
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "data": {
+    // Your reference ID for tracking this specific bill fetch operation
+    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102201", 
+    "upmsRegistration": {
       // Status of the registration request processing by our system
-      "upmsRegistration": { 
-        // No UPMS Registration will be initiated
-        "status": "FAILED", 
-        // The error details
-        "error": { 
-          "code": "invalid-debit-info", 
-          "message": "Invalid amount in debit info" 
-        } 
+      "status": "PENDING", 
+      // The unique reference ID generated for this specific UPMS registration attempt.
+      // Use this ID to correlate with the registration callback.
+      "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+    }
+  },
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **200 OK** (Invalid mandate): Bill fetch initiated, no UPMS registration.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "data": { 
+    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102201", 
+    // Status of the registration request processing by our system
+    "upmsRegistration": { 
+      // No UPMS Registration will be initiated
+      "status": "FAILED", 
+      // The error details
+      "error": { 
+        "code": "invalid-debit-info", 
+        "message": "Invalid amount in debit info" 
       } 
-    },
-    "traceId": "CV4PE82LTNJE9O014OE0"
-  }
-  ```
+    } 
+  },
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
 - **400 Bad Request** (Invalid Request): Neither bill fetch nor UPMS registration is initiated.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "invalid-parameter",
-      "message": "Missing required field"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE1"
-  }
-  ```
-- **500 Internal Server Error**: An unexpected error occurred on the server. Neither bill fetch nor UPMS registration is initiated.
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "internal-error",
-      "message": "Internal Error"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE1"
-  }
-  ```
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "invalid-parameter",
+    "message": "Missing required field"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE1"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **500 Internal Server Error**: Neither bill fetch nor UPMS registration is initiated.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE1"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 **Handling Asynchronous Callbacks for Creation:**
 
@@ -228,7 +286,14 @@ Two independent callbacks can be triggered following this API call:
     - The `data` field will be present, and the `error` field will be absent.
     - The `registration` object within `data` will contain the full details of the newly created registration.
 
-    ```json
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
     // Example SUCCESS Callback Payload
     {
       "event": "CREATE_UPMS_REGISTRATION",
@@ -275,29 +340,40 @@ Two independent callbacks can be triggered following this API call:
       },
       "refId": "D07LJTB71N0PGH5KG32G6dH2QjK51181605" // Matches registration.refId
     }
-    ```
+            `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
 
   - **For failed registration attempts:**
     - The `error` object will be present, containing:
-      - `code` (string): The error code (Note: Field name might be `Code` as per example).
-      - `message` (string): A description of the error (Note: Field name might be `Message` as per example).
+      - `code` (string): The error code
+      - `message` (string): A description of the error
     - The `data` object will be absent.
 
-    ```json
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
     // Example FAILED Callback Payload
     {
       "event": "CREATE_UPMS_REGISTRATION",
       "timeStamp": "2025-03-11T10:20:00.000+05:30",
       "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102204", // Reference ID of the FAILED attempt from sync response
       "error": {
-        "Code": "biller-registration-failed",
-        "Message": "Failed to register with Biller"
+        "code": "biller-registration-failed",
+        "message": "Failed to register with Biller"
       },
       "traceId": "D07LJTJ71N0PUBJKS640" // Trace ID for this callback
     }
-    ```
-
-    > **Note:** The error object within failed *callback* payloads uses `Code` and `Message` (PascalCase) field names.
+            `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
 
   - **For duplicate registrations:**
     - The `data` field will be present, and the `error` field will be absent.
@@ -306,7 +382,14 @@ Two independent callbacks can be triggered following this API call:
       - `code`: Code indicating the duplicate situation (e.g., `duplicate-upms-registration`).
       - `message`: Description of the duplicate situation.
 
-    ```json
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
     // Example Duplicate Callback Payload
     {
       "event": "CREATE_UPMS_REGISTRATION",
@@ -321,7 +404,10 @@ Two independent callbacks can be triggered following this API call:
       },
       "refId": "CVVQVLGBT5ONNAN3JD90qXrHAWg51061855" // Ref ID of the DUPLICATE attempt from sync response
     }
-    ```
+            `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
 
 **Action:** Update your internal registration record based on the callback status and response details (`registration`, `error`, or `duplicate`).
 
@@ -347,85 +433,125 @@ This synchronous endpoint allows you to retrieve the current status and details 
 **Response Breakdown:**
 
 - **On Success (Registration Found): HTTP 200 OK**
-  ```json
-  {
-    "data": {
-      "biller": {
-        "id": "ABLP01000ANP03"
-      },
-      "createdAt": "2025-04-24T14:38:46.377Z",
-      "customer": {
-        "customerParams": [
-          {
-            "name": "Roll No",
-            "value": "27257063"
-          }
-        ],
-        "mobile": "9039403265",
-        "name": "Priya Shukla"
-      },
-      "mandate": {
-        "billPeriod": "ASPRESENTED",
-        "billerParams": [
-          {
-            "name": "Low Balance Threshold",
-            "value": "500"
-          }
-        ],
-        "debitInfo": {
-          "amount": 999999999,
-          "currency": 356, 
-          "debitDate": "10-Feb",
-          "paymentMode": "Internet Banking",
-          "type": "FIXED_AMOUNT"
-        },
-        "registrationType": "AUTO_PAY",
-        "toDate": "2025-12-22"
-      },
-      "refId": "D054PTM52FL7R8CJPQ90GZ2ORTG51142008", // Unique reference ID of the registration
-      "status": "SUCCESS", // Current status
-      "updatedAt": "2025-04-24T14:38:47.389Z" 
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 200 OK (Registration Found)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "biller": {
+      "id": "ABLP01000ANP03"
     },
-    "success": true,
-    "traceId": "D055CNT3GMB863CND9LG"
-  }
-  ```
+    "createdAt": "2025-04-24T14:38:46.377Z",
+    "customer": {
+      "customerParams": [
+        {
+          "name": "Roll No",
+          "value": "27257063"
+        }
+      ],
+      "mobile": "9039403265",
+      "name": "Priya Shukla"
+    },
+    "mandate": {
+      "billPeriod": "ASPRESENTED",
+      "billerParams": [
+        {
+          "name": "Low Balance Threshold",
+          "value": "500"
+        }
+      ],
+      "debitInfo": {
+        "amount": 999999999,
+        "currency": 356, 
+        "debitDate": "10-Feb",
+        "paymentMode": "Internet Banking",
+        "type": "FIXED_AMOUNT"
+      },
+      "registrationType": "AUTO_PAY",
+      "toDate": "2025-12-22"
+    },
+    "refId": "D054PTM52FL7R8CJPQ90GZ2ORTG51142008", // Unique reference ID of the registration
+    "status": "SUCCESS", // Current status
+    "updatedAt": "2025-04-24T14:38:47.389Z" 
+  },
+  "success": true,
+  "traceId": "D055CNT3GMB863CND9LG"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Not Found: HTTP 404 Not Found**
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "registration-not-found",
-      "message": "UPMS registration with the specified refId not found"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE2"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 404 Not Found
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "registration-not-found",
+    "message": "UPMS registration with the specified refId not found"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Bad Request: HTTP 400 Bad Request** (e.g., invalid format for `upmsRegistrationRefID`).
-  ```json
-  {
-    "success": false,
-    "traceId": "C3SFG0O6N88R6UI7EQ",
-    "error": {
-      "code": "invalid-ref-id",
-      "message": "Ref ID length must be 35 characters"
-    }
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 400 Bad Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "invalid-ref-id",
+    "message": "Ref ID length must be 35 characters"
   }
-  ```
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Server Error: HTTP 500 Internal Server Error**
-  ```json
-  {
-    "success": false,
-    "traceId": "C3SFG0O6N88R6UI7EQ",
-    "error": {
-      "code": "internal-error",
-      "message": "Internal Error"
-    }
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 500 Internal Server Error
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
   }
-  ```
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 **Action:** Update your internal registration record based on the API response.
 
@@ -458,65 +584,115 @@ This asynchronous endpoint allows modification of certain fields of an active UP
   - `upmsRegistrationRefID` (string): The ID of the registration to update.
 - **Body:** Include only the fields you want to modify within the `mandate` object.
 
-  ```json
-  // Example: Update expiry date and debit amount
-  {
-    "mandate": {
-      "toDate": "2025-12-31",
-      "debitInfo": {
-        "amount": 750000 // 7500.00 INR
-      }
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Example Request Body: Update Mandate
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+// Example: Update expiry date and debit amount
+{
+  "mandate": {
+    "toDate": "2025-12-31",
+    "debitInfo": {
+      "amount": 750000 // 7500.00 INR
     }
   }
-  ```
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 **Synchronous Response (Acknowledgment):**
 
 Confirms receipt and basic validation of the update request.
 
 - **On Acceptance: HTTP 200 OK**
-  ```json
-  {
-    "success": true,
-    "traceId": "CV4PE82LTNJE9O014OE0"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 200 OK (Accepted)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Bad Request: HTTP 400 Bad Request** (Invalid field, invalid value, trying to update non-modifiable field).
-  ```json
-  {
-    "success": false,
-    "traceId": "C3SFG0O6N88R6UI7EQ",
-    "error": {
-      "code": "invalid-ref-id", // Example code, could vary
-      "message": "Ref ID length must be 35 characters" // Example message
-    }
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 400 Bad Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "invalid-ref-id", // Example code, could vary
+    "message": "Ref ID length must be 35 characters" // Example message
   }
-  ```
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Not Found: HTTP 404 Not Found** (Registration doesn't exist or is not in an updatable state).
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "registration-not-found",
-      "message": "UPMS registration with the specified refId not found"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE2"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 404 Not Found
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "registration-not-found",
+    "message": "UPMS registration with the specified refId not found"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Server Error: HTTP 500 Internal Server Error**
-  ```json
-  {
-    "success": false,
-    "traceId": "C3SFG0O6N88R6UI7EQ",
-    "error": {
-      "code": "internal-error",
-      "message": "Internal Error"
-    }
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 500 Internal Server Error
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
   }
-  ```
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 **Handling the Asynchronous Callback for Update:**
 
@@ -534,7 +710,14 @@ You will receive an `UPDATE_UPMS_REGISTRATION` callback with the final outcome.
     - The `data` object will be present and the `error` object will be absent.
     - The `registration` object in `data` will contain the complete, updated details of the registration. Use this to refresh your stored data.
 
-    ```json
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample UPDATE_UPMS_REGISTRATION SUCCESS Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
     {
       "event": "UPDATE_UPMS_REGISTRATION",
       "traceId": "D07MLCSRLASJ2P3SVAI0",
@@ -579,26 +762,38 @@ You will receive an `UPDATE_UPMS_REGISTRATION` callback with the final outcome.
       },
       "refId": "D07ML76AIQNN6974G200emsL9K451181716"
     }
-    ```
+        `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
 
   - **If the update failed:**
-    - The `error` object will contain the `code` and `message` explaining the failure (Note: Field names might be `Code`/`Message`).
+    - The `error` object will contain the `code` and `message` explaining the failure
     - The `data` object will be absent.
 
-    ```json
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample UPDATE_UPMS_REGISTRATION FAILED Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
     {
       "event": "UPDATE_UPMS_REGISTRATION",
       "traceId": "D07N6PSRLASJ2P3SVAMG",
       "timeStamp": "2025-04-28T17:54:07.062+05:30",
       "refId": "D07N6M6AIQNN6974G9EGH18p7p051181753", // The refId of the attempted update
       "error": {
-        "Code": "biller-update-registration-failed",
-        "Message": "Failed to update registration with Biller"
+        "code": "biller-update-registration-failed",
+        "message": "Failed to update registration with Biller"
       }
     }
-    ```
+        `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
 
-    > **Note:** The error object within failed *callback* payloads uses `Code` and `Message` (PascalCase) field names.
 
 **Action:** Update your internal registration record based on the callback status and details.
 
@@ -630,60 +825,110 @@ This asynchronous endpoint permanently cancels an existing UPMS registration.
 Confirms receipt of the cancellation request.
 
 - **On Acceptance: HTTP 200 OK**
-  ```json
-  {
-    "success": true,
-    "traceId": "CV4PE82LTNJE9O014OE0"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 200 OK (Accepted)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Bad Request: HTTP 400 Bad Request** (e.g., invalid `upmsRegistrationRefID` format).
-  ```json
-  {
-    "success": false,
-    "traceId": "C3SFG0O6N88R6UI7EQ",
-    "error": {
-      "code": "invalid-ref-id",
-      "message": "Ref ID length must be 35 characters"
-    }
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 400 Bad Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "invalid-ref-id",
+    "message": "Ref ID length must be 35 characters"
   }
-  ```
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Not Found: HTTP 404 Not Found** (Registration doesn't exist).
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "registration-not-found",
-      "message": "UPMS registration with the specified refId not found"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE2"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 404 Not Found
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "registration-not-found",
+    "message": "UPMS registration with the specified refId not found"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Conflict: HTTP 409 Conflict** (e.g., registration is already cancelled or in a state that cannot be cancelled).
-  ```json
-  {
-    "success": false,
-    "error": {
-      "code": "invalid-state-transition",
-      "message": "Registration is already cancelled or in a state that cannot be cancelled"
-    },
-    "traceId": "CV4PE82LTNJE9O014OE0"
-  }
-  ```
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 409 Conflict
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "invalid-state-transition",
+    "message": "Registration is already cancelled or in a state that cannot be cancelled"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 - **On Server Error: HTTP 500 Internal Server Error**
-  ```json
-  {
-    "success": false,
-    "traceId": "C3SFG0O6N88R6UI7EQ",
-    "error": {
-      "code": "internal-error",
-      "message": "Internal Error"
-    }
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response: 500 Internal Server Error
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
   }
-  ```
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 **Handling the Asynchronous Callback for Cancellation:**
 
@@ -701,7 +946,14 @@ You will receive a `CANCEL_UPMS_REGISTRATION` callback confirming the outcome.
     - The `data` object will be present and the `error` object will be absent.
     - The `registration` object in `data` will contain the details of the registration, now marked with `status: "CANCELLED"`.
 
-    ```json
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample CANCEL_UPMS_REGISTRATION SUCCESS Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
     {
       "event": "CANCEL_UPMS_REGISTRATION",
       "traceId": "D07MLCSRLASJ2P3SVAI0", // Example Trace ID
@@ -719,26 +971,37 @@ You will receive a `CANCEL_UPMS_REGISTRATION` callback confirming the outcome.
       },
       "refId": "D07ML76AIQNN6974G200emsL9K451181716"
     }
-    ```
+        `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
 
   - **If the cancellation failed:**
-    - The `error` object will contain the `code` and `message` explaining the failure (Note: Field names might be `Code`/`Message`).
+    - The `error` object will contain the `code` and `message` explaining the failure
     - The `data` object will be absent.
 
-    ```json
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample CANCEL_UPMS_REGISTRATION FAILED Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
     {
       "event": "CANCEL_UPMS_REGISTRATION",
       "traceId": "D07N6PSRLASJ2P3SVAMG", // Example Trace ID
       "timeStamp": "2025-04-28T17:54:07.062+05:30", // Example Timestamp
       "refId": "D07N6M6AIQNN6974G9EGH18p7p051181753", // The refId of the attempted cancellation
       "error": {
-        "Code": "registration-cancellation-failed", // Example Error Code
-        "Message": "Failed to cancel registration with Biller" // Example Error Message
+        "code": "registration-cancellation-failed", // Example Error Code
+        "message": "Failed to cancel registration with Biller" // Example Error Message
       }
     }
-    ```
-
-    > **Note:** The error object within failed *callback* payloads uses `Code` and `Message` (PascalCase) field names.
+        `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
 
 **Action:** Update the status of the registration in your system to `CANCELLED` upon successful confirmation via the callback.
 
