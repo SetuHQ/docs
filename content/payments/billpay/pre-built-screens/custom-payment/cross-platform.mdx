@@ -124,22 +124,17 @@ The `controller` will need to implement two JavaScript handlers -
                                     controller.addJavaScriptHandler(
                                         handlerName: 'initiatePayment',
                                         callback: (args) async {
-                                            // args[0] contains the paymentDetails object directly
-                                            print('Received payment data object from WebView: ${args[0]}');
-                                            
+                                            print('Received from WebView: $args');
+                                            final paymentData = args[0];
+                                            print('Payment data: $paymentData');
                                             // Your app can access the fields directly from args[0] (which is typically a Map)
-                                            // Example:
-                                            // final paymentDetails = args[0] as Map<String, dynamic>;
-                                            // String orderId = paymentDetails['orderId'];
-                                            // String amount = paymentDetails['amount'];
-                                            // String postPaymentUrl = paymentDetails['postPaymentUrl'];
-                                            // String customerMobileNumber = paymentDetails['customerMobileNumber'];
-                                            // String customerId = paymentDetails['customerId']; // Optional
-                                            // String allowedPaymentModes = paymentDetails['allowedPaymentModes']; // Optional
-                                            
-                                            // Add your custom payment logic here using the parsed details
-                                            // For demonstration, we'll just print the received object:
-                                            print('Payment data object: ${args[0]}');
+                                            String orderId = paymentData['orderId'];
+                                            String amount = paymentData['amount'];
+                                            String postPaymentUrl = paymentData['postPaymentUrl'];
+                                            String customerMobileNumber = paymentData['customerMobileNumber'];
+                                            String customerId = paymentData['customerId']; // Optional
+                                            String allowedPaymentModes = paymentData['allowedPaymentModes'];
+                                            // Add your custom payment logic here
                                         },
                                     );
                                     controller.addJavaScriptHandler(
@@ -190,16 +185,17 @@ The `initiatePayment` JavaScript handler in the `controller` receives a single a
 - `allowedPaymentModes` (String, optional): Comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
 
 Example of the structure of the payment details object received by the handler:
-```/dev/null/example.json#L1-8
-{
+
+<CodeBlockWithCopy language="json">
+{`{
   "orderId": "COUWLZ7pFtTgr9LtO",
   "amount": "3522.20",
   "postPaymentUrl": "https://billpay.setu.co/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668",
   "customerMobileNumber": "9876543210",
   "customerId": "cust@1234",
   "allowedPaymentModes": "UPI,NETBANKING"
-}
-```
+}`}
+</CodeBlockWithCopy>
 
 When the `initiatePayment` handler is called by the webview, your app needs to do the following—
 

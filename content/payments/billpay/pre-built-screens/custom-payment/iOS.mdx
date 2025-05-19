@@ -89,8 +89,8 @@ The `userContentController` will need to implement two functions—
 
 <br/>
 
-<CodeBlockWithCopy language="swift">
-{`// The iOS observer function
+<CodeBlockWithCopy language="bash">
+{`
 func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
     guard let messageBody = message.body as? [String: Any],
           let functionToPerform = messageBody["function"] as? String else {
@@ -104,7 +104,6 @@ func userContentController(_ userContentController: WKUserContentController, did
             print("Error: 'data' object not found in message body or is not a dictionary.")
             return
         }
-
         // Extract mandatory current parameters directly from the dataDict
         guard let orderID = dataDict["orderId"] as? String,
               let billAmount = dataDict["amount"] as? String,
@@ -113,11 +112,9 @@ func userContentController(_ userContentController: WKUserContentController, did
             print("Error: Missing one or more mandatory current payment parameters (orderId, amount, postPaymentUrl, customerMobileNumber) in data object.")
             return
         }
-
         // Extract optional current parameters directly from dataDict
         let customerId = dataDict["customerId"] as? String
         let allowedPaymentModes = dataDict["allowedPaymentModes"] as? String
-
         // Extract deprecated parameters for informational purposes.
         // These might still be sent by the webview during a transition period but should not be used for new logic.
         let _ = dataDict["callback"] as? String // Deprecated: Use 'postPaymentUrl' instead.
@@ -152,7 +149,8 @@ func userContentController(_ userContentController: WKUserContentController, did
         print("Unknown function to perform: \\(functionToPerform)")
         break
     }
-}`}
+}
+`}
 
 </CodeBlockWithCopy>
 
@@ -192,8 +190,6 @@ The `initiate_payment` case in the `userContentController` is triggered when the
 
 The `data` object itself (when `function` is `initiate_payment`) is a direct JSON object (dictionary in Swift) containing all payment details. Your app's `userContentController` method can access these fields directly from this `data` dictionary as shown in the Swift code example above.
 
-The `data` object (for the `initiate_payment` function) contains the payment parameters. Your app's `userContentController` method can access these fields directly from this `data` dictionary.
-
 The `data` object primarily uses the following fields for current integrations:
 
 -   `orderId` (String, mandatory): Order ID on the Setu COU System. Example— `COUWLZ7pFtTgr9LtO`
@@ -214,16 +210,17 @@ The following fields might still be sent by the webview as part of the `data` ob
 -   `refId` (String): **Deprecated.** This field is no longer functionally used by Setu's webview and may be removed in future webview updates.
 
 Example of the structure of the `data` JSON object (when `function` is `initiate_payment`), which would primarily contain the current fields, but might also include deprecated ones during a transition:
-```/dev/null/example.json#L1-8
-{
+
+<CodeBlockWithCopy language="json">
+{`{
   "orderId": "COUWLZ7pFtTgr9LtO",
   "amount": "3522.20",
-  "postPaymentUrl": "https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668",
+  "postPaymentUrl": "https://billpay.setu.co/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668",
   "customerMobileNumber": "9876543210",
   "customerId": "cust@1234",
-  "allowedPaymentModes": "UPI,NB"
-}
-```
+  "allowedPaymentModes": "UPI,NETBANKING"
+}`}
+</CodeBlockWithCopy>
 
 When the `initiate_payment` case is called by the webview (with the payment parameters directly in the `data` object), your app needs to do the following-
 

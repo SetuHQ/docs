@@ -151,30 +151,25 @@ Here is a sample of the Java Interface class needed by the webview—
     public void initiatePayment(String paymentDetailsJson) {
         try {
             org.json.JSONObject paymentDetails = new org.json.JSONObject(paymentDetailsJson);
-
             // Mandatory fields
             String orderId = paymentDetails.getString("orderId");
             String amount = paymentDetails.getString("amount");
             String postPaymentUrl = paymentDetails.getString("postPaymentUrl");
             String customerMobileNumber = paymentDetails.getString("customerMobileNumber");
-
             // Optional fields
             String customerId = paymentDetails.optString("customerId", null);
             String allowedPaymentModes = paymentDetails.optString("allowedPaymentModes", null);
-
             Intent intent = new Intent(mContext, PaymentScreen.class);
             intent.putExtra("ORDER_ID", orderId);
             intent.putExtra("AMOUNT", amount);
             intent.putExtra("POST_PAYMENT_URL", postPaymentUrl);
             intent.putExtra("CUSTOMER_MOBILE_NUMBER", customerMobileNumber);
-
             if (customerId != null) {
                 intent.putExtra("CUSTOMER_ID", customerId);
             }
             if (allowedPaymentModes != null) {
                 intent.putExtra("ALLOWED_PAYMENT_MODES", allowedPaymentModes);
             }
-
             mContext.startActivity(intent);
         } catch (org.json.JSONException e) {
             android.util.Log.e("WebAppInterface", "Error parsing paymentDetailsJson: " + paymentDetailsJson, e);
@@ -215,16 +210,17 @@ The interface will contain 2 methods—
     -   `allowedPaymentModes` (String, optional): Comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
 
     Example of the structure of the JSON object (after parsing `paymentDetailsJson`):
-```/dev/null/example.json#L1-8
-{
-  "orderId": "COUWLZ7pFtTgr9LtO",
-  "amount": "3522.20",
-  "postPaymentUrl": "https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668",
-  "customerMobileNumber": "9876543210",
-  "customerId": "cust@1234",
-  "allowedPaymentModes": "UPI,NETBANKING"
-}
-```
+    
+    <CodeBlockWithCopy language="json">
+    {`{
+    "orderId": "COUWLZ7pFtTgr9LtO",
+    "amount": "3522.20",
+    "postPaymentUrl": "https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668",
+    "customerMobileNumber": "9876543210",
+    "customerId": "cust@1234",
+    "allowedPaymentModes": "UPI,NETBANKING"
+    }`}
+    </CodeBlockWithCopy>
 
 When `initiatePayment` is called by the webview with the JSON string, your app needs to do the following—
 
