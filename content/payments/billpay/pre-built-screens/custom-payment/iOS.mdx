@@ -89,43 +89,68 @@ The `userContentController` will need to implement two functions—
 
 <br/>
 
-<CodeBlockWithCopy language="bash">
+<CodeBlockWithCopy language="swift">
 {`// The iOS observer function
 func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-    guard let dict = message.body as ? [String: AnyObject]
-    else {
+    guard let messageBody = message.body as? [String: Any],
+          let functionToPerform = messageBody["function"] as? String else {
+        print("Error: Could not parse message body or function name from webview.")
         return
     }
-    let functionToPerform: String = dict["function"] as ? String ?? ""
     
     switch functionToPerform {
-        case "initiate_payment":
-        let successLink = dict["data"]?["callback"] as! String
-        let remarks = dict["data"]?["remarks"] as! String
-        let billAmount = dict["data"]?["amount"] as! String
-        let orderID = dict["data"]?["orderId"] as! String
-        let beneficiaryVPA = dict["data"]?["beneficiaryVPA"] as! String
-        let mobileNumber = dict["data"]?["mobileNumber"] as! String
-        let refId = dict["data"]?["refId"] as! String
-        let customerId = dict["data"]?["customerId"] as! String
-        let allowedPaymentModes = dict["data"]?["allowedPaymentModes"] as! String
+    case "initiate_payment":
+        guard let dataDict = messageBody["data"] as? [String: Any] else {
+            print("Error: 'data' object not found in message body or is not a dictionary.")
+            return
+        }
+
+        // Extract mandatory current parameters directly from the dataDict
+        guard let orderID = dataDict["orderId"] as? String,
+              let billAmount = dataDict["amount"] as? String,
+              let postPaymentUrl = dataDict["postPaymentUrl"] as? String, // Current field, was 'callback'
+              let customerMobileNumber = dataDict["customerMobileNumber"] as? String else { // Current field, was 'mobileNumber'
+            print("Error: Missing one or more mandatory current payment parameters (orderId, amount, postPaymentUrl, customerMobileNumber) in data object.")
+            return
+        }
+
+        // Extract optional current parameters directly from dataDict
+        let customerId = dataDict["customerId"] as? String
+        let allowedPaymentModes = dataDict["allowedPaymentModes"] as? String
+
+        // Extract deprecated parameters for informational purposes.
+        // These might still be sent by the webview during a transition period but should not be used for new logic.
+        let _ = dataDict["callback"] as? String // Deprecated: Use 'postPaymentUrl' instead.
+        let _ = dataDict["mobileNumber"] as? String // Deprecated: Use 'customerMobileNumber' instead.
+        let _ = dataDict["beneficiaryVPA"] as? String // Deprecated: No longer functionally used.
+        let _ = dataDict["remarks"] as? String // Deprecated: No longer functionally used.
+        let _ = dataDict["refId"] as? String // Deprecated: No longer functionally used.
         
+        // Note: The PaymentViewController initializer should use the current parameters (orderID, billAmount, postPaymentUrl, etc.).
+        // The deprecated parameters (callback, mobileNumber, beneficiaryVPA, remarks, refId)
+        // should not be used for new application logic.
+        // The successParams variable might need to be handled based on your specific needs for postPaymentUrl.
         let vc = PaymentViewController(
-          successLink: successLink + successParams,
-          remarks: remarks,
-          billAmount: billAmount,
-          orderID: orderID,
-          beneficiaryVPA: beneficiaryVPA,
-          mobileNumber: mobileNumber,
-          refId: refId,
-          customerId: customerId,
-          allowedPaymentModes: allowedPaymentModes
+            orderID: orderID,
+            billAmount: billAmount,
+            postPaymentUrl: postPaymentUrl, // Assuming PaymentViewController is updated for this
+            customerMobileNumber: customerMobileNumber, // Assuming PaymentViewController is updated
+            customerId: customerId, // Pass if PaymentViewController accepts it
+            allowedPaymentModes: allowedPaymentModes // Pass if PaymentViewController accepts it
+            // Deprecated parameters (callback, mobileNumber, beneficiaryVPA, remarks, refId) are intentionally not passed here;
+            // use the current parameters (orderID, billAmount, postPaymentUrl, etc.) for the view controller's logic.
         )
         
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true)
-        case "unload": closeView()
-        default: break
+        
+    case "unload":
+        // Assuming closeView() is a defined method in this class or extension
+        closeView()
+        
+    default:
+        print("Unknown function to perform: \\(functionToPerform)")
+        break
     }
 }`}
 
@@ -162,19 +187,45 @@ The `WKWebviewDownloadHelper` which downloads our PDF file is used as below
 
 ##### Handle payment flow
 
-The `initiate_payment` case in the the `userContentController` takes the following parameters
+The `initiate_payment` case in the `userContentController` is triggered when the webview executes JavaScript to post a message. The `data` field of this message should directly contain all the necessary payment parameters, typically like:
+`window.webkit.messageHandlers.ios_observer.postMessage({function: "initiate_payment", data: {orderId: "...", amount: "...", postPaymentUrl: "...", customerMobileNumber: "...", customerId: "...", allowedPaymentModes: "..."}})`
 
-- `orderId` on the Setu COU System. It always starts with `COUWL`. Example— `COUWLZ7pFtTgr9LtO`
-- `amount` to be paid by the customer. Example — `3522.20`
-- `callback` URL which needs to be loaded in the webview once the payment is completed. Example — `https://billpay.setu.co/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
-- `beneficiaryVPA` to which amount is to be transferred—this is relevant only if you can transfer in real time using UPI rails.
-- `remarks` used to communicate information between mobile app and webview.
-- `mobileNumber` mobile number used for the session. Example - `9876543210`
-- `refId` BBPS reference ID linked to a particular bill (only available for fetch billers). Example - `CMA0I65RCU2I32C3L0H0KNYQYAG40021831`
-- `customerId` linked to a particular session. Example - `cust@1234`
-- `allowedPaymentModes` comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
+The `data` object itself (when `function` is `initiate_payment`) is a direct JSON object (dictionary in Swift) containing all payment details. Your app's `userContentController` method can access these fields directly from this `data` dictionary as shown in the Swift code example above.
 
-When `initiate_payment` case is called by the `webview`, your app needs to do the following-
+The `data` object (for the `initiate_payment` function) contains the payment parameters. Your app's `userContentController` method can access these fields directly from this `data` dictionary.
+
+The `data` object primarily uses the following fields for current integrations:
+
+-   `orderId` (String, mandatory): Order ID on the Setu COU System. Example— `COUWLZ7pFtTgr9LtO`
+-   `amount` (String, mandatory): Amount to be paid by the customer. Example— `3522.20`
+-   `postPaymentUrl` (String, mandatory): URL which needs to be loaded in the webview after the payment is completed by your app. Example—`https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
+-   `customerMobileNumber` (String, mandatory): Mobile number of the customer used for the session. Example - `9876543210`
+-   `customerId` (String, optional): Customer ID linked to a particular session. Example - `cust@1234`
+-   `allowedPaymentModes` (String, optional): Comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
+
+**Deprecated Fields (may still be present in `data` object but should not be used for new logic):**
+
+The following fields might still be sent by the webview as part of the `data` object but are considered deprecated. Your application should rely on the current fields listed above for new logic. The Swift code example shows how these can be acknowledged if necessary, but they should not drive core functionality.
+
+-   `callback` (String): **Deprecated.** This field has been renamed to `postPaymentUrl`. Please use `postPaymentUrl` for all new logic.
+-   `mobileNumber` (String): **Deprecated.** This field has been renamed to `customerMobileNumber`. Please use `customerMobileNumber` for all new logic.
+-   `beneficiaryVPA` (String): **Deprecated.** This field is no longer functionally used for primary payment processing by Setu's webview and may be removed in future webview updates.
+-   `remarks` (String): **Deprecated.** This field is no longer functionally used by Setu's webview and may be removed in future webview updates.
+-   `refId` (String): **Deprecated.** This field is no longer functionally used by Setu's webview and may be removed in future webview updates.
+
+Example of the structure of the `data` JSON object (when `function` is `initiate_payment`), which would primarily contain the current fields, but might also include deprecated ones during a transition:
+```/dev/null/example.json#L1-8
+{
+  "orderId": "COUWLZ7pFtTgr9LtO",
+  "amount": "3522.20",
+  "postPaymentUrl": "https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668",
+  "customerMobileNumber": "9876543210",
+  "customerId": "cust@1234",
+  "allowedPaymentModes": "UPI,NB"
+}
+```
+
+When the `initiate_payment` case is called by the webview (with the payment parameters directly in the `data` object), your app needs to do the following-
 
 1. Remove the webview
 2. Initiate the payment flow

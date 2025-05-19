@@ -124,10 +124,22 @@ The `controller` will need to implement two JavaScript handlers -
                                     controller.addJavaScriptHandler(
                                         handlerName: 'initiatePayment',
                                         callback: (args) async {
-                                            print('Received from WebView: $args');
-                                            var paymentData = args[0];
-                                            print('Payment data: $paymentData');
-                                            // add your custom payment logic here
+                                            // args[0] contains the paymentDetails object directly
+                                            print('Received payment data object from WebView: ${args[0]}');
+                                            
+                                            // Your app can access the fields directly from args[0] (which is typically a Map)
+                                            // Example:
+                                            // final paymentDetails = args[0] as Map<String, dynamic>;
+                                            // String orderId = paymentDetails['orderId'];
+                                            // String amount = paymentDetails['amount'];
+                                            // String postPaymentUrl = paymentDetails['postPaymentUrl'];
+                                            // String customerMobileNumber = paymentDetails['customerMobileNumber'];
+                                            // String customerId = paymentDetails['customerId']; // Optional
+                                            // String allowedPaymentModes = paymentDetails['allowedPaymentModes']; // Optional
+                                            
+                                            // Add your custom payment logic here using the parsed details
+                                            // For demonstration, we'll just print the received object:
+                                            print('Payment data object: ${args[0]}');
                                         },
                                     );
                                     controller.addJavaScriptHandler(
@@ -168,19 +180,28 @@ The `controller` will need to implement two JavaScript handlers -
 
 ##### Handle payment flow
 
-The `initiatePayment` method in the `controller` takes an object param with the following fields
+The `initiatePayment` JavaScript handler in the `controller` receives a single argument (`args[0]` in the Dart callback), which is a direct object (typically a `Map<String, dynamic>` in Dart) containing the payment details. Your application code can access these details directly from this object. The object will contain the following fields:
 
-- `orderId` on the Setu COU System. It always starts with `COUWL`. Example— `COUWLZ7pFtTgr9LtO`
-- `amount` to be paid by the customer. Example — `3522.20`
-- `callback` URL which needs to be loaded in the webview once the payment is completed. Example —`https://billpay.setu.co/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
-- `beneVpa` to which amount is to be transferred—this is relevant only if you can transfer in real time using UPI rails.
-- `remarks` used to communicate information between mobile app and webview
-- `mobileNumber` mobile number used for the session. Example - `9876543210`
-- `refId` BBPS reference ID linked to a particular bill (only available for fetch billers). Example - `CMA0I65RCU2I32C3L0H0KNYQYAG40021831`
-- `customerId` linked to a particular session. Example - `cust@1234`
-- `allowedPaymentModes` comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
+- `orderId` (String, mandatory): Order ID on the Setu COU System. It always starts with `COUWL`. Example— `COUWLZ7pFtTgr9LtO`
+- `amount` (String, mandatory): Amount to be paid by the customer. Example — `3522.20`
+- `postPaymentUrl` (String, mandatory): URL which needs to be loaded in the webview after the payment is completed by your app. Example —`https://billpay.setu.co/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
+- `customerMobileNumber` (String, mandatory): Mobile number of the customer used for the session. Example - `9876543210`
+- `customerId` (String, optional): Customer ID linked to a particular session. Example - `cust@1234`
+- `allowedPaymentModes` (String, optional): Comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
 
-When initiate_payment case is called by the webview, your app needs to do the following—
+Example of the structure of the payment details object received by the handler:
+```/dev/null/example.json#L1-8
+{
+  "orderId": "COUWLZ7pFtTgr9LtO",
+  "amount": "3522.20",
+  "postPaymentUrl": "https://billpay.setu.co/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668",
+  "customerMobileNumber": "9876543210",
+  "customerId": "cust@1234",
+  "allowedPaymentModes": "UPI,NETBANKING"
+}
+```
+
+When the `initiatePayment` handler is called by the webview, your app needs to do the following—
 
 1. Remove the webview
 2. Initiate the payment flow
