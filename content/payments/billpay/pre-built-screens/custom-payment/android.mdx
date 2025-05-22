@@ -148,18 +148,34 @@ Here is a sample of the Java Interface class needed by the webview—
     }
     /** Show a toast from the web page */
     @JavascriptInterface
-    public void initiatePayment(String orderId, String beneVpa, String amount, String callback, String remarks, String mobileNumber, String refId, String customerId, String allowedPaymentModes) {
-        Intent intent = new Intent(mContext, PaymentScreen.class);
-        intent.putExtra("BENE_VPA", beneVpa);
-        intent.putExtra("ORDER_ID", orderId);
-        intent.putExtra("AMOUNT", amount);
-        intent.putExtra("CALLBACK_URL", success_url);
-        intent.putExtra("REMARKS", remarks);
-        intent.putExtra("MOBILE_NUMBER", remarks);
-        intent.putExtra("REF_ID", refId);
-        intent.putExtra("CUSTOMER_ID", customerId);
-        intent.putExtra("ALLOWED_PAYMENT_MODES", allowedPaymentModes)
-        mContext.startActivity(intent);
+    public void initiatePayment(String paymentDetailsJson) {
+        try {
+            org.json.JSONObject paymentDetails = new org.json.JSONObject(paymentDetailsJson);
+            // Mandatory fields
+            String orderId = paymentDetails.getString("orderId");
+            String amount = paymentDetails.getString("amount");
+            String postPaymentUrl = paymentDetails.getString("postPaymentUrl");
+            String customerMobileNumber = paymentDetails.getString("customerMobileNumber");
+            // Optional fields
+            String customerId = paymentDetails.optString("customerId", null);
+            String allowedPaymentModes = paymentDetails.optString("allowedPaymentModes", null);
+            Intent intent = new Intent(mContext, PaymentScreen.class);
+            intent.putExtra("ORDER_ID", orderId);
+            intent.putExtra("AMOUNT", amount);
+            intent.putExtra("POST_PAYMENT_URL", postPaymentUrl);
+            intent.putExtra("CUSTOMER_MOBILE_NUMBER", customerMobileNumber);
+            if (customerId != null) {
+                intent.putExtra("CUSTOMER_ID", customerId);
+            }
+            if (allowedPaymentModes != null) {
+                intent.putExtra("ALLOWED_PAYMENT_MODES", allowedPaymentModes);
+            }
+            mContext.startActivity(intent);
+        } catch (org.json.JSONException e) {
+            android.util.Log.e("WebAppInterface", "Error parsing paymentDetailsJson: " + paymentDetailsJson, e);
+            // Optionally, handle the error more gracefully,
+            // e.g., by calling unload() or another JavaScript function to inform the webview.
+        }
     }
     /** Show a toast from the web page */
     @JavascriptInterface
@@ -183,19 +199,30 @@ The interface will contain 2 methods—
 
 ##### Handle payment flow
 
-`initiatePayment` on the Android interface takes the following parameters
+`initiatePayment` on the Android interface now takes a single parameter:
 
--   `orderId` on the Setu COU System. Example— `COUWLZ7pFtTgr9LtO`
--   `amount` to be paid by the customer: Example— `3522.20`
--   `callback` which needs to be loaded if the payment is completed. Example—`https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
--   `beneVpa` to which amount is to be transferred—this is relevant only if you can transfer in real time using UPI rails.
--   `remarks` used to communicate information between mobile app and webview
--   `mobileNumber` mobile number used for the session. Example - `9876543210`
--   `refId` BBPS reference ID linked to a particular bill (only available for fetch billers). Example - `CMA0I65RCU2I32C3L0H0KNYQYAG40021831`
--   `customerId` linked to a particular session. Example - `cust@1234`
--   `allowedPaymentModes` comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
+-   `paymentDetailsJson` (String): A stringified JSON object containing all payment details. The webview will pass this JSON string. Your app\'s `initiatePayment` method needs to parse this JSON string to retrieve the individual fields. The JSON object should include the following fields:
+    -   `orderId` (String, mandatory): Order ID on the Setu COU System. Example— `COUWLZ7pFtTgr9LtO`
+    -   `amount` (String, mandatory): Amount to be paid by the customer. Example— `3522.20`
+    -   `postPaymentUrl` (String, mandatory): URL which needs to be loaded in the webview after the payment is completed by your app. Example—`https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668`
+    -   `customerMobileNumber` (String, mandatory): Mobile number of the customer used for the session. Example - `9876543210`
+    -   `customerId` (String, optional): Customer ID linked to a particular session. Example - `cust@1234`
+    -   `allowedPaymentModes` (String, optional): Comma separated list of modes allowed for this payment. One of these should be sent in the `paymentMode` in the <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">payment confirmation webhook.</a>
 
-When `initiatePayment` is called by the webview, your app needs to do the following—
+    Example of the structure of the JSON object (after parsing `paymentDetailsJson`):
+    
+    <CodeBlockWithCopy language="json">
+    {`{
+    "orderId": "COUWLZ7pFtTgr9LtO",
+    "amount": "3522.20",
+    "postPaymentUrl": "https://billpay.setu.co/cou/payment-callback/68c7217b-8fa7-4c1f-8e5f-317ff3027668",
+    "customerMobileNumber": "9876543210",
+    "customerId": "cust@1234",
+    "allowedPaymentModes": "UPI,NETBANKING"
+    }`}
+    </CodeBlockWithCopy>
+
+When `initiatePayment` is called by the webview with the JSON string, your app needs to do the following—
 
 1. Remove the webview
 2. Initiate the payment flow
