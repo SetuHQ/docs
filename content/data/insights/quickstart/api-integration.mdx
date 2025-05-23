@@ -24,11 +24,25 @@ Here are the URLs you would need for calling Setu Insights APIs—
 
 Call this API to create an FI data block for the customer data you would like to feed into Setu Insights.
 
+
 ###### Request
 
 Send the financial data as payload in the body. The payload should be same as the data provided by the FIP.
 The JSON schema for different data types is available in <a href="/data/account-aggregator/fi-data-types" target="_blank">FI Data Types</a>.
 The ReBIT schema is available <a href="https://api.rebit.org.in/schema" target="_blank">here</a>.
+
+If you need to pass multiple accounts of same type for a customer, you can go about it in one of the following ways,
+
+1. Pass the data for all accounts in a single call to the ingest API.
+2. If you feel the data is too large, you can pass the data for each account in a separate call to this API. Remember to pass the same refId parameter in each call.
+
+<Callout type="tip">We recommend using the first approach. There should be no issues with JSON data of upto 1 MB.</Callout>
+
+<br />
+
+<Callout type="info">If you want to pass accounts of different types, ie deposit, mutual_fund, etf etc. we recommend the second approach. Remember to pass the same refId parameter in each call. We plan to support this with a single API call approach in the future.</Callout>
+
+<br />
 
 <CodeBlockWithCopy language="http">
   {`POST /v2/fiData?refId=4e0ba220-9575-11eb-a8b3-0242ac130003
@@ -36,7 +50,7 @@ The ReBIT schema is available <a href="https://api.rebit.org.in/schema" target="
   --header 'x-client-id: <client_id>'
   --header 'x-client-secret: <client_secret>'
   --header 'x-product-instance-id: <product_instance_id>'
-  --data-raw '{
+  --data-raw '[{
   "account": {
     "profile": {
       "holders": {
@@ -93,7 +107,14 @@ The ReBIT schema is available <a href="https://api.rebit.org.in/schema" target="
     "version": "2.0",
     "linkedAccRef": "123456789"
   }
-}`}
+},
+// second account in the same API call
+{
+  "account": {
+    // similar to above one
+  }
+}
+]`}
 </CodeBlockWithCopy>
 
 <hr class="tertiary" />
