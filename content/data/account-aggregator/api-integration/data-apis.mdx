@@ -448,10 +448,12 @@ Auto-Fetch data feature aims to absorb this complexity from the FIUs. With Auto-
 
 1. Consent is approved by the customer.
 2. Setu creates a data session automatically.
-3. Setu listens to FI notifications and manages retries.
-4. Once the combined data session status is `PARTIAL` or `COMPLETED`, Setu fetches the FI data and sends it to the FIU.
-   - For one time consents, Auto-Fetch executes only once, right after the consent is approved.
-   - For recurring consents, Auto-Fetch can fetch data periodically. Set up the frequency of Auto-Fetch data in your configuration on the Bridge.
+3. Setu continuously monitors data availability through notifications and periodic checks:
+    - Listens to FI notifications from AA
+    - Performs periodic data fetches in case notifications are delayed or missed
+4. As soon as data becomes available, Setu fetches and sends it to the FIU.
+    - For one time consents, Auto-Fetch executes only once, right after the consent is approved.
+    - For recurring consents, Auto-Fetch can fetch data periodically. Set up the frequency of Auto-Fetch data in your configuration on the Bridge.
 
 <img src="https://storage.googleapis.com/strapi-assets/latest/auto-fetch-workflow/auto-fetch-workflow.png" />
 
@@ -486,6 +488,7 @@ Auto-Fetch data feature aims to absorb this complexity from the FIUs. With Auto-
 {
   "type": "FI_DATA_READY",
   "consentId": "58180119-15bc-454f-83bb-192efda9321b",
+  "status": "COMPLETED", // Can be PENDING/PARTIAL/COMPLETED
   "dataRange": {
     "from": "2023-07-25T11:27:01.069Z",
     "to": "2023-07-25T11:28:00.648Z"
