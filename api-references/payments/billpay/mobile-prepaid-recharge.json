@@ -23,6 +23,126 @@
     }
   ],
   "paths": {
+    "/v1/users/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "API to authenticate and get access token",
+        "description": "Use this endpoint to obtain a Bearer token required for all other API calls.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "ClientID",
+                  "Secret",
+                  "grant_type"
+                ],
+                "properties": {
+                  "ClientID": {
+                    "type": "string",
+                    "description": "The client ID provided by Setu for your application."
+                  },
+                  "Secret": {
+                    "type": "string",
+                    "description": "The client secret provided by Setu for your application. Keep this confidential."
+                  },
+                  "grant_type": {
+                    "type": "string",
+                    "description": "The OAuth2 grant type. Must be set to 'client_credentials'.",
+                    "enum": ["client_credentials"]
+                  }
+                }
+              },
+              "example": {
+                "ClientID": "XXXX-XXXX-XXXX-XXXX",
+                "Secret": "XXXXXXXXXXXXXXXXX",
+                "grant_type": "client_credentials"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "access_token",
+                    "refresh_token"
+                  ],
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                      "description": "Bearer token to be used in Authorization header for subsequent API calls"
+                    },
+                    "refresh_token": {
+                      "type": "string",
+                      "example": "",
+                      "description": "Refresh token (currently not used)"
+                    }
+                  }
+                },
+                "example": {
+                  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "refresh_token": ""
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 401,
+                      "description": "HTTP status code"
+                    },
+                    "type": {
+                      "type": "string",
+                      "example": "",
+                      "description": "Error type"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "You are not authenticated to perform the requested action.",
+                      "description": "Error message"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "21fc3650-21c3-498a-b83e-543301045fcb",
+                      "description": "Unique identifier for tracing the request"
+                    }
+                  }
+                },
+                "example": {
+                  "status": 401,
+                  "type": "",
+                  "message": "You are not authenticated to perform the requested action.",
+                  "traceId": "21fc3650-21c3-498a-b83e-543301045fcb"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/fetch-operator-details": {
       "post": {
         "tags": [
@@ -403,14 +523,14 @@
             "name": "X-PRODUCT-INSTANCE-ID",
             "required": true,
             "type": "string",
-            "description": "This is provided by Setu and it represents a product instance for business in their system."
+            "description": "Unique identifier provided by Setu that represents your product instance."
           },
           {
             "in": "header",
             "name": "Authorization",
             "required": true,
             "type": "string",
-            "description": "Bearer token for authorization."
+            "description": "Bearer token for authorization. Format: 'Bearer {token}' where {token} is obtained from the login API."
           },
           {
             "in": "body",
@@ -769,14 +889,14 @@
             "name": "X-PRODUCT-INSTANCE-ID",
             "required": true,
             "type": "string",
-            "description": "This is provided by Setu and it represents a product instance for business in their system."
+            "description": "Unique identifier provided by Setu that represents your product instance."
           },
           {
             "in": "header",
             "name": "Authorization",
             "required": true,
             "type": "string",
-            "description": "Bearer token for authorization."
+            "description": "Bearer token for authorization. Format: 'Bearer {token}' where {token} is obtained from the login API."
           },
           {
             "in": "body",
@@ -1240,14 +1360,14 @@
             "name": "X-PRODUCT-INSTANCE-ID",
             "required": true,
             "type": "string",
-            "description": "This is provided by Setu and it represents a product instance for business in their system."
+            "description": "Unique identifier provided by Setu that represents your product instance."
           },
           {
             "in": "header",
             "name": "Authorization",
             "required": true,
             "type": "string",
-            "description": "Bearer token for authorization."
+            "description": "Bearer token for authorization. Format: 'Bearer {token}' where {token} is obtained from the login API."
           },
           {
             "in": "body",
@@ -1310,12 +1430,12 @@
                     "amount": {
                       "type": "number",
                       "example": 2900,
-                      "description": "Recharge amount in paise (e.g., 2900 paise = 29 INR)"
+                      "description": "Recharge amount in paise (1/100 of a rupee). Must be a positive integer value representing the amount in paise."
                     },
                     "mode": {
                       "type": "string",
                       "example": "Internet Banking",
-                      "description": "The payment mode used for the recharge"
+                      "description": "The payment mode used for the recharge. Must be one of: 'Internet Banking', 'UPI', 'Debit Card', 'Credit Card', or 'Wallet'."
                     },
                     "paymentParams": {
                       "type": "array",
@@ -1332,7 +1452,7 @@
                     "timestamp": {
                       "type": "string",
                       "example": "2024-02-07T13:54:00+05:30",
-                      "description": "Timestamp of when the payment was initiated"
+                      "description": "Timestamp of when the payment was initiated, in ISO 8601 format with timezone. Format: YYYY-MM-DDThh:mm:ss+TZ (e.g., '2024-02-07T13:54:00+05:30')."
                     }
                   },
                   "description": "Details of the payment for the recharge"
@@ -1340,7 +1460,7 @@
                 "refId": {
                   "type": "string",
                   "example": "REFIDTEST6291DD4004750702202402",
-                  "description": "Unique reference ID for the recharge request"
+                  "description": "Optional unique reference ID for the recharge request. If provided, must be an alphanumeric string with length between 5 and 40 characters."
                 }
               }
             }
@@ -1479,14 +1599,14 @@
             "name": "X-PRODUCT-INSTANCE-ID",
             "required": true,
             "type": "string",
-            "description": "This is provided by Setu and it represents a product instance for business in their system."
+            "description": "Unique identifier provided by Setu that represents your product instance."
           },
           {
             "in": "header",
             "name": "Authorization",
             "required": true,
             "type": "string",
-            "description": "Bearer token for authorization."
+            "description": "Bearer token for authorization. Format: 'Bearer {token}' where {token} is obtained from the login API."
           },
           {
             "in": "body",
@@ -1568,14 +1688,14 @@
             "name": "X-PRODUCT-INSTANCE-ID",
             "required": true,
             "type": "string",
-            "description": "This is provided by Setu and it represents a product instance for business in their system."
+            "description": "Unique identifier provided by Setu that represents your product instance."
           },
           {
             "in": "header",
             "name": "Authorization",
             "required": true,
             "type": "string",
-            "description": "Bearer token for authorization."
+            "description": "Bearer token for authorization. Format: 'Bearer {token}' where {token} is obtained from the login API."
           }
         ]
       }
@@ -1596,7 +1716,7 @@
             "required": false,
             "type": "integer",
             "example": 1,
-            "description": "Maximum number of transactions to return. Default is 100."
+            "description": "Maximum number of transactions to return per page. Default is 100."
           },
           {
             "in": "query",
@@ -1604,7 +1724,7 @@
             "required": false,
             "type": "integer",
             "example": 18,
-            "description": "Page number of the result"
+            "description": "Page number for pagination. Starts from 1. Default is 1 if not specified."
           },
           {
             "in": "query",
@@ -1612,7 +1732,7 @@
             "required": false,
             "type": "string",
             "example": "Jio",
-            "description": "Operator name to filter transactions"
+            "description": "Filter transactions by operator name. Must be one of: 'Jio', 'Airtel', 'Vi', 'BSNL', or 'MTNL'."
           },
           {
             "in": "query",
@@ -1621,7 +1741,7 @@
             "type": "string",
             "format": "date",
             "example": "2024-10-07",
-            "description": "Start date for transaction history in YYYY-MM-DD format"
+            "description": "Start date for transaction history in YYYY-MM-DD format. Cannot be more than 90 days in the past."
           },
           {
             "in": "query",
@@ -1630,21 +1750,21 @@
             "type": "string",
             "format": "date",
             "example": "2024-10-09",
-            "description": "End date for transaction history in YYYY-MM-DD format"
+            "description": "End date for transaction history in YYYY-MM-DD format. Cannot be in the future or before start_date."
           },
           {
             "in": "header",
             "name": "X-PRODUCT-INSTANCE-ID",
             "required": true,
             "type": "string",
-            "description": "This is provided by Setu and it represents a product instance for business in their system."
+            "description": "Unique identifier provided by Setu that represents your product instance."
           },
           {
             "in": "header",
             "name": "Authorization",
             "required": true,
             "type": "string",
-            "description": "Bearer token for authorization."
+            "description": "Bearer token for authorization. Format: 'Bearer {token}' where {token} is obtained from the login API."
           }
         ],
         "responses": {
