@@ -43,35 +43,26 @@
                 "required": ["orgId"],
                 "type": "object",
                 "properties": {
-                  "categoryName": {
-                    "type": "string",
-                    "example": "Water"
-                  },
                   "custID": {
                     "type": "string",
-                    "example": "12345"
+                    "description": "Customer Identifier",
+                    "example": "123456"
                   },
                   "mobileNumber": {
-                    "maxLength": 20,
+                    "maxLength": 22,
                     "minLength": 6,
-                    "pattern": "^\\d{6}(\\d{4}(\\d{10})?)?$",
+                    "pattern": "^\\d{6,22}$",
                     "type": "string",
-                    "description": "Mobile number with 6, 10 and 20 digits are valid.",
-                    "example": "9481773053"
+                    "description": "Mobile number with 6 to 22 digits are valid."
                   },
                   "orgId": {
                     "type": "string",
-                    "example": "1.22337203685477E14"
-                  },
-                  "redirectTo": {
-                    "type": "string",
-                    "example": "transactions",
-                    "enum": ["transactions", "disputes"]
+                    "example": "11321101108211244842"
                   },
                   "additionalInfo": {
                     "type": "object",
                     "properties": {},
-                    "description": "Additional Session information"
+                    "description": "Additional session information"
                   },
                   "billParams": {
                     "type": "array",
@@ -82,7 +73,7 @@
                         "name": {
                           "type": "string",
                           "description": "The display name of the parameter. This has to match what is sent in fields.",
-                          "example": "Loan Number"
+                          "example": "John Doe"
                         },
                         "value": {
                           "type": "string",
@@ -94,11 +85,26 @@
                   },
                   "billerId": {
                     "type": "string",
-                    "example": "MAHI0000001"
+                    "example": "BBPSDUMMY001"
+                  },
+                  "categoryName": {
+                    "type": "string",
+                    "example": "Water"
+                  },
+                  "redirectTo": {
+                    "type": "string",
+                    "example": "transactions",
+                    "enum": ["transactions", "disputes"]
+                  },
+                  "shortLink": {
+                    "maxLength": 16,
+                    "minLength": 8,
+                    "type": "string",
+                    "example": "TLxLzmLF"
                   }
                 },
-                "x-omitempty": true,
-                "x-go-name": "EtherealLinkCreateRequest"
+                "x-go-name": "EtherealLinkCreateRequest",
+                "x-omitempty": true
               }
             }
           },
@@ -165,6 +171,10 @@
                       "type": "string",
                       "example": "sessionId"
                     },
+                    "shortLink": {
+                      "type": "string",
+                      "example": "TLxLzmLF"
+                    },
                     "success": {
                       "type": "boolean",
                       "example": true
@@ -174,8 +184,8 @@
                       "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   },
-                  "x-go-name": "EtherealLinkCreateResponse",
-                  "x-omitempty": true
+                  "x-omitempty": true,
+                  "x-go-name": "EtherealLinkCreateResponse"
                 }
               }
             }
@@ -188,27 +198,27 @@
                   "required": ["error", "success", "traceId"],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": ["code", "message"],
                       "type": "object",
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -223,27 +233,27 @@
                   "required": ["error", "success", "traceId"],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": ["code", "message"],
                       "type": "object",
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -253,6 +263,243 @@
         },
         "security": [],
         "x-codegen-request-body-name": "EtherealLinkCreateRequest"
+      }
+    },
+    "/api/v2/webhooks/payment-event": {
+      "post": {
+        "tags": ["Custom Payment Webhook"],
+        "description": "Custom payment webhook API",
+        "operationId": "CouCustomPaymentWebhook",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "amount",
+                  "orderId",
+                  "paymentDateTime",
+                  "paymentMode",
+                  "paymentStatus",
+                  "transactionId"
+                ],
+                "type": "object",
+                "properties": {
+                  "failureReason": {
+                    "required": ["code", "message"],
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "example": "error-code-if-any"
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "error-message-if-any"
+                      }
+                    }
+                  },
+                  "orderId": {
+                    "type": "string",
+                    "example": "COUWLab1C2dDe5F6g"
+                  },
+                  "paymentDateTime": {
+                    "type": "string",
+                    "example": "2024-03-19 12:30:45"
+                  },
+                  "amount": {
+                    "type": "string",
+                    "example": "100"
+                  },
+                  "custConvFee": {
+                    "type": "integer"
+                  },
+                  "paymentMode": {
+                    "type": "string",
+                    "example": "UPI",
+                    "enum": [
+                      "INTERNET BANKING",
+                      "DEBIT CARD",
+                      "CREDIT CARD",
+                      "PREPAID CARD",
+                      "IMPS",
+                      "CASH",
+                      "UPI",
+                      "WALLET",
+                      "NEFT",
+                      "AEPS",
+                      "ACCOUNT TRANSFER",
+                      "BHARAT QR",
+                      "USSD"
+                    ]
+                  },
+                  "paymentStatus": {
+                    "type": "string",
+                    "example": "SUCCESS",
+                    "enum": ["SUCCESS", "FAILURE"]
+                  },
+                  "remarks": {
+                    "type": "string",
+                    "example": "Payment processed successfully."
+                  },
+                  "transactionId": {
+                    "type": "string",
+                    "example": "407012345678"
+                  }
+                },
+                "x-go-name": "CouCustomPaymentWebhook",
+                "x-omitempty": true
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["error", "success", "traceId"],
+                  "type": "object",
+                  "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
+                    "error": {
+                      "required": ["code", "message"],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "error-code-if-any"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "error-message-if-any"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["error", "success", "traceId"],
+                  "type": "object",
+                  "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
+                    "error": {
+                      "required": ["code", "message"],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "error-code-if-any"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "error-message-if-any"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["status"],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "acknowledged"
+                    }
+                  },
+                  "x-go-name": "CouCustomPaymentWebhookResponse",
+                  "x-omitempty": true
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "CouCustomPaymentWebhook"
       }
     },
     "/api/v2/auth/token": {
@@ -269,11 +516,13 @@
                 "properties": {
                   "clientID": {
                     "type": "string",
-                    "description": "clientID from the API key pair"
+                    "description": "clientID from the API key pair",
+                    "example": "exampleClientID"
                   },
                   "secret": {
                     "type": "string",
-                    "description": "secret from the API key pair"
+                    "description": "secret from the API key pair",
+                    "example": "exampleSecret"
                   }
                 },
                 "description": "Fetch Token API payload"
@@ -343,7 +592,8 @@
                         },
                         "token": {
                           "type": "string",
-                          "description": "Token to be used in subsequent requests"
+                          "description": "Token to be used in subsequent requests",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
                         }
                       }
                     },
@@ -374,27 +624,27 @@
                   "required": ["error", "success", "traceId"],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": ["code", "message"],
                       "type": "object",
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -413,11 +663,13 @@
         "properties": {
           "clientID": {
             "type": "string",
-            "description": "clientID from the API key pair"
+            "description": "clientID from the API key pair",
+            "example": "exampleClientID"
           },
           "secret": {
             "type": "string",
-            "description": "secret from the API key pair"
+            "description": "secret from the API key pair",
+            "example": "exampleSecret"
           }
         },
         "description": "Fetch Token API payload"
@@ -434,7 +686,8 @@
               },
               "token": {
                 "type": "string",
-                "description": "Token to be used in subsequent requests"
+                "description": "Token to be used in subsequent requests",
+                "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
               }
             }
           },
@@ -476,6 +729,7 @@
           "clientCredentials": {
             "tokenUrl": "https://coudc.setu.co/api/v2/auth/token",
             "scopes": {
+              "bbps:admin": "Required scope",
               "cou:wl_partner": "Required scope"
             }
           }
@@ -487,6 +741,7 @@
           "clientCredentials": {
             "tokenUrl": "https://sandbox-coudc.setu.co/api/v2/auth/token",
             "scopes": {
+              "bbps:admin": "Required scope",
               "cou:wl_partner": "Required scope"
             }
           }
@@ -498,6 +753,7 @@
           "clientCredentials": {
             "tokenUrl": "https://qa-coudc.setu.co/api/v2/auth/token",
             "scopes": {
+              "bbps:admin": "Required scope",
               "cou:wl_partner": "Required scope"
             }
           }
