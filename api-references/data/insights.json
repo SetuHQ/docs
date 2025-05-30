@@ -773,6 +773,260 @@
           }
         }
       }
+    },
+    "/v2/insight/deposit/transactions": {
+      "post": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "Get List of Deposit Transactions",
+        "description": "Get List of Deposit Transactions",
+        "operationId": "get_list_deposit_transactions_v2_insight_deposit_transactions_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "authorization"
+            },
+            "name": "authorization",
+            "in": "header"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "x-product-instance-id"
+            },
+            "name": "x-product-instance-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-id"
+            },
+            "name": "x-client-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-secret"
+            },
+            "name": "x-client-secret",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListDepositTransactionsRequest"
+              },
+              "examples": {
+                "ListDepositTransactionsRequest": {
+                  "summary": "ListDepositTransactionsRequest",
+                  "value": {
+                    "refIds": [
+                      "sample-ref-001",
+                      "sample-ref-002",
+                      "sample-ref-003"
+                    ],
+                    "where": [
+                      {
+                        "txnTimestamp_gte": "2024-01-01T00:00:00Z",
+                        "txnTimestamp_lte": "2024-12-31T23:59:59Z",
+                        "txnType": "CREDIT",
+                        "amount_gte": 1000,
+                        "categoryL1_list": [
+                          "Salary",
+                          "Investment",
+                          "Transfer"
+                        ]
+                      }
+                    ],
+                    "orderBy": [
+                      {
+                        "field": "txn_timestamp",
+                        "order": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "offset": 0
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDepositTransactionsResponse"
+                }
+              },
+              "examples": {
+                "ListDepositTransactionsResponse": {
+                  "summary": "ListDepositTransactionsResponse",
+                  "value": {
+                    "status": "Success",
+                    "body": [
+                      {
+                        "totalCount": 3,
+                        "data": [
+                          {
+                            "id": "01SAMPLE1K3SGPV3CTPF7TPF5F4",
+                            "refId": "sample-ref-001",
+                            "dataId": "data-block-001",
+                            "consentId": "consent-12345",
+                            "linkedAccRef": "acc-ref-sample-001",
+                            "fipId": "example-bank-fip",
+                            "txnId": "TXN2024001234567890",
+                            "txnType": "CREDIT",
+                            "txnMode": "UPI",
+                            "txnTimestamp": "2024-01-15T10:30:00Z",
+                            "txnValueDate": "2024-01-15T10:30:00Z",
+                            "narration": "UPI/CR/Salary credit from ACME Corp",
+                            "reference": "SAL/JAN/2024/001",
+                            "transactionMode": "ONLINE",
+                            "counterparty": "ACME Corporation",
+                            "categoryL1": "Salary",
+                            "categoryL2": "Regular Income",
+                            "categoryManual": "Monthly Salary",
+                            "amount": 75000.00,
+                            "currentBalance": 125000.00
+                          },
+                          {
+                            "id": "01SAMPLE2BH6J5NVXTY7TB0DCA5",
+                            "refId": "sample-ref-002",
+                            "dataId": "data-block-002",
+                            "consentId": "consent-12346",
+                            "linkedAccRef": "acc-ref-sample-002",
+                            "fipId": "example-bank-fip",
+                            "txnId": "TXN2024001234567891",
+                            "txnType": "DEBIT",
+                            "txnMode": "NEFT",
+                            "txnTimestamp": "2024-01-16T14:22:00Z",
+                            "txnValueDate": "2024-01-16T14:22:00Z",
+                            "narration": "NEFT/DR/Rent payment to John Doe",
+                            "reference": "RENT/JAN/2024",
+                            "transactionMode": "ONLINE",
+                            "counterparty": "John Doe Property Management",
+                            "categoryL1": "Housing",
+                            "categoryL2": "Rent",
+                            "categoryManual": "Monthly Rent",
+                            "amount": 25000.00,
+                            "currentBalance": 100000.00
+                          },
+                          {
+                            "id": "01SAMPLE3X98W0FRB2QQP7Y1K",
+                            "refId": "sample-ref-003",
+                            "dataId": "data-block-003",
+                            "consentId": "consent-12347",
+                            "linkedAccRef": "acc-ref-sample-003",
+                            "fipId": "example-bank-fip",
+                            "txnId": "TXN2024001234567892",
+                            "txnType": "DEBIT",
+                            "txnMode": "ATM",
+                            "txnTimestamp": "2024-01-17T09:15:00Z",
+                            "txnValueDate": "2024-01-17T09:15:00Z",
+                            "narration": "ATM/DR/Cash withdrawal at Main Street ATM",
+                            "reference": "ATM/17012024/001",
+                            "transactionMode": "CASH",
+                            "counterparty": "ATM Withdrawal",
+                            "categoryL1": "Cash Withdrawal",
+                            "categoryL2": "ATM",
+                            "categoryManual": "Pocket Money",
+                            "amount": 5000.00,
+                            "currentBalance": 95000.00
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": [
+                  {
+                    "BadRequestErrorResponse": {
+                      "summary": "BadRequestErrorResponse",
+                      "value": {
+                        "errorCode": "400",
+                        "errorMsg": "Product instance ID required"
+                      }
+                    }
+                  },
+                  {
+                    "BadRequestErrorResponse": {
+                      "summary": "BadRequestErrorResponse",
+                      "value": {
+                        "errorCode": "400",
+                        "errorMsg": "Product instance ID required"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "AuthenticationErrorResponse": {
+                    "summary": "AuthenticationErrorResponse",
+                    "value": {
+                      "message": "Unauthorized"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ServerErrorResponse": {
+                    "summary": "ServerErrorResponse",
+                    "value": {
+                      "errorCode": "500",
+                      "errorMsg": "Internal Server Error",
+                      "timestamp": "2023-04-18T17:10:12.904153",
+                      "ver": "1",
+                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
