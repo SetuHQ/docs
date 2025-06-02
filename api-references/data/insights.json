@@ -1235,6 +1235,138 @@
           }
         }
       }
+    },
+    "/v1/mutual-funds/transactions": {
+      "post": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "List mutual-funds transactions",
+        "description": "Retrieves a list of mutual fund transactions based on provided filters and pagination parameters.",
+        "operationId": "list-mutual-funds-transactions",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-product-instance-id"
+            },
+            "name": "x-product-instance-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-id"
+            },
+            "name": "x-client-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-secret"
+            },
+            "name": "x-client-secret",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InsightListMutualFundsTransactionsRequest"
+              }
+            }
+          },
+          "required": true,
+          "description": "List of Equities Transactions"
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightListMutualFundsTransactionsResponse"
+                },
+                "examples": {
+                  "SuccessResponse": {
+                    "summary": "SuccessResponse",
+                    "value": {
+                      "status": "Success",
+                      "body": {
+                        "totalCount": 1,
+                        "data": [
+                          {
+                            "id": "01SAMPLE04R46QZNQ28YM2C6E4S",
+                            "refId": "sample-equity-ref-001",
+                            "dataId": "equity-data-block-001",
+                            "consentId": "equity-consent-12345",
+                            "linkedAccRef": "NSDLLINK00000000000000SAMPLE",
+                            "fipId": "fip@nsdl",
+                            "txnId": "EQUITY123456789",
+                            "txnType": "BUY",
+                            "txnDateTime": "2024-10-31T18:30:00Z",
+                            "orderId": "ORD2024103101",
+                            "exchange": "NSE",
+                            "isin": "INE002A01018",
+                            "isinDescription": "Reliance Industries Limited",
+                            "companyName": "RELIANCE INDUSTRIES LIMITED",
+                            "equityCategory": "EQUITY",
+                            "narration": "Purchase of equity shares",
+                            "exchangeRate": 1338.65,
+                            "units": 11,
+                            "dematId": "DEMAT123456"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightTransactionServiceBadRequest"
+                },
+                "examples": {
+                  "BadRequestResponse": {
+                    "summary": "BadRequestResponse",
+                    "value": {
+                      "message": "Product instance ID required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightTransactionServiceUnauthorized"
+                },
+                "examples": {
+                  "UnauthorizedResponse": {
+                    "summary": "UnauthorizedResponse",
+                    "value": {
+                      "message": "Unauthorized"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2772,6 +2904,283 @@
               }
             },
             "description": "Array of ETF transaction objects"
+          }
+        }
+      },
+      "InsightListMutualFundsTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "maximum": 500
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "refIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "orderBy": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": [
+                    "id",
+                    "ref_id",
+                    "data_id",
+                    "consent_id",
+                    "linked_acc_ref",
+                    "product_account_id",
+                    "fip_id",
+                    "txn_id",
+                    "txn_mode",
+                    "txn_type",
+                    "txn_date",
+                    "amc",
+                    "registrar",
+                    "scheme_code",
+                    "scheme_plan",
+                    "isin",
+                    "isin_description",
+                    "amfi_code",
+                    "ucc",
+                    "amount",
+                    "nav_date",
+                    "lock_in_flag",
+                    "lock_in_days",
+                    "narration",
+                    "units",
+                    "amc_full_name",
+                    "mutual_fund_name"
+                  ]
+                },
+                "order": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "required": [
+                "field",
+                "order"
+              ]
+            }
+          },
+          "where": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "txnId": {
+                  "type": "string"
+                },
+                "txnType": {
+                  "type": "string"
+                },
+                "txnDate": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "txnMode": {
+                  "type": "string"
+                },
+                "amc": {
+                  "type": "string"
+                },
+                "registrar": {
+                  "type": "string"
+                },
+                "schemeCode": {
+                  "type": "string"
+                },
+                "schemePlan": {
+                  "type": "string"
+                },
+                "isin": {
+                  "type": "string"
+                },
+                "isinDescription": {
+                  "type": "string"
+                },
+                "amfiCode": {
+                  "type": "string"
+                },
+                "ucc": {
+                  "type": "string"
+                },
+                "navDate": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "lockInFlag": {
+                  "type": "string"
+                },
+                "lockInDays": {
+                  "type": "string"
+                },
+                "narration": {
+                  "type": "string"
+                },
+                "amcFullName": {
+                  "type": "string"
+                },
+                "mutualFundName": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "amount_gte": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "amount_lte": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "units": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "units_gte": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "units_lte": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "nav": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "nav_gte": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "nav_lte": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "txnDate_gte": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "txnDate_lte": {
+                  "type": "string",
+                  "format": "date"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InsightListMutualFundsTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "description": "Total number of equity transactions matching the filter"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "refId": {
+                  "type": "string"
+                },
+                "dataId": {
+                  "type": "string"
+                },
+                "consentId": {
+                  "type": "string"
+                },
+                "linkedAccRef": {
+                  "type": "string"
+                },
+                "fipId": {
+                  "type": "string"
+                },
+                "txnId": {
+                  "type": "string"
+                },
+                "txnType": {
+                  "type": "string"
+                },
+                "txnDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "txnMode": {
+                  "type": "string"
+                },
+                "amc": {
+                  "type": "string"
+                },
+                "registrar": {
+                  "type": "string"
+                },
+                "schemeCode": {
+                  "type": "string"
+                },
+                "schemePlan": {
+                  "type": "string"
+                },
+                "isin": {
+                  "type": "string"
+                },
+                "isinDescription": {
+                  "type": "string"
+                },
+                "amfiCode": {
+                  "type": "string"
+                },
+                "ucc": {
+                  "type": "string"
+                },
+                "nav": {
+                  "type": "number"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "navDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lockInFlag": {
+                  "type": "string"
+                },
+                "lockInDays": {
+                  "type": "string"
+                },
+                "narration": {
+                  "type": "string"
+                },
+                "units": {
+                  "type": "number"
+                },
+                "amcFullName": {
+                  "type": "string"
+                },
+                "mutualFundName": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       },
