@@ -963,6 +963,107 @@
         }
       }
     },
+    "/v2/insight/equities/transactions": {
+      "post": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "List of Equities Transactions",
+        "description": "List of Equities Transactions",
+        "operationId": "list_equities_transactions_v2_insight_equities_transactions_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-product-instance-id"
+            },
+            "name": "x-product-instance-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-id"
+            },
+            "name": "x-client-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-secret"
+            },
+            "name": "x-client-secret",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InsightListEquitiesTransactionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightListEquitiesTransactionsResponse"
+                },
+                "examples": {
+                  "SuccessResponse": {
+                    "summary": "SuccessResponse",
+                    "value": {
+                      "status": "Success",
+                      "body": [
+                        {
+                          "totalCount": 1,
+                          "data": [
+                            {
+                              "id": "01SAMPLE04R46QZNQ28YM2C6E4S",
+                              "createdAt": "2024-10-31T18:35:00Z",
+                              "updatedAt": "2024-10-31T18:35:00Z",
+                              "isDeleted": false,
+                              "refId": "sample-equity-ref-001",
+                              "dataId": "equity-data-block-001",
+                              "consentId": "equity-consent-12345",
+                              "linkedAccRef": "NSDLLINK00000000000000SAMPLE",
+                              "productAccountId": "prod-equity-acc-001",
+                              "fipId": "fip@nsdl",
+                              "txnId": "EQUITY123456789",
+                              "txnType": "BUY",
+                              "txnDateTime": "2024-10-31T18:30:00Z",
+                              "orderId": "ORD2024103101",
+                              "exchange": "NSE",
+                              "isin": "INE002A01018",
+                              "isinDescription": "Reliance Industries Limited",
+                              "companyName": "RELIANCE INDUSTRIES LIMITED",
+                              "equityCategory": "EQUITY",
+                              "narration": "Purchase of equity shares",
+                              "exchangeRate": 1338.65,
+                              "units": 11,
+                              "dematId": "DEMAT123456"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/insight/mutual-funds/transactions": {
       "post": {
         "tags": [
@@ -1057,6 +1158,61 @@
             }
           }
         }
+      }
+    },
+    "/v1/equities/transactions": {
+      "post": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "List equities transactions",
+        "description": "Retrieves a list of equity investment transactions based on provided filters and pagination parameters.",
+        "operationId": "list-equities-transactions",
+        "requestBody": {
+          "description": "Query details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InsightListEquitiesTransactionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightListEquitiesTransactionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "title": "Message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "params"
       }
     }
   },
@@ -2447,6 +2603,290 @@
             }
           }
         }
+      },
+      "InsightListEquitiesTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "refIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of reference IDs to filter transactions"
+          },
+          "where": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "txnId": {
+                  "type": "string",
+                  "description": "Transaction ID filter"
+                },
+                "txnType": {
+                  "type": "string",
+                  "description": "Transaction type filter (BUY/SELL/etc.)"
+                },
+                "txnDateTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Exact transaction date time"
+                },
+                "orderId": {
+                  "type": "string",
+                  "description": "Order ID filter"
+                },
+                "exchange": {
+                  "type": "string",
+                  "description": "Exchange filter (NSE/BSE/etc.)"
+                },
+                "isin": {
+                  "type": "string",
+                  "description": "ISIN code filter"
+                },
+                "isinDescription": {
+                  "type": "string",
+                  "description": "ISIN description filter"
+                },
+                "companyName": {
+                  "type": "string",
+                  "description": "Company name filter"
+                },
+                "equityCategory": {
+                  "type": "string",
+                  "description": "Equity category filter"
+                },
+                "narration": {
+                  "type": "string",
+                  "description": "Transaction narration filter"
+                },
+                "dematId": {
+                  "type": "string",
+                  "description": "Demat account ID filter"
+                },
+                "units": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Exact number of units"
+                },
+                "units_gte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Units greater than or equal to"
+                },
+                "units_lte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Units less than or equal to"
+                },
+                "exchangeRate": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Exact exchange rate/price"
+                },
+                "exchangeRate_gte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Exchange rate greater than or equal to"
+                },
+                "exchangeRate_lte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Exchange rate less than or equal to"
+                },
+                "transactionDateTime_gte": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Transaction date time greater than or equal to"
+                },
+                "transactionDateTime_lte": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Transaction date time less than or equal to"
+                }
+              },
+              "additionalProperties": false
+            },
+            "description": "Filter conditions for the query"
+          },
+          "orderBy": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": [
+                    "id",
+                    "ref_id",
+                    "data_id",
+                    "consent_id",
+                    "linked_acc_ref",
+                    "product_account_id",
+                    "fip_id",
+                    "txn_id",
+                    "order_id",
+                    "company_name",
+                    "transaction_date_time",
+                    "exchange",
+                    "isin",
+                    "isin_description",
+                    "equity_category",
+                    "narration",
+                    "exchange_rate",
+                    "units",
+                    "type",
+                    "demat_id"
+                  ],
+                  "description": "Field to sort by (must be one of the allowed fields)"
+                },
+                "order": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "description": "Sort order (ascending or descending)"
+                }
+              },
+              "required": [
+                "field",
+                "order"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Sorting criteria for the results"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of records to return"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Number of records to skip for pagination"
+          }
+        },
+        "required": [
+          "refIds"
+        ],
+        "additionalProperties": false
+      },
+      "InsightListEquitiesTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total number of equity transactions matching the filter"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique transaction identifier"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Record creation timestamp"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Record last update timestamp"
+                },
+                "isDeleted": {
+                  "type": "boolean",
+                  "description": "Soft delete flag"
+                },
+                "refId": {
+                  "type": "string",
+                  "description": "Reference ID"
+                },
+                "dataId": {
+                  "type": "string",
+                  "description": "Data block ID"
+                },
+                "consentId": {
+                  "type": "string",
+                  "description": "Consent ID"
+                },
+                "linkedAccRef": {
+                  "type": "string",
+                  "description": "Linked account reference"
+                },
+                "productAccountId": {
+                  "type": "string",
+                  "description": "Product account identifier"
+                },
+                "fipId": {
+                  "type": "string",
+                  "description": "Financial Information Provider ID"
+                },
+                "txnId": {
+                  "type": "string",
+                  "description": "Transaction ID from source"
+                },
+                "txnType": {
+                  "type": "string",
+                  "description": "Transaction type (BUY/SELL/BONUS/etc.)"
+                },
+                "txnDateTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Transaction date and time"
+                },
+                "orderId": {
+                  "type": "string",
+                  "description": "Order ID"
+                },
+                "exchange": {
+                  "type": "string",
+                  "description": "Exchange name (NSE/BSE/etc.)"
+                },
+                "isin": {
+                  "type": "string",
+                  "description": "ISIN code"
+                },
+                "isinDescription": {
+                  "type": "string",
+                  "description": "ISIN description"
+                },
+                "companyName": {
+                  "type": "string",
+                  "description": "Company name"
+                },
+                "equityCategory": {
+                  "type": "string",
+                  "description": "Equity category (EQUITY/PREFERENCE/etc.)"
+                },
+                "narration": {
+                  "type": "string",
+                  "description": "Transaction description"
+                },
+                "exchangeRate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Exchange rate or price per unit"
+                },
+                "units": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Number of units/shares"
+                },
+                "dematId": {
+                  "type": "string",
+                  "description": "Demat account ID"
+                }
+              }
+            },
+            "description": "Array of equity transaction objects"
+          }
+        },
+        "additionalProperties": false
       },
       "KeywordMap": {
         "properties": {
