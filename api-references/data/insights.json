@@ -1064,6 +1064,118 @@
         }
       }
     },
+    "/v2/insight/etf/transactions": {
+      "post": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "List of ETF Transactions",
+        "description": "List of ETF Transactions",
+        "operationId": "list_etf_transactions_v2_insight_etf_transactions_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-product-instance-id"
+            },
+            "name": "x-product-instance-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-id"
+            },
+            "name": "x-client-id",
+            "in": "header"
+          },
+          {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "x-client-secret"
+            },
+            "name": "x-client-secret",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InsightListETFTransactionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightListETFTransactionsResponse"
+                },
+                "examples": {
+                  "SuccessResponse": {
+                    "summary": "SuccessResponse",
+                    "value": {
+                      "status": "Success",
+                      "body": {
+                        "totalCount": 2,
+                        "data": [
+                          {
+                            "id": "01SAMPLE1PAGPEKV9FXTKQ9JWN5",
+                            "refId": "etf-sample-ref-001",
+                            "dataId": "etf-data-block-001",
+                            "consentId": "etf-consent-12345",
+                            "linkedAccRef": "sample-etf-acc-ref-001",
+                            "fipId": "setu-fip",
+                            "txnId": "ETF63944T6",
+                            "txnType": "BUY",
+                            "transactionDateTime": "2015-10-07T18:20:00Z",
+                            "brokerCode": "BRK001",
+                            "isin": "INUSETF001625-0",
+                            "isinDescription": "Sample ETF Index Fund",
+                            "narration": "Purchase of ETF units",
+                            "nav": 2100,
+                            "amount": 42000,
+                            "units": 20,
+                            "dematId": "DEMAT567890"
+                          },
+                          {
+                            "id": "02SAMPLE2PAVDAY0MY8F4YTATRV",
+                            "refId": "etf-sample-ref-001",
+                            "dataId": "etf-data-block-002",
+                            "consentId": "etf-consent-12345",
+                            "linkedAccRef": "sample-etf-acc-ref-001",
+                            "fipId": "setu-fip",
+                            "txnId": "ETF63944T6",
+                            "txnType": "SELL",
+                            "transactionDateTime": "2021-01-12T18:20:00Z",
+                            "brokerCode": "BRK001",
+                            "isin": "INUSETF001625-0",
+                            "isinDescription": "Sample ETF Index Fund",
+                            "narration": "Sale of ETF units",
+                            "nav": 2100,
+                            "amount": 31500,
+                            "units": 15,
+                            "dematId": "DEMAT567890"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/insight/mutual-funds/transactions": {
       "post": {
         "tags": [
@@ -2829,6 +2941,294 @@
               }
             },
             "description": "Array of equity transaction objects"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InsightListETFTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "refIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "List of reference IDs to filter transactions",
+            "minItems": 1,
+            "maxItems": 100
+          },
+          "where": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "txnId": {
+                  "type": "string",
+                  "description": "Transaction ID filter"
+                },
+                "txnType": {
+                  "type": "string",
+                  "description": "Transaction type filter (BUY/SELL/etc.)"
+                },
+                "transactionDateTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Exact transaction date time"
+                },
+                "brokerCode": {
+                  "type": "string",
+                  "description": "Broker code filter"
+                },
+                "isin": {
+                  "type": "string",
+                  "description": "ISIN code filter"
+                },
+                "isinDescription": {
+                  "type": "string",
+                  "description": "ISIN description filter"
+                },
+                "narration": {
+                  "type": "string",
+                  "description": "Transaction narration filter"
+                },
+                "dematId": {
+                  "type": "string",
+                  "description": "Demat account ID filter"
+                },
+                "units": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Exact number of units"
+                },
+                "units_gte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Units greater than or equal to"
+                },
+                "units_lte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Units less than or equal to"
+                },
+                "nav": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Exact NAV (Net Asset Value)"
+                },
+                "nav_gte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "NAV greater than or equal to"
+                },
+                "nav_lte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "NAV less than or equal to"
+                },
+                "amount": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Exact transaction amount"
+                },
+                "amount_gte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Amount greater than or equal to"
+                },
+                "amount_lte": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "description": "Amount less than or equal to"
+                },
+                "transactionDateTime_gte": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Transaction date time greater than or equal to"
+                },
+                "transactionDateTime_lte": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Transaction date time less than or equal to"
+                }
+              },
+              "additionalProperties": false
+            },
+            "description": "Filter conditions for the query",
+            "maxItems": 10
+          },
+          "orderBy": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": [
+                    "id",
+                    "ref_id",
+                    "data_id",
+                    "consent_id",
+                    "linked_acc_ref",
+                    "product_account_id",
+                    "fip_id",
+                    "txn_id",
+                    "transaction_date_time",
+                    "broker_code",
+                    "isin",
+                    "isin_description",
+                    "nav",
+                    "narration",
+                    "amount",
+                    "units",
+                    "txn_type",
+                    "demat_id"
+                  ],
+                  "description": "Field to sort by (must be one of the allowed fields)"
+                },
+                "order": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "description": "Sort order (ascending or descending)"
+                }
+              },
+              "required": [
+                "field",
+                "order"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Sorting criteria for the results",
+            "maxItems": 5
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 100,
+            "description": "Maximum number of records to return"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "description": "Number of records to skip for pagination"
+          }
+        },
+        "required": [
+          "refIds"
+        ],
+        "additionalProperties": false
+      },
+      "InsightListETFTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total number of ETF transactions matching the filter"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique transaction identifier"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Record creation timestamp"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Record last update timestamp"
+                },
+                "isDeleted": {
+                  "type": "boolean",
+                  "description": "Soft delete flag"
+                },
+                "refId": {
+                  "type": "string",
+                  "description": "Reference ID"
+                },
+                "dataId": {
+                  "type": "string",
+                  "description": "Data block ID"
+                },
+                "consentId": {
+                  "type": "string",
+                  "description": "Consent ID"
+                },
+                "linkedAccRef": {
+                  "type": "string",
+                  "description": "Linked account reference"
+                },
+                "productAccountId": {
+                  "type": "string",
+                  "description": "Product account identifier"
+                },
+                "fipId": {
+                  "type": "string",
+                  "description": "Financial Information Provider ID"
+                },
+                "txnId": {
+                  "type": "string",
+                  "description": "Transaction ID from source"
+                },
+                "txnType": {
+                  "type": "string",
+                  "description": "Transaction type (BUY/SELL/etc.)"
+                },
+                "transactionDateTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Transaction date and time"
+                },
+                "brokerCode": {
+                  "type": "string",
+                  "description": "Broker code"
+                },
+                "isin": {
+                  "type": "string",
+                  "description": "ISIN code"
+                },
+                "isinDescription": {
+                  "type": "string",
+                  "description": "ISIN description"
+                },
+                "narration": {
+                  "type": "string",
+                  "description": "Transaction description"
+                },
+                "nav": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Net Asset Value"
+                },
+                "amount": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Transaction amount"
+                },
+                "units": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Number of units"
+                },
+                "dematId": {
+                  "type": "string",
+                  "description": "Demat account ID"
+                }
+              }
+            },
+            "description": "Array of ETF transaction objects"
           }
         },
         "additionalProperties": false
