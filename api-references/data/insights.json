@@ -773,14 +773,14 @@
         }
       }
     },
-    "/v2/insight/deposit/transactions": {
+    "/v1/deposit/transactions": {
       "post": {
         "tags": [
           "Insights"
         ],
-        "summary": "List of Deposit Transactions",
-        "description": "List of Deposit Transactions",
-        "operationId": "list_deposit_transactions_v2_insight_deposit_transactions_post",
+        "summary": "List Deposit Transactions",
+        "description": "Retrieves a list of deposit account transactions based on provided filters and pagination parameters.",
+        "operationId": "list-deposit-transactions",
         "parameters": [
           {
             "required": true,
@@ -963,7 +963,7 @@
         }
       }
     },
-    "/v2/insight/equities/transactions": {
+    "/v1/equities/transactions": {
       "post": {
         "tags": [
           "Insights"
@@ -1064,7 +1064,7 @@
         }
       }
     },
-    "/v2/insight/etf/transactions": {
+    "/v1/etf/transactions": {
       "post": {
         "tags": [
           "Insights"
@@ -1176,7 +1176,7 @@
         }
       }
     },
-    "/v2/insight/mutual-funds/transactions": {
+    "/v1/mutual-funds/transactions": {
       "post": {
         "tags": [
           "Insights"
@@ -2164,7 +2164,8 @@
         "type": "object",
         "properties": {
           "limit": {
-            "type": "integer"
+            "type": "integer",
+            "maximum": 500
           },
           "offset": {
             "type": "integer"
@@ -2220,52 +2221,10 @@
             "items": {
               "type": "object",
               "properties": {
-                "amount": {
-                  "type": "number"
-                },
-                "amount_gte": {
-                  "type": "number"
-                },
-                "amount_lte": {
-                  "type": "number"
-                },
-                "categoryL1": {
-                  "type": "string"
-                },
-                "categoryL1_list": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "categoryL2": {
-                  "type": "string"
-                },
-                "categoryL2_list": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "categoryManual": {
-                  "type": "string"
-                },
-                "categoryManual_list": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "currentBalance": {
-                  "type": "number"
-                },
-                "narration": {
-                  "type": "string"
-                },
-                "reference": {
-                  "type": "string"
-                },
                 "txnId": {
+                  "type": "string"
+                },
+                "txnType": {
                   "type": "string"
                 },
                 "txnMode": {
@@ -2275,6 +2234,49 @@
                   "type": "string",
                   "format": "date-time"
                 },
+                "txnValueDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "narration": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                "currentBalance": {
+                  "type": "number"
+                },
+                "reference": {
+                  "type": "string"
+                },
+                "fipId": {
+                  "type": "string"
+                },
+                "categoryL1": {
+                  "type": "string"
+                },
+                "categoryL2": {
+                  "type": "string"
+                },
+                "categoryManual": {
+                  "type": "string"
+                },
+                "transactionMode": {
+                  "type": "string"
+                },
+                "counterparty": {
+                  "type": "string"
+                },
+                "amount_gte": {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                "amount_lte": {
+                  "type": "number",
+                  "minimum": 0.0
+                },
                 "txnTimestamp_gte": {
                   "type": "string",
                   "format": "date-time"
@@ -2283,12 +2285,23 @@
                   "type": "string",
                   "format": "date-time"
                 },
-                "txnType": {
-                  "type": "string"
+                "categoryL1_list": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
                 },
-                "txnValueDate": {
-                  "type": "string",
-                  "format": "date-time"
+                "categoryL2_list": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "categoryManual_list": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -2309,8 +2322,7 @@
                   "type": "string"
                 },
                 "refId": {
-                  "type": "string",
-                  "format": "utc-millisec"
+                  "type": "string"
                 },
                 "dataId": {
                   "type": "string"
