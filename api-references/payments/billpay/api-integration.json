@@ -7,10 +7,6 @@
   },
   "servers": [
     {
-      "url": "https://coudc.setu.co",
-      "description": "Production server"
-    },
-    {
       "url": "https://sandbox-coudc.setu.co",
       "description": "Sandbox server"
     },
@@ -176,6 +172,7 @@
     "/api/v2/bbps/bills/fetch/request": {
       "post": {
         "tags": ["Fetch"],
+        "operationId": "FetchRequest",
         "description": "Bill fetch request API",
         "parameters": [
           {
@@ -186,6 +183,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -574,6 +578,7 @@
     "/api/v2/bbps/bills/fetch/response": {
       "post": {
         "tags": ["Fetch"],
+        "operationId": "FetchResponse",
         "description": "Bill fetch response API",
         "parameters": [
           {
@@ -584,6 +589,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -970,6 +982,7 @@
     "/api/v2/bbps/bills/payment/request": {
       "post": {
         "tags": ["Pay"],
+        "operationId": "PaymentRequest",
         "description": "Bill payment request API",
         "parameters": [
           {
@@ -980,6 +993,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -1129,12 +1149,7 @@
                         }
                       },
                       "paymentDetails": {
-                        "required": [
-                          "amount",
-                          "mode",
-                          "paymentRefId",
-                          "timestamp"
-                        ],
+                        "required": ["amount", "mode", "paymentRefId", "timestamp"],
                         "type": "object",
                         "properties": {
                           "custConvFee": {
@@ -1595,6 +1610,7 @@
     "/api/v2/bbps/bills/payment/response": {
       "post": {
         "tags": ["Pay"],
+        "operationId": "PaymentResponse",
         "description": "Bill payment response API",
         "parameters": [
           {
@@ -1605,6 +1621,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -1685,12 +1708,7 @@
                       "type": "object",
                       "properties": {
                         "paymentDetails": {
-                          "required": [
-                            "amount",
-                            "mode",
-                            "paymentRefId",
-                            "timestamp"
-                          ],
+                          "required": ["amount", "mode", "paymentRefId", "timestamp"],
                           "type": "object",
                           "properties": {
                             "custConvFee": {
@@ -1830,12 +1848,7 @@
                         "status": {
                           "type": "string",
                           "example": "Success",
-                          "enum": [
-                            "Processing",
-                            "Success",
-                            "Failure",
-                            "Credit_Adjustment"
-                          ]
+                          "enum": ["Processing", "Success", "Failure", "Credit_Adjustment"]
                         },
                         "transactionId": {
                           "type": "string",
@@ -1970,6 +1983,7 @@
     "/api/v2/bbps/bills/complaint/request": {
       "post": {
         "tags": ["Dispute"],
+        "operationId": "DisputeRequest",
         "description": "Raise dispute request API",
         "parameters": [
           {
@@ -1980,6 +1994,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -2213,6 +2234,7 @@
     "/api/v2/bbps/bills/complaint/response": {
       "post": {
         "tags": ["Dispute"],
+        "operationId": "DisputeResponse",
         "description": "Raise dispute response API",
         "parameters": [
           {
@@ -2223,6 +2245,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -2299,13 +2328,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "required": [
-                        "assignedTo",
-                        "disputeId",
-                        "refId",
-                        "remarks",
-                        "status"
-                      ],
+                      "required": ["assignedTo", "disputeId", "refId", "remarks", "status"],
                       "type": "object",
                       "properties": {
                         "assignedTo": {
@@ -2447,6 +2470,7 @@
     "/api/v2/bbps/disputes": {
       "get": {
         "tags": ["List"],
+        "operationId": "getDisputes",
         "description": "Returns the list of disputes.",
         "parameters": [
           {
@@ -2457,6 +2481,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           },
           {
             "name": "status",
@@ -3342,7 +3373,10 @@
                                                 "type": "array",
                                                 "description": "The bill params for fetching the bill",
                                                 "items": {
-                                                  "required": ["name", "value"],
+                                                  "required": [
+                                                    "name",
+                                                    "value"
+                                                  ],
                                                   "type": "object",
                                                   "properties": {
                                                     "name": {
@@ -4055,6 +4089,7 @@
     "/api/v2/bbps/categories": {
       "get": {
         "tags": ["List"],
+        "operationId": "getCategories",
         "description": "Returns the list of categories.",
         "parameters": [
           {
@@ -4065,6 +4100,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "responses": {
@@ -4255,6 +4297,7 @@
     "/api/v2/bbps/billers": {
       "get": {
         "tags": ["List"],
+        "operationId": "getBillers",
         "description": "Returns the list of billers.",
         "parameters": [
           {
@@ -4265,6 +4308,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           },
           {
             "name": "categoryName",
@@ -4611,11 +4661,7 @@
                               "billerAdditionalInfoPayment": {
                                 "type": "array",
                                 "items": {
-                                  "required": [
-                                    "dataType",
-                                    "optional",
-                                    "paramName"
-                                  ],
+                                  "required": ["dataType", "optional", "paramName"],
                                   "type": "object",
                                   "properties": {
                                     "dataType": {
@@ -4716,11 +4762,7 @@
                               },
                               "fetchApiType": {
                                 "type": "string",
-                                "enum": [
-                                  "BILL_FETCH",
-                                  "BILL_VALIDATE",
-                                  "BILL_DIRECT"
-                                ]
+                                "enum": ["BILL_FETCH", "BILL_VALIDATE", "BILL_DIRECT"]
                               },
                               "bbpsUpdateTimestamp": {
                                 "type": "string",
@@ -4799,11 +4841,7 @@
                               "billerAdditionalInfo": {
                                 "type": "array",
                                 "items": {
-                                  "required": [
-                                    "dataType",
-                                    "optional",
-                                    "paramName"
-                                  ],
+                                  "required": ["dataType", "optional", "paramName"],
                                   "type": "object",
                                   "properties": {
                                     "dataType": {
@@ -5337,6 +5375,7 @@
     "/api/v2/bbps/transactions": {
       "get": {
         "tags": ["List"],
+        "operationId": "getTxns",
         "description": "Returns the list of transactions.",
         "parameters": [
           {
@@ -5347,6 +5386,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           },
           {
             "name": "limit",
@@ -5685,7 +5731,10 @@
                                             "type": "array",
                                             "description": "The bill params for fetching the bill",
                                             "items": {
-                                              "required": ["name", "value"],
+                                              "required": [
+                                                "name",
+                                                "value"
+                                              ],
                                               "type": "object",
                                               "properties": {
                                                 "name": {
