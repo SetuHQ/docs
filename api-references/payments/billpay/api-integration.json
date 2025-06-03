@@ -7,10 +7,6 @@
   },
   "servers": [
     {
-      "url": "https://coudc.setu.co",
-      "description": "Production server"
-    },
-    {
       "url": "https://sandbox-coudc.setu.co",
       "description": "Sandbox server"
     },
@@ -36,11 +32,13 @@
                 "properties": {
                   "clientID": {
                     "type": "string",
-                    "description": "clientID from the API key pair"
+                    "description": "clientID from the API key pair",
+                    "example": "exampleClientID"
                   },
                   "secret": {
                     "type": "string",
-                    "description": "secret from the API key pair"
+                    "description": "secret from the API key pair",
+                    "example": "exampleSecret"
                   }
                 },
                 "description": "Fetch Token API payload"
@@ -113,7 +111,8 @@
                         },
                         "token": {
                           "type": "string",
-                          "description": "Token to be used in subsequent requests"
+                          "description": "Token to be used in subsequent requests",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
                         }
                       }
                     },
@@ -151,6 +150,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -160,21 +163,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -187,9 +186,8 @@
     },
     "/api/v2/bbps/bills/fetch/request": {
       "post": {
-        "tags": [
-          "Fetch"
-        ],
+        "tags": ["Fetch"],
+        "operationId": "FetchRequest",
         "description": "Bill fetch request API",
         "parameters": [
           {
@@ -200,6 +198,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -244,21 +249,6 @@
                               "MPOS"
                             ]
                           },
-                          "geocode": {
-                            "type": "string",
-                            "description": "Mandatory if channel is `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
-                            "example": "19.0139,72.8254"
-                          },
-                          "id": {
-                            "type": "string",
-                            "description": "The ID of the agent initiating the BBPS transaction.",
-                            "example": "AX01AI06512391457204"
-                          },
-                          "ifsc": {
-                            "type": "string",
-                            "description": "Mandatory if channel is `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
-                            "example": "ICIC0000152"
-                          },
                           "imei": {
                             "type": "string",
                             "description": "Mandatory if channel is `MOB`, `MOBB`. Not required for others.",
@@ -297,6 +287,11 @@
                             "type": "string",
                             "description": "Mandatory if channel is  `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
                             "example": "600001"
+                          },
+                          "geocode": {
+                            "type": "string",
+                            "description": "Mandatory if channel is `AGT`, `BSC` and `BNKBRNCH`. Not required for others. This has to match the data submitted to NPCI for this agent ID\n",
+                            "example": "19.0139,72.8254"
                           },
                           "terminalId": {
                             "type": "string",
@@ -364,7 +359,8 @@
                             "properties": {
                               "customerId": {
                                 "type": "string",
-                                "description": "Customer Identifier"
+                                "description": "Customer Identifier",
+                                "example": "4881317598"
                               },
                               "mobile": {
                                 "maxLength": 22,
@@ -564,7 +560,8 @@
                           "type": "object",
                           "properties": {
                             "code": {
-                              "type": "string"
+                              "type": "string",
+                              "example": "error-code-if-any"
                             },
                             "message": {
                               "type": "string"
@@ -661,6 +658,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -670,21 +671,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -703,6 +700,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -712,21 +713,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -756,9 +753,8 @@
     },
     "/api/v2/bbps/bills/fetch/response": {
       "post": {
-        "tags": [
-          "Fetch"
-        ],
+        "tags": ["Fetch"],
+        "operationId": "FetchResponse",
         "description": "Bill fetch response API",
         "parameters": [
           {
@@ -769,6 +765,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -782,7 +785,8 @@
                 "properties": {
                   "refId": {
                     "type": "string",
-                    "description": "The generated Reference ID for the request."
+                    "description": "The generated BBPS Reference ID for the request.",
+                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
                   }
                 },
                 "x-go-name": "RefIdBasedRequest",
@@ -793,6 +797,76 @@
           "required": true
         },
         "responses": {
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["error", "success", "traceId"],
+                  "type": "object",
+                  "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
+                    "error": {
+                      "required": ["code", "message"],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "error-code-if-any"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "error-message-if-any"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["error", "success", "traceId"],
+                  "type": "object",
+                  "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
+                    "error": {
+                      "required": ["code", "message"],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "error-code-if-any"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "error-message-if-any"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
           "200": {
             "description": "OK",
             "headers": {
@@ -873,84 +947,6 @@
                           ],
                           "type": "object",
                           "properties": {
-                            "additionalInfo": {
-                              "type": "array",
-                              "description": "This tag captures the additional information provided by the Biller as part of response for a successful transaction.",
-                              "items": {
-                                "required": [
-                                  "name",
-                                  "value"
-                                ],
-                                "type": "object",
-                                "properties": {
-                                  "name": {
-                                    "type": "string",
-                                    "example": "Line item 1"
-                                  },
-                                  "value": {
-                                    "type": "string",
-                                    "example": "Value 1"
-                                  }
-                                }
-                              },
-                              "x-go-name": "BillAdditionalInfo",
-                              "x-omitempty": false
-                            },
-                            "billerPlanResponse": {
-                              "type": "object",
-                              "properties": {
-                                "planInfo": {
-                                  "type": "array",
-                                  "description": "Array of plan information as defined in BBPS schema",
-                                  "items": {
-                                    "required": [
-                                      "details",
-                                      "type"
-                                    ],
-                                    "type": "object",
-                                    "properties": {
-                                      "details": {
-                                        "type": "array",
-                                        "description": "Array of plan details",
-                                        "items": {
-                                          "required": [
-                                            "name",
-                                            "value"
-                                          ],
-                                          "type": "object",
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "description": "Name of the plan parameter",
-                                              "example": "Plan_ID"
-                                            },
-                                            "value": {
-                                              "type": "string",
-                                              "description": "Value of the plan parameter",
-                                              "example": "599"
-                                            }
-                                          }
-                                        }
-                                      },
-                                      "type": {
-                                        "type": "string",
-                                        "description": "Type of the plan as defined in BBPS schema",
-                                        "enum": [
-                                          "NEW",
-                                          "EXISTING",
-                                          "RECOMMENDED",
-                                          "CURATED",
-                                          "ACTIVATED"
-                                        ]
-                                      }
-                                    }
-                                  }
-                                }
-                              },
-                              "description": "Plan details returned by the biller during validation (used for prepaid recharge)",
-                              "nullable": true,
-                              "x-omitempty": true
-                            },
                             "billerRefId": {
                               "type": "string",
                               "example": "7f16a032e514"
@@ -1026,12 +1022,6 @@
                                     "format": "date",
                                     "example": "2021-09-24"
                                   },
-                                  "label": {
-                                    "type": "string",
-                                    "nullable": true,
-                                    "example": "Advance EMI",
-                                    "x-omitempty": true
-                                  },
                                   "maxAmount": {
                                     "type": "integer",
                                     "description": "Maximum amount that can be paid for this bill in paise",
@@ -1082,9 +1072,14 @@
                                           "description": "The display name of the option.",
                                           "example": "2 Months EMI Amount"
                                         }
-                                      },
-                                      "x-go-name": "PaymentOption"
+                                      }
                                     },
+                                    "x-omitempty": true
+                                  },
+                                  "label": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "example": "Advance EMI",
                                     "x-omitempty": true
                                   }
                                 },
@@ -1110,21 +1105,17 @@
                               ],
                               "type": "object",
                               "properties": {
-                                "code": {
-                                  "type": "string",
-                                  "example": "ERR004"
-                                },
                                 "message": {
                                   "type": "string",
-                                  "example": "customer not found"
+                                  "example": "error-message-if-any"
                                 },
                                 "type": {
                                   "type": "string",
-                                  "enum": [
-                                    "FUND_TRANSFER",
-                                    "BBPS",
-                                    "APP"
-                                  ]
+                                  "enum": ["FUND_TRANSFER", "BBPS", "APP"]
+                                },
+                                "code": {
+                                  "type": "string",
+                                  "example": "error-code-if-any"
                                 }
                               }
                             },
@@ -1157,90 +1148,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": [
-                    "error",
-                    "success",
-                    "traceId"
-                  ],
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "required": [
-                        "code",
-                        "message"
-                      ],
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Input is invalid"
-                        }
-                      }
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": [
-                    "error",
-                    "success",
-                    "traceId"
-                  ],
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "required": [
-                        "code",
-                        "message"
-                      ],
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Input is invalid"
-                        }
-                      }
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  }
-                }
-              }
-            }
           }
         },
         "security": [
@@ -1265,9 +1172,8 @@
     },
     "/api/v2/bbps/bills/payment/request": {
       "post": {
-        "tags": [
-          "Pay"
-        ],
+        "tags": ["Pay"],
+        "operationId": "PaymentRequest",
         "description": "Bill payment request API",
         "parameters": [
           {
@@ -1278,6 +1184,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -1515,7 +1428,9 @@
                             "format": "date-time",
                             "example": "2020-12-12T13:12:00+05:30"
                           }
-                        }
+                        },
+                        "x-go-gen-location": "models",
+                        "x-go-name": "BillerDetails"
                       },
                       "refId": {
                         "type": "string",
@@ -1562,7 +1477,8 @@
                             "properties": {
                               "customerId": {
                                 "type": "string",
-                                "description": "Customer Identifier"
+                                "description": "Customer Identifier",
+                                "example": "4881317598"
                               },
                               "mobile": {
                                 "maxLength": 22,
@@ -1592,7 +1508,7 @@
                                     "name": {
                                       "type": "string",
                                       "description": "The display name of the parameter. This has to match what is sent in fields.",
-                                      "example": "Loan Number"
+                                      "example": "John Doe"
                                     },
                                     "value": {
                                       "type": "string",
@@ -1686,14 +1602,17 @@
                           "type": "object",
                           "properties": {
                             "code": {
-                              "type": "string"
+                              "type": "string",
+                              "example": "error-code-if-any"
                             },
                             "message": {
-                              "type": "string"
+                              "type": "string",
+                              "example": "error-message-if-any"
                             },
                             "refId": {
                               "type": "string",
-                              "description": "The generated Reference ID for the request."
+                              "description": "The generated BBPS Reference ID for the request.",
+                              "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
                             }
                           }
                         },
@@ -1783,6 +1702,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -1792,21 +1715,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -1883,14 +1802,17 @@
                           "type": "object",
                           "properties": {
                             "code": {
-                              "type": "string"
+                              "type": "string",
+                              "example": "error-code-if-any"
                             },
                             "message": {
-                              "type": "string"
+                              "type": "string",
+                              "example": "error-message-if-any"
                             },
                             "refId": {
                               "type": "string",
-                              "description": "The generated Reference ID for the request."
+                              "description": "The generated BBPS Reference ID for the request.",
+                              "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
                             }
                           }
                         },
@@ -1980,6 +1902,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -1989,21 +1915,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -2033,9 +1955,8 @@
     },
     "/api/v2/bbps/bills/payment/response": {
       "post": {
-        "tags": [
-          "Pay"
-        ],
+        "tags": ["Pay"],
+        "operationId": "PaymentResponse",
         "description": "Bill payment response API",
         "parameters": [
           {
@@ -2046,6 +1967,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -2059,7 +1987,8 @@
                 "properties": {
                   "refId": {
                     "type": "string",
-                    "description": "The generated Reference ID for the request."
+                    "description": "The generated BBPS Reference ID for the request.",
+                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
                   }
                 },
                 "x-go-name": "RefIdBasedRequest",
@@ -2223,12 +2152,7 @@
                           "example": "2020-12-12T13:12:00+05:30"
                         },
                         "paymentDetails": {
-                          "required": [
-                            "amount",
-                            "mode",
-                            "paymentRefId",
-                            "timestamp"
-                          ],
+                          "required": ["amount", "mode", "paymentRefId", "timestamp"],
                           "type": "object",
                           "properties": {
                             "COUcustConvFee": {
@@ -2243,7 +2167,8 @@
                             "accountInfo": {
                               "maxLength": 50,
                               "minLength": 1,
-                              "type": "string"
+                              "type": "string",
+                              "example": "some-info"
                             },
                             "amount": {
                               "minimum": 1,
@@ -2345,8 +2270,8 @@
                       "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   },
-                  "x-go-name": "CouAgentBillPaymentResponse",
-                  "x-omitempty": true
+                  "x-omitempty": true,
+                  "x-go-name": "CouAgentBillPaymentResponse"
                 }
               }
             }
@@ -2458,9 +2383,8 @@
     },
     "/api/v2/bbps/bills/complaint/request": {
       "post": {
-        "tags": [
-          "Dispute"
-        ],
+        "tags": ["Dispute"],
+        "operationId": "DisputeRequest",
         "description": "Raise dispute request API",
         "parameters": [
           {
@@ -2471,6 +2395,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -2529,6 +2460,41 @@
           "required": true
         },
         "responses": {
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["error", "success", "traceId"],
+                  "type": "object",
+                  "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
+                    "error": {
+                      "required": ["code", "message"],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "error-code-if-any"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "error-message-if-any"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
           "200": {
             "description": "OK",
             "headers": {
@@ -2599,7 +2565,8 @@
                           "type": "object",
                           "properties": {
                             "code": {
-                              "type": "string"
+                              "type": "string",
+                              "example": "error-code-if-any"
                             },
                             "message": {
                               "type": "string"
@@ -2705,53 +2672,11 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
-                        }
-                      }
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "required": [
-                    "error",
-                    "success",
-                    "traceId"
-                  ],
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "required": [
-                        "code",
-                        "message"
-                      ],
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
@@ -2791,9 +2716,8 @@
     },
     "/api/v2/bbps/bills/complaint/response": {
       "post": {
-        "tags": [
-          "Dispute"
-        ],
+        "tags": ["Dispute"],
+        "operationId": "DisputeResponse",
         "description": "Raise dispute response API",
         "parameters": [
           {
@@ -2804,6 +2728,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           }
         ],
         "requestBody": {
@@ -2817,7 +2748,8 @@
                 "properties": {
                   "refId": {
                     "type": "string",
-                    "description": "The generated Reference ID for the request."
+                    "description": "The generated BBPS Reference ID for the request.",
+                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
                   }
                 },
                 "x-go-name": "RefIdBasedRequest",
@@ -2884,13 +2816,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "required": [
-                        "assignedTo",
-                        "disputeId",
-                        "refId",
-                        "remarks",
-                        "status"
-                      ],
+                      "required": ["assignedTo", "disputeId", "refId", "remarks", "status"],
                       "type": "object",
                       "properties": {
                         "assignedTo": {
@@ -2916,7 +2842,8 @@
                         },
                         "refId": {
                           "type": "string",
-                          "description": "The generated Reference ID for the request."
+                          "description": "The generated BBPS Reference ID for the request.",
+                          "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
                         },
                         "remarks": {
                           "type": "string",
@@ -2988,6 +2915,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -2997,21 +2928,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -3030,6 +2957,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -3039,21 +2970,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -3096,6 +3023,13 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "type": "string",
+            "description": "OAuth token. Required for authorization.",
+            "in": "header",
+            "required": true
           },
           {
             "name": "categoryName",
@@ -3679,10 +3613,6 @@
                                   }
                                 }
                               },
-                              "pincode": {
-                                "type": "string",
-                                "example": "pincode"
-                              },
                               "planRequirement": {
                                 "type": "string",
                                 "description": "Indicates if plan selection is required for bill payments",
@@ -3803,11 +3733,11 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
@@ -3836,6 +3766,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -3845,21 +3779,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -3878,6 +3808,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -3887,21 +3821,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -4207,6 +4137,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -4216,21 +4150,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -4249,6 +4179,10 @@
                   ],
                   "type": "object",
                   "properties": {
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    },
                     "error": {
                       "required": [
                         "code",
@@ -4258,21 +4192,17 @@
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "validation-error"
+                          "example": "error-code-if-any"
                         },
                         "message": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "error-message-if-any"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -4402,13 +4332,13 @@
                       ],
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "validation-error"
+                        "success": {
+                          "type": "boolean",
+                          "example": true
                         },
-                        "message": {
+                        "traceId": {
                           "type": "string",
-                          "example": "Input is invalid"
+                          "example": "C3SFG0O6N88R6UI7EQ"
                         }
                       }
                     },
