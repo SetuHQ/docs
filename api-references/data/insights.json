@@ -17,10 +17,256 @@
   ],
   "paths": {
 
+    "/v2/template": {
+      "post": {
+        "tags": ["Template"],
+        "summary": "Create a new Template",
+        "description": "Call this API to create a new template containing static and configurable insights.",
+        "operationId": "create_template_v2_post",
+        "parameters": [
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Template created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplatePostResponse"
+                },
+                "examples": {
+                  "TemplatePostResponse": {
+                    "value": {
+                      "status": "Success",
+                      "version": "0.72.0",
+                      "statusDescription": null,
+                      "body": {
+                        "templateId": "7a86d5f8-8434-421f-8df6-828f3fe9ddd8",
+                        "name": "Sample Template",
+                        "staticInsights": [
+                          {
+                            "insightId": "81654386-d574-40a6-a49f-e04c9d980e3b",
+                            "name": "closing_balance",
+                            "title": "Account Closing Balance",
+                            "description": null
+                          }
+                        ],
+                        "configurableInsights": [
+                          {
+                            "refKey": "monthly_total_debits_value",
+                            "title": "explainer",
+                            "description": null,
+                            "params": {
+                              "refKey": null,
+                              "lastNMonths": null,
+                              "offsetMonths": 0,
+                              "aggregateFunction": "SUM",
+                              "transactionType": "DEBIT",
+                              "transactionMode": null,
+                              "transactionCategory": null,
+                              "transactionSubcategory": null,
+                              "transactionCategoryExclusions": null,
+                              "transactionSubcategoryExclusions": null,
+                              "startDate": null,
+                              "endDate": null,
+                              "periodicity": "MONTHLY",
+                              "minAmount": null,
+                              "groupBy": null,
+                              "day": null,
+                              "top": null
+                            },
+                            "insightId": "842149c3-f80c-4fe7-a9f0-ab7a8244bb3c",
+                            "insight": {
+                              "insightId": "842149c3-f80c-4fe7-a9f0-ab7a8244bb3c",
+                              "name": "amt_last_n_mon",
+                              "title": "Operations on Transaction Amounts of last n months",
+                              "description": null
+                            }
+                          }
+                        ],
+                        "categorisationMode": "INCLUSIVE",
+                        "keywordMaps": [],
+                        "compoundInsights": [],
+                        "isLineageRequired": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Template"],
+        "summary": "Fetch all templates",
+        "description": "Call this API to retrieve all existing templates.",
+        "operationId": "get_templates_v2_get",
+        "parameters": [
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateListResponse"
+                },
+                "examples": {
+                  "TemplateListResponse": {
+                    "value": {
+                      "status": "Success",
+                      "version": "0.72.0",
+                      "statusDescription": null,
+                      "body": [
+                        {
+                          "templateId": "7a86d5f8-8434-421f-8df6-828f3fe9ddd8",
+                          "name": "Sample Template",
+                          "staticInsights": [
+                            {
+                              "insightId": "81654386-d574-40a6-a49f-e04c9d980e3b",
+                              "name": "closing_balance",
+                              "title": "Account Closing Balance",
+                              "description": null
+                            }
+                          ],
+                          "configurableInsights": [
+                            {
+                              "refKey": "monthly_total_debits_value",
+                              "title": "explainer",
+                              "description": null,
+                              "params": {
+                                "refKey": null,
+                                "lastNMonths": null,
+                                "offsetMonths": 0,
+                                "aggregateFunction": "SUM",
+                                "transactionType": "DEBIT",
+                                "transactionMode": null,
+                                "transactionCategory": null,
+                                "transactionSubcategory": null,
+                                "transactionCategoryExclusions": null,
+                                "transactionSubcategoryExclusions": null,
+                                "startDate": null,
+                                "endDate": null,
+                                "periodicity": "MONTHLY",
+                                "minAmount": null,
+                                "groupBy": null,
+                                "day": null,
+                                "top": null
+                              },
+                              "insightId": "842149c3-f80c-4fe7-a9f0-ab7a8244bb3c",
+                              "insight": {
+                                "insightId": "842149c3-f80c-4fe7-a9f0-ab7a8244bb3c",
+                                "name": "amt_last_n_mon",
+                                "title": "Operations on Transaction Amounts of last n months",
+                                "description": null
+                              }
+                            }
+                          ],
+                          "categorisationMode": "INCLUSIVE",
+                          "keywordMaps": [],
+                          "compoundInsights": [],
+                          "isLineageRequired": false
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/fiData": {
       "post": {
         "tags": [
-          "Data ingestion"
+          "Json ingestion"
         ],
         "summary": "Create FIData block",
         "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent.",
@@ -173,6 +419,215 @@
                       "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/pdfData/supported_banks": {
+      "get": {
+        "tags": ["PDF ingestion"],
+        "summary": "Get supported banks for PDF processing",
+        "description": "Retrieve a list of banks supported for PDF statement processing",
+        "operationId": "get_supported_banks_v2_pdf_supported_banks_get",
+        "parameters": [
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "examples": {
+                  "SupportedBanksResponse": {
+                    "summary": "SupportedBanksResponse",
+                    "value": ["HDFC Bank", "ICICI Bank", "Kotak Mahindra Bank"]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/pdfData": {
+      "post": {
+        "tags": ["PDF ingestion"],
+        "summary": "Upload PDF bank statement for processing",
+        "description": "Call this API to upload a PDF bank statement for processing and data extraction",
+        "operationId": "upload_pdf_statement_v2_pdf_post",
+        "parameters": [
+          {
+            "name": "refId",
+            "in": "query",
+            "description": "Reference ID for tracking the PDF upload",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bankName": {
+                    "type": "string",
+                    "description": "Name of the bank that issued the statement"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password for the PDF if it's encrypted"
+                  },
+                  "dataFile": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "PDF bank statement file"
+                  }
+                },
+                "required": ["bankName", "dataFile"]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "PDF uploaded and processing started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FIDataBlockCreateResponse"
+                },
+                "examples": {
+                  "PDFUploadSuccessResponse": {
+                    "summary": "PDFUploadSuccessResponse",
+                    "value": {
+                      "status": "Success",
+                      "body": {
+                        "dataId": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
+                        "fiSchema": "pdf",
+                        "expiryDate": "2023-03-11T06:52:36.457745"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid PDF or unsupported bank",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -623,149 +1078,170 @@
         }
       }
     },
-    "/v2/insight/master": {
-      "get": {
-        "tags": [
-          "Insights"
-        ],
-        "summary": "Get Insights Master List",
-        "description": "Get all available Insights that can be included in a template",
-        "operationId": "get_insight_masters_v2_insight_master_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "type": "string",
-              "title": "authorization"
-            },
-            "name": "authorization",
-            "in": "header"
+    "/v2/purge": {
+    "delete": {
+      "tags": ["Purge"],
+      "summary": "Purge data by reference ID",
+      "description": "Call this API to delete all data associated with a specific reference ID (refId). This operation cannot be undone.",
+      "operationId": "purge_data_v2_purge_delete",
+      "parameters": [
+        {
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Reference ID"
           },
-          {
-            "required": false,
-            "schema": {
-              "type": "string",
-              "title": "x-product-instance-id"
-            },
-            "name": "x-product-instance-id",
-            "in": "header"
+          "name": "refId",
+          "in": "query",
+          "description": "The reference ID for which data should be purged"
+        },
+        {
+          "required": false,
+          "schema": {
+            "type": "string",
+            "title": "authorization"
           },
-          {
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "x-client-id"
-            },
-            "name": "x-client-id",
-            "in": "header"
+          "name": "authorization",
+          "in": "header"
+        },
+        {
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "x-product-instance-id"
           },
-          {
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "x-client-secret"
-            },
-            "name": "x-client-secret",
-            "in": "header"
+          "name": "x-product-instance-id",
+          "in": "header"
+        },
+        {
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "x-client-id"
+          },
+          "name": "x-client-id",
+          "in": "header"
+        },
+        {
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "x-client-secret"
+          },
+          "name": "x-client-secret",
+          "in": "header"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Purge",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurgeSuccessResponse"
+              },
+              "examples": {
+                "PurgeSuccessResponse": {
+                  "summary": "PurgeSuccessResponse",
+                  "value": {
+                    "status": "Success",
+                    "version": "0.72.0",
+                    "statusDescription": null,
+                    "body": {
+                      "insight_reports": 1,
+                      "depositTransactions": 1,
+                      "equitiesTransactions": 0,
+                      "etfTransactions": 0,
+                      "mutualFundsTransactions": 0
+                    }
+                  }
+                }
+              }
+            }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsightMasterGetResponse"
-                },
-                "examples": {
-                  "InsightMasterGetResponse": {
-                    "summary": "InsightMasterGetResponse",
-                    "value": {
-                      "status": "Success",
-                      "body": [
-                        {
-                          "insightId": "a8cdd272-9fae-49ee-b96c-492d6903c43e",
-                          "name": "name",
-                          "title": "Name"
-                        },
-                        {
-                          "insightId": "3325a61a-e0e4-46c4-801d-fd8389a547d7",
-                          "name": "current_quarterly_average_eod_balance",
-                          "title": "Average End-of-day Balance for Current Quarter"
-                        },
-                        {
-                          "insightId": "c15d1325-b6ae-4e7f-a661-873284ab5b35",
-                          "name": "quarterly_salary_average",
-                          "title": "3-months Salary Average"
-                        }
-                      ]
-                    }
+        },
+        "400": {
+          "description": "Bad Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorResponse"
+              },
+              "examples": {
+                "RequestErrorResponse": {
+                  "summary": "RequestErrorResponse",
+                  "value": {
+                    "errorCode": "400",
+                    "errorMsg": "Missing required parameter: refId",
+                    "timestamp": "2023-04-18T17:10:12.904153",
+                    "ver": "1",
+                    "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
                   }
                 }
               }
             }
-          },
-          "401": {
-            "description": "Authentication Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "AuthenticationErrorResponse": {
-                    "summary": "AuthenticationErrorResponse",
-                    "value": {
-                      "errorCode": "401",
-                      "errorMsg": "Unable to fetch FIU config",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
+          }
+        },
+        "401": {
+          "description": "Authentication Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorResponse"
+              },
+              "examples": {
+                "AuthenticationErrorResponse": {
+                  "summary": "AuthenticationErrorResponse",
+                  "value": {
+                    "errorCode": "401",
+                    "errorMsg": "Unable to authenticate with provided credentials",
+                    "timestamp": "2023-04-18T17:10:12.904153",
+                    "ver": "1",
+                    "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
                   }
                 }
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "ValidationErrorResponse": {
-                    "summary": "ValidationErrorResponse",
-                    "value": {
-                      "errorCode": "422",
-                      "errorMsg": "field required -> account",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
+          }
+        },
+        "404": {
+          "description": "Not Found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorResponse"
+              },
+              "examples": {
+                "NotFoundResponse": {
+                  "summary": "NotFoundResponse",
+                  "value": {
+                    "errorCode": "404",
+                    "errorMsg": "No data found for the provided refId",
+                    "timestamp": "2023-04-18T17:10:12.904153",
+                    "ver": "1",
+                    "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
                   }
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "ServerErrorResponse": {
-                    "summary": "ServerErrorResponse",
-                    "value": {
-                      "errorCode": "500",
-                      "errorMsg": "Internal Server Error",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorResponse"
+              },
+              "examples": {
+                "ServerErrorResponse": {
+                  "summary": "ServerErrorResponse",
+                  "value": {
+                    "errorCode": "500",
+                    "errorMsg": "Internal Server Error",
+                    "timestamp": "2023-04-18T17:10:12.904153",
+                    "ver": "1",
+                    "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
                   }
                 }
               }
@@ -774,9 +1250,125 @@
         }
       }
     }
+    }
   },
   "components": {
     "schemas": {
+      "TemplateCreateRequest": {
+        "type": "object",
+        "required": ["name", "configurableInsights"],
+        "properties": {
+          "name": { "type": "string" },
+          "staticInsights": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "configurableInsights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigurableInsightRequest"
+            }
+          }
+        }
+      },
+      "ConfigurableInsightRequest": {
+        "type": "object",
+        "required": ["insight", "ref_key", "params", "title"],
+        "properties": {
+          "insight": { "type": "string" },
+          "ref_key": { "type": "string" },
+          "params": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true }
+        }
+      },
+      "TemplatePostResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "default": "Success" },
+          "version": { "type": "string" },
+          "statusDescription": { "type": "string", "nullable": true },
+          "body": { "$ref": "#/components/schemas/TemplateResponseBody" }
+        },
+        "required": ["status", "body"]
+      },
+      "TemplateListResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "default": "Success" },
+          "version": { "type": "string" },
+          "statusDescription": { "type": "string", "nullable": true },
+          "body": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TemplateResponseBody" }
+          }
+        },
+        "required": ["status", "body"]
+      },
+      "TemplateResponseBody": {
+        "type": "object",
+        "properties": {
+          "templateId": { "type": "string" },
+          "name": { "type": "string" },
+          "staticInsights": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StaticInsight" }
+          },
+          "configurableInsights": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigurableInsight" }
+          },
+          "categorisationMode": { 
+            "type": "string",
+            "enum": ["INCLUSIVE", "EXCLUSIVE"] 
+          },
+          "keywordMaps": { 
+            "type": "array",
+            "items": { "type": "object" } 
+          },
+          "compoundInsights": { 
+            "type": "array",
+            "items": { "type": "object" } 
+          },
+          "isLineageRequired": { "type": "boolean" }
+        },
+        "required": ["templateId", "name"]
+      },
+      "StaticInsight": {
+        "type": "object",
+        "properties": {
+          "insightId": { "type": "string" },
+          "name": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true }
+        },
+        "required": ["insightId", "name", "title"]
+      },
+      "ConfigurableInsight": {
+        "type": "object",
+        "properties": {
+          "refKey": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "params": { "type": "object", "additionalProperties": true },
+          "insightId": { "type": "string" },
+          "insight": { "$ref": "#/components/schemas/InsightDetails" }
+        },
+        "required": ["refKey", "title", "insightId", "insight"]
+      },
+      "InsightDetails": {
+        "type": "object",
+        "properties": {
+          "insightId": { "type": "string" },
+          "name": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true }
+        },
+        "required": ["insightId", "name", "title"]
+      },
       "AccountTS": {
         "properties": {
           "profile": {
@@ -3696,6 +4288,60 @@
           "endDate"
         ],
         "title": "Transactions"
+      },
+      "PurgeSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "default": "Success"
+        },
+        "version": {
+          "type": "string"
+        },
+        "statusDescription": {
+          "type": "string",
+          "nullable": true
+        },
+        "body": {
+          "$ref": "#/components/schemas/PurgeResultBody"
+        }
+      },
+      "required": ["status", "body"],
+      "title": "PurgeSuccessResponse"
+      },
+    "PurgeResultBody": {
+      "type": "object",
+      "properties": {
+        "insight_reports": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "depositTransactions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "equitiesTransactions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "etfTransactions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mutualFundsTransactions": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "insight_reports",
+        "depositTransactions",
+        "equitiesTransactions",
+        "etfTransactions",
+        "mutualFundsTransactions"
+      ],
+      "title": "PurgeResultBody"
       }
     }
   }
