@@ -16,7 +16,6 @@
     }
   ],
   "paths": {
-
     "/v2/template": {
       "post": {
         "tags": ["Template"],
@@ -264,160 +263,220 @@
       }
     },
     "/v2/fiData": {
-      "post": {
-        "tags": [
-          "Json ingestion"
-        ],
-        "summary": "Create FIData block",
-        "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent.",
-        "operationId": "create_fi_data_v2_fiData_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "type": "string",
-              "title": "Refid"
-            },
-            "name": "refId",
-            "in": "query"
+    "post": {
+      "tags": [
+        "Fi Data Ingestion (JSON)"
+      ],
+      "summary": "Create FIData block",
+      "description": "Call this API with the data received from FIP's notification as payload, to create an FI DataBlock. Note: This data can be auto-fetched from FIP with FIU's consent.",
+      "operationId": "create_fi_data_v2_fiData_post",
+      "parameters": [
+        {
+          "required": false,
+          "schema": {
+            "type": "string",
+            "title": "Refid"
           },
-          {
-            "required": false,
-            "schema": {
-              "type": "string",
-              "title": "authorization"
-            },
-            "name": "authorization",
-            "in": "header"
+          "name": "refId",
+          "in": "query"
+        },
+        {
+          "required": false,
+          "schema": {
+            "type": "string",
+            "title": "authorization"
           },
-          {
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "x-product-instance-id"
-            },
-            "name": "x-product-instance-id",
-            "in": "header"
+          "name": "authorization",
+          "in": "header"
+        },
+        {
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "x-product-instance-id"
           },
-          {
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "x-client-id"
-            },
-            "name": "x-client-id",
-            "in": "header"
+          "name": "x-product-instance-id",
+          "in": "header"
+        },
+        {
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "x-client-id"
           },
-          {
-            "required": true,
+          "name": "x-client-id",
+          "in": "header"
+        },
+        {
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "x-client-secret"
+          },
+          "name": "x-client-secret",
+          "in": "header"
+        }
+      ],
+      "requestBody": {
+        "content": {
+          "application/json": {
             "schema": {
-              "type": "string",
-              "title": "x-client-secret"
+              "$ref": "#/components/schemas/FIDataList"
             },
-            "name": "x-client-secret",
-            "in": "header"
+            "examples": {
+              "DepositAccountExample": {
+                "summary": "Example of deposit account data",
+                "value": {
+                  "account": {
+                    "profile": {
+                      "holders": {
+                        "holder": [
+                          {
+                            "name": "PRATIK JAIN",
+                            "dob": "1991-12-27",
+                            "mobile": "00919650033947",
+                            "nominee": "REGISTERED",
+                            "landline": null,
+                            "address": "420, TOWER 10, PURVANCHAL ROYAL PARK, NOIDA, UTTAR PRADESH, INDIA, 201305",
+                            "email": "tunetopj@gmail.com",
+                            "pan": "AXXPJ2898M",
+                            "ckycCompliance": "false"
+                          }
+                        ],
+                        "type": "SINGLE"
+                      }
+                    },
+                    "summary": {
+                      "pending": null,
+                      "currentBalance": "1360773.36",
+                      "currency": "INR",
+                      "exchgeRate": null,
+                      "balanceDateTime": "2025-05-26 10:35:44.219",
+                      "type": "SAVINGS",
+                      "branch": "DLF CAPITOL POI DEL DL",
+                      "facility": null,
+                      "ifscCode": "UTIB0005140",
+                      "micrCode": null,
+                      "openingDate": "2014-01-18",
+                      "currentODLimit": "",
+                      "drawingLimit": "0",
+                      "status": "ACTIVE"
+                    },
+                    "transactions": {
+                      "transaction": [
+                        {
+                          "type": "CREDIT",
+                          "mode": "OTHERS",
+                          "amount": 500.0,
+                          "currentBalance": "517802.52",
+                          "transactionTimestamp": "2024-05-02 18:30:00.0",
+                          "valueDate": "2024-05-03",
+                          "txnId": "1",
+                          "narration": "IMPS OUTWARD REV",
+                          "reference": "0"
+                        }
+                      ],
+                      "startDate": "2024-05-02",
+                      "endDate": "2025-05-02"
+                    },
+                    "type": "deposit",
+                    "maskedAccNumber": "XXXXXX0226",
+                    "version": null,
+                    "linkedAccRef": "2ec65d0b-0da5-4601-93cc-b6be384d383e",
+                    "fipId": "03a66b0c-f5c1-41fb-a5dd-207183803256"
+                  }
+                }
+              }
+            }
           }
-        ],
-        "requestBody": {
+        },
+        "required": true,
+        "description": "FI Data as defined by ReBIT schema"
+      },
+      "responses": {
+        "201": {
+          "description": "Successful Response",
           "content": {
             "application/json": {
               "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/FIDataList"
+                "$ref": "#/components/schemas/FIDataBlockCreateResponse"
+              },
+              "examples": {
+                "FIDataBlockCreateResponse": {
+                  "summary": "FIDataBlockCreateResponse",
+                  "value": {
+                    "status": "Success",
+                    "body": {
+                      "dataId": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
+                      "fiSchema": "deposit",
+                      "expiryDate": "2023-03-11T06:52:36.457745"
+                    }
                   }
-                ],
-                "title": "FI Data as defined by ReBIT schema"
+                }
               }
             }
-          },
-          "required": true
+          }
         },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FIDataBlockCreateResponse"
-                },
-                "examples": {
-                  "FIDataBlockCreateResponse": {
-                    "summary": "FIDataBlockCreateResponse",
-                    "value": {
-                      "status": "Success",
-                      "body": {
-                        "dataId": "57ee04ae-6540-4ba9-a314-082c9f9cd793",
-                        "fiSchema": "deposit",
-                        "expiryDate": "2023-03-11T06:52:36.457745"
-                      }
-                    }
+        "401": {
+          "description": "Authentication Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorResponse"
+              },
+              "examples": {
+                "AuthenticationErrorResponse": {
+                  "summary": "AuthenticationErrorResponse",
+                  "value": {
+                    "errorCode": "401",
+                    "errorMsg": "Unable to fetch FIU config",
+                    "timestamp": "2023-04-18T17:10:12.904153",
+                    "ver": "1",
+                    "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
                   }
                 }
               }
             }
-          },
-          "401": {
-            "description": "Authentication Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "AuthenticationErrorResponse": {
-                    "summary": "AuthenticationErrorResponse",
-                    "value": {
-                      "errorCode": "401",
-                      "errorMsg": "Unable to fetch FIU config",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorResponse"
+              },
+              "examples": {
+                "ValidationErrorResponse": {
+                  "summary": "ValidationErrorResponse",
+                  "value": {
+                    "errorCode": "422",
+                    "errorMsg": "field required -> account",
+                    "timestamp": "2023-04-18T17:10:12.904153",
+                    "ver": "1",
+                    "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
                   }
                 }
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "ValidationErrorResponse": {
-                    "summary": "ValidationErrorResponse",
-                    "value": {
-                      "errorCode": "422",
-                      "errorMsg": "field required -> account",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "ServerErrorResponse": {
-                    "summary": "ServerErrorResponse",
-                    "value": {
-                      "errorCode": "500",
-                      "errorMsg": "Internal Server Error",
-                      "timestamp": "2023-04-18T17:10:12.904153",
-                      "ver": "1",
-                      "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
-                    }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorResponse"
+              },
+              "examples": {
+                "ServerErrorResponse": {
+                  "summary": "ServerErrorResponse",
+                  "value": {
+                    "errorCode": "500",
+                    "errorMsg": "Internal Server Error",
+                    "timestamp": "2023-04-18T17:10:12.904153",
+                    "ver": "1",
+                    "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
                   }
                 }
               }
@@ -425,10 +484,11 @@
           }
         }
       }
+    }
     },
     "/v2/pdfData/supported_banks": {
       "get": {
-        "tags": ["PDF ingestion"],
+        "tags": ["Fi Data Ingestion (PDF)"],
         "summary": "Get supported banks for PDF processing",
         "description": "Retrieve a list of banks supported for PDF statement processing",
         "operationId": "get_supported_banks_v2_pdf_supported_banks_get",
@@ -503,7 +563,7 @@
     },
     "/v2/pdfData": {
       "post": {
-        "tags": ["PDF ingestion"],
+        "tags": ["Fi Data Ingestion (PDF)"],
         "summary": "Upload PDF bank statement for processing",
         "description": "Call this API to upload a PDF bank statement for processing and data extraction",
         "operationId": "upload_pdf_statement_v2_pdf_post",
@@ -638,7 +698,7 @@
     "/v2/insight": {
       "post": {
         "tags": [
-          "Insight generation"
+          "Insight Generation"
         ],
         "summary": "Create Insights",
         "description": "Call this API with the template-id received from Setu along with a list of data-ids, to trigger an Report generation job. The FI Datablocks can belong to multiple bank accounts.The created Report will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to fetch the generated Report.",
@@ -1254,9 +1314,118 @@
   },
   "components": {
     "schemas": {
+      "FIDataList": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": "object",
+            "properties": {
+              "profile": {
+                "type": "object",
+                "properties": {
+                  "holders": {
+                    "type": "object",
+                    "properties": {
+                      "holder": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": { "type": "string" },
+                            "dob": { "type": "string", "format": "date" },
+                            "mobile": { "type": "string" },
+                            "nominee": { "type": "string" },
+                            "landline": { "type": "string", "nullable": true },
+                            "address": { "type": "string" },
+                            "email": { "type": "string", "format": "email" },
+                            "pan": { "type": "string" },
+                            "ckycCompliance": { "type": "string" }
+                          },
+                          "required": ["name", "dob", "mobile", "address", "email"]
+                        }
+                      },
+                      "type": { "type": "string" }
+                    },
+                    "required": ["holder", "type"]
+                  }
+                },
+                "required": ["holders"]
+              },
+              "summary": {
+                "type": "object",
+                "properties": {
+                  "pending": { "type": "string", "nullable": true },
+                  "currentBalance": { "type": "string" },
+                  "currency": { "type": "string" },
+                  "exchgeRate": { "type": "string", "nullable": true },
+                  "balanceDateTime": { "type": "string", "format": "date-time" },
+                  "type": { "type": "string" },
+                  "branch": { "type": "string" },
+                  "facility": { "type": "string", "nullable": true },
+                  "ifscCode": { "type": "string" },
+                  "micrCode": { "type": "string", "nullable": true },
+                  "openingDate": { "type": "string", "format": "date" },
+                  "currentODLimit": { "type": "string" },
+                  "drawingLimit": { "type": "string" },
+                  "status": { "type": "string" }
+                },
+                "required": ["currentBalance", "currency", "type", "ifscCode", "status"]
+              },
+              "transactions": {
+                "type": "object",
+                "properties": {
+                  "transaction": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string" },
+                        "mode": { "type": "string" },
+                        "amount": { "type": "number" },
+                        "currentBalance": { "type": "string" },
+                        "transactionTimestamp": { "type": "string", "format": "date-time" },
+                        "valueDate": { "type": "string", "format": "date" },
+                        "txnId": { "type": "string" },
+                        "narration": { "type": "string" },
+                        "reference": { "type": "string" }
+                      },
+                      "required": ["type", "amount", "transactionTimestamp", "txnId"]
+                    }
+                  },
+                  "startDate": { "type": "string", "format": "date" },
+                  "endDate": { "type": "string", "format": "date" }
+                },
+                "required": ["transaction", "startDate", "endDate"]
+              },
+              "type": { "type": "string" },
+              "maskedAccNumber": { "type": "string" },
+              "version": { "type": "string", "nullable": true },
+              "linkedAccRef": { "type": "string" },
+              "fipId": { "type": "string" }
+            },
+            "required": ["profile", "summary", "type", "maskedAccNumber", "fipId"]
+          }
+        },
+        "required": ["account"]
+      },
+      "FIDataBlockCreateResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string" },
+          "body": {
+            "type": "object",
+            "properties": {
+              "dataId": { "type": "string", "format": "uuid" },
+              "fiSchema": { "type": "string" },
+              "expiryDate": { "type": "string", "format": "date-time" }
+            },
+            "required": ["dataId", "fiSchema", "expiryDate"]
+          }
+        },
+        "required": ["status", "body"]
+      },
       "TemplateCreateRequest": {
         "type": "object",
-        "required": ["name", "configurableInsights"],
         "properties": {
           "name": { "type": "string" },
           "staticInsights": {
@@ -1952,27 +2121,6 @@
         ],
         "title": "FIData"
       },
-      "FIDataBlockCreateResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "title": "Status",
-            "default": "Success"
-          },
-          "statusDescription": {
-            "type": "string",
-            "title": "Statusdescription"
-          },
-          "body": {
-            "$ref": "#/components/schemas/FIDataBlockResponse"
-          }
-        },
-        "type": "object",
-        "required": [
-          "body"
-        ],
-        "title": "FIDataBlockCreateResponse"
-      },
       "FIDataBlockResponse": {
         "properties": {
           "dataId": {
@@ -2007,26 +2155,6 @@
         ],
         "title": "FIDataBlockResponse"
       },
-      "FIDataList": {
-  "type": "array",
-  "items": {
-    "anyOf": [
-      {
-        "$ref": "#/components/schemas/DepositData"
-      },
-      {
-        "$ref": "#/components/schemas/MutualFundsData"
-      },
-      {
-        "$ref": "#/components/schemas/EquitiesData"
-      },
-      {
-        "$ref": "#/components/schemas/ETFData"
-      }
-    ]
-  },
-  "title": "FIDataList"
-},
       "FIUConfig": {
         "properties": {
           "fiuId": {
@@ -4310,7 +4438,7 @@
       "required": ["status", "body"],
       "title": "PurgeSuccessResponse"
       },
-    "PurgeResultBody": {
+      "PurgeResultBody": {
       "type": "object",
       "properties": {
         "insight_reports": {
