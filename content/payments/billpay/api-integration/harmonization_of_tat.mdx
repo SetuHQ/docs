@@ -1,0 +1,120 @@
+---
+sidebar_title: Disputes - Harmonization of TAT
+page_title: Harmonization Of TAT (Disputes Api)
+order: 5
+visible_in_sidebar: true
+---
+
+# Harmonization of TAT - Dispute APIs Documentation
+
+## Overview
+
+This document details the enhancements made to the dispute APIs to incorporate the recent harmonization of Turn Around Time (TAT) guidelines, commonly referred to as Ticket API changes. These updates ensure alignment with the standardized TAT framework while maintaining the existing dispute management workflow. Users can continue raising tickets using the current dispute APIs without any modifications to the request or submission process.
+
+<br />
+<br />
+
+
+## API Changes
+
+### 1. Dispute Response API Updates
+
+#### New Status Values
+
+The `ComplaintStatus` enum has been updated with the following values:
+
+| Status | Description |
+|--------|-------------|
+| `ASSIGNED` | Dispute assigned to appropriate resolver for investigation |
+| `RESOLVED` | Dispute successfully resolved through investigation |
+| `REJECTED` | Dispute rejected due to insufficient evidence or invalid claims |
+| `DEFAULT_RESOLVED` | Dispute automatically resolved due to timeout or default process |
+| `REFUNDED` | Refund successfully processed and completed |
+| `PENDING_REFUND` | Refund approved and currently being processed |
+
+#### New Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ticketType` | enum | Values: `DISPUTE`, `COMPLAINT` |
+| `ticketTAT` | date | Format: YYYY-MM-DD (only available for DISPUTE ticket types) |
+| `disposition` | enum | Values: `D11`, `D12`, `D13`, `D21`, `D22`, `D23`, `D31`, `D32` |
+| `responseReason` | string | NPCI response reason (e.g., "SUCCESS" or "One ticket already in progress") |
+
+### 2. Dispute Request API Updates
+
+#### Dispute Type Mappings
+
+The following table shows how dispute types map to dispositions and ticket types:
+
+| Dispute Type | Disposition | Ticket Type | Category |
+|-------------|-------------|-------------|----------|
+| `service-not-received` | D11 | DISPUTE | Service Issues |
+| `service-disconnected` | D12 | DISPUTE | Service Issues |
+| `late-payment-surcharge` | D13 | DISPUTE | Service Issues |
+| `wrong-amount` | D21 | DISPUTE | Payment Issues |
+| `double-payment` | D22 | DISPUTE | Payment Issues |
+| `paid-to-wrong-account` | D23 | DISPUTE | Payment Issues |
+| `payment-info-delay` | D31 | COMPLAINT | Information Issues |
+| `account-not-updated` | D32 | COMPLAINT | Information Issues |
+
+<br />
+<br />
+
+## Business Rules
+
+### Cooling Period Requirements
+
+Different transaction types have specific cooling period requirements:
+
+- **FASTag and NCMC transactions**: Tickets can be raised immediately after transaction completion
+- **Utilities and other categories**: 24-hour cooling period required from transaction timestamp
+
+<br />
+<br />
+
+## API Examples
+
+### Request Example
+
+<CodeBlockWithCopy language="json">{`
+{
+  "transactionId": "DP015080142106KQkKly",
+  "disputeType": "account-not-updated", 
+  "description": "I have paid but account is not updated"
+}
+`}</CodeBlockWithCopy>
+<br />
+
+### Response Example
+
+
+<CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "assignedTo": "BBPCU",
+    "disposition": "D32",
+    "disputeId": "TKTCVEJDCOH215KV2761CLGxwrzHMI50801521",
+    "refId": "CVEJET77GM8365VO5HRGtokm7MX50801525",
+    "remarks": "Belongs to BOU",
+    "responseReason": "Success",
+    "status": "PENDING_REFUND",
+    "ticketTAT": "2025-03-22",
+    "ticketType": "DISPUTE"
+  },
+  "success": true,
+  "traceId": "CVEJNK8H215KV2761F50"
+}
+`}</CodeBlockWithCopy>
+<br />
+
+<br />
+<br />
+
+## Implementation Notes
+
+1. **Backward compatibility**: Existing dispute API endpoints remain functional
+2. **Webhook updates**: All webhook/callback responses now include the new fields
+3. **Validation**: System validates cooling period requirements before allowing ticket creation
+4. **TAT tracking**: `ticketTAT` field provides clear resolution timeline expectations
+
