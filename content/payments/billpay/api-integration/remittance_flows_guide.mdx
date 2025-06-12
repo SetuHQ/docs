@@ -1,0 +1,209 @@
+---
+sidebar_title: Remittance 
+page_title: COU Remittance API Flows Reference
+order: 5
+visible_in_sidebar: true
+---
+
+
+# Remittance Integration Guide
+
+## Overview
+
+Customer Operating Unit (`COU`) has introduced comprehensive remittance information handling across two distinct integration flows to accommodate acceptance of remittance data from Agent Institutions for Credit Card Bill Payments. These enhancements ensure compliance with NPCI specifications while providing flexibility for different integration approaches.
+
+## Flow Types
+
+### 1. AI Remittance API Flow
+**Target Audience**: Direct API integrations  
+**Scope**: Fetch and Payment APIs
+
+### 2. WL + Custom Payment Remittance Flow  
+**Target Audience**: White-label and custom payment integrations  
+**Scope**: Payment status check and Payment webhook APIs
+
+---
+
+## Core Entities
+
+Both flows implement two primary entities:
+
+### Remittance Payment Account Information
+- **Field Name**: `accountInfo`
+- **Type**: String (variable length)
+- **Purpose**: Contains customer's remittance information in NPCI-compatible format
+- **Requirement**: Must correspond to the selected payment mode
+
+### Remitter Details
+- **Purpose**: Captures information about the person making the payment
+- **Note**: The remitter may or may not be the same as the credit card holder
+- **Auto-fallback**: For Credit Card payments, system automatically sends 'Not Available' to NPCI if remitter name is not provided
+
+---
+
+## AI Remittance API Flow
+
+### Implementation Scope
+The AI Remittance API flow introduces additions to:
+- **Fetch API**: Enhanced with remitter information
+- **Payment Request API**: Enhanced with both remitter details and account information
+
+### Payment Request API Enhancement
+
+#### New Field Addition
+The `paymentDetails` object receives a new `accountInfo` field:
+
+<CodeBlockWithCopy language="diff">{`
+{
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "paymentDetails": {
+    "amount": 1,
+    "mode": "Internet Banking",
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30",
++    "accountInfo": "ICIC0000152|1234567890"
+  }
+}
+`}
+          </CodeBlockWithCopy>
+
+### Remitter Information Integration
+
+Both Fetch and Payment Request APIs support the remitter object:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "remitter": {
+    "name": "XX",
+    "pan": "xxxx",
+    "email": "XXXX",
+    "aadhaar": "XXX"
+  }
+}
+`}
+          </CodeBlockWithCopy>
+
+
+#### Remitter Fields Specification
+| Field | Type | Constraints | Example |
+|-------|------|-------------|---------|
+| `remitter.name` | String | min: 1, max: 50 | Remitter name |
+| `remitter.email` | String | min: 1, max: 50 | Remitter Email |
+| `remitter.pan` | String | min: 1, max: 50 | Remitter PAN |
+| `remitter.aadhaar` | String | min: 1, max: 50 | Remitter Aadhaar |
+
+---
+
+## WL + Custom Payment Remittance Flow
+
+### Implementation Scope
+The White-label and Custom Payment flow introduces additions to:
+- **Payment Status Check API**: Enhanced response with remittance information
+- **Payment Webhook API**: Enhanced event data with remittance information
+
+### Payment Event Webhook Enhancement
+
+<CodeBlockWithCopy language="diff">{`
+{
+  "orderId": "COUWLje9V7wWs9N3w",
+  "transactionId": "UNIQUE_PAYMENT_TRANSACTION_ID",
+  "paymentDateTime": "YYYY-MM-DD HH:MM:SS in UTC",
+  "amount": "100.00",
+  "paymentMode": "CASH|UPI|IMPS|NEFT|AEPS|ACCOUNT TRANSFER|INTERNET BANKING|WALLET|DEBIT CARD|CREDIT CARD|PREPAID CARD|Bharat QR|USSD",
+  "paymentStatus": "SUCCESS|FAILURE",
++ "remitter": {
++   "name": "XX",
++   "pan": "xxxx",
++   "email": "XXXX",
++   "aadhaar": "XXX"
++ },
++ "accountInfo": "ICIC0000152|1234567890"
+}
+`}
+          </CodeBlockWithCopy>
+
+### Payment Status API Enhancement
+
+<CodeBlockWithCopy language="diff">{`
+{
+  "status": "success/invalid-order-id",
+  "message": "",
+  "data": {
+    "orderId": "COUWLje9V7wWs9N3w",
+    "transactionId": "UNIQUE_PAYMENT_TRANSACTION_ID",
+    "paymentDateTime": "YYYY-MM-DD HH:MM:SS in UTC",
+    "amount": "100.00",
+    "paymentMode": "CASH|UPI|IMPS|NEFT|AEPS|ACCOUNT TRANSFER|INTERNET BANKING|WALLET|DEBIT CARD|CREDIT CARD|PREPAID CARD|Bharat QR|USSD",
+    "paymentStatus": "SUCCESS|FAILURE",
++   "remitter": {
++     "name": "XX",
++     "pan": "xxxx",
++     "email": "XXXX",
++     "aadhaar": "XXX"
++   },
++    "accountInfo": "ICIC0000152|1234567890"
+  }
+}
+`}
+          </CodeBlockWithCopy>
+
+---
+
+## NPCI Specification Compliance
+
+### Account Information Format by Payment Mode
+
+| Payment Mode | Value Example | Length Constraints | NPCI Code | Description |
+|--------------|---------------|-------------------|-----------|-------------|
+| **IMPS** | `9240111\|9004644121` | Fixed: 18 | MMID\|MobileNo | MMID and mobile number used for payment |
+| **NEFT, AccountTransfer, BharatQR, InternetBanking** | `SRAN0000341\|9912345123456` | Min: 3, Max: 50 | IFSC\|AccountNo | IFSC and account number used for payment |
+| **CreditCard, DebitCard, PrepaidCard** | `1234567890123456\|123456` | Min: 3, Max: 50 | CardNum\|AuthCode | Card number and authorization code used for payment |
+| **UPI** | `dummy@ybl` | Min: 3, Max: 50 | VPA | Virtual Provider Address used for payment |
+| **Wallet** | `PayTM\|9004644121` | Min: 12, Max: 50 | WalletName\|MobileNo | Wallet name and mobile number used for payment |
+| **AEPS, BHIM Aadhaar Pay** | `123456789012\|1234567` | Min: 3, Max: 50 | Aadhaar\|IIN | Aadhaar number and IIN used for payment |
+| **Cash, USSD** | `<Payment remarks>` | Min: 1, Max: 50 | Remarks | Remarks when payment mode is cash |
+
+### Code Format Examples
+
+The following table provides detailed formatting specifications for different NPCI codes:
+
+| Code | Format | Example |
+|------|--------|---------|
+| **Remarks** | Alphanumeric Special<br/>Min Length: 1, Max Length: 50 | `UNI000` |
+| **CardNum\|AuthCode** | Alphanumeric with characters on either side of '\|' separator<br/>Min Length: 3, Max Length: 50 | `1234567890123456\|123456` |
+| **IFSC\|AccountNo** | Alphanumeric with characters on either side of '\|' separator<br/>Min Length: 3, Max Length: 50 | `SRAN0000341\|01234567` |
+| **MMID\|MobileNo** | Numeric with characters on either side of '\|' separator<br/>Fixed Length: 18 | `9240111\|9004644121` |
+| **WalletName\|MobileNo** | Alphanumeric with characters on either side of '\|' separator<br/>Min Length: 12, Max Length: 50 | `TA Wallet\|9004644121` |
+| **VPA** | Alphanumeric Special<br/>Min Length: 3, Max Length: 50 | `manoj@icici` |
+| **Aadhaar\|IIN** | Alphanumeric with characters on either side of '\|' separator<br/>Min Length: 3, Max Length: 50 | `123456789012\|1234567` |
+
+### Field Handling Rules
+
+#### Mandatory Behavior
+- The `accountInfo` field must contain NPCI-compatible values corresponding to the selected payment mode
+- Values are forwarded directly to NPCI without modification
+- For UPI, Internet Banking, Debit Card, and Prepaid Card modes: provide details as specified in the NPCI table
+
+#### Optional Field Handling
+- If remitter details or account information are not available, the fields should be omitted entirely
+- Do not pass empty or null values for missing information
+- System automatically handles fallback scenarios for Credit Card payments
+
+---
+
+## Integration Guidelines
+
+### For AI Remittance API Flow
+1. **Fetch Request**: Include remitter object when available
+2. **Payment Request**: Include both remitter object and accountInfo in paymentDetails
+3. **Validation**: Ensure accountInfo format matches the selected payment mode
+4. **Error Handling**: Omit fields when data is unavailable rather than sending empty values
+
+### For WL + Custom Payment Flow
+1. **Webhook Events**: Expect remitter and accountInfo in payment event notifications
+2. **Status Checks**: Payment status responses will include remittance information when available
+3. **Data Processing**: Handle optional fields gracefully in downstream systems
+4. **Compliance**: Ensure proper handling of NPCI-forwarded information
+
+---
+
