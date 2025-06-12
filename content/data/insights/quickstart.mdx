@@ -10,7 +10,7 @@ visible_in_sidebar: true
 Here is a quick summary of steps to help you integrate with Setu’s Insights API. Before you start, there are some key terms that will be referred to periodically in the documentation—
 
 - **Reference Id**—Developers can define an identifier to manage and track one customer's data points. This identifier is used throughout the lifecycle to push data, generate insights and finally purge any data from the system.
-- **FI Data block**—FI Data blocks are the data received from the FIP (Financial information provider), via the AA. Currently, we support bank statement, equities, mutual_fund and etf datablocks. In addition, we support ePDF based bank statements for Indian banks.
+- **FI Data block**—FI Data blocks are the data received from the FIP (Financial information provider), via the AA. Currently, we support bank statement, equities, mutual_fund and etf datablocks. In addition, we support ePDF-based bank statements for Indian banks.
 - **Template**—A template is a pre-configured format that determines the structure of the generated report, including which insights to generate. You can pick and choose exactly what insights should be added to a template, based on your needs.  
 For example, if you only want to generate income and expense insights of a customer, the template can contain only those two insights.
 
@@ -24,44 +24,68 @@ For example, if you only want to generate income and expense insights of a custo
 
 <hr className="primary" />
 
-<br />
+### Step 1—Create a template
 
-### Step 1—Template creation
+You can create a template either by contacting Setu, or directly via API.
 
-You need to send in the below information to [insights@setu.co](mailto:insights@setu.co), for setting up your template.
+#### Option 1: Email template details
 
-|                           |                                                                                                                                                      |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **FIU ID**                | This can be obtained from your AA integration                                                                                                        |
-| **Notification endpoint** | An endpoint where Setu will send you webhook notifications for events. See <a href="/data/insights/notifications" target="_blank">notifications</a>. |
-| **Template name**         | Choose a suitable name, which helps you easily recognise this template                                                                               |
-| **Use case**         | Sharing your use case will help us guide you with finalizing relevant insights. Typical use cases, Loan Underwriting, F&O, Portfolio Management, Personal Finance Management, etc. |
-| **Insights required**     | A list of required Insights. Send an email to [insights@setu.co](mailto:insights@setu.co) for full list of insights.                                       |
-| **Output format**         | Format in which you need the output — currently we support `JSON`, and `XLSX`.
-<br />
+Send the following details to [insights@setu.co](mailto:insights@setu.co) —
 
-Setu will create a template for you and share a `templateID`, which can be used
-in the API calls.
+| Field                  | Description                                                                                                                                  |
+|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| **FIU ID**             | Obtained from your AA integration                                                                                                            |
+| **Notification endpoint** | An endpoint where Setu will send you webhook notifications for events. See <a href="/data/insights/notifications" target="_blank">notifications</a>.                                         |
+| **Template name**      | Choose a suitable name, which helps you easily recognise this template                                                                                                            |
+| **Use case**           | Sharing your use case will help us guide you with finalizing relevant insights. Typical use cases, Loan Underwriting, F&O, Portfolio Management, Personal Finance Management, etc.                                       |
+| **Insights required**  |  A list of required Insights. Send an email to [insights@setu.co](mailto:insights@setu.co) for full list of insights.                                               |
+| **Output format**      | Format in which you need the output — currently we support `JSON`, and `XLSX`.                                                                                                                |
+
+#### Option 2: Use API to create/update template
+
+You can create (`POST /v2/template`) or update (`PUT /v2/template`) templates via API. See <a href="/data/insights/quickstart/api-integration">API Integration</a> for details.
+
+Setu will respond with a `templateId`, which is required to generate insight reports.
 
 <hr className="primary" />
 
-### Step 2—Feed data
+### Step 2—Ingest data
 
-Once you have the financial data of a user, you can feed this data into Setu Insights with a customer reference id. Use a single `refId` for an individual customer use case. Refer <a href="/data/insights/quickstart/api-integration" target="_blank">API integration</a> to integrate with Data ingestion APIs.
+Once you have the user’s financial data, you can push it to Setu Insights using:
+
+- **AA-sourced JSON** – Use `/v2/fiData`
+- **Bank PDF statements** – Use `/v2/pdf-ingest` for PDF uploads
+
+Use a single `refId` per customer. See the <a href="/data/insights/quickstart/api-integration">API Integration</a> section for details.
 
 <hr className="primary" />
 
 ### Step 3—Generate insights
-
 You can generate insights for each customer that is created in the previous step. To generate insights, pass the `templateId` and `refId` from the previous steps.
 
-An insight report is idenitified by a `reportId` and will be sent to you asynchronously on the notification URL you provide. You can also fetch a generated insight with the `reportId` at any point. Refer <a href="/data/insights/quickstart/api-integration" target="_blank">API integration</a> to integrate with Insight generation APIs.
+Use the `templateId` and `refId` to generate insights with the `/v2/report` API.
+
+- You’ll receive a `reportId` in response
+- Insights will be sent to your webhook URL
+- You can fetch reports later using this `reportId`
+- Refer <a href="/data/insights/quickstart/api-integration" target="_blank">API integration</a> to integrate with Insight generation APIs.
+
+<hr className="primary" />
+
+### Step 4 — (Optional) Purge Customer Data
+
+You can delete a customer’s data from Setu using the `refId` via the `/v2/purge` API. This is useful for meeting data minimization and regulatory compliance requirements such as user data deletion requests under privacy laws.
+
+When a purge is triggered:
+
+- **All Financial Information (FI) data** retrieved for the user is permanently deleted.
+- **All insights** generated from this FI data—such as income summaries, categorized transactions, and financial behavior indicators—are also removed.
+
+See the <a href="/data/insights/quickstart/api-integration">API Integration</a> section for more details on how to use this endpoint.
 
 <hr className="primary" />
 
 ## Test on Postman or integrate APIs
-
-If you are getting started with the integration, we recommend that you familiarise yourself with setting up Postman and configuring **credentials**. If you have already completed this step, you can integrate with the Setu Insights APIs directly.
 
 <Row>
   <Portion desktopSpan="half">
