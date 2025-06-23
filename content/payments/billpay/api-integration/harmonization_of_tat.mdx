@@ -1,5 +1,5 @@
 ---
-sidebar_title: Disputes - Harmonization of TAT
+sidebar_title: Harmonization of TAT
 page_title: Harmonization Of TAT (Disputes Api)
 order: 7
 visible_in_sidebar: true
@@ -10,9 +10,6 @@ visible_in_sidebar: true
 ## Overview
 
 This document details the enhancements made to the dispute APIs to incorporate the recent harmonization of Turn Around Time (TAT) guidelines, commonly referred to as Ticket API changes. These updates ensure alignment with the standardized TAT framework while maintaining the existing dispute management workflow. Users can continue raising tickets using the current dispute APIs without any modifications to the request or submission process.
-
-<br />
-<br />
 
 
 ## API Changes
@@ -26,9 +23,9 @@ The `ComplaintStatus` enum has been updated with the following values:
 | Status | Description |
 |--------|-------------|
 | `ASSIGNED` | Dispute assigned to appropriate resolver for investigation |
-| `RESOLVED` | Dispute successfully resolved through investigation |
-| `REJECTED` | Dispute rejected due to insufficient evidence or invalid claims |
-| `DEFAULT_RESOLVED` | Dispute automatically resolved due to timeout or default process |
+| `RESOLVED` | Dispute successfully resolved through investigation in favour of customer |
+| `REJECTED` | Dispute rejected due to insufficient evidence or invalid claims at biller's end |
+| `DEFAULT_RESOLVED` | Dispute automatically resolved due to timeout or default process in favout of customer |
 | `REFUNDED` | Refund successfully processed and completed |
 | `PENDING_REFUND` | Refund approved and currently being processed |
 
@@ -47,19 +44,17 @@ The `ComplaintStatus` enum has been updated with the following values:
 
 The following table shows how dispute types map to dispositions and ticket types:
 
-| Dispute Type | Disposition | Ticket Type | Category |
+| Dispute Type | Disposition | Disposition Name | Ticket Type | Category |
 |-------------|-------------|-------------|----------|
-| `service-not-received` | D11 | DISPUTE | Service Issues |
-| `service-disconnected` | D12 | DISPUTE | Service Issues |
-| `late-payment-surcharge` | D13 | DISPUTE | Service Issues |
-| `wrong-amount` | D21 | DISPUTE | Payment Issues |
-| `double-payment` | D22 | DISPUTE | Payment Issues |
-| `paid-to-wrong-account` | D23 | DISPUTE | Payment Issues |
-| `payment-info-delay` | D31 | COMPLAINT | Information Issues |
-| `account-not-updated` | D32 | COMPLAINT | Information Issues |
+| `service-not-received` | D11 | Transaction Successful, Amount Debited but services not received | DISPUTE | Service Issues |
+| `service-disconnected` | D12 | Transaction Successful, Amount Debited but Service Disconnected or Service Stopped | DISPUTE | Service Issues |
+| `late-payment-surcharge` | D13 | Transaction Successful, Amount Debited but Late Payment Surcharge Charges add in next bill | DISPUTE | Service Issues |
+| `paid-to-wrong-account` | D21 | Erroneously paid in wrong account | DISPUTE | Payment Issues |
+| `double-payment` | D22 | Duplicate Payment | DISPUTE | Payment Issues |
+| `wrong-amount` | D23 | Erroneously paid the wrong amount | DISPUTE | Payment Issues |
+| `payment-info-delay` | D31 | Payment  information  not  received from Biller or Delay in receiving payment information from the Biller | COMPLAINT | Information Issues |
+| `account-not-updated` | D32 | Bill Paid but Amount not adjusted or still showing due amount| COMPLAINT | Information Issues |
 
-<br />
-<br />
 
 ## Business Rules
 
@@ -67,11 +62,9 @@ The following table shows how dispute types map to dispositions and ticket types
 
 Different transaction types have specific cooling period requirements:
 
-- **FASTag and NCMC transactions**: Tickets can be raised immediately after transaction completion
-- **Utilities and other categories**: 24-hour cooling period required from transaction timestamp
+- **FASTag, DTH and Mobile Prepaid**: Tickets can be raised immediately after transaction completion
+- **Utilities and other categories**: 24-hour cooling period required from transaction creation timestamp
 
-<br />
-<br />
 
 ## API Examples
 
@@ -84,7 +77,7 @@ Different transaction types have specific cooling period requirements:
   "description": "I have paid but account is not updated"
 }
 `}</CodeBlockWithCopy>
-<br />
+
 
 ### Response Example
 
@@ -106,10 +99,7 @@ Different transaction types have specific cooling period requirements:
   "traceId": "CVEJNK8H215KV2761F50"
 }
 `}</CodeBlockWithCopy>
-<br />
 
-<br />
-<br />
 
 ## Implementation Notes
 
