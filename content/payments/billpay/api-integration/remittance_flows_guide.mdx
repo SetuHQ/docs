@@ -31,7 +31,7 @@ NPCI has introduced comprehensive remittance information handling across two dis
 
 ### Key Notes
 
-- **NPCI Compatibility**: The `accountInfo` field must be formatted according to [NPCI specifications](#npci-specification-compliance) and to be passed with all Bill Payments and the `remitter` object to be passed with all Credit Card Bill Payments.
+- **NPCI Compatibility**: The `accountInfo` field must be formatted according to [NPCI specifications](#npci-specifications) and to be passed with all Bill Payments and the `remitter` object to be passed with all Credit Card Bill Payments.
 - **Credit Card Fallback**: When remitter name is not provided for credit card payments, the system automatically sends "Not Available" to NPCI
 - **Remitter vs Cardholder**: The person making the payment (remitter) may be different from the credit card holder
 
@@ -206,78 +206,7 @@ The bill payment request API has been enhanced to include remitter details under
 </Card>
 
 
-## Remitter Details in WL + Custom Payment Flow
-
-### Payment Event Webhook Enhancement
-
-The webhook API for payment events will now support remitter details under the `remitter` object and account information within the `accountInfo` property in the incoming payload <a href="/payments/billpay/pre-built-screens/custom-payment/apis#webhook">(See Webhook API Reference).</a>
-
-<Card padding="nano" shape="rounded">
-    <details>
-        <summary>
-            <Text weight="600" marginBottom="none">
-                Sample Request
-            </Text>
-        </summary>
-<CodeBlockWithCopy language="diff">{`
-{
-  "orderId": "COUWLje9V7wWs9N3w",
-  "transactionId": "UNIQUE_PAYMENT_TRANSACTION_ID",
-  "paymentDateTime": "YYYY-MM-DD HH:MM:SS in UTC",
-  "amount": "100.00",
-  "paymentMode": "CASH|UPI|IMPS|NEFT|AEPS|ACCOUNT TRANSFER|INTERNET BANKING|WALLET|DEBIT CARD|CREDIT CARD|PREPAID CARD|Bharat QR|USSD",
-  "paymentStatus": "SUCCESS|FAILURE",
-+ "remitter": {
-+   "name": "XX",
-+   "pan": "xxxx",
-+   "email": "XXXX",
-+   "aadhaar": "XXX"
-+ },
-+ "accountInfo": "ICIC0000152|1234567890"
-}
-`}
-          </CodeBlockWithCopy>
-    </details>
-</Card>
-
-### Payment Status API Enhancement
-
-The payment status API must now include remitter details under the remitter object and account information within the accountInfo property in the response payload <a href="/payments/billpay/pre-built-screens/custom-payment/apis#:~:text=Get%20payment%20status">(See Payment Status API Reference).</a>
-
-<Card padding="nano" shape="rounded">
-    <details>
-        <summary>
-            <Text weight="600" marginBottom="none">
-                Sample Response
-            </Text>
-        </summary>
-<CodeBlockWithCopy language="diff">{`
-{
-  "status": "success/invalid-order-id",
-  "message": "",
-  "data": {
-    "orderId": "COUWLje9V7wWs9N3w",
-    "transactionId": "UNIQUE_PAYMENT_TRANSACTION_ID",
-    "paymentDateTime": "YYYY-MM-DD HH:MM:SS in UTC",
-    "amount": "100.00",
-    "paymentMode": "CASH|UPI|IMPS|NEFT|AEPS|ACCOUNT TRANSFER|INTERNET BANKING|WALLET|DEBIT CARD|CREDIT CARD|PREPAID CARD|Bharat QR|USSD",
-    "paymentStatus": "SUCCESS|FAILURE",
-+   "remitter": {
-+     "name": "XX",
-+     "pan": "xxxx",
-+     "email": "XXXX",
-+     "aadhaar": "XXX"
-+   },
-+    "accountInfo": "ICIC0000152|1234567890"
-  }
-}
-`}
-          </CodeBlockWithCopy>
-    </details>
-</Card>
-
-
-## NPCI Specification Compliance
+## NPCI Specifications
 
 ### Account Information Format by Payment Mode
 
