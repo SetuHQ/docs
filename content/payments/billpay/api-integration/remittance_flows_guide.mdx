@@ -1,6 +1,6 @@
 ---
 sidebar_title: Remitter Details
-page_title: COU Remittance API Flows Reference
+page_title: Remitter Details For Bill Payments Integration Guide
 order: 6
 visible_in_sidebar: true
 ---
@@ -10,7 +10,7 @@ visible_in_sidebar: true
 
 ## Overview
 
-Customer Operating Unit (`COU`) has introduced comprehensive remittance information handling across two distinct integration flows to accommodate acceptance of remittance data from Agent Institutions for Credit Card Bill Payments. These enhancements ensure compliance with NPCI specifications while providing flexibility for different integration approaches.
+NPCI has introduced comprehensive remittance information handling across two distinct integration flows to accommodate acceptance of remittance data from Agent Institutions for Credit Card Bill Payments. These enhancements ensure compliance with NPCI specifications while providing flexibility for different integration approaches.
 
 
 ## Remitter Details Specification
@@ -31,12 +31,12 @@ Customer Operating Unit (`COU`) has introduced comprehensive remittance informat
 
 ### Key Notes
 
-- **NPCI Compatibility**: The `accountInfo` field must be formatted according to [NPCI specifications](#npci-specification-compliance)
+- **NPCI Compatibility**: The `accountInfo` field must be formatted according to [NPCI specifications](#npci-specification-compliance) and to be passed with all Bill Payments and the `remitter` object to be passed with all Credit Card Bill Payments.
 - **Credit Card Fallback**: When remitter name is not provided for credit card payments, the system automatically sends "Not Available" to NPCI
 - **Remitter vs Cardholder**: The person making the payment (remitter) may be different from the credit card holder
 
 
-## Remitter Details in API Flow
+## Remitter Details in Bill Payment API Flow
 
 ### Bill Fetch Request API Enhancement
 
@@ -95,6 +95,10 @@ The bill fetch request API has been enhanced to include remitter details within 
 
 The bill payment request API has been enhanced to include remitter details under the `remitter` object and account information within the `accountInfo` property of the `paymentDetails` object.
 
+#### RefId Based Payment Request
+- The `bill fetch request API` must be called to get the bill details before initiating the payment.
+- The `refId` from the bill fetch request API must be used to make the payment.
+
 <Card padding="nano" shape="rounded">
     <details>
         <summary>
@@ -105,6 +109,46 @@ The bill payment request API has been enhanced to include remitter details under
 <CodeBlockWithCopy language="diff">{`
 {
     "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
++   "remitter": {
++       "aadhaar": "123456789012",
++       "email": "test@example.com",
++       "name": "John Doe",
++       "pan": "ABDCE1121E"
++   },
+    "bills": "Selection on bills in case of list billers",
+    "paymentDetails": {
+        "custConvFee": 0,
+        "paymentRefId": "BD019181220291",
+        "timestamp": "2020-12-12T13:12:00+05:30",
+        "COUcustConvFee": 0,
++       "accountInfo": "ICIC0000152|1234567890",
+        "amount": 1,
+        "currency": 0,
+        "mode": "Internet Banking",
+        "selectedPaymentOptions": [
+            {
+                "amount": 1,
+                "name": "John Doe"
+            }
+        ]
+    }
+}
+`}
+          </CodeBlockWithCopy>
+    </details>
+</Card>
+
+#### Direct Payment Request
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Sample Request
+            </Text>
+        </summary>
+<CodeBlockWithCopy language="diff">{`
+{
     "biller": {
         "id": "MAHI00000NATIC"
     },
@@ -265,27 +309,9 @@ The following table provides detailed formatting specifications for different NP
 
 #### Mandatory Behavior
 - The `accountInfo` field must contain NPCI-compatible values corresponding to the selected payment mode
-- Values are forwarded directly to NPCI without modification
-- For UPI, Internet Banking, Debit Card, and Prepaid Card modes: provide details as specified in the NPCI table
+- For credit card bill payments, both the `accountInfo` and `remitter` objects must be provided.
 
 #### Optional Field Handling
 - If remitter details or account information are not available, the fields should be omitted entirely
-- Do not pass empty or null values for missing information
-- System automatically handles fallback scenarios for Credit Card payments
-
-
-## Integration Guidelines
-
-### For Remittance API Flow
-1. **Fetch Request**: Include remitter object when available
-2. **Payment Request**: Include both remitter object and accountInfo in paymentDetails
-3. **Validation**: Ensure accountInfo format matches the selected payment mode
-4. **Error Handling**: Omit fields when data is unavailable rather than sending empty values
-
-### For WL + Custom Payment Flow
-1. **Webhook Events**: Expect remitter and accountInfo in payment event notifications
-2. **Status Checks**: Payment status responses will include remittance information when available
-3. **Data Processing**: Handle optional fields gracefully in downstream systems
-4. **Compliance**: Ensure proper handling of NPCI-forwarded information
-
+- System automatically handles fallback scenarios
 
