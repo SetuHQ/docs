@@ -13,31 +13,30 @@ These are the available webhooks for merchants, when they notify their customers
   tabs={[
     {
       key: "1",
-      label: "Mandate pre-debit notification successful",
+      label: "Mandate pre-debit notification initiated",
       content: (
         <>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.notify.success",
-   "resource": "mandate_operation",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate operation id
-   "operation": "notify", // create | update | revoke | notify | execute
-   "status": "success", // initiated | success | failed
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>",
-   // Mandate reference
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // Execution attribute
-   "amount": 10000,
-   "seqNum": 1,
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.notify.initiated",  
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // mandate pre-debit notification id
+  "operation": "notify",                             
+  "status": "initiated",                             
+  
+  // Empty reason object for initiated status
+  "reason": {},
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // Merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate pre-debit notification referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // ID of the mandate being operated on
+  "amount": 1000,                                     // Amount in paise
+  "seqNum": "1"                                       // Sequence number for the notification
 }`}
           </CodeBlockWithCopy>
         </>
@@ -45,35 +44,83 @@ These are the available webhooks for merchants, when they notify their customers
     },
     {
       key: "2",
-      label: "Mandate pre-debit notification failed",
+      label: "Mandate pre-debit notification successful",
       content: (
         <>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.notify.failed",
-   "resource": "mandate_operation",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate operation id
-   "operation": "notify", // create | update | revoke | notify | execute
-   "status": "failed", // initiated | success | failed
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>",
-   // Mandate reference
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // Execution attribute
-   "amount": 10000,
-   "seqNum": 1,
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.notify.success",    
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate pre-debit notification id
+  "operation": "notify",                             
+  "status": "success",                               
+  
+  "reason": {
+    "code": "mandate-notification-success",           // Reason code
+    "desc": "mandate notification has succeeded",     // Reason description
+    "npciErrCode": "00",                              // NPCI error code
+    "npciErrDesc": "SUCCESS",                         // NPCI error code description
+    "npciErrCategory": "NA",                          // NPCI error category
+    "npciRespCode": "00",                             // NPCI response code
+    "npciRespDesc": "SUCCESS",                        // NPCI response code description
+    "setuDescription": "",                            // Setu description
+    "suggestedAction": ""                             // Suggested action
+  },
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // Merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate pre-debit notification referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // ID of the mandate being operated on
+  "amount": 1000,                                     // Amount in paise
+  "seqNum": "1"                                       // Sequence number for the notification
 }`}
           </CodeBlockWithCopy>
         </>
       ),
     },
+    {
+      key: "3",
+      label: "Mandate pre-debit notification failed",
+      content: (
+        <>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.notify.failed",    
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate pre-debit notification id
+  "operation": "notify",                             
+  "status": "failed",                               
+  
+  "reason": {
+    "code": "mandate-notification-failed",            // Reason code
+    "desc": "INVALID VIRTUAL ADDRESS",                // Reason description
+    "npciErrCode": "UC5",                             // NPCI error code
+    "npciErrDesc": "No response for ReqValCust",      // NPCI error code description
+    "npciErrCategory": "BD",                          // NPCI error category
+    "npciRespCode": "ZH",                             // NPCI response code
+    "npciRespDesc": "INVALID VIRTUAL ADDRESS",        // NPCI response code description
+    "setuDescription": "",                            // Setu description
+    "suggestedAction": ""                             // Suggested action
+  },
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // Merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate pre-debit notification referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // ID of the mandate being operated on
+  "amount": 1000,                                     // Amount in paise
+  "seqNum": "1"                                       // Sequence number for the notification
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    }
   ]}
 />
