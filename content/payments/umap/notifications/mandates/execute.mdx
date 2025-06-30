@@ -18,26 +18,35 @@ These are the available webhooks for merchants, when they execute mandates being
         <>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.execute.success",
-   "resource": "mandate_operation",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate operation id
-   "operation": "execute", // create | update | revoke | notify | execute
-   "status": "success", // initiated | success | failed
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>",
-   // Mandate reference
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // Execution attribute
-   "amount": 10000,
-   "seqNum": 1,
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.execute.initiated", 
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate execution ID
+  "operation": "execute",                            
+  "status": "initiated",                             
+  
+  // Empty reason object for initiated status
+  "reason": {},
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate execution reference ID
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // ID of the mandate being operated on
+  "amount": 1000,                                     // Amount in paise
+  "seqNum": "1",                                      // Sequence number for the execution
+  "blockedAmount": 10000,                             // Amount blocked for multi-debit mandates
+  "debitedAmount": 1000,                              // Total amount debited for multi-debit mandates
+  "payment": {                                        // Payment details for this execution
+    "txnId": "HDF10e4ab8a07f447eea54581383d92b507",   // NPCI Txn.id
+    "paymentId": "01JYXYSV8B19XAWSFRPARXY35E",        // payment id
+    "rrn": "123456789012",                            // NPCI Txn.custRef
+    "customerVpa": "customer@bank",                   // Customer's VPA
+    "paymentStatus": "initiated",                     // Status of the payment
+    "customerAccountType": "SAVINGS"                  // Payer account type
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -50,26 +59,45 @@ These are the available webhooks for merchants, when they execute mandates being
         <>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.execute.success",
-   "resource": "mandate_operation",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate operation id
-   "operation": "execute", // create | update | revoke | notify | execute
-   "status": "success", // initiated | success | failed
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>",
-   // Mandate reference
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // Execution attribute
-   "amount": 10000,
-   "seqNum": 1,
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.execute.success",    
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate execution ID
+  "operation": "execute",                             
+  "status": "success",                                
+  
+  // Success reason object
+  "reason": {
+    "code": "mandate-execution-success",              // Reason code
+    "desc": "mandate execution has succeeded",        // Reason description
+    "npciErrCode": "00",                              // NPCI error code
+    "npciErrDesc": "SUCCESS",                         // NPCI error code description
+    "npciErrCategory": "NA",                          // NPCI error category
+    "npciRespCode": "00",                             // NPCI response code
+    "npciRespDesc": "SUCCESS",                        // NPCI response code description
+    "setuDescription": "",                            // Setu description
+    "suggestedAction": ""                             // Suggested action
+  },
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate execution referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // ID of the mandate being operated on
+  "amount": 1000,                                     // Amount in paise
+  "seqNum": "1",                                      // Sequence number for the execution
+  "blockedAmount": 10000,                             // Amount blocked for multi-debit mandates
+  "debitedAmount": 1000,                              // Total amount debited for multi-debit mandates
+  "payment": {                                        // Payment details for this execution
+    "txnId": "HDF10e4ab8a07f447eea54581383d92b507",   // NPCI Txn.id
+    "paymentId": "01JYXYSV8B19XAWSFRPARXY35E",        // payment id
+    "rrn": "123456789012",                            // NPCI Txn.custRef
+    "customerVpa": "customer@bank",                   // Customer's VPA
+    "paymentStatus": "success",                       // Status of the payment
+    "customerAccountType": "SAVINGS"                  // Payer account type
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -86,26 +114,45 @@ These are the available webhooks for merchants, when they execute mandates being
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.execute.failed",
-   "resource": "mandate_operation",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate operation id
-   "operation": "execute", // create | update | revoke | notify | execute
-   "status": "failed", // initiated | success | failed
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>",
-   // Mandate reference
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // Execution attribute
-   "amount": 10000,
-   "seqNum": 1,
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.execute.failed",    
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate execution ID
+  "operation": "execute",                            
+  "status": "failed",                                
+  
+  // Failure reason object
+  "reason": {
+    "code": "mandate-execution-failed",               // Reason code
+    "desc": "INVALID / INCORRECT MPIN",               // Reason description
+    "npciErrCode": "U30",                             // NPCI error code
+    "npciErrDesc": "DEBIT HAS BEEN FAILED",           // NPCI error code description
+    "npciErrCategory": "BD",                         // NPCI error category
+    "npciRespCode": "ZM",                             // NPCI response code
+    "npciRespDesc": "INVALID / INCORRECT MPIN",       // NPCI response code description
+    "setuDescription": "",                            // Setu description
+    "suggestedAction": ""                             // Suggested action
+  },
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate execution referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // ID of the mandate being operated on
+  "amount": 1000,                                     // Amount in paise
+  "seqNum": "1",                                      // Sequence number for the execution
+  "blockedAmount": 10000,                             // Amount blocked for multi-debit mandates
+  "debitedAmount": 1000,                              // Total amount debited for multi-debit mandates
+  "payment": {                                        // Payment details for this execution
+    "txnId": "HDF10e4ab8a07f447eea54581383d92b507",   // NPCI Txn.id
+    "paymentId": "01JYXYSV8B19XAWSFRPARXY35E",        // payment id
+    "rrn": "123456789012",                            // NPCI Txn.custRef
+    "customerVpa": "customer@bank",                   // Customer's VPA
+    "paymentStatus": "failed",                        // Status of the payment
+    "customerAccountType": "SAVINGS"                  // Payer account type
+  }
 }`}
           </CodeBlockWithCopy>
         </>
