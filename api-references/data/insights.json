@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Setu Insights API",
-    "description": "Setu’s Insights API gives you actionable insights from a customer's bank statement about their income, expenditure, and financial history.",
+    "description": "Setu's Insights API gives you actionable insights from a customer's bank statement about their income, expenditure, and financial history.",
     "version": "1.0.0"
   },
   "servers": [
@@ -1310,6 +1310,162 @@
         }
       }
     }
+    },
+    "/v1/deposit/transactions": {
+      "post": {
+        "description": "List deposit transactions",
+        "tags": ["List transactions"],
+        "summary": "List deposit transactions",
+        "operationId": "list-deposit-transactions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/requests.ListDepositTransactionsRequest"
+              }
+            }
+          },
+          "description": "Query details",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/responses.ListDepositTransactionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/responses.Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/equities/transactions": {
+      "post": {
+        "description": "List equities transactions",
+        "tags": ["List transactions"],
+        "summary": "List equities transactions",
+        "operationId": "list-equities-transactions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/requests.ListEquitiesTransactionsRequest"
+              }
+            }
+          },
+          "description": "Query details",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/responses.ListEquitiesTransactionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/responses.Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/etf/transactions": {
+      "post": {
+        "description": "List etf transactions",
+        "tags": ["List transactions"],
+        "summary": "List etf transactions",
+        "operationId": "list-etf-transactions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/requests.ListETFTransactionsRequest"
+              }
+            }
+          },
+          "description": "Query details",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/responses.ListETFTransactionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/responses.Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/mutual-funds/transactions": {
+      "post": {
+        "description": "List mutual-funds transactions",
+        "tags": ["List transactions"],
+        "summary": "List mutual-funds transactions",
+        "operationId": "list-mutual-funds-transactions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsRequest"
+              }
+            }
+          },
+          "description": "Query details",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/responses.ListMutualFundsTransactionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/responses.Error" }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4470,6 +4626,365 @@
         "mutualFundsTransactions"
       ],
       "title": "PurgeResultBody"
+      },
+      "requests.ListDepositTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "orderBy": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/requests.ListDepositTransactionsOrderBy" }
+          },
+          "refIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "where": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/requests.ListDepositTransactionsWhere" }
+          }
+        }
+      },
+      "requests.ListDepositTransactionsOrderBy": {
+        "type": "object",
+        "properties": {
+          "field": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "requests.ListDepositTransactionsWhere": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number" },
+          "amount_gte": { "type": "number" },
+          "amount_lte": { "type": "number" },
+          "categoryL1": { "type": "string" },
+          "categoryL1_list": { "type": "array", "items": { "type": "string" } },
+          "categoryL2": { "type": "string" },
+          "categoryL2_list": { "type": "array", "items": { "type": "string" } },
+          "categoryManual": { "type": "string" },
+          "categoryManual_list": { "type": "array", "items": { "type": "string" } },
+          "currentBalance": { "type": "number" },
+          "narration": { "type": "string" },
+          "reference": { "type": "string" },
+          "txnId": { "type": "string" },
+          "txnMode": { "type": "string" },
+          "txnTimestamp": { "type": "string" },
+          "txnTimestamp_gte": { "type": "string" },
+          "txnTimestamp_lte": { "type": "string" },
+          "txnType": { "type": "string" },
+          "txnValueDate": { "type": "string" }
+        }
+      },
+      "responses.ListDepositTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/responses.ListDepositTransactionsData" }
+          },
+          "totalCount": { "type": "integer" }
+        }
+      },
+      "responses.ListDepositTransactionsData": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number" },
+          "categoryL1": { "type": "string" },
+          "categoryL2": { "type": "string" },
+          "categoryManual": { "type": "string" },
+          "consentId": { "type": "string" },
+          "currentBalance": { "type": "number" },
+          "dataId": { "type": "string" },
+          "fipId": { "type": "string" },
+          "id": { "type": "string" },
+          "linkedAccRef": { "type": "string" },
+          "narration": { "type": "string" },
+          "refId": { "type": "string" },
+          "reference": { "type": "string" },
+          "txnId": { "type": "string" },
+          "txnMode": { "type": "string" },
+          "txnTimestamp": { "type": "string" },
+          "txnType": { "type": "string" },
+          "txnValueDate": { "type": "string" }
+        }
+      },
+      "requests.ListEquitiesTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "orderBy": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/requests.ListEquitiesTransactionsOrderBy" }
+          },
+          "refIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "where": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/requests.ListEquitiesTransactionsWhere" }
+          }
+        }
+      },
+      "requests.ListEquitiesTransactionsOrderBy": {
+        "type": "object",
+        "properties": {
+          "field": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "requests.ListEquitiesTransactionsWhere": {
+        "type": "object",
+        "properties": {
+          "companyName": { "type": "string" },
+          "dematId": { "type": "string" },
+          "equityCategory": { "type": "string" },
+          "exchange": { "type": "string" },
+          "exchangeRate": { "type": "number" },
+          "exchangeRate_gte": { "type": "number" },
+          "exchangeRate_lte": { "type": "number" },
+          "isin": { "type": "string" },
+          "isinDescription": { "type": "string" },
+          "narration": { "type": "string" },
+          "orderId": { "type": "string" },
+          "transactionDateTime_gte": { "type": "string" },
+          "transactionDateTime_lte": { "type": "string" },
+          "txnDateTime": { "type": "string" },
+          "txnId": { "type": "string" },
+          "txnType": { "type": "string" },
+          "units": { "type": "number" },
+          "units_gte": { "type": "number" },
+          "units_lte": { "type": "number" }
+        }
+      },
+      "responses.ListEquitiesTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/responses.ListEquitiesTransactionsData" }
+          },
+          "totalCount": { "type": "integer" }
+        }
+      },
+      "responses.ListEquitiesTransactionsData": {
+        "type": "object",
+        "properties": {
+          "companyName": { "type": "string" },
+          "consentId": { "type": "string" },
+          "dataId": { "type": "string" },
+          "dematId": { "type": "string" },
+          "equityCategory": { "type": "string" },
+          "exchange": { "type": "string" },
+          "exchangeRate": { "type": "number" },
+          "fipId": { "type": "string" },
+          "id": { "type": "string" },
+          "isin": { "type": "string" },
+          "isinDescription": { "type": "string" },
+          "linkedAccRef": { "type": "string" },
+          "narration": { "type": "string" },
+          "orderId": { "type": "string" },
+          "refId": { "type": "string" },
+          "txnDateTime": { "type": "string" },
+          "txnId": { "type": "string" },
+          "txnType": { "type": "string" },
+          "units": { "type": "number" }
+        }
+      },
+      "requests.ListETFTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "orderBy": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/requests.ListETFTransactionsOrderBy" }
+          },
+          "refIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "where": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/requests.ListETFTransactionsWhere" }
+          }
+        }
+      },
+      "requests.ListETFTransactionsOrderBy": {
+        "type": "object",
+        "properties": {
+          "field": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "requests.ListETFTransactionsWhere": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number" },
+          "amount_gte": { "type": "number" },
+          "amount_lte": { "type": "number" },
+          "brokerCode": { "type": "string" },
+          "dematId": { "type": "string" },
+          "isin": { "type": "string" },
+          "isinDescription": { "type": "string" },
+          "narration": { "type": "string" },
+          "nav": { "type": "number" },
+          "nav_gte": { "type": "number" },
+          "nav_lte": { "type": "number" },
+          "transactionDateTime": { "type": "string" },
+          "transactionDateTime_gte": { "type": "string" },
+          "transactionDateTime_lte": { "type": "string" },
+          "txnId": { "type": "string" },
+          "txnType": { "type": "string" },
+          "units": { "type": "number" },
+          "units_gte": { "type": "number" },
+          "units_lte": { "type": "number" }
+        }
+      },
+      "responses.ListETFTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/responses.ListETFTransactionsData" }
+          },
+          "totalCount": { "type": "integer" }
+        }
+      },
+      "responses.ListETFTransactionsData": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number" },
+          "brokerCode": { "type": "string" },
+          "consentId": { "type": "string" },
+          "dataId": { "type": "string" },
+          "dematId": { "type": "string" },
+          "fipId": { "type": "string" },
+          "id": { "type": "string" },
+          "isin": { "type": "string" },
+          "isinDescription": { "type": "string" },
+          "linkedAccRef": { "type": "string" },
+          "narration": { "type": "string" },
+          "nav": { "type": "number" },
+          "refId": { "type": "string" },
+          "transactionDateTime": { "type": "string" },
+          "txnId": { "type": "string" },
+          "txnType": { "type": "string" },
+          "units": { "type": "number" }
+        }
+      },
+      "requests.ListMutualFundsTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "orderBy": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsOrderBy" }
+          },
+          "refIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "where": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/requests.ListMutualFundsTransactionsWhere" }
+          }
+        }
+      },
+      "requests.ListMutualFundsTransactionsOrderBy": {
+        "type": "object",
+        "properties": {
+          "field": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "requests.ListMutualFundsTransactionsWhere": {
+        "type": "object",
+        "properties": {
+          "amc": { "type": "string" },
+          "amcFullName": { "type": "string" },
+          "amfiCode": { "type": "string" },
+          "amount": { "type": "number" },
+          "amount_gte": { "type": "number" },
+          "amount_lte": { "type": "number" },
+          "isin": { "type": "string" },
+          "isinDescription": { "type": "string" },
+          "lockInDays": { "type": "string" },
+          "lockInFlag": { "type": "string" },
+          "mutualFundName": { "type": "string" },
+          "narration": { "type": "string" },
+          "nav": { "type": "number" },
+          "navDate": { "type": "string" },
+          "nav_gte": { "type": "number" },
+          "nav_lte": { "type": "number" },
+          "registrar": { "type": "string" },
+          "schemeCode": { "type": "string" },
+          "schemePlan": { "type": "string" },
+          "txnDate": { "type": "string" },
+          "txnDate_gte": { "type": "string" },
+          "txnDate_lte": { "type": "string" },
+          "txnId": { "type": "string" },
+          "txnMode": { "type": "string" },
+          "txnType": { "type": "string" },
+          "ucc": { "type": "string" },
+          "units": { "type": "number" },
+          "units_gte": { "type": "number" },
+          "units_lte": { "type": "number" }
+        }
+      },
+      "responses.ListMutualFundsTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/responses.ListMutualFundsTransactionsData" }
+          },
+          "totalCount": { "type": "integer" }
+        }
+      },
+      "responses.ListMutualFundsTransactionsData": {
+        "type": "object",
+        "properties": {
+          "amc": { "type": "string" },
+          "amcFullName": { "type": "string" },
+          "amfiCode": { "type": "string" },
+          "amount": { "type": "number" },
+          "consentId": { "type": "string" },
+          "dataId": { "type": "string" },
+          "fipId": { "type": "string" },
+          "id": { "type": "string" },
+          "isin": { "type": "string" },
+          "isinDescription": { "type": "string" },
+          "linkedAccRef": { "type": "string" },
+          "lockInDays": { "type": "string" },
+          "lockInFlag": { "type": "string" },
+          "mutualFundName": { "type": "string" },
+          "narration": { "type": "string" },
+          "nav": { "type": "number" },
+          "navDate": { "type": "string" },
+          "refId": { "type": "string" },
+          "registrar": { "type": "string" },
+          "schemeCode": { "type": "string" },
+          "schemePlan": { "type": "string" },
+          "txnDate": { "type": "string" },
+          "txnId": { "type": "string" },
+          "txnMode": { "type": "string" },
+          "txnType": { "type": "string" },
+          "ucc": { "type": "string" },
+          "units": { "type": "number" }
+        }
+      },
+      "responses.Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
       }
     }
   }
