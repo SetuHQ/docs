@@ -7,7 +7,7 @@ visible_in_sidebar: true
 
 ## Notifications and alerts for creation of mandate
 
-The first step to start utilising mandates is to create a mandate. Here is a quick view of how the status moves from `mandate.initiated` to `mandate.live` or `mandate.failed`—
+The first step to start utilising mandates is to create a mandate. Here is a quick view of how the status moves from `mandate.initiated` to `mandate.live` or `mandate.rejected`—
 
 <img
   src="https://storage.googleapis.com/strapi-assets/latest/mandate_base_diagram/mandate_base_diagram.svg"
@@ -23,8 +23,8 @@ The first step to start utilising mandates is to create a mandate. Here is a qui
         <>
           <Text>
             This indicates that a mandate creation request has been initiated by
-            a customer or the merchant. The following param values indicate this
-            state—
+            a customer by clicking on the intent link / scanning the qr code and entering the mPIN. 
+            The following param values indicate this state—
             <ul>
               <li>
                 <code>operation</code> will be <code>create</code>
@@ -40,28 +40,86 @@ The first step to start utilising mandates is to create a mandate. Here is a qui
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // -----------------
-   // MERCHANT DETAILS
-   // -----------------
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // -----------------
-   // EVENT ATTRIBUTES
-   // -----------------
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Unique ID for the event
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.create.initiated",
-   "resource": "mandate_operation",
-   "operation": "create", // Can be create | update | revoke | notify | execute
-   "status": "initiated", // Can be initiated | success | failed
-   // -----------------
-   // MANDATE CONTEXT
-   // -----------------
-   "mandateType": "<type>",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Unique ID for mandate operation
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "reason": {} // sample mentioned above
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.create.initiated",  
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate ID
+  "operation": "create",                              
+  "status": "initiated",                              
+  
+  // Empty reason object for initiated status
+  "reason": {},
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // Merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",               // NPCI Txn.ts
+  "rrn": "123456789012",                              // NPCI Txn.custRef
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // Same as id field
+  
+  // Amount Information
+  "amount": 1000,                                     // Mandate amount in paise
+  "amountLimit": 1000,                                // Mandate amount in paise
+  "endDate": "20032025",                              // Mandate end date in DDMMYYYY format
+
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                                // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "encrypted_string",     // Encrypted account number
+    "hashedAccountNumber": "hashed_string",           // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",     // Masked account number
+    "hashedAccountName": "hashed_string",             // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",            // Masked account name
+    "encryptedAccountName": "encrypted_string",       // Encrypted account name
+    "ifsc": "HDFC0001234",                            // IFSC code
+    "accountType": "SAVINGS"                          // Account type
+  },
+}`}
+          </CodeBlockWithCopy>
+          <Text>
+            In addition to <code>mandate_operation.create.initiated</code>, a <code>mandate.initiated</code> event is also sent
+            if no validation errors are encountered on UPI Setu during mandate creation after the customer has entered the mPIN
+            post clicking on the intent link / scanning the qr code.
+          </Text>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate.initiated",                   
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate",                              
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate ID
+  "status": "initiated",                              
+  
+  // Empty reason object for initiated status
+  "reason": {},
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // Merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",               // NPCI Txn.ts
+  "rrn": "123456789012",                              // NPCI Txn.custRef
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // Same as id field
+  
+  // Amount Information
+  "amount": 1000,                                     // Mandate amount in paise
+  "amountLimit": 1000,                                // Mandate amount in paise
+  "endDate": "20032025",                              // Mandate end date in DDMMYYYY format
+
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                               // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "encrypted_string",    // Encrypted account number
+    "hashedAccountNumber": "hashed_string",          // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",     // Masked account number
+    "hashedAccountName": "hashed_string",            // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",                 // Masked account name
+    "encryptedAccountName": "encrypted_string",      // Encrypted account name
+    "ifsc": "BANK0001234",                           // IFSC code
+    "accountType": "SAVINGS"                         // Account type
+  },
 }`}
           </CodeBlockWithCopy>
         </>
@@ -92,28 +150,102 @@ The first step to start utilising mandates is to create a mandate. Here is a qui
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // -----------------
-   // MERCHANT DETAILS
-   // -----------------
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // -----------------
-   // EVENT ATTRIBUTES
-   // -----------------
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Unique ID for the event
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.create.success",
-   "resource": "mandate_operation",
-   "operation": "create", // Can be create | update | revoke | notify | execute
-   "status": "success", // Can be initiated | success | failed
-   // -----------------
-   // MANDATE CONTEXT
-   // -----------------
-   "mandateType": "<type>",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Unique ID for mandate operation
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "reason": {} // sample mentioned above
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.create.success",    
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate ID
+  "operation": "create",                              
+  "status": "success",                                
+  
+  "reason": {
+    "code": "mandate-live",                          // Reason code
+    "desc": "mandate is live",                       // Reason description
+    "npciErrCode": "00",                             // NPCI error code
+    "npciErrDesc": "SUCCESS",                        // NPCI error code description
+    "npciErrCategory": "NA",                         // NPCI error category (can only be NA, TD, or BD)
+    "npciRespCode": "00",                            // NPCI response code
+    "npciRespDesc": "SUCCESS",                       // NPCI response code description
+    "setuDescription": "",                           // User-friendly description
+    "suggestedAction": ""                            // Suggested action for the user
+  },
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // Merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",               // NPCI Txn.ts
+  "rrn": "123456789012",                              // NPCI Txn.custRef
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // Same as id field
+  
+  // Amount Information
+  "amount": 1000,                                    // Mandate amount in paise
+  "amountLimit": 1000,                               // Mandate amount in paise
+  "endDate": "20032025",                             // Mandate end date in DDMMYYYY format
+
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                               // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "encrypted_string",    // Encrypted account number
+    "hashedAccountNumber": "hashed_string",          // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",    // Masked account number
+    "hashedAccountName": "hashed_string",            // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",           // Masked account name
+    "encryptedAccountName": "encrypted_string",      // Encrypted account name
+    "ifsc": "BANK0001234",                           // IFSC code
+    "accountType": "SAVINGS"                         // Account type
+  },
+}`}
+          </CodeBlockWithCopy>
+          <Text>
+            In addition to <code>mandate_operation.create.success</code>, a <code>mandate.live</code> event is also sent.
+          </Text>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "mandate.live",                        
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "mandate",                              
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Mandate ID
+  "status": "live",                                   
+  
+  "reason": {
+    "code": "mandate-live",                          // Reason code
+    "desc": "mandate is live",                       // Reason description
+    "npciErrCode": "00",                             // NPCI error code
+    "npciErrDesc": "SUCCESS",                        // NPCI error code description
+    "npciErrCategory": "NA",                         // NPCI error category (can only be NA, TD, or BD)
+    "npciRespCode": "00",                            // NPCI response code
+    "npciRespDesc": "SUCCESS",                       // NPCI response code description
+    "setuDescription": "",                           // Setu description
+    "suggestedAction": ""                            // Suggested action for the user
+  },
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // Merchant ID
+  "merchantReferenceId": "mandate_123456789",         // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",               // NPCI Txn.ts
+  "rrn": "123456789012",                              // NPCI Txn.custRef
+  "umn": "customer@bank",                             // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",          // Same as id field
+  
+  // Amount Information
+  "amount": 1000,                                     // Mandate amount in paise
+  "amountLimit": 1000,                                // Mandate amount in paise
+  "endDate": "20032025",                              // Mandate end date in DDMMYYYY format
+
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                                // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "encrypted_string",     // Encrypted account number
+    "hashedAccountNumber": "hashed_string",           // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",     // Masked account number
+    "hashedAccountName": "hashed_string",             // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",            // Masked account name
+    "encryptedAccountName": "encrypted_string",       // Encrypted account name
+    "ifsc": "BANK0001234",                            // IFSC code
+    "accountType": "SAVINGS"                          // Account type
+  },
 }`}
           </CodeBlockWithCopy>
         </>
@@ -143,28 +275,106 @@ The first step to start utilising mandates is to create a mandate. Here is a qui
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // -----------------
-   // MERCHANT DETAILS
-   // -----------------
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // -----------------
-   // EVENT ATTRIBUTES
-   // -----------------
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Unique ID for the event
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.create.failed",
-   "resource": "mandate_operation",
-   "operation": "create", // Can be create | update | revoke | notify | execute
-   "status": "failed", // Can be initiated | success | failed
-   // -----------------
-   // MANDATE CONTEXT
-   // -----------------
-   "mandateType": "<type>",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Unique ID for mandate operation
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "reason": {} // sample mentioned above
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",             // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.create.failed",     
+  "eventTs": "2025-06-29T19:12:35+05:30",                        // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                            // Mandate ID
+  "operation": "create",                              
+  "status": "failed",                                
+  
+  // Failure reason
+  "reason": {
+    "code": "mandate-rejected",                                  // Reason code
+    "desc": "INVALID / INCORRECT MPIN",                          // Reason description
+    "npciErrCode": "UM8",                                        // NPCI error code
+    "npciErrDesc": "RESPMANDATE DECLINED BY REMITTER BANK",      // NPCI error code description
+    "npciErrCategory": "BD",                                     // NPCI error category
+    "npciRespCode": "ZM",                                        // NPCI response code
+    "npciRespDesc": "INVALID / INCORRECT MPIN",                  // NPCI response code description
+    "setuDescription": "",                                       // Setu description
+    "suggestedAction": ""                                        // Suggested action for the user
+  },
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                    // Merchant ID
+  "merchantReferenceId": "mandate_123456789",                    // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",                          // NPCI Txn.ts
+  "rrn": "123456789012",                                         // NPCI Txn.custRef
+  "umn": "customer@bank",                                        // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",                     // Same as id field
+  
+  // Amount Information
+  "amount": 1000,                                                // Mandate amount in paise
+  "amountLimit": 1000,                                           // Mandate amount in paise
+  "endDate": "20032025",                                         // Mandate end date in DDMMYYYY format
+
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                                           // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "encrypted_string",                // Encrypted account number
+    "hashedAccountNumber": "hashed_string",                      // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",                // Masked account number
+    "hashedAccountName": "hashed_string",                        // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",                       // Masked account name
+    "encryptedAccountName": "encrypted_string",                  // Encrypted account name
+    "ifsc": "BANK0001234",                                       // IFSC code
+    "accountType": "SAVINGS"                                     // Account type
+  }
+}`}
+          </CodeBlockWithCopy>
+          <Text>
+            In addition to <code>mandate_operation.create.failed</code>, a <code>mandate.rejected</code> event is also sent
+            for collect flow based mandate registration failures and for intent / qr based mandate registration failure due
+            to intent / qr expiry
+          </Text>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",             // Unique event identifier, generated using UUID
+  "eventType": "mandate.rejected",     
+  "eventTs": "2025-06-29T19:12:35+05:30",                        // Event timestamp
+  "resource": "mandate",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                            // Mandate ID
+  "status": "rejected",                                
+  
+  // Failure reason
+  "reason": {
+    "code": "mandate-rejected",                                  // Reason code
+    "desc": "INVALID / INCORRECT MPIN",                          // Reason description
+    "npciErrCode": "UM8",                                        // NPCI error code
+    "npciErrDesc": "RESPMANDATE DECLINED BY REMITTER BANK",      // NPCI error code description
+    "npciErrCategory": "BD",                                     // NPCI error category
+    "npciRespCode": "ZM",                                        // NPCI response code
+    "npciRespDesc": "INVALID / INCORRECT MPIN",                  // NPCI response code description
+    "setuDescription": "",                                       // Setu description
+    "suggestedAction": ""                                        // Suggested action for the user
+  },
+
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                    // Merchant ID
+  "merchantReferenceId": "mandate_123456789",                    // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",                          // NPCI Txn.ts
+  "rrn": "123456789012",                                         // NPCI Txn.custRef
+  "umn": "customer@bank",                                        // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",                     // Same as id field
+  
+  // Amount Information
+  "amount": 1000,                                                // Mandate amount in paise
+  "amountLimit": 1000,                                           // Mandate amount in paise
+  "endDate": "20032025",                                         // Mandate end date in DDMMYYYY format
+
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                                           // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "encrypted_string",                // Encrypted account number
+    "hashedAccountNumber": "hashed_string",                      // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",                // Masked account number
+    "hashedAccountName": "hashed_string",                        // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",                       // Masked account name
+    "encryptedAccountName": "encrypted_string",                  // Encrypted account name
+    "ifsc": "BANK0001234",                                       // IFSC code
+    "accountType": "SAVINGS"                                     // Account type
+  }
 }`}
           </CodeBlockWithCopy>
         </>
