@@ -368,75 +368,47 @@
             }
           },
           "422": {
-            "description": "Invalid Request Parameters",
-            "headers": {
-              "content-length": {
-                "schema": {
-                  "type": "string",
-                  "example": "204"
-                }
-              },
-              "date": {
-                "schema": {
-                  "type": "string",
-                  "example": "Sun, 13 Oct 2024 20:28:16 GMT"
-                }
-              },
-              "server": {
-                "schema": {
-                  "type": "string",
-                  "example": "uvicorn"
-                }
-              },
-              "x-trace-id": {
-                "schema": {
-                  "type": "string",
-                  "example": "3b0e103e-4fa8-403f-a6c9-b9dd62b82de7"
-                }
-              }
-            },
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": ["success", "error", "trace_id"],
                   "properties": {
+                    "success": { "type": "boolean", "example": false },
                     "error": {
                       "type": "object",
+                      "required": ["code", "message", "failureReason"],
                       "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "ERR011"
-                        },
-                        "failureReason": {
-                          "type": "string",
-                          "example": "input-params-missing"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Missing required parameters: customer.billParameters.0.name"
-                        }
+                        "code": { "type": "string", "example": "ERR009" },
+                        "message": { "type": "string", "example": "Invalid Product Instance ID: " },
+                        "failureReason": { "type": "string", "example": "invalid-instance-id" }
                       }
                     },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "trace_id": {
-                      "type": "string",
-                      "example": "3b0e103e-4fa8-403f-a6c9-b9dd62b82de7"
-                    }
+                    "trace_id": { "type": "string", "example": "d1m1kslcjsji7vn3b5vg" }
                   }
                 },
                 "examples": {
-                  "422": {
+                  "invalid-instance-id": {
                     "value": {
-                      "error": {
-                        "code": "ERR011",
-                        "failureReason": "input-params-missing",
-                        "message": "Missing required parameters: customer.billParameters.0.name"
-                      },
                       "success": false,
-                      "trace_id": "3b0e103e-4fa8-403f-a6c9-b9dd62b82de7"
+                      "error": {
+                        "code": "ERR009",
+                        "message": "Invalid Product Instance ID: ",
+                        "failureReason": "invalid-instance-id"
+                      },
+                      "trace_id": "d1m1kslcjsji7vn3b5vg"
+                    }
+                  },
+                  "balance-api-unavailable-in-uat": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR012",
+                        "message": "Balance API is not available in UAT environment",
+                        "failureReason": "balance-api-unavailable-in-uat"
+                      },
+                      "trace_id": "d1m1j6kd7qs2b5gbln8g"
                     }
                   }
                 }
@@ -1707,32 +1679,49 @@
             "description": "Response containing the wallet balance details"
           },
           "422": {
-            "description": "Balance API is not available in UAT environment",
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": ["success", "error", "trace_id"],
                   "properties": {
                     "success": { "type": "boolean", "example": false },
                     "error": {
                       "type": "object",
+                      "required": ["code", "message", "failureReason"],
                       "properties": {
-                        "code": { "type": "string", "example": "ERR012" },
-                        "message": { "type": "string", "example": "Balance API is not available in UAT environment" },
-                        "failureReason": { "type": "string", "example": "balance-api-unavailable-in-uat" }
+                        "code": { "type": "string", "example": "ERR009" },
+                        "message": { "type": "string", "example": "Invalid Product Instance ID: " },
+                        "failureReason": { "type": "string", "example": "invalid-instance-id" }
                       }
                     },
-                    "trace_id": { "type": "string", "example": "d1m1j6kd7qs2b5gbln8g" }
+                    "trace_id": { "type": "string", "example": "d1m1kslcjsji7vn3b5vg" }
                   }
                 },
-                "example": {
-                  "success": false,
-                  "error": {
-                    "code": "ERR012",
-                    "message": "Balance API is not available in UAT environment",
-                    "failureReason": "balance-api-unavailable-in-uat"
+                "examples": {
+                  "invalid-instance-id": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR009",
+                        "message": "Invalid Product Instance ID: ",
+                        "failureReason": "invalid-instance-id"
+                      },
+                      "trace_id": "d1m1kslcjsji7vn3b5vg"
+                    }
                   },
-                  "trace_id": "d1m1j6kd7qs2b5gbln8g"
+                  "balance-api-unavailable-in-uat": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR012",
+                        "message": "Balance API is not available in UAT environment",
+                        "failureReason": "balance-api-unavailable-in-uat"
+                      },
+                      "trace_id": "d1m1j6kd7qs2b5gbln8g"
+                    }
+                  }
                 }
               }
             }
