@@ -368,75 +368,47 @@
             }
           },
           "422": {
-            "description": "Invalid Request Parameters",
-            "headers": {
-              "content-length": {
-                "schema": {
-                  "type": "string",
-                  "example": "204"
-                }
-              },
-              "date": {
-                "schema": {
-                  "type": "string",
-                  "example": "Sun, 13 Oct 2024 20:28:16 GMT"
-                }
-              },
-              "server": {
-                "schema": {
-                  "type": "string",
-                  "example": "uvicorn"
-                }
-              },
-              "x-trace-id": {
-                "schema": {
-                  "type": "string",
-                  "example": "3b0e103e-4fa8-403f-a6c9-b9dd62b82de7"
-                }
-              }
-            },
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": ["success", "error", "trace_id"],
                   "properties": {
+                    "success": { "type": "boolean", "example": false },
                     "error": {
                       "type": "object",
+                      "required": ["code", "message", "failureReason"],
                       "properties": {
-                        "code": {
-                          "type": "string",
-                          "example": "ERR011"
-                        },
-                        "failureReason": {
-                          "type": "string",
-                          "example": "input-params-missing"
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "Missing required parameters: customer.billParameters.0.name"
-                        }
+                        "code": { "type": "string", "example": "ERR009" },
+                        "message": { "type": "string", "example": "Invalid Product Instance ID: " },
+                        "failureReason": { "type": "string", "example": "invalid-instance-id" }
                       }
                     },
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "trace_id": {
-                      "type": "string",
-                      "example": "3b0e103e-4fa8-403f-a6c9-b9dd62b82de7"
-                    }
+                    "trace_id": { "type": "string", "example": "d1m1kslcjsji7vn3b5vg" }
                   }
                 },
                 "examples": {
-                  "422": {
+                  "invalid-instance-id": {
                     "value": {
-                      "error": {
-                        "code": "ERR011",
-                        "failureReason": "input-params-missing",
-                        "message": "Missing required parameters: customer.billParameters.0.name"
-                      },
                       "success": false,
-                      "trace_id": "3b0e103e-4fa8-403f-a6c9-b9dd62b82de7"
+                      "error": {
+                        "code": "ERR009",
+                        "message": "Invalid Product Instance ID: b7e2c9a1-5d4f-4c8e-9f3a-2a1b6c7d8e9f",
+                        "failureReason": "invalid-instance-id"
+                      },
+                      "trace_id": "d1m1kslcjsji7vn3b5vg"
+                    }
+                  },
+                  "balance-api-unavailable-in-uat": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR012",
+                        "message": "Balance API is not available in UAT environment",
+                        "failureReason": "balance-api-unavailable-in-uat"
+                      },
+                      "trace_id": "d1m1j6kd7qs2b5gbln8g"
                     }
                   }
                 }
@@ -943,7 +915,7 @@
                             "value": {
                               "type": "string",
                               "example": "7066573353",
-                              "description": "The value of the customer mobile number or related info like Operator and Location."
+                              "description": "The value of the customer mobile number whose details are being fetched."
                             }
                           }
                         },
@@ -1614,6 +1586,113 @@
               }
             },
             "description": "Ok"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["success", "error", "trace_id"],
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "error": {
+                      "type": "object",
+                      "required": ["code", "message", "failureReason"],
+                      "properties": {
+                        "code": { "type": "string", "example": "ERR009" },
+                        "message": { "type": "string", "example": "Invalid Product Instance ID: " },
+                        "failureReason": { "type": "string", "example": "invalid-instance-id" }
+                      }
+                    },
+                    "trace_id": { "type": "string", "example": "d1m1kslcjsji7vn3b5vg" }
+                  }
+                },
+                "examples": {
+                  "invalid-instance-id": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR009",
+                        "message": "Invalid Product Instance ID: b7e2c9a1-5d4f-4c8e-9f3a-2a1b6c7d8e9f",
+                        "failureReason": "invalid-instance-id"
+                      },
+                      "trace_id": "d1m1kslcjsji7vn3b5vg"
+                    }
+                  },
+                  "invalid-txn-ref-id": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR003",
+                        "message": "Invalid Transaction Reference ID : TEST6291DD4X0475X70C2S2402",
+                        "failureReason": "invalid-txn-ref-id"
+                      },
+                      "trace_id": "d1m1shsd7qs2b5gblnag"
+                    }
+                  },
+                  "input-params-invalid": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR011",
+                        "message": "Value error, Invalid input: 'paymentRefId' should be alphanumeric: paymentRefId",
+                        "failureReason": "input-params-invalid"
+                      },
+                      "trace_id": "d1m1uisd7qs2b5gblndg"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["success", "error", "trace_id"],
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "error": {
+                      "type": "object",
+                      "required": ["code", "message", "failureReason"],
+                      "properties": {
+                        "code": { "type": "string", "example": "ERR100" },
+                        "message": { "type": "string", "example": "Internal Server Error" },
+                        "failureReason": { "type": "string", "example": "internal-server-error" }
+                      }
+                    },
+                    "trace_id": { "type": "string", "example": "d1m1us4d7qs2b5gblne0" }
+                  }
+                },
+                "examples": {
+                  "internal-server-error": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR100",
+                        "message": "Internal Server Error",
+                        "failureReason": "internal-server-error"
+                      },
+                      "trace_id": "d1m1us4d7qs2b5gblne0"
+                    }
+                  },
+                  "upstream-connectivity-error": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR999",
+                        "message": "Upstream API Connectivity Error",
+                        "failureReason": "upstream-connectivity-error"
+                      },
+                      "trace_id": "d1m1us4d7qs2b5gblne0"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -1705,6 +1784,87 @@
               }
             },
             "description": "Response containing the wallet balance details"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["success", "error", "trace_id"],
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "error": {
+                      "type": "object",
+                      "required": ["code", "message", "failureReason"],
+                      "properties": {
+                        "code": { "type": "string", "example": "ERR009" },
+                        "message": { "type": "string", "example": "Invalid Product Instance ID: " },
+                        "failureReason": { "type": "string", "example": "invalid-instance-id" }
+                      }
+                    },
+                    "trace_id": { "type": "string", "example": "d1m1kslcjsji7vn3b5vg" }
+                  }
+                },
+                "examples": {
+                  "invalid-instance-id": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR009",
+                        "message": "Invalid Product Instance ID: b7e2c9a1-5d4f-4c8e-9f3a-2a1b6c7d8e9f",
+                        "failureReason": "invalid-instance-id"
+                      },
+                      "trace_id": "d1m1kslcjsji7vn3b5vg"
+                    }
+                  },
+                  "balance-api-unavailable-in-uat": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR012",
+                        "message": "Balance API is not available in UAT environment",
+                        "failureReason": "balance-api-unavailable-in-uat"
+                      },
+                      "trace_id": "d1m1j6kd7qs2b5gbln8g"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["success", "error", "trace_id"],
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "error": {
+                      "type": "object",
+                      "required": ["code", "message", "failureReason"],
+                      "properties": {
+                        "code": { "type": "string", "example": "ERR100" },
+                        "message": { "type": "string", "example": "Internal Server Error" },
+                        "failureReason": { "type": "string", "example": "internal-server-error" }
+                      }
+                    },
+                    "trace_id": { "type": "string", "example": "d1m1us4d7qs2b5gblne0" }
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "code": "ERR100",
+                    "message": "Internal Server Error",
+                    "failureReason": "internal-server-error"
+                  },
+                  "trace_id": "d1m1us4d7qs2b5gblne0"
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -1840,8 +2000,8 @@
                           },
                           "status": {
                             "type": "string",
-                            "example": "SUCCESS",
-                            "description": "Status of the transaction"
+                            "example": "Successful",
+                            "description": "Status of the transaction. Possible values: `Successful`, `Processing`, `Failure`, `Reversed`."
                           },
                           "timestamp": {
                             "type": "string",
@@ -1863,6 +2023,69 @@
               }
             },
             "description": "Response containing the list of transactions"
+          },
+          "422": {
+            "description": "Invalid Request Parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": { "type": "string", "example": "ERR009" },
+                        "message": { "type": "string", "example": "Invalid Product Instance ID: 71f05a38-7cb6-4907-b7cb-7521c28824d9" },
+                        "failureReason": { "type": "string", "example": "invalid-instance-id" }
+                      }
+                    },
+                    "trace_id": { "type": "string", "example": "d1m02ecd7qsdk10rlkn0" }
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "code": "ERR009",
+                    "message": "Invalid Product Instance ID: 71f05a38-7cb6-4907-b7cb-7521c28824d9",
+                    "failureReason": "invalid-instance-id"
+                  },
+                  "trace_id": "d1m02ecd7qsdk10rlkn0"
+                }
+              }
+            },
+            "description": "Invalid Request Parameters"
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": { "type": "string", "example": "ERR100" },
+                        "message": { "type": "string", "example": "Internal Server Error" },
+                        "failureReason": { "type": "string", "example": "internal-server-error" }
+                      }
+                    },
+                    "trace_id": { "type": "string", "example": "d1m02ecd7qsdk10rlkn0" }
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "code": "ERR100",
+                    "message": "Internal Server Error",
+                    "failureReason": "internal-server-error"
+                  },
+                  "trace_id": "d1m02ecd7qsdk10rlkn0"
+                }
+              }
+            }
           }
         }
       }
