@@ -13,15 +13,11 @@ The **Bharath Bill Payment System (BBPS) Plan Master Data Management (MDM)** API
 ### Key Use Cases
 - **Mobile Prepaid Recharges** - Choose data/talk time plans
 - **DTH Services** - Select channel packages and validity periods  
-- **Mutual Fund Houses** - Investment plan subscriptions
-- **OTT Platforms** - Streaming service subscriptions
-- **Broadband Services** - Internet plan selections
 
 ### Benefits
-- **Seamless Integration** - Replicate existing user flows within BBPS  
-- **Flexible Plan Management** - Support both static and dynamic plan offerings  
-- **Real-time Updates** - Webhook notifications for plan changes  
-- **Standardized API** - Consistent integration patterns across biller types  
+- **Single API Interface** - Handle both static and dynamic plans with consistent endpoints
+- **Real-time Plan Updates** - Webhook notifications for plan changes and availability
+- **Standardized Integration** - Same patterns work across all biller types  
 
 ---
 
@@ -51,19 +47,19 @@ Static plan billers maintain predefined plan catalogs. The integration follows t
 | Step | Actor | Action | API Endpoint |
 |------|--------|--------|--------------|
 | 1 | Customer | Initiates service subscription | - |
-| 2 | App/Platform | Retrieve available plans | `GET /api/v2/bbps/billers/plans` |
-| 3 | App/Platform | Display plans to customer | - |
+| 2 | Client App | Retrieve available plans | `GET /api/v2/bbps/billers/plans` |
+| 3 | Client App | Display plans to customer | - |
 | 4 | Customer | Selects plan + enters account details | - |
 
 #### Phase 2: Validation & Payment  
 | Step | Actor | Action | API Endpoint |
 |------|--------|--------|--------------|
-| 5 | App/Platform | Validate customer details with plan ID | `POST /api/v2/bbps/bills/fetch/request` |
+| 5 | Client App | Validate customer details with plan ID | `POST /api/v2/bbps/bills/fetch/request` |
 | 6 | Setu API | Forward validation to biller | - |
 | 7 | Biller | Validate account and plan compatibility | - |
-| 8 | App/Platform | Check validation status | `POST /api/v2/bbps/bills/fetch/response` |
-| 9 | App/Platform | Process payment with validated refId | `POST /api/v2/bbps/bills/payment/request` |
-| 10 | App/Platform | Confirm payment completion | `POST /api/v2/bbps/bills/payment/response` |
+| 8 | Client App | Check validation status | `POST /api/v2/bbps/bills/fetch/response` or via webhook |
+| 9 | Client App | Process payment with validated refId | `POST /api/v2/bbps/bills/payment/request` |
+| 10 | Client App | Confirm payment completion | `POST /api/v2/bbps/bills/payment/response` |
 
 
 > **💡 Key Insight:** Static plan billers require the plan ID to be included during the validation phase, ensuring plan availability before payment processing.
@@ -78,17 +74,17 @@ Dynamic plan billers offer personalized plans based on customer account details:
 | Step | Actor | Action | API Endpoint |
 |------|--------|--------|--------------|
 | 1 | Customer | Enters account details (no plan selection) | - |
-| 2 | App/Platform | Validate account details | `POST /api/v2/bbps/bills/fetch/request` |
+| 2 | Client App | Validate account details | `POST /api/v2/bbps/bills/fetch/request` |
 | 3 | Biller | Return account status + custom plans | - |
-| 4 | App/Platform | Check validation + retrieve plans | `POST /api/v2/bbps/bills/fetch/response` |
+| 4 | Client App | Check validation + retrieve plans | `POST /api/v2/bbps/bills/fetch/response` |
 
 #### Phase 2: Plan Selection & Payment
 | Step | Actor | Action | API Endpoint |
 |------|--------|--------|--------------|
-| 5 | App/Platform | Display customer-specific plans | - |
+| 5 | Client App | Display customer-specific plans | - |
 | 6 | Customer | Selects preferred plan | - |
-| 7 | App/Platform | Process payment with plan ID | `POST /api/v2/bbps/bills/payment/request` |
-| 8 | App/Platform | Confirm payment completion | `POST /api/v2/bbps/bills/payment/response` |
+| 7 | Client App | Process payment with plan ID | `POST /api/v2/bbps/bills/payment/request` |
+| 8 | Client App | Confirm payment completion | `POST /api/v2/bbps/bills/payment/response` |
 
 
 > **💡 Key Insight:** Dynamic plan billers reveal available plans only after account validation, providing personalized offerings based on customer eligibility.
@@ -110,6 +106,8 @@ Dynamic plan billers offer personalized plans based on customer account details:
 ### Integration Decision Tree
 
 **Start Here:** What type of biller are you integrating?
+
+The `planRequirement` is a field obtained from the list billers api.
 
 ```
 Is planRequirement = "MANDATORY"?
