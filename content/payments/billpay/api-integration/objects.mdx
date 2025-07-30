@@ -49,14 +49,28 @@ Payment modes supported by a biller.
 
 ## Customer
 
-Customer object holds the customer mobile number and the customer bill parameters.
+Customer object holds the customer mobile number and the customer bill parameters. This object is used in the V1 API.
 
-| parameter                | type                               | description                                                                                        |
-| ------------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `mobile`                 | `string` (6, 10 and 20 digits)     | Customer Mobile Number                                                                             |
-| `billParameters`         | `{ name: string, value: string}[]` | Bill Parameters. The parameters to send is found in the biller details API.                        |
-| `billParameters[].name`  | `string`                           | Name of the bill parameter. name should match the parameter in biller details API.                 |
-| `billParameters[].value` | `string`                           | Value of the bill parameter. Value is validate according to the regex found in the biller details. |
+| parameter                  | type                               | description                                                                                                                                       |
+| -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mobile`                   | `string` (6, 10 and 20 digits)     | Customer Mobile Number                                                                                                                            |
+| `billParameters`           | `{ name: string, value: string}[]` | Bill Parameters used for standard bill fetch/payment. The parameters to send is found in the biller details API.                                  |
+| `billParameters[].name`    | `string`                           | Name of the bill parameter. name should match the parameter in biller details API.                                                                |
+| `billParameters[].value`   | `string`                           | Value of the bill parameter. Value is validate according to the regex found in the biller details.                                                |
+
+## CustomerV2
+
+CustomerV2 object holds the customer mobile number and the customer bill parameters. This is a new object introduced in the V2 API.
+
+| parameter                  | type                               | description                                                                                                                     |
+| -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `mobile`                   | `string` (6, 10 and 20 digits)     | Customer Mobile Number                                                                                                          |
+| `customerParams`           | `{ name: string, value: string}[]` | Customer Parameters used for standard bill fetch/payment. The parameters to send is found in the biller details API.            |
+| `customerParams[].name`    | `string`                           | Name of the customer parameter. name should match the parameter in biller details API.                                          |
+| `customerParams[].value`   | `string`                           | Value of the customer parameter. Value is validate according to the regex found in the biller details.                          |
+| `name`                     | `string` (Optional)                | Customer's name as registered with the biller. Only present in UPMS registration callbacks if provided by the biller's system.  |
+
+Note: `customerParams` is a new field introduced in the V2 API in place of `billParameters`.
 
 ## Biller
 
@@ -125,6 +139,16 @@ Details pertaining to the Agent which initiates the transaction. Values of the f
 | message   | `string`                           | Error code description                                                                             |
 | type      | `FUND_TRANSFER` or `BBPS` or `APP` | Error Type. BBPS errors are due to BBPS, and code and message field contain the actual BBPS error. |
 
+## Error Object (Generic)
+
+A standard structure for representing errors in API responses or callbacks.
+
+| parameter | type     | description                                                                                                    |
+| --------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+| `code`    | `string` | A short code identifying the error category (e.g., `validation-error`, `biller-registration-failed`).          |
+| `message` | `string` | A human-readable description of the error.                                                                     |
+
+
 ## Payment Details
 
 | parameter              | type                                                    | description                          |
@@ -165,14 +189,10 @@ The Payment Bill object contains information about a specific bill to be paid.
 
 | type              | description                                                                                                                                             |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `INITIALIZED`     | Initialized                                                                                                                                             |
-| `ASSIGNED`        | Complaint has been accepted.                                                                                                                            |
-| `RE_ASSIGNED`     | When Customer BBPOU re assigned the complaint to the Biller BBPOU.                                                                                      |
-| `ASSIGNED_TO_BOU` | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
-| `ASSIGNED_TO_COU` | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
-| `ASSIGNED_TO_OU`  | When BBPCU assign the complaint to BBPOU. If the COU and BOU are same for a transaction, then the status of complaint will be changed to Assigned to OU |
-| `RESOLVED`        | Once the BBPOU resolves the customer related complaint, the BBPOU updates the system.                                                                   |
-| `UNRESOLVED`      | If the BBPOU does not respond to the complaint within the specified TAT (Super escalation), the complaint status changed to unresolved.                 |
+| `ASSIGNED`        | After transaction is verified, the ticket is created and assigned to the BBPOU.                                                                        |
+| `RESOLVED`        | After successful resolution of the dispute, the status is updated to resolved in favour of the customer.                                               |
+| `REJECTED`        | The complaint is rejected by the Biller/BBPOU.                                                                                                          |
+| `DEFAULT_RESOLVED` | If no action is taken by Biller/BBPOU then NPCI automatically resolves the dispute in favour of the customer.                                          |
 
 ## Bill Period
 
@@ -188,6 +208,93 @@ The Payment Bill object contains information about a specific bill to be paid.
 | `YEARLY`      |
 | `ASPRESENTED` |
 | `NA`          |
+
+## UPMS Registration Type
+
+Indicates the type of UPMS registration.
+
+| type           | description                                                                    |
+| -------------- | ------------------------------------------------------------------------------ |
+| `VIEW_N_PAY`   | Standard presentment. Bills are notified, user manually initiates payment.     |
+| `AUTO_PAY`     | Auto-payment mandate. Bills are paid automatically using pre-configured info.  |
+
+## UPMS Debit Type
+
+Specifies the debit rule for `AUTO_PAY` registrations.
+
+| type           | description                                             |
+| -------------- | ------------------------------------------------------- |
+| `FIXED_AMOUNT` | Pay the exact bill amount presented.                    |
+| `MAX_AMOUNT`   | Pay the bill amount, up to the specified maximum limit. |
+
+## UPMS Registration Status
+
+Represents the lifecycle state of a UPMS registration.
+
+| type          | description                                                                |
+| ------------- | -------------------------------------------------------------------------- |
+| `PENDING`     | Initial state after request, before confirmation.                          |
+| `SUCCESS`     | Registration active; bills will be presented via callbacks.                |
+| `FAILED`      | Registration could not be completed (e.g., invalid details).               |
+| `CANCELLED`   | Registration permanently cancelled by user or system.                      |
+| `DEACTIVATED` | Registration is temporarily inactive (currently not used, future scope).   |
+
+## UPMS Debit Info
+
+Contains details for automatic debit configuration, required only when `registrationType` is `AUTO_PAY`.
+
+| parameter     | type                                            | description                                                                            |
+| ------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `debitType`   | [UPMS Debit Type](#upms-debit-type) (Mandatory) | The rule for auto-debit (`FIXED_AMOUNT` or `MAX_AMOUNT`).                              |
+| `amount`      | `integer` (Mandatory)                           | The fixed or maximum amount for auto-debit, in paise.                                  |
+| `currency`    | `integer` (Mandatory)                           | Currency code (use `356` for INR).                                                     |
+| `paymentMode` | [Payment Mode](#payment-mode) (Mandatory)       | The payment method intended for auto-debit (e.g., `Internet Banking`, `UPI`).          |
+| `debitDate`   | `string` (Optional)                             | Preferred date format (`DD-MMM`, e.g., `10-Feb`) for attempting auto-debit each cycle. |
+
+## UPMS Mandate
+
+Represents the customer's mandate details provided during UPMS registration creation or update.
+
+| parameter          | type                                                          | description                                                                                                                       |
+| ------------------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `registrationType` | [UPMS Registration Type](#upms-registration-type) (Mandatory) | `VIEW_N_PAY` or `AUTO_PAY`.                                                                                                       |
+| `billPeriod`       | [Bill Period](#bill-period) (Conditional)                     | Frequency of expected bills (e.g., `MONTHLY`, `ASPRESENTED`). Mandatory for some billers.                                         |
+| `toDate`           | `string` (YYYY-MM-DD) (Optional)                              | Expiry date of the registration.                                                                                                  |
+| `debitInfo`        | [UPMS Debit Info](#upms-debit-info) (Optional)                | Required only if `registrationType` is `AUTO_PAY`. Contains auto-debit parameters.                                                |
+| `billerParams`     | `{ name: string, value: string}[]` (Optional)                 | Additional parameters specific to the biller for the mandate (e.g., "Low Balance Threshold"). Structure matches `billParameters`. |
+
+## UPMSRegistration
+
+Represents the complete details of a UPMS registration, typically received in webhook callbacks.
+
+| parameter      | type                                                              | description                                                                                                |
+| -------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `refId`        | `string`  (Mandatory)                                             | The unique reference ID for this specific UPMS registration instance.                                      |
+| `status`       | [UPMS Registration Status](#upms-registration-status) (Mandatory) | The current status of the registration (e.g., `PENDING`, `SUCCESS`, `FAILED`, `CANCELLED`, `DEACTIVATED`). |
+| `biller`       | [Biller](#biller) (Mandatory)                                     | Object containing the `id` of the associated biller.                                                       |
+| `customer`     | [CustomerV2](#customerv2) (Mandatory)                             | Object containing customer details (`customerParams`, `mobile`, optionally `name`) used for registration.  |
+| `mandate`      | [UPMS Mandate](#upms-mandate) (Mandatory)                         | The mandate details associated with this registration.                                                     |
+| `createdAt`    | `string` (ISO 8601 datetime) (Mandatory)                          | Timestamp when the registration was created.                                                               |
+| `updatedAt`    | `string` (ISO 8601 datetime) (Mandatory)                          | Timestamp when the registration was last updated (status change, modification, cancellation).              |
+
+## UPMS Duplicate Info
+
+Indicates that a UPMS registration attempt was a duplicate of an existing one. Received within the `data` object of a `CREATE_UPMS_REGISTRATION` callback.
+
+| parameter | type     | description                                                                    |
+| --------- | -------- | ------------------------------------------------------------------------------ |
+| `code`    | `string` | Code indicating the duplicate situation (e.g., `duplicate-upms-registration`). |
+| `message` | `string` | Description of the duplicate situation.                                        |
+| `refId`   | `string` | The reference ID (`refId`) of the *existing* successful/pending registration.  |
+
+## Skip Payment Data
+
+Contains details about a bill payment that was skipped because it was paid via an external channel. Received within the `data` object of a `SKIP_PAYMENT` callback.
+
+| parameter       | type                         | description                                                                   |
+| --------------- | ---------------------------- | ----------------------------------------------------------------------------- |
+| `billRefId`     | `string`                     | The unique reference ID of the specific bill instance that was skipped/paid.  |
+| `dateOfPayment` | `string` (ISO 8601 datetime) | Timestamp indicating when the payment occurred on the external channel.       |
 
 ## Biller Selection Type
 

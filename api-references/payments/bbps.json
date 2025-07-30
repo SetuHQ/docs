@@ -33,9 +33,9 @@
                         "schema": {
                             "example": "PP012305091019168458445744231291019",
                             "type": "string"
-                        },                        
+                        },
                         "in": "header",
-                        "required": true
+                        "required": false
                     }
                 ],
                 "responses": {
@@ -131,9 +131,9 @@
                         "schema": {
                             "example": "PP012305091019168458445744231291019",
                             "type": "string"
-                        },                        
+                        },
                         "in": "header",
-                        "required": true
+                        "required": false
                     }
                 ],
                 "responses": {
@@ -150,6 +150,106 @@
                             "properties": {
                                 "data": {
                                     "$ref": "#/definitions/fetchBillReceiptResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not found",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/\u003cpartner-base-api-url\u003e/customer/validate": {
+            "post": {
+                "description": "Used to validate the customer account.",
+                "consumes": ["application/json"
+                ],
+                "produces": ["application/json"
+                ],
+                "tags": ["APIs to Implement"],
+                "summary": "Respond to customer validation.",
+                "operationId": "validateCustomer",
+                "parameters": [
+                    {
+                        "description": "Input parameters for customer validation.",
+                        "name": "validateCustomerRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/billerValidateCustomerRequest"
+                        }
+                    },
+                    {
+                        "description": "Unique alphanumeric BBPS Reference ID sent by NPCI",
+                        "name": "ref_id",
+                        "schema": {
+                            "example": "PP012305091019168458445744231291019",
+                            "type": "string"
+                        },
+                        "in": "header",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": ["data"],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/billerValidateCustomerResponse"
                                 }
                             }
                         }
@@ -294,6 +394,13 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Identifier for product instance. Required for authorisation.",
                         "name": "X-Setu-Product-Instance-ID",
                         "in": "header",
@@ -381,6 +488,13 @@
                 "summary": "Get bill with biller bill ID",
                 "operationId": "getBillWithBillerBillID",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Identifier for product instance. Required for authorisation.",
@@ -490,6 +604,13 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Identifier for product instance. Required for authorisation.",
                         "name": "X-Setu-Product-Instance-ID",
                         "in": "header",
@@ -570,6 +691,13 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Identifier for product instance. Required for authorisation.",
                         "name": "X-Setu-Product-Instance-ID",
                         "in": "header",
@@ -583,7 +711,7 @@
                         "schema": {
                             "$ref": "#/definitions/fetchBillsRequest"
                         }
-                    }                    
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -663,6 +791,13 @@
                 "summary": "Settle bill payments",
                 "operationId": "billSettlement",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Identifier for product instance. Required for authorisation.",
@@ -752,6 +887,13 @@
                 "summary": "Get bill with id",
                 "operationId": "getBillWithID",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Identifier for product instance. Required for authorisation.",
@@ -847,6 +989,13 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Identifier for product instance. Required for authorisation.",
                         "name": "X-Setu-Product-Instance-ID",
                         "in": "header",
@@ -867,7 +1016,7 @@
                         "schema": {
                             "$ref": "#/definitions/billFulfilmentRequest"
                         }
-                    }                    
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -883,6 +1032,201 @@
                             "properties": {
                                 "data": {
                                     "$ref": "#/definitions/billFulfilmentResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not found",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/utilities/bills/{platformBillId}/expire": {
+            "post": {
+                "description": "Used to expire a bill.",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "tags": ["APIs to call"],
+                "operationId": "expireBill",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The unique identifier for a bill in Setu.",
+                        "name": "platformBillId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorised request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not found",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "HTTP method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to fulfil request",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Server under maintenance",
+                        "schema": {
+                            "$ref": "#/definitions/errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/utilities/customer/validate": {
+            "post": {
+                "description": "Returns a mininum amount \u0026 any exactness bill for a given customer account.",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "tags": ["APIs to call"],
+                "summary": "Validate customer with biller",
+                "operationId": "validate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Auth token generated using credentials provided to you",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Identifier for product instance. Required for authorisation.",
+                        "name": "X-Setu-Product-Instance-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Input parameters for customer validation.",
+                        "name": "validationRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/validationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "required": ["data"],
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/baseResponse"
+                                }
+                            ],
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/validationResponse"
                                 }
                             }
                         }
@@ -1369,7 +1713,8 @@
                 "billerBillID",
                 "recurrence",
                 "generatedOn",
-                "aggregates"
+                "aggregates",
+                "platformFee"
             ],
             "properties": {
                 "additionalInfo": {
@@ -1688,7 +2033,8 @@
                 "amount",
                 "instrument",
                 "aggregates",
-                "transactions"
+                "transactions",
+                "fileName"
             ],
             "properties": {
                 "aggregates": {
@@ -1696,6 +2042,10 @@
                 },
                 "amount": {
                     "$ref": "#/definitions/amount"
+                },
+                "fileName": {
+                    "description": "Name of the file in which the settlement details are present.",
+                    "type": "string"
                 },
                 "ifsc": {
                     "description": "IFSC for the VAN address to which the payment was made.",
@@ -1920,6 +2270,41 @@
                 },
                 "customer": {
                     "$ref": "#/definitions/customer"
+                }
+            }
+        },
+        "billerValidateCustomerRequest": {
+            "description": "Details of customer identifiers.",
+            "type": "object",
+            "required": ["customerIdentifiers"],
+            "properties": {
+                "customerIdentifiers": {
+                    "description": "List of parameters to uniquely identify a customer.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/customerIdentifier"
+                    }
+                }
+            }
+        },
+        "billerValidateCustomerResponse": {
+            "description": "Details of customer validation for the supplied identifiers.",
+            "type": "object",
+            "required": ["customer", "billerBillID"],
+            "properties": {
+                "additionalInfo": {
+                    "description": "Additional information for the bill passed by the biller.",
+                    "type": "object"
+                },
+                "billerBillID": {
+                    "description": "Unique bill identifier in the biller's system.",
+                    "type": "string"
+                },
+                "customer": {
+                    "$ref": "#/definitions/customer"
+                },
+                "settlement": {
+                    "$ref": "#/definitions/settlementConfigurationWithoutParts"
                 }
             }
         },
@@ -2426,9 +2811,13 @@
         },
         "fetchBillReceiptResponse": {
             "type": "object",
+            "required": ["receipt"],
             "properties": {
                 "receipt": {
                     "$ref": "#/definitions/billReceipt"
+                },
+                "settlement": {
+                    "$ref": "#/definitions/settlementConfiguration"
                 }
             }
         },
@@ -2574,11 +2963,7 @@
                     "type": "object",
                     "required": [
                         "amountPaid",
-                        "billAmount",
-                        "instrument",
-                        "uniquePaymentRefID",
-                        "platformTransactionRefID",
-                        "transactionTimestamp"
+                        "platformTransactionRefID"
                     ],
                     "properties": {
                         "additionalInfo": {
@@ -2997,7 +3382,7 @@
             "required": ["amount", "sourceAccount", "destinationAccount"],
             "properties": {
                 "amount": {
-                    "description": "Amount for the mock credit.",
+                    "description": "Amount for the mock credit in rupees.",
                     "type": "number",
                     "format": "double"
                 },
@@ -3049,7 +3434,8 @@
                 "Account Transfer",
                 "Bharat QR",
                 "USSD",
-                "PPI"
+                "PPI",
+                "Rupay Credit"
             ]
         },
         "paymentLinkStatusResponse": {
@@ -3208,6 +3594,9 @@
                 },
                 "receipt": {
                     "$ref": "#/definitions/billReceiptWithStatus"
+                },
+                "settlement": {
+                    "$ref": "#/definitions/settlementConfiguration"
                 }
             }
         },
@@ -3293,6 +3682,11 @@
                 "billID": {
                     "type": "string"
                 },
+                "createdAt": {
+                    "description": "Refund creation time in the format \\\"2019-08-01T08:28:12Z\\\".",
+                    "type": "string",
+                    "format": "date-time"
+                },
                 "deductions": {
                     "description": "List of accounts to deduct refund from.",
                     "type": "array",
@@ -3313,6 +3707,9 @@
                     "type": "string"
                 },
                 "transactionRefID": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -3363,6 +3760,18 @@
                 }
             }
         },
+        "settlementConfigurationWithoutParts": {
+            "description": "Contains the settlement configuration for the bill.",
+            "type": "object",
+            "required": [
+                "primaryAccount"
+            ],
+            "properties": {
+                "primaryAccount": {
+                    "$ref": "#/definitions/splitAccount"
+                }
+            }
+        },
         "settlementParts": {
             "description": "Part of the bill which has to be split and settled.",
             "type": "object",
@@ -3392,7 +3801,12 @@
         "setuBillDeemedStatus": {
             "description": "Current deemed status of bill in Setu.",
             "type": "string",
-            "enum": ["NOT_DEEMED", "DEEMED", "DEEMED_RETRY_SUCCESSFUL"]
+            "enum": [
+                "NOT_DEEMED",
+                "DEEMED",
+                "DEEMED_RETRY_SUCCESSFUL",
+                "DEEMED_RETRY_FAILED"
+            ]
         },
         "setuBillStatus": {
             "description": "Current status of bill in Setu.",
@@ -3404,7 +3818,8 @@
                 "CREDIT_RECEIVED",
                 "SETTLEMENT_SUCCESSFUL",
                 "SETTLEMENT_FAILED",
-                "BILL_EXPIRED"
+                "BILL_EXPIRED",
+                "PAYMENT_ATTEMPT_FAILED"
             ]
         },
         "sourceAccount": {
@@ -3413,11 +3828,13 @@
             "properties": {
                 "ifsc": {
                     "description": "IFSC code of the source account.",
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "[a-zA-Z0-9]"
                 },
                 "number": {
                     "description": "Account number of the source account.",
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "[a-zA-Z0-9]"
                 }
             }
         },
@@ -3701,6 +4118,42 @@
                     "description": "Account Number",
                     "type": "string",
                     "example": "upi://pay?pa=setu-358715582872290627@setubank\u0026pn=Setu\u0026am=1\u0026cu=INR"
+                }
+            }
+        },
+        "validationRequest": {
+            "description": "customer validation request payload",
+            "type": "object",
+            "required": ["billerProductInstanceID", "customerIdentifiers"],
+            "properties": {
+                "billerProductInstanceID": {
+                    "description": "Unique identifier of the biller product instance in Setu.",
+                    "type": "string"
+                },
+                "campaignID": {
+                    "description": "Unique identifier of the biller campaign.",
+                    "type": "string"
+                },
+                "customerIdentifiers": {
+                    "description": "Used to validate the customer account and fetch the bill details.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/billerCustomerIdentifier"
+                    }
+                },
+                "refID": {
+                    "description": "unique reference id of the transaction flow",
+                    "type": "string"
+                }
+            }
+        },
+        "validationResponse": {
+            "description": "Details of bills for the supplied customer identifiers.",
+            "type": "object",
+            "required": ["bill"],
+            "properties": {
+                "bill": {
+                    "$ref": "#/definitions/platformBill"
                 }
             }
         },

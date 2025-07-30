@@ -9,22 +9,25 @@ visible_in_sidebar: true
 
 Here is the general structure of any webhook—
 
-<CodeBlockWithCopy language="json">{`
+<CodeBlockWithCopy language="json">{`{
     "traceId"   : "C3SFG0O6N88R6UI7EQ",
     "timeStamp" : "2021-11-12T00:12:29+05:30",
     "event"     : "BILLER_UPDATES",
-    "data"      : {...}`}</CodeBlockWithCopy>
+    "data"      : { /* Present on success */ },
+    "error"     : { /* Present on failure */ }
+}`}</CodeBlockWithCopy>
 
 1. `traceId` is a unique ID assigned to the error and used by Setu to debug
 2. `timeStamp` denotes the time when the webhook was triggered
 3. `event` is a pre-defined list of event types used to define what the webhook was triggered for
-4. `data` contains the webhook payload data
+4. `data` contains the webhook payload data on successful completion of the event.
+5. `error` contains details about the failure if the event could not be completed successfully. It typically includes `code` and `message` fields. One of `data` or `error` will be present.
 
 <hr class="primary" />
 
 ### Bill fetch webhook
 
-This webhook can be used to get details of outstanding bills on BBPS. It will only be triggered if the Fetch bill API is
+This webhook can be used to get details of outstanding bills on BBPS. It will only be triggered if the Fetch bill API is
 consumed. If the bill does not exist then suitable error
 message will be sent.
 
@@ -54,7 +57,62 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
         "billerRefId": "9540207519",
         "exactness": "Exact",
         "refId": "CJLJBQK91PA0FD9MPMK0W75BD9M32391709",
-        "status": "Success"
+        "status": "Success",
+        "upmsRegistrationRefId": "CJLJBQK91PA0FD9MPMK0W75BD9M32391709"
+    }
+}
+`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+> **Note**: When a bill is presented automatically for a registered customer, this callback will include an additional field `upmsRegistrationRefId` within the `data` object, linking the bill to the specific registration. 
+If this field is absent or null, the callback corresponds to a manual bill fetch request. See example below.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Bill presentment sample request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "BILL_FETCH",
+    "timeStamp": "2025-04-17T17:56:55.159+05:30",
+    "data": {
+        "additionalInfo": [
+        {
+            "name": "Biller Unique Number",
+            "value": "Scaroasis"
+        }
+        ],
+        "billerResponseType": "SINGLE",
+        "billerSelectionType": null,
+        "bills": [
+        {
+            "amount": 83400,
+            "billDate": "2025-04-17",
+            "billNumber": "BILL-226131",
+            "billPeriod": "MONTHLY",
+            "customerName": "Nitin Gupta",
+            "dueDate": "2025-05-02",
+            "paymentOptions": [
+            {
+                "amount": 75060,
+                "name": "Early Payment Amount"
+            },
+            {
+                "amount": 91740,
+                "name": "Late Payment Amount"
+            }
+            ]
+        }
+        ],
+        "exactness": "RANGE",
+        "refId": "D00F73QLFUHJFPQC2800HVDeelt51071756", // Ref ID for this specific generated bill. Use this to initiate a payment.
+        "status": "Success",
+        "upmsRegistrationRefId": "D00EP9IJSBI05F06U9K0eBQWOq851071727" // Links to the UPMS registration
     }
 }
 `}
@@ -336,6 +394,8 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     </details>
 </Card>
 
+
+
 <hr class="primary" />
 
 ### Biller Plan updates webhook
@@ -346,31 +406,328 @@ request contains the plan with the new modification.
 
 <CodeBlockWithCopy language="json">{`Method : POST
 URL    : To be provided by partner`}</CodeBlockWithCopy>
-
 <Card padding="nano" shape="rounded">
     <details>
         <summary>
             <Text weight="600" marginBottom="none">
                 Biller plan updates sample request
+                  </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "PLAN_UPDATES",
+    "timeStamp": "2025-04-08T12:34:29.603+05:30",
+    "data": {
+        "billerId": "ZEE500000NAT01",
+        "Id": "3",
+        "amountInRupees": "599.0",
+        "categoryType": "Premium",
+        "categorySubType": {
+            "subType": "6 Months"
+        },
+        "description": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows, Kids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
+        "effectiveFrom": "2021-01-01",
+        "effectiveTo": "2021-12-31",
+        "status": "ACTIVE"
+    }
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### Create UPMS Registration webhook
+
+This webhook informs you about the final status (Success, Failed, or Duplicate) of a UPMS registration request initiated via the [Fetch Bill and Create Registration API](/content/payments/billpay/api-integration/upms.mdx#31-creating-a-registration-combined-with-bill-fetch). The `refId` in the webhook payload matches the `upmsRegistration.refId` from the synchronous API response.
+
+<CodeBlockWithCopy language="json">{`Method : POST
+URL    : To be provided by partner (Registration Callback URL)`}</CodeBlockWithCopy>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Create UPMS Registration sample request (Success)
             </Text>
         </summary>
         <CodeBlockWithCopy language="json">
             {`{
-  "event": "PLAN_UPDATES",
-  "timeStamp": "2025-04-08T12:34:29.603+05:30",
-  "data": {
-    "billerId": "ZEE500000NAT01",
-    "Id": "3",
-    "amountInRupees": "599.0",
-    "categoryType": "Premium",
-    "categorySubType": {
-      "subType": "6 Months"
+    "event": "CREATE_UPMS_REGISTRATION",
+    "traceId": "D07LJTJ71N0PUBJKS640",
+    "timeStamp": "2025-04-28T16:05:34.762+05:30",
+    "data": {
+        "registration": {
+        "refId": "D07LJTB71N0PGH5KG32G6dH2QjK51181605", // Unique reference ID for this registration
+        "status": "SUCCESS", // Final status of the registration
+        "biller": {  // Same as the biller object in the request
+            "id": "ABLP01000ANP03"
+        },
+        "customer": { // Same as the customer object in the request, except for the name field
+            "customerParams": [
+            {
+                "name": "Roll No",
+                "value": "14989991"
+            }
+            ],
+            "mobile": "7378926241",
+            "name": "Anjali Desai" // NEW: Optional, only present if the biller shares the customer name
+        },
+        "mandate": { // Same as the mandate object in the request
+            "billPeriod": "ASPRESENTED",
+            "billerParams": [
+            {
+                "name": "Low Balance Threshold",
+                "value": "500"
+            }
+            ],
+            "debitInfo": {
+            "amount": 999999999,
+            "currency": 356, 
+            "debitDate": "10-Feb",
+            "paymentMode": "Debit Card",
+            "type": "FIXED_AMOUNT"
+            },
+            "registrationType": "AUTO_PAY",
+            "toDate": "2025-12-22"
+        },
+        "createdAt": "2025-04-28T10:35:33Z", // Timestamp of the registration creation
+        "updatedAt": "2025-04-28T10:35:34Z" // Timestamp of the last registration modification
+        }
     },
-    "description": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows, Kids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
-    "effectiveFrom": "2021-01-01",
-    "effectiveTo": "2021-12-31", 
-    "status": "ACTIVE"
-  }
+    "refId": "D07LJTB71N0PGH5KG32G6dH2QjK51181605" // Matches registration.refId
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Create UPMS Registration sample request (Failed)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "CREATE_UPMS_REGISTRATION",
+    "timeStamp": "2025-03-11T10:20:00.000+05:30",
+    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102204", // Reference ID of the FAILED attempt from sync response
+    "error": {
+        "code": "biller-registration-failed",
+        "message": "Failed to register with Biller"
+    },
+    "traceId": "D07LJTJ71N0PUBJKS640" // Trace ID for this callback
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Create UPMS Registration sample request (Duplicate)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "CREATE_UPMS_REGISTRATION",
+    "traceId": "CVVQVLN5STDFRUU0LLFG",
+    "timeStamp": "2025-04-16T18:55:42.758+05:30",
+    "data": {
+        "duplicate": {
+        "code": "duplicate-upms-registration",
+        "message": "Successful UPMS registration already exists",
+        "refId": "CVVQFN8BT5ONNAN3JCO059wmPQX51061821" // Ref ID of the EXISTING registration
+        }
+    },
+    "refId": "CVVQVLGBT5ONNAN3JD90qXrHAWg51061855" // Ref ID of the DUPLICATE attempt from sync response
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### Update UPMS Registration webhook
+
+This webhook confirms the outcome (Success or Failed) of a request to update an existing customer registration using the [Update Registration API](/content/payments/billpay/api-integration/upms.mdx#33-updating-a-registration). The `refId` in the webhook payload matches the `upmsRegistrationRefID` used in the API request path.
+
+<CodeBlockWithCopy language="json">{`Method : POST
+URL    : To be provided by partner (Registration Callback URL)`}</CodeBlockWithCopy>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Update UPMS Registration sample request (Success)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "UPDATE_UPMS_REGISTRATION",
+    "traceId": "D07MLCSRLASJ2P3SVAI0",
+    "timeStamp": "2025-04-28T17:16:59.941+05:30",
+    "data": {
+        "registration": { // Contains the full, updated registration details
+        "refId": "D07ML76AIQNN6974G200emsL9K451181716",
+        "status": "SUCCESS",
+        "biller": {
+            "id": "ABLP01000ANP03"
+        },
+        "customer": {
+            "customerParams": [
+            {
+                "name": "Roll No",
+                "value": "67d88976"
+            }
+            ],
+            "mobile": "9039403265",
+            "name": "Gautam Rajput"
+        },
+        "mandate": {
+            "billerParams": [
+            {
+                "name": "Low Balance Threshold",
+                "value": "500"
+            }
+            ],
+            "debitInfo": {
+            "amount": 999999999,
+            "currency": 356,
+            "debitDate": "10-Feb",
+            "paymentMode": "Internet Banking",
+            "type": "FIXED_AMOUNT"
+            },
+            "registrationType": "AUTO_PAY",
+            "toDate": "2025-12-22" 
+          },
+        "createdAt": "2025-04-28T11:46:36Z",
+        "updatedAt": "2025-04-28T11:46:59Z" // Reflects the update time
+        }
+    },
+    "refId": "D07ML76AIQNN6974G200emsL9K451181716" // Matches the updated registration's refId
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Update UPMS Registration sample request (Failed)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "UPDATE_UPMS_REGISTRATION",
+    "traceId": "D07N6PSRLASJ2P3SVAMG",
+    "timeStamp": "2025-04-28T17:54:07.062+05:30",
+    "refId": "D07N6M6AIQNN6974G9EGH18p7p051181753", // The refId of the attempted update
+    "error": {
+        "code": "biller-update-registration-failed",
+        "message": "Failed to update registration with Biller"
+    }
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### Cancel UPMS Registration webhook
+
+This webhook confirms the outcome (Success or Failed) of a request to cancel an existing UPMS registration using the [Cancel Registration API](/content/payments/billpay/api-integration/upms.mdx#34-cancelling-a-registration). The `refId` in the webhook payload matches the `upmsRegistrationRefID` used in the API request path.
+
+<CodeBlockWithCopy language="json">{`Method : POST
+URL    : To be provided by partner (Registration Callback URL)`}</CodeBlockWithCopy>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Cancel UPMS Registration sample request (Success)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "CANCEL_UPMS_REGISTRATION",
+    "traceId": "D07MLCSRLASJ2P3SVAI0", // Example Trace ID
+    "timeStamp": "2025-04-28T17:16:59.941+05:30", // Example Timestamp
+    "data": {
+        "registration": { // Contains details of the cancelled registration
+        "refId": "D07ML76AIQNN6974G200emsL9K451181716",
+        "status": "CANCELLED",
+        "biller": { /* ... biller details ... */ },
+        "customer": { /* ... customer details ... */ },
+        "mandate": { /* ... mandate details ... */ },
+        "createdAt": "2025-04-28T11:46:36Z",
+        "updatedAt": "2025-04-28T11:46:59Z" // Time of cancellation 
+        }
+    },
+    "refId": "D07ML76AIQNN6974G200emsL9K451181716" // Matches the cancelled registration's refId
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Cancel UPMS Registration sample request (Failed)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "CANCEL_UPMS_REGISTRATION",
+    "traceId": "D07N6PSRLASJ2P3SVAMG", // Example Trace ID
+    "timeStamp": "2025-04-28T17:54:07.062+05:30", // Example Timestamp
+    "refId": "D07N6M6AIQNN6974G9EGH18p7p051181753", // The refId of the attempted cancellation
+    "error": {
+        "code": "registration-cancellation-failed",
+        "message": "Failed to cancel registration with Biller"
+    }
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### Skip Payment webhook
+
+This webhook notifies you when a bill, previously presented via UPMS, has been paid through an external channel (e.g., directly on the biller's site, another app). Use this to update the bill's status in your system.
+
+<CodeBlockWithCopy language="json">{`Method : POST
+URL    : To be provided by partner (Skip Payment Callback URL)`}</CodeBlockWithCopy>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Skip Payment sample request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "SKIP_PAYMENT",
+    "traceId": "D0508DIBJFBLCSGI36RG",
+    "timeStamp": "2025-04-25T18:16:46.716+05:30",
+    "data": {
+        "billRefId": "D050862BJFBLCSGI36N0e3qv9Zu51151816", // The refId of the bill that was paid externally
+        "dateOfPayment": "2025-04-25T18:16:44+05:30" // Timestamp of the external payment
+    }
 }`}
         </CodeBlockWithCopy>
     </details>

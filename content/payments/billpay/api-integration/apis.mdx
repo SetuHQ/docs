@@ -23,84 +23,117 @@ For e.g., if your customer wants to pay their phone bill for Vodafone Postpaid, 
 
 <ul>
     <li>
-        <p>the customer’s identifier (mobile number in this case)</p>
+        <p>the customer's identifier (mobile number in this case)</p>
     </li>
     <li>
-        <p>the business’s identifier (BBPS ID for Vodafone, in this case)</p>
+        <p>the business's identifier (BBPS ID for Vodafone, in this case)</p>
     </li>
 </ul>
+
+Optionally, you can also register the customer with this biller simultaneously to receive future bills as and when they are generated (See [UPMS Integration Guide](upms.mdx)).
+If you include the `mandate` object in the request, a registration will be initiated for the customer with the biller.
+
 
 <Card padding="nano" shape="rounded">
     <details>
         <summary>
             <Text as="h6" marginBottom="none" marginTop="none">
-                Detailed sample request body
+                Sample Request
             </Text>
         </summary>
         <CodeBlockWithCopy language="json">{`
-		{
-		"customer": {
-			"mobile": "9505987798",
-			"billParameters": [
-				{
-					"name": "Parameter 1",
-					"value": "Value 1"
-				},
-				{
-					"name": "Parameter 2",
-					"value": "Value 2"
-				},
-				{
-					"name": "Parameter 3",
-					"value": "Value 3"
-				}
-			]
-		},
-		"agent": {
-			"app": "SmartPay",
-			"channel": "INT",
-			"geocode": "19.0139,72.8254",
-			"id": "AX01AI06512391457204",
-			"ifsc": "ICIC0000152",
-			"imei": "123456789012345",
-			"ip": "124.170.23.24",
-			"mac": "48-4D-7E-CB-DB-6F",
-			"mobile": "9481773011",
-			"os": "iOS",
-			"postalCode": "600001",
-			"terminalId": "6000011234"
-		},
-		"biller": {
-			"id": "VODA00000MUM03"
-		}
-		}
+{
+  "customer": {
+    "mobile": "9505987798",
+    "customerParams": [
+      {
+        "name": "Parameter 1",
+        "value": "Value 1"
+      },
+      {
+        "name": "Parameter 2",
+        "value": "Value 2"
+      },
+      {
+        "name": "Parameter 3",
+        "value": "Value 3"
+      }
+    ]
+  },
+  "agent": {
+    "app": "SmartPay",
+    "channel": "INT",
+    "geocode": "19.0139,72.8254",
+    "id": "AX01AI06512391457204",
+    "ifsc": "ICIC0000152",
+    "imei": "123456789012345",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F",
+    "mobile": "9481773011",
+    "os": "iOS",
+    "postalCode": "600001",
+    "terminalId": "6000011234"
+  },
+  "biller": {
+    "id": "VODA00000MUM03"
+  },
+  "mandate": {
+    "registrationType": "VIEW_N_PAY",
+    "billPeriod": "ASPRESENTED"
+  }
+}
 		`}</CodeBlockWithCopy>
     </details>
 </Card>
 
 <br />
 
-You get a `refId` in the response, a unique identifier that can be further used to check the status of the bill fetch.
+You get a `refId` in the response, a unique identifier that can be further used to check the status of the bill fetch. If a UPMS registration was requested, the response will also include `upmsRegistration.refId` and `upmsRegistration.status`.
 
-<CodeBlockWithCopy language="json">{`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
 {
     "data": {
         "refId": "LNMSQQR4RKT7X1UGPY7JGUV454PL9T2C689",
+        "upmsRegistration": {
+            "status": "PENDING", 
+            "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+        }
     },
     "success": true,
-    "error": null
+    "traceId": "C3SFG0O6N88R6UI7EQ" 
 }
-`}</CodeBlockWithCopy>
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
 
 You may also use the `/bbps/bills/fetch/response` endpoint with above `refId` to check status of the bill fetch—
 
-<CodeBlockWithCopy language="json">{`
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+		<CodeBlockWithCopy language="json">{`
 {
     "refId": "LNMSQQR4RKT7X1UGPY7JGUV454PL9T2C689"
 }
-`}</CodeBlockWithCopy>
+		`}</CodeBlockWithCopy>
+	</details>
+</Card>
 
-In the response you either get the bill details, or “Processing” status if the bill fetch is still in progress.
+
+In the response you either get the bill details, or "Processing" status if the bill fetch is still in progress.
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -130,32 +163,33 @@ In the response you either get the bill details, or “Processing” status if t
 						"value": "Samuraipsychadelic"
 					}
 				],
-				"bill": { // optional - selective present for SINGLE billers
-					"amount": 300000,
-					"billDate": "2021-09-13",
-					"billNumber": "8394852342371080869",
-					"billPeriod": "Monthly",
-					"customerName": "William Miller",
-					"dueDate": "2021-09-26",
-					"paymentOptions": [
-						{
-							"name": "3 month EMI",
-							"amount": 900000,
-							"minAmount": 300000,
-							"maxAmount": 1500000,
-							"amountMultiple": 10000
-						},
-						{
-							"name": "6 month EMI",
-							"amount": 1800000,
-							"minAmount": 600000,
-							"maxAmount": 3000000,
-							"amountMultiple": 10000
-						}
-					]
-				},
-				"billerResponseType": "SINGLE",
-				"billerSelectionType": null,
+				"bills": [
+                    {
+                        "amount": 300000,
+                        "billDate": "2021-09-13",
+                        "billNumber": "8394852342371080869",
+                        "billPeriod": "Monthly",
+                        "customerName": "William Miller",
+                        "dueDate": "2021-09-26",
+						"paymentOptions": [
+							{
+								"name": "3 month EMI",
+								"amount": 900000,
+								"minAmount": 300000,
+								"maxAmount": 1500000,
+								"amountMultiple": 10000
+							},
+							{
+								"name": "6 month EMI",
+								"amount": 1800000,
+								"minAmount": 600000,
+								"maxAmount": 3000000,
+								"amountMultiple": 10000
+							}
+						]
+                    }
+                ],
+				"billerResponseType": "SINGLE", 
 				"billerRefId": "4047076513",
 				"exactness": "Exact",
 				"paymentLimits": [
@@ -257,63 +291,200 @@ The <a href="/payments/billpay/api-integration/api-reference#/category~Manage_Di
 
 For your convenience, Setu also provides actions to list data in bulk, that can come in handy for keeping your systems up to date with the latest data. The following APIs are available—
 
--   <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getCategories"
-    >
-        List categories
-    </a>
-    —lists all categories on BBPS.
--   <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getBillers"
-    >
-        List billers
-    </a>
-    —lists all billers on BBPS.
--   <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~List/path~/api/v2/bbps/bills/plans/get"
-    >
-        List plans
-    </a>
-    —lists all plans for billers on BBPS.
--   <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getDisputes"
-    >
-        List disputes
-    </a>
-    —lists all the raised disputes using the <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~Manage_Dispute/operation~DisputeRequest"
-    >
-        Dispute API
-    </a>.
--   <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getFetchedBills"
-    >
-        List fetched Bills
-    </a>
-    —lists all the fetched bills that were fetched using <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~Fetch_bill/operation~FetchRequest"
-    >
-        Fetch API
-    </a>.
--   <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getTxns"
-    >
-        List paid bills
-    </a>
-    —lists all the bill pay transactions paid using <a
-        target="_blank"
-        href="/payments/billpay/api-integration/api-reference#/category~Pay_bill/operation~PaymentRequest"
-    >
-        Pay API
-    </a>.
+<ul>
+    <li>
+        <a
+            target="_blank"
+            href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getCategories"
+        >
+            List categories
+        </a>
+        —lists all categories on BBPS.
+    </li>
+    <li>
+        <a
+            target="_blank"
+            href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getBillers"
+        >
+            List billers
+        </a>
+        —lists all billers on BBPS.
+    </li>
+    <li>
+        <a
+            target="_blank"
+            href="/payments/billpay/api-integration/api-reference#/category~List/path~/api/v2/bbps/bills/plans/get"
+        >
+            List plans
+        </a>
+        —lists all plans for billers on BBPS.
+    </li>
+    <li>
+        <a
+            target="_blank"
+            href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getDisputes"
+        >
+            List disputes
+        </a>
+        —lists all the raised disputes using the <a target="_blank" href="/payments/billpay/api-integration/api-reference#/category~Manage_Dispute/operation~DisputeRequest">Dispute API</a>.
+    </li>
+    <li>
+        <a
+            target="_blank"
+            href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getFetchedBills"
+        >
+            List fetched Bills
+        </a>
+        —lists all the fetched bills that were fetched using <a target="_blank" href="/payments/billpay/api-integration/api-reference#/category~Fetch_bill/operation~FetchRequest">
+            Fetch API
+        </a>.
+    </li>
+    <li>
+        <a
+            target="_blank"
+            href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getTxns"
+        >
+            List paid bills
+        </a>
+        —lists all the bill pay transactions paid using <a target="_blank" href="/payments/billpay/api-integration/api-reference#/category~Pay_bill/operation~PaymentRequest">
+            Pay API
+        </a>.
+    </li>
+</ul>
+
+<hr class="primary" />
+
+### Managing Customer Registrations
+
+These APIs allow you to manage the lifecycle of UPMS (Unified Presentment Management Service) registrations for your customers. Refer to the [UPMS Integration Guide](upms.mdx) for detailed flows and callback handling.
+
+#### Viewing Registration Details
+
+To retrieve the current status and details of a specific, existing UPMS registration.
+
+**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS_Registrations/operation~GetUPMSRegistrationDetails" target="_blank">GET /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Success Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+    "data": {
+        "biller": {
+        "id": "ABLP01000ANP03"
+        },
+        "createdAt": "2025-04-24T14:38:46.377Z",
+        "customer": {
+        "customerParams": [
+            {
+            "name": "Roll No",
+            "value": "27257063"
+            }
+        ],
+        "mobile": "9039403265",
+        "name": "Priya Shukla"
+        },
+        "mandate": {
+        "billPeriod": "ASPRESENTED",
+        "billerParams": [
+            {
+            "name": "Low Balance Threshold",
+            "value": "500"
+            }
+        ],
+        "debitInfo": {
+            "amount": 999999999,
+            "currency": 356, 
+            "debitDate": "10-Feb",
+            "paymentMode": "Internet Banking",
+            "type": "FIXED_AMOUNT"
+        },
+        "registrationType": "AUTO_PAY",
+        "toDate": "2025-12-22"
+        },
+        "refId": "D054PTM52FL7R8CJPQ90GZ2ORTG51142008",
+        "status": "SUCCESS",
+        "updatedAt": "2025-04-24T14:38:47.389Z" 
+    },
+    "success": true,
+    "traceId": "D055CNT3GMB863CND9LG"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+<hr class="tertiary" />
+
+#### Updating a Registration
+
+To modify specific details of an existing, active UPMS registration. This is an asynchronous operation; the final result is delivered via the [Update UPMS Registration webhook](/content/payments/billpay/api-integration/webhooks.mdx#update-upms-registration-webhook).
+
+**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS_Registrations/operation~UpdateUPMSRegistration" target="_blank">PATCH /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request Body
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+    "mandate": {
+        "toDate": "2025-12-31",
+        "debitInfo": {
+            "amount": 750000 
+        }
+    }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Success Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+    "success": true,
+    "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="tertiary" />
+
+#### Cancelling a Registration
+
+To permanently cancel an existing UPMS registration. This is an asynchronous operation; confirmation comes via the [Cancel UPMS Registration webhook](/content/payments/billpay/api-integration/webhooks.mdx#cancel-upms-registration-webhook).
+
+**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS_Registrations/operation~CancelUPMSRegistration" target="_blank">DELETE /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Success Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+    "success": true,
+    "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
 
 <hr class="primary" />
 
