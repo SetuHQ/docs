@@ -1,0 +1,1465 @@
+---
+sidebar_title: Integrating with UPMS
+page_title: BBPS COU — Integrating with UPMS
+order: 8
+visible_in_sidebar: true
+---
+
+# Part 1: Understanding UPMS
+
+This section introduces the core concepts of UPMS, its benefits, and the terminology you'll encounter while integrating.
+
+## 1. Introduction to UPMS
+
+### 1.1 What is UPMS?
+
+UPMS, or **Unified Presentment Management Service**, is a feature within the Bharat Bill Payment System (BBPS) designed to simplify how recurring bills are presented to customers. 
+
+Think of it as a **subscription service for bills**. Instead of end-users manually fetching their bill details (like amount and due date) each cycle for various billers (electricity, phone, loan EMIs, etc.), UPMS allows them to register once through your app.
+
+Once a customer is registered for UPMS with a specific biller:
+
+1. The biller automatically pushes the bill details into the BBPS network when a new bill is generated.
+2. BBPS makes this information available to us.
+3. We then notify your app about the new bill via a webhook (callback).
+
+This enables a seamless, automated bill presentment experience right within your app.
+
+### 1.2 Why Integrate with UPMS?
+
+Integrating with UPMS offers significant advantages for both your app and your end-users:
+
+- **Improved End-User Experience**: Registered users see their bills automatically in your app, removing the need for them or you to fetch bills each cycle. This shifts bill management from a manual "pull" to an automated "push" model.
+- **Timely Bill Awareness & Centralized View**: Proactive notifications about new bills and due dates help users avoid missed payments and late fees. Users can manage subscribed bills from different billers in one place—your app.
+- **Increased Engagement**: Simplified bill discovery encourages users to pay digitally via your app, boosting engagement.
+
+### 1.3 How UPMS Works
+
+A simplified UPMS flow when using our APIs:
+
+1. **User Action**: An end-user on your app requests to register for automatic bill presentment for a specific biller (e.g., electricity provider).
+2. **API Call (You → Us)**: Your app calls our **Fetch Bill and Create Registration** API with customer and mandate details.
+3. **BBPS Interaction (Us → BBPS → Biller)**: We interact securely with BBPS central unit and the biller's system to validate and record the registration.
+4. **Acknowledgement (Us → You)**: Our API returns a synchronous response (typically `PENDING`).
+5. **Asynchronous Confirmation (Us → You)**: Final registration status (`SUCCESS` or `FAILED`) is communicated later via webhook.
+6. **Bill Push (Biller → BBPS → Us)**: On a new bill cycle, the biller pushes bill details to BBPS.
+7. **Bill Notification (Us → You)**: We send a callback to your configured endpoint with the bill details.
+8. **Presentment (Your App)**: Your app parses the callback, identifies the user, and displays the bill.
+9. **Payment (Optional)**: The user can then initiate payment for the presented bill.
+
+### 1.4 Who is this Guide For?
+
+This guide is intended for BBPS Agent Institutions integrating Setu's APIs to offer seamless recurring BBPS bill payment services, specifically leveraging UPMS features. It is valuable for individuals or teams seeking to understand the UPMS integration process.
+
+### 1.5 What this Guide Covers
+
+This document provides comprehensive information on:
+
+- Core UPMS concepts and terminology.
+- Prerequisites and setup for integrating with Setu's UPMS APIs.
+- Detailed explanations of each UPMS API endpoint.
+- Handling webhook callbacks for managing registrations and bills.
+- Error handling, testing procedures, and best practices.
+
+## 2. Key UPMS Concepts & Terminology
+
+### 2.1 UPMS Registration
+
+A UPMS registration represents an end-customer's mandate with a UPMS enabled biller for automatic bill presentment via your app. A successful registration authorizes the biller (with customer consent) to push bill details for that customer through BBPS to us, and subsequently, to you via callbacks.
+
+<Callout type="warning">
+<b>UPMS is only available for billers who have the <code>upmsEnabled</code> flag set to <code>true</code>.</b> You can check this flag using the <a href="/payments/billpay/api-integration/api-reference#/category~List/operation~getBillers">List billers API</a>, which also allows filtering by this flag. Trying to create a UPMS registration for billers without <code>upmsEnabled</code> set to <code>true</code> will fail.
+</Callout>
+
+### 2.2 Registration Lifecycle
+
+A UPMS registration progresses through various states:
+
+- **PENDING**: Initial state after a registration request is accepted but before the registration is confirmed.
+- **SUCCESS**: Registration is active; bills will be presented via callbacks.
+- **FAILED**: Registration could not be completed (e.g., invalid details).
+- **CANCELLED**: Registration permanently cancelled by user or system.
+- **DEACTIVATED**: Registration has been deactivated.
+
+### 2.3 Registration Types
+
+UPMS supports two primary registration types:
+
+- **VIEW_N_PAY**: Standard presentment; your app receives bill notifications, displays them, and the user manually initiates payment.
+- **AUTO_PAY**: Auto-payment mandate already set up. When a bill is presented, your app initiates payment automatically using Setu's Payment APIs.
+
+### 2.4 Mandate (mandate)
+
+A JSON object provided when creating/updating a registration, containing:
+
+- `registrationType`: `VIEW_N_PAY` or `AUTO_PAY`.
+- `billPeriod`: Frequency of expected bills (mandatory for some billers; optional for others).
+- `toDate`: Expiry date of the registration.
+- `debitInfo` (for `AUTO_PAY`):
+  - `debitType` (string): Specifies the debit rule. Can be `FIXED_AMOUNT` (pay the exact bill amount) or `MAX_AMOUNT` (pay up to this limit).
+  - `amount` (number): The fixed or maximum amount set for auto-debit (value must be provided in paise).
+  - `currency` (number): The currency code. Use `356` for `INR`.
+  - `paymentMode` (string): The payment method intended for auto-debit, like `Internet Banking` or `UPI`.
+  - `debitDate` (string): The preferred date format (`DD-MMM`, e.g., `10-Feb`) for attempting the auto-debit each cycle.
+
+### 2.5 Asynchronous Operations & Callbacks
+
+All UPMS operations (create, update, cancel) are asynchronous:
+
+- **Synchronous Response**: Immediate HTTP acknowledgment (`200 OK`) indicating `PENDING` status.
+- **Asynchronous Outcome**: Final status sent via webhook callback to your server.
+
+Additionally, you'll receive a callback for each bill generated for the registered user.
+
+Ensure you implement a reliable webhook listener to receive and process these callbacks.
+
+# Part 2: Managing Customer Registrations
+
+## Prerequisite: Configure Your Registration Callback URL
+
+You must set up and provide us with a secure HTTPS webhook endpoint URL. This endpoint is crucial as it's where our system will send asynchronous notifications (via HTTP POST) regarding:
+
+- **UPMS Registration Status**: Updates for creation, modification, and cancellation (`CREATE_UPMS_REGISTRATION`, `UPDATE_UPMS_REGISTRATION`, `CANCEL_UPMS_REGISTRATION` events).
+
+## 3. UPMS Registration Management APIs
+
+### 3.1 Creating a Registration (Combined with Bill Fetch)
+
+This process leverages the existing **Bill Fetch API** endpoint. To initiate a UPMS registration alongside fetching the current bill (if available), you simply include the `mandate` object in the standard Bill Fetch request.
+
+**Endpoint:** `POST /api/v2/bbps/bills/fetch/request` <a href="/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchRequestV2">(See API Reference)</a>
+
+**Type:** Asynchronous
+
+**Purpose:** To fetch the current bill and, by adding `mandate`, simultaneously initiate customer registration for future automatic bill presentments (UPMS).
+
+**Request Structure:**
+Note the added `mandate` block for UPMS registration.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="diff">{`
+{
+  "agent": { /* ... agent details ... */ },
+  "biller": { /* ... biller details ... */ },
+  "customer": { /* ... customer identifiers ... */ },
++ "mandate": { /* UPMS specific: details about the mandate as described in section 2.4 */
++   "registrationType": "VIEW_N_PAY" | "AUTO_PAY",
++   "billPeriod": "MONTHLY" | "ASPRESENTED" | ...,
++   "toDate": "YYYY-MM-DD",
++   "debitInfo": { /* required for AUTO_PAY */ }
++ }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Synchronous Responses:**
+- **200 OK** (Accepted): Both bill fetch and UPMS registration initiated.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "data": {
+    // Your reference ID for tracking this specific bill fetch operation
+    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102201", 
+    "upmsRegistration": {
+      // Status of the registration request processing by our system
+      "status": "PENDING", 
+      // The unique reference ID generated for this specific UPMS registration attempt.
+      // Use this ID to correlate with the registration callback.
+      "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+    }
+  },
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **200 OK** (Invalid mandate): Bill fetch initiated, no UPMS registration.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "data": { 
+    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102201", 
+    // Status of the registration request processing by our system
+    "upmsRegistration": { 
+      // No UPMS Registration will be initiated
+      "status": "FAILED", 
+      // The error details
+      "error": { 
+        "code": "invalid-debit-info", 
+        "message": "Invalid amount in debit info" 
+      } 
+    } 
+  },
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **400 Bad Request** (Invalid Request): Neither bill fetch nor UPMS registration is initiated.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "invalid-parameter",
+    "message": "Missing required field"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE1"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **500 Internal Server Error**: Neither bill fetch nor UPMS registration is initiated.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE1"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Handling Asynchronous Callbacks for Creation:**
+
+Two independent callbacks can be triggered following this API call:
+
+- **Bill Fetch Callback (If Bill Found):** If a current bill exists for the customer, you will receive a `BILL_FETCH` callback containing the bill details. Handle this as described in Part 3. This callback is independent of the registration success/failure.
+
+- **Registration Status Callback:** For registrations with initial status as `PENDING`, you will receive a `CREATE_UPMS_REGISTRATION` callback to inform you of the final outcome of the registration attempt identified by `upmsRegistration.refId` from the synchronous response.
+
+**`CREATE_UPMS_REGISTRATION` Callback:** <a href="/payments/billpay/api-integration/webhooks#create-upms-registration-webhook">(See Webhook Reference)</a>
+
+- **Event Type:** `event: "CREATE_UPMS_REGISTRATION"`
+- **Timestamp:** `timeStamp` (ISO 8601 format)
+- **Correlation:** `refId` (Matches the `upmsRegistration.refId` from the sync response, e.g., `HENSVVR4QOS7X1UGPY7JGUV444P10102202`)
+- **Trace ID:** `traceId` (For logging/debugging)
+- **Outcome:** Check the `data`, `duplicate`, and `error` fields within the callback payload:
+
+  - **For successful registrations:**
+    - The `data` field will be present, and the `error` field will be absent.
+    - The `registration` object within `data` will contain the full details of the newly created registration.
+
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
+    // Example SUCCESS Callback Payload
+    {
+      "event": "CREATE_UPMS_REGISTRATION",
+      "traceId": "D07LJTJ71N0PUBJKS640",
+      "timeStamp": "2025-04-28T16:05:34.762+05:30",
+      "data": {
+        "registration": {
+          "refId": "D07LJTB71N0PGH5KG32G6dH2QjK51181605", // Unique reference ID for this registration
+          "status": "SUCCESS", // Final status of the registration
+          "biller": {  // Same as the biller object in the request
+            "id": "ABLP01000ANP03"
+          },
+          "customer": { // Same as the customer object in the request, except for the name field
+            "customerParams": [
+              {
+                "name": "Roll No",
+                "value": "14989991"
+              }
+            ],
+            "mobile": "7378926241",
+            "name": "Anjali Desai" // NEW: Optional, only present if the biller shares the customer name
+          },
+          "mandate": { // Same as the mandate object in the request
+            "billPeriod": "ASPRESENTED",
+            "billerParams": [
+              {
+                "name": "Low Balance Threshold",
+                "value": "500"
+              }
+            ],
+            "debitInfo": {
+              "amount": 999999999,
+              "currency": 356, 
+              "debitDate": "10-Feb",
+              "paymentMode": "Debit Card",
+              "type": "FIXED_AMOUNT"
+            },
+            "registrationType": "AUTO_PAY",
+            "toDate": "2025-12-22"
+          },
+          "createdAt": "2025-04-28T10:35:33Z", // Timestamp of the registration creation
+          "updatedAt": "2025-04-28T10:35:34Z" // Timestamp of the last registration modification
+        }
+      },
+      "refId": "D07LJTB71N0PGH5KG32G6dH2QjK51181605" // Matches registration.refId
+    }
+            `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
+
+  - **For failed registration attempts:**
+    - The `error` object will be present, containing:
+      - `code` (string): The error code
+      - `message` (string): A description of the error
+    - The `data` object will be absent.
+
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
+    // Example FAILED Callback Payload
+    {
+      "event": "CREATE_UPMS_REGISTRATION",
+      "timeStamp": "2025-03-11T10:20:00.000+05:30",
+      "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102204", // Reference ID of the FAILED attempt from sync response
+      "error": {
+        "code": "biller-registration-failed",
+        "message": "Failed to register with Biller"
+      },
+      "traceId": "D07LJTJ71N0PUBJKS640" // Trace ID for this callback
+    }
+            `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
+
+  - **For duplicate registrations:**
+    - The `data` field will be present, and the `error` field will be absent.
+    - The `duplicate` object within `data` indicates that a previous registration attempt was `SUCCESS`/`PENDING`. Details of the existing registration can be found here.
+      - `refId`: The reference ID of the existing successful/pending registration.
+      - `code`: Code indicating the duplicate situation (e.g., `duplicate-upms-registration`).
+      - `message`: Description of the duplicate situation.
+
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
+    // Example Duplicate Callback Payload
+    {
+      "event": "CREATE_UPMS_REGISTRATION",
+      "traceId": "CVVQVLN5STDFRUU0LLFG",
+      "timeStamp": "2025-04-16T18:55:42.758+05:30",
+      "data": {
+        "duplicate": {
+          "code": "duplicate-upms-registration",
+          "message": "Successful UPMS registration already exists",
+          "refId": "CVVQFN8BT5ONNAN3JCO059wmPQX51061821" // Ref ID of the EXISTING registration
+        }
+      },
+      "refId": "CVVQVLGBT5ONNAN3JD90qXrHAWg51061855" // Ref ID of the DUPLICATE attempt from sync response
+    }
+            `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
+
+**Action:** Update your internal registration record based on the callback status and response details (`registration`, `error`, or `duplicate`).
+
+### 3.2 Viewing Registration Details
+
+This synchronous endpoint allows you to retrieve the current status and details of a specific, existing UPMS registration immediately.
+
+**Endpoint:** `GET /api/v2/upms/registrations/{upmsRegistrationRefID}` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~ViewUPMSRegistration">(See API Reference)</a>
+
+**Purpose:** To check the details and current status of a UPMS registration.
+
+**Endpoint Type:** Synchronous. The response contains the full, current details of the registration.
+
+**Request Breakdown:**
+
+- **Headers:**
+  - `X-PARTNER-ID: <Your_Partner_ID>`
+  - `Authorization: Bearer <Your_Auth_Token>`
+  - `Content-Type: application/json`
+- **Path Parameter:**
+  - `upmsRegistrationRefID` (string): The unique reference ID of the UPMS registration you want to view (obtained from a successful `CREATE_UPMS_REGISTRATION` callback, e.g., `D07LJTB71N0PGH5KG32G6dH2QjK51181605`).
+
+**Response Breakdown:**
+
+- **On Success (Registration Found): HTTP 200 OK**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "biller": {
+      "id": "ABLP01000ANP03"
+    },
+    "createdAt": "2025-04-24T14:38:46.377Z",
+    "customer": {
+      "customerParams": [
+        {
+          "name": "Roll No",
+          "value": "27257063"
+        }
+      ],
+      "mobile": "9039403265",
+      "name": "Priya Shukla"
+    },
+    "mandate": {
+      "billPeriod": "ASPRESENTED",
+      "billerParams": [
+        {
+          "name": "Low Balance Threshold",
+          "value": "500"
+        }
+      ],
+      "debitInfo": {
+        "amount": 999999999,
+        "currency": 356, 
+        "debitDate": "10-Feb",
+        "paymentMode": "Internet Banking",
+        "type": "FIXED_AMOUNT"
+      },
+      "registrationType": "AUTO_PAY",
+      "toDate": "2025-12-22"
+    },
+    "refId": "D054PTM52FL7R8CJPQ90GZ2ORTG51142008", // Unique reference ID of the registration
+    "status": "SUCCESS", // Current status
+    "updatedAt": "2025-04-24T14:38:47.389Z" 
+  },
+  "success": true,
+  "traceId": "D055CNT3GMB863CND9LG"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Not Found: HTTP 404 Not Found**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "registration-not-found",
+    "message": "UPMS registration with the specified refId not found"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Bad Request: HTTP 400 Bad Request** (e.g., invalid format for `upmsRegistrationRefID`).
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "invalid-ref-id",
+    "message": "Ref ID length must be 35 characters"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Server Error: HTTP 500 Internal Server Error**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Action:** Update your internal registration record based on the API response.
+
+### 3.3 Updating a Registration
+
+This asynchronous endpoint allows modification of certain fields of an active UPMS registration.
+
+**Endpoint:** `PATCH /api/v2/upms/registrations/{upmsRegistrationRefID}` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~UpdateUPMSRegistration">(See API Reference)</a>
+
+**Purpose:** To modify specific details of an existing, active UPMS registration.
+
+**Endpoint Type:** Asynchronous. The API call acknowledges the request, and the final result is delivered via callback.
+
+**Modifiable Mandate Details:**
+
+- `registrationType`
+- `billPeriod` (restrictions may apply)
+- `toDate`
+- `debitInfo.debitType`
+- `debitInfo.amount`
+- `debitInfo.debitDate` (restrictions may apply)
+
+**Request Breakdown:**
+
+- **Headers:**
+  - `X-PARTNER-ID: <Your_Partner_ID>`
+  - `Authorization: Bearer <Your_Auth_Token>`
+  - `Content-Type: application/json`
+- **Path Parameter:**
+  - `upmsRegistrationRefID` (string): The ID of the registration to update.
+- **Body:** Include only the fields you want to modify within the `mandate` object.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Example Request Body: Update Mandate
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+// Example: Update expiry date and debit amount
+{
+  "mandate": {
+    "toDate": "2025-12-31",
+    "debitInfo": {
+      "amount": 750000 // 7500.00 INR
+    }
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Synchronous Response (Acknowledgment):**
+
+Confirms receipt and basic validation of the update request.
+
+- **On Acceptance: HTTP 200 OK**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Bad Request: HTTP 400 Bad Request** (Invalid field, invalid value, trying to update non-modifiable field).
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "invalid-ref-id", // Example code, could vary
+    "message": "Ref ID length must be 35 characters" // Example message
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Not Found: HTTP 404 Not Found** (Registration doesn't exist or is not in an updatable state).
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "registration-not-found",
+    "message": "UPMS registration with the specified refId not found"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Server Error: HTTP 500 Internal Server Error**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Handling the Asynchronous Callback for Update:**
+
+You will receive an `UPDATE_UPMS_REGISTRATION` callback with the final outcome.
+
+**`UPDATE_UPMS_REGISTRATION` Callback:** <a href="/payments/billpay/api-integration/webhooks#update-upms-registration-webhook">(See Webhook Reference)</a>
+
+- **Event Type:** `event: "UPDATE_UPMS_REGISTRATION"`
+- **Timestamp:** `timeStamp`
+- **Correlation:** `refId` (Matches the `upmsRegistrationRefID` from the PATCH request path).
+- **Trace ID:** `traceId`
+- **Outcome:**
+
+  - **If the update was successful:**
+    - The `data` object will be present and the `error` object will be absent.
+    - The `registration` object in `data` will contain the complete, updated details of the registration. Use this to refresh your stored data.
+
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
+    {
+      "event": "UPDATE_UPMS_REGISTRATION",
+      "traceId": "D07MLCSRLASJ2P3SVAI0",
+      "timeStamp": "2025-04-28T17:16:59.941+05:30",
+      "data": {
+        "registration": {
+          "refId": "D07ML76AIQNN6974G200emsL9K451181716",
+          "status": "SUCCESS",
+          "biller": {
+            "id": "ABLP01000ANP03"
+          },
+          "customer": {
+            "customerParams": [
+              {
+                "name": "Roll No",
+                "value": "67d88976"
+              }
+            ],
+            "mobile": "9039403265",
+            "name": "Gautam Rajput"
+          },
+          "mandate": {
+            "billerParams": [
+              {
+                "name": "Low Balance Threshold",
+                "value": "500"
+              }
+            ],
+            "debitInfo": {
+              "amount": 999999999,
+              "currency": 356,
+              "debitDate": "10-Feb",
+              "paymentMode": "Internet Banking",
+              "type": "FIXED_AMOUNT"
+            },
+            "registrationType": "AUTO_PAY",
+            "toDate": "2025-12-22" // Note: This was the updated value in the example
+          },
+          "createdAt": "2025-04-28T11:46:36Z",
+          "updatedAt": "2025-04-28T11:46:59Z" // Reflects the update time
+        }
+      },
+      "refId": "D07ML76AIQNN6974G200emsL9K451181716"
+    }
+        `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
+
+  - **If the update failed:**
+    - The `error` object will contain the `code` and `message` explaining the failure
+    - The `data` object will be absent.
+
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
+    {
+      "event": "UPDATE_UPMS_REGISTRATION",
+      "traceId": "D07N6PSRLASJ2P3SVAMG",
+      "timeStamp": "2025-04-28T17:54:07.062+05:30",
+      "refId": "D07N6M6AIQNN6974G9EGH18p7p051181753", // The refId of the attempted update
+      "error": {
+        "code": "biller-update-registration-failed",
+        "message": "Failed to update registration with Biller"
+      }
+    }
+        `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
+
+
+**Action:** Update your internal registration record based on the callback status and details.
+
+### 3.4 Cancelling a Registration
+
+This asynchronous endpoint permanently cancels an existing UPMS registration.
+
+**Endpoint:** `DELETE /api/v2/upms/registrations/{upmsRegistrationRefID}` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~CancelUPMSRegistration">(See API Reference)</a>
+
+**Purpose:**
+
+- To permanently stop automatic bill presentments and any associated auto-debits for a specific UPMS registration.
+- Once cancelled, the same registration cannot be reactivated. A new registration will need to be created if the user wishes to re-enable automatic presentment.
+
+**Endpoint Type:** Asynchronous. The API acknowledges the request, and confirmation comes via callback.
+
+**Request Breakdown:**
+
+- **Headers:**
+  - `X-PARTNER-ID: <Your_Partner_ID>`
+  - `Authorization: Bearer <Your_Auth_Token>`
+  - `Content-Type: application/json`
+- **Path Parameter:**
+  - `upmsRegistrationRefID` (string): The ID of the registration to cancel.
+- **Body:** None
+
+**Synchronous Response (Acknowledgment):**
+
+Confirms receipt of the cancellation request.
+
+- **On Acceptance: HTTP 200 OK**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Bad Request: HTTP 400 Bad Request** (e.g., invalid `upmsRegistrationRefID` format).
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "invalid-ref-id",
+    "message": "Ref ID length must be 35 characters"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Not Found: HTTP 404 Not Found** (Registration doesn't exist).
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "registration-not-found",
+    "message": "UPMS registration with the specified refId not found"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Conflict: HTTP 409 Conflict** (e.g., registration is already cancelled or in a state that cannot be cancelled).
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "invalid-state-transition",
+    "message": "Registration is already cancelled or in a state that cannot be cancelled"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Server Error: HTTP 500 Internal Server Error**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Handling the Asynchronous Callback for Cancellation:**
+
+You will receive a `CANCEL_UPMS_REGISTRATION` callback confirming the outcome.
+
+**`CANCEL_UPMS_REGISTRATION` Callback Details:** <a href="/payments/billpay/api-integration/webhooks#cancel-upms-registration-webhook">(See Webhook Reference)</a>
+
+- **Event Type:** `event: "CANCEL_UPMS_REGISTRATION"`
+- **Timestamp:** `timeStamp`
+- **Correlation:** `refId` (Matches the `upmsRegistrationRefID` from the DELETE request path).
+- **Trace ID:** `traceId`
+- **Outcome:**
+
+  - **If the cancellation was successful:**
+    - The `data` object will be present and the `error` object will be absent.
+    - The `registration` object in `data` will contain the details of the registration, now marked with `status: "CANCELLED"`.
+
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
+    {
+      "event": "CANCEL_UPMS_REGISTRATION",
+      "traceId": "D07MLCSRLASJ2P3SVAI0", // Example Trace ID
+      "timeStamp": "2025-04-28T17:16:59.941+05:30", // Example Timestamp
+      "data": {
+        "registration": {
+          "refId": "D07ML76AIQNN6974G200emsL9K451181716",
+          "status": "CANCELLED",
+          "biller": { /* ... biller details ... */ },
+          "customer": { /* ... customer details ... */ },
+          "mandate": { /* ... mandate details ... */ },
+          "createdAt": "2025-04-28T11:46:36Z",
+          "updatedAt": "2025-04-28T11:46:59Z" // Time of cancellation 
+        }
+      },
+      "refId": "D07ML76AIQNN6974G200emsL9K451181716"
+    }
+        `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
+
+  - **If the cancellation failed:**
+    - The `error` object will contain the `code` and `message` explaining the failure
+    - The `data` object will be absent.
+
+    <Card padding="nano" shape="rounded">
+        <details>
+            <summary>
+                <Text as="h6" marginBottom="none" marginTop="none">
+                    Sample Callback Payload
+                </Text>
+            </summary>
+            <CodeBlockWithCopy language="json">{`
+    {
+      "event": "CANCEL_UPMS_REGISTRATION",
+      "traceId": "D07N6PSRLASJ2P3SVAMG", // Example Trace ID
+      "timeStamp": "2025-04-28T17:54:07.062+05:30", // Example Timestamp
+      "refId": "D07N6M6AIQNN6974G9EGH18p7p051181753", // The refId of the attempted cancellation
+      "error": {
+        "code": "registration-cancellation-failed", // Example Error Code
+        "message": "Failed to cancel registration with Biller" // Example Error Message
+      }
+    }
+        `}</CodeBlockWithCopy>
+        </details>
+    </Card>
+    <br />
+
+**Action:** Update the status of the registration in your system to `CANCELLED` upon successful confirmation via the callback.
+
+# Part 3: Handling Bills and Payments
+
+Once a customer is successfully registered for UPMS (see Part 2), the core value proposition comes into play: receiving automatic bill presentments. This part guides you on how to handle these presented bills and integrate them into your payment flows.
+
+## Prerequisite: Configure Your Skip Payment Callback URL
+
+You must set up and provide us with a secure HTTPS webhook endpoint URL. This endpoint is crucial as it's where our system will send asynchronous notifications (via HTTP POST) regarding presented bills and skipped payments (`BILL_FETCH`, `SKIP_PAYMENT` events).
+
+## 4. Receiving Presented Bills
+
+The primary way you receive details about a newly generated bill for a registered customer is through the standard **Bill Notification callback** (`BILL_FETCH` event). This is the same event used for responses to manual bill fetches, but includes an identifier for UPMS.
+
+When a new bill is available for a registered customer, the flow is:
+
+1. **Bill Generation**: The biller generates a new bill for the customer.
+2. **Push to BBPS**: The biller pushes the bill to the BBPS Central Unit.
+3. **Notification to COU**: BBPS identifies the UPMS registration and notifies us.
+4. **Callback to You**: We send a `BILL_FETCH` webhook with the bill details. (<a href="/payments/billpay/api-integration/webhooks#bill-fetch-webhook">See Webhook Reference</a>)
+5. **Your Processing**:
+   - Acknowledge with HTTP `200 OK`.
+   - Parse the JSON payload.
+   - **Check for `upmsRegistrationRefId`**: Use this field to identify the UPMS registration associated with the bill.
+   - Extract the bill object(s) from `data.bills`.
+   - Store or update the bill in your system, associate with the user.
+   - Display bill details in your app.
+
+**Example `BILL_FETCH` Callback (for UPMS Presentment):**
+Note the presence of `upmsRegistrationRefId` indicating this is for a registered subscription.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Callback Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "event": "BILL_FETCH",
+  "timeStamp": "2025-04-17T17:56:55.159+05:30",
+  "data": {
+    "additionalInfo": [
+      {
+        "name": "Biller Unique Number",
+        "value": "Scaroasis"
+      }
+    ],
+    "billerResponseType": "SINGLE",
+    "billerSelectionType": null,
+    "bills": [
+      {
+        "amount": 83400,
+        "billDate": "2025-04-17",
+        "billNumber": "BILL-226131",
+        "billPeriod": "MONTHLY",
+        "customerName": "Nitin Gupta",
+        "dueDate": "2025-05-02",
+        "paymentOptions": [
+          {
+            "amount": 75060,
+            "name": "Early Payment Amount"
+          },
+          {
+            "amount": 91740,
+            "name": "Late Payment Amount"
+          }
+        ]
+      }
+    ],
+    "exactness": "RANGE",
+    "refId": "D00F73QLFUHJFPQC2800HVDeelt51071756", // Ref ID for this specific bill fetch instance
+    "status": "Success",
+    "upmsRegistrationRefId": "D00EP9IJSBI05F06U9K0eBQWOq851071727"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+> **Note**: The same webhook endpoint receives notifications for both automatically presented bills (via UPMS) and bills retrieved through manual fetch requests (using separate Bill Fetch API). You can distinguish between these two scenarios by checking the `upmsRegistrationRefId` field within the callback's data object:
+>  - If `upmsRegistrationRefId` is present (not null), this callback represents an automatic bill presentment for a registered customer.
+>  - If `upmsRegistrationRefId` is absent or null, this callback is the result of a manual bill fetch request.
+
+## 5. Initiating Payment for Presented Bills
+
+When a user opts to pay a presented bill:
+
+1. **Invoke Payment API**: Construct and send a request to our BBPS Payment API endpoint. (<a href="/payments/billpay/api-integration/api-reference#/category~Pay/operation~PaymentRequestV2">See API Reference</a>)
+2. **Follow Payment Flow**: Handle the response and subsequent steps (e.g., status checks, notifications) as defined in the Payment API documentation.
+
+## 6. Handling Skipped Payments
+
+Sometimes, a user might pay a bill through a different channel (e.g., directly on the biller's website, via another app) after it has been presented to them in your application via UPMS. To avoid showing already-paid bills as pending, Setu provides a mechanism to notify you about such payments.
+
+### 6.1 SKIP_PAYMENT Callback Flow
+
+If a bill is paid elsewhere after presentation, you'll receive a `SKIP_PAYMENT` callback: <a href="/payments/billpay/api-integration/webhooks#skip-payment-webhook">(See Webhook Reference)</a>
+
+1. **Payment Elsewhere**: User pays via another BBPS channel.
+2. **Notification to Us**: BBPS detects external payment and informs us.
+3. **Callback to You**: We send a `SKIP_PAYMENT` webhook to your configured endpoint.
+4. **Your Processing**:
+   - Acknowledge with HTTP `200 OK`.
+   - Parse `data.billRefId` and `data.dateOfPayment`. (Note: `data.billRefId` of skip payment callback is the same as `data.refId` of the bill fetch callback, i.e. the reference id of the presented bill(s))
+   - Locate and mark the bill as paid in your system.
+
+**Example `SKIP_PAYMENT` Callback:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Callback Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "event": "SKIP_PAYMENT",
+  "traceId": "D0508DIBJFBLCSGI36RG",
+  "timeStamp": "2025-04-25T18:16:46.716+05:30",
+  "data": {
+    "billRefId": "D050862BJFBLCSGI36N0e3qv9Zu51151816", 
+    "dateOfPayment": "2025-04-25T18:16:44+05:30"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+### 6.2 Why Handle SKIP_PAYMENT Callbacks?
+
+Handling SKIP_PAYMENT callbacks ensures data consistency and improves user experience:
+
+  - **Accurate Bill Status**: Prevents users from seeing bills they've already paid elsewhere as still outstanding in your app.
+  - **Avoids Double Payments**: Reduces the risk of users accidentally attempting to pay the same bill twice.
+  - **Clean User Interface**: Keeps the list of pending bills relevant and actionable.
+
+# Part 4: Testing and Simulation
+
+This part covers the specialized APIs designed to help you test your integration, particularly your handling of asynchronous callbacks, in non-production environments.
+
+## 7. Introduction to Simulation APIs
+
+Integrating asynchronous flows, especially those involving callbacks (webhooks), requires thorough testing. Waiting for real bill generation cycles or actual skipped payments can be slow and unpredictable during development and testing phases.
+
+To facilitate this, we provide Simulation APIs that allow you to manually trigger specific callback events on demand.
+
+**Key Purposes:**
+
+- **Verify Callback Handling:** Ensure your webhook listener correctly receives, parses, and processes `BILL_FETCH` and `SKIP_PAYMENT` callbacks.
+- **Test Business Logic:** Test the downstream logic in your application that gets triggered by these callbacks (e.g., displaying bills, marking bills as paid).
+- **Accelerate Development:** Trigger events instantly without external dependencies in lower environments.
+
+**❗ Limitation:**
+
+- **These Simulation APIs are strictly for use in lower environments only**. They will not function in the Production environment. Attempting to use them in Production will result in an error.
+
+**Simulatable Events:**
+
+- `BILL_FETCH` (via Simulate Bill Notification Callback API)
+- `SKIP_PAYMENT` (via Simulate Skip Payment Callback API)
+
+## 8. Simulating a Bill Notification Callback
+
+This asynchronous API allows you to manually trigger a `BILL_FETCH` callback for a specific, active UPMS registration.
+
+**Endpoint:** `POST /api/v2/upms/simulate/{upmsRegistrationRefID}/callbacks/bill` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~SimulateBillNotification">(See API Reference)</a>
+
+**Purpose:** To trigger the delivery of a simulated `BILL_FETCH` callback to your configured webhook endpoint for the specified `upmsRegistrationRefID`. This helps test how your system handles incoming bill presentments.
+
+**Endpoint Type:** Asynchronous. The API call acknowledges the request to simulate, and the actual `BILL_FETCH` callback is delivered shortly after to your webhook listener.
+
+**Request Structure:**
+
+- **Headers:**
+  - `X-PARTNER-ID: <Your_Partner_ID>`
+  - `Authorization: Bearer <Your_Auth_Token>`
+  - `Content-Type: application/json`
+- **Path Parameter:**
+  - `upmsRegistrationRefID` (string): The unique reference ID of the active UPMS registration for which you want to simulate a bill notification. This registration must exist and be in a state like `SUCCESS`.
+- **Body:** None
+
+**Synchronous Response (Acknowledgment):**
+
+Confirms that the request to simulate the callback has been accepted.
+
+- **On Acceptance: HTTP 200 OK**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Bad Request: HTTP 400 Bad Request** (e.g., Invalid `upmsRegistrationRefID` format).
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "invalid-registration-ref-id",
+    "message": "Invalid format for upmsRegistrationRefID"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE1"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Forbidden: HTTP 403 Forbidden** - If attempted in the Production environment.
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "forbidden-operation",
+    "message": "Simulation API not allowed in this environment"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Not Found: HTTP 404 Not Found** - If the specified `upmsRegistrationRefID` does not exist or is not active.
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "registration-not-found",
+    "message": "UPMS registration with the specified refId not found or inactive"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE3"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Server Error: HTTP 500 Internal Server Error**.
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Handling the Asynchronous Callback Outcome:**
+
+Shortly after receiving the 200 OK acknowledgment, your configured webhook listener endpoint should receive an HTTP POST request containing the `BILL_FETCH` callback (which shares the same `BILL_FETCH` event structure).
+
+- **Callback Payload:** The payload structure will follow the schema described for `BILL_FETCH` events (see Part 3, Section 4), including the `upmsRegistrationRefId` you specified in the simulation request.
+
+**Action:** Use this API in your test environment to verify that your webhook endpoint correctly receives, parses, and processes incoming bill notifications. Ensure you can link the received bill to the correct user based on the `upmsRegistrationRefId`.
+
+## 9. Simulating a Skip Payment Callback
+
+This asynchronous API allows you to manually trigger a `SKIP_PAYMENT` callback for a specific bill reference ID.
+
+**Endpoint:** `POST /api/v2/upms/simulate/{billRefId}/callbacks/skip-payment` <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~SimulateSkipPaymentNotification">(See API Reference)</a>
+
+**Purpose:** To trigger the delivery of a simulated `SKIP_PAYMENT` callback to your configured webhook endpoint for the specified `billRefId`. This helps test how your system handles notifications that a bill, previously presented, was paid via another channel.
+
+**Endpoint Type:** Asynchronous. The API call acknowledges the request, and the actual `SKIP_PAYMENT` callback is delivered shortly after to your webhook listener.
+
+**Request Structure:**
+
+- **Headers:**
+  - `X-PARTNER-ID: <Your_Partner_ID>`
+  - `Authorization: Bearer <Your_Auth_Token>`
+  - `Content-Type: application/json`
+- **Path Parameter:**
+  - `billRefId` (string): The unique reference ID of the specific bill instance for which you want to simulate a skip payment notification. This `billRefId` would typically have been received previously in a `BILL_FETCH` callback (either real or simulated).
+- **Body:** None
+
+**Synchronous Response (Acknowledgment):**
+
+Confirms that the request to simulate the skip payment callback has been accepted.
+
+- **On Acceptance: HTTP 200 OK**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Bad Request: HTTP 400 Bad Request** - e.g., Invalid `billRefId` format, or if the bill state is incompatible (e.g., already marked paid). May include specific codes like `invalid-bill`.
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "invalid-bill",
+    "message": "Bill reference ID not found or inactive"
+  },
+  "traceId": "SIM4PE82LTNJE9O014OE0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Forbidden: HTTP 403 Forbidden** - If attempted in the Production environment.
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "forbidden-operation",
+    "message": "Simulation API not allowed in this environment"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Not Found: HTTP 404 Not Found** - If the specified `billRefId` does not exist.
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "bill-not-found",
+    "message": "Bill with the specified refId not found"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE4"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+- **On Server Error: HTTP 500 Internal Server Error**.
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": false,
+  "error": {
+    "code": "internal-error",
+    "message": "Internal Error"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE2"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Handling the Asynchronous Callback Outcome:**
+
+Shortly after receiving the 200 OK acknowledgment, your configured webhook listener endpoint should receive an HTTP POST request containing the `SKIP_PAYMENT` callback.
+
+- **Callback Payload:** The payload structure will follow the schema described for `SKIP_PAYMENT` events (see Part 3, Section 6.1). It will include `event: "SKIP_PAYMENT"`, `timeStamp`, `traceId`, and a `data` object containing the `billRefId` you specified and a `dateOfPayment`.
+
+**Action:** Use this API in your test environment to verify that your webhook endpoint correctly receives `SKIP_PAYMENT` events and that your application logic correctly identifies the bill using `billRefId` and updates its status appropriately (e.g., marks it as paid, removes it from pending lists).
+
+## 10. General Testing Recommendations
+
+- **Webhook Listener:** Ensure you have a stable and publicly accessible webhook listener endpoint configured in our system for your Sandbox/UAT environment before using the simulation APIs.
+- **Test Scenarios:** Use the simulation APIs to test various scenarios:
+  - Successful reception and processing of `BILL_FETCH`.
+  - Successful reception and processing of `SKIP_PAYMENT`.
+  - Handling potential errors if simulation is called with non-existent `upmsRegistrationRefId` or `billRefId`.
+- **Correlation:** Pay attention to correlating the simulation API call with the resulting callback using `traceId` and the relevant reference IDs (`upmsRegistrationRefId`, `billRefId`).
+- **Idempotency:** While simulating, ensure your webhook handler deals with potentially receiving the same callback event more than once.
+
+This concludes the guide on integrating with Setu's UPMS APIs.
+
+<WasPageHelpful />
+
+

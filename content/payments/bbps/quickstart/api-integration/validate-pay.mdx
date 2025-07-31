@@ -1,0 +1,222 @@
+---
+sidebar_title: Validate & Pay
+page_title: BBPS - API integration
+order: 2
+visible_in_sidebar: true
+---
+
+## Validate & Pay
+
+This an alternative to standard fetch-pay flow in BBPS designed for billers who allow **flexible payment amounts**, such as FASTag or cable TV providers, it does not require the billers to generate bills.
+
+In this flow, the customer’s account is first validated with the biller to confirm registration and eligibility for payment. Once validated, the customer can pay any desired amount within the allowed limits.
+
+<hr class="secondary" />
+
+### APIs to implement
+
+##### Validate customer
+
+This is a multi-leg transaction between BBPS, Setu, and the biller system.
+
+BBPS calls Setu with customer identifier(s) details entered by a customer on a BBPS enabled app / offline collection point.
+
+Setu calls the biller with the same details with the API to <a href="/payments/bbps/api-reference#/category~APIs_to_call/operation~validateCustomer" target="_blank"><code>validate customer</code> ↗</a>, and then, shares it with BBPS.
+
+The biller’s API URL is expected to be in the following format—
+
+<CodeBlockWithCopy language="bash">
+    {`https://<partner-base-api-url>/customer/validate`}
+</CodeBlockWithCopy>
+
+<br />
+
+<Callout type="tip">
+    Please note, Setu will add the <code>/customer/validate</code> at the end of this
+    URL.
+</Callout>
+
+<br />
+
+The request body will specify the customer identifier—
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "customerIdentifiers": [
+        {
+          "attributeName": "customerId",
+          "attributeValue": "9117534711"
+        }
+      ]
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+**Note:**
+
+-   `customerIdentifiers` are defined as per biller's use case, such as loanNumber, studentId, etc
+
+###### Response scenarios
+
+When BBPS sends a validate customer request to Setu, Setu forwards the request to biller specified `baseURL`. Setu expects to receive a response from the biller system, with two possible scenarios—
+
+-   Success, with details about customer
+-   Failure, no customer found
+
+<br />
+
+<hr class="tertiary" />
+
+**Scenario 1: Success**
+
+The is when the customer is present in the biller system. In this case, the biller can return a `200` response—
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "data": {
+    "customer": {
+      "name": "Sharmaji Ka Beta",
+      "additionalInfo": [ // optional
+        {
+          "Application No.": "091191"
+        },
+        {
+          "Registered Mobile": "+91 88XXXXXX04"
+        }
+      ]
+    },
+    "billerBillID": "J63130000253",
+    "additionalInfo": [ // optional
+        {
+            "loan_account_number": "123-45-999"
+        }
+    ],
+    "settlement": { // optional
+      "primaryAccount": {
+          "id": "123456789",
+          "ifsc": "AXISXXXX01",
+          "name": "John Doe"
+      }
+    }
+  },
+  "status": 200,
+  "success": true
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+**Note**
+
+-   `customer.additionalInfo` items will be displayed in the Payment App/site which can describe additional information about the customer.
+-   `billerBillID` unique identifier in the biller's system, that is attached to the Setu generated bill.
+-   `additionalInfo` items are bill related addtional infornation, passed back to the biller during fetchReceipt.
+
+<hr class="tertiary" />
+
+**Scenario 2: Failure, no customer found**
+
+Either the biller does not recognise the parameter, or there are no customers with that particular parameter.
+Then, the biller can return a `400` response—
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "success": false,
+      "status": 400,
+      "error": {
+        "traceID": "XXXXXX",
+        "code": "customer-not-found",
+        "docURL": "",
+        "detail": "A customer with the provided credentials does not exist in the biller system.",
+        "title": "customer-not-found"
+      }
+}`}
+</CodeBlockWithCopy>
+
+<br />
+
+<hr class="secondary" />
+
+##### Fetch bill payment receipt
+
+For Validate & Pay billers the request and response payload differs slightly for the fetchBillReceipt. You can find the complete details about `fetchBillReceipt` in <a href="/payments/bbps/quickstart/api-integration" target="_blank">BBPS BillCollect API integration</a>.
+
+<br />
+
+A typical request for a receipt would look something like—
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "platformBillID": "906910589572351478",
+      "billerBillID": "891234567",
+      "paymentDetails": {
+        "amountPaid": {
+          "value": 1000,
+          "currencyCode": ""
+        },
+        "additionalInfo": [ // optional
+            {
+                "loan_account_number": "123-45-999"
+            }
+        ],
+        "platformTransactionRefID": "26602931-3b6a-4c87-a14d-5d7cf584008f",
+        "uniquePaymentRefID": "PP012151MYB616O9BSY1",
+        "instrument": "UPI",
+        "additionalInfo": null,
+        "transactionNote": "",
+        "transactionTimestamp": "2020-05-22T03:05:22.000Z",
+        "campaignID": ""
+      }
+}`}
+</CodeBlockWithCopy>
+
+<Callout type="tip">
+  Please note, "billAmount" is not part of fetchBillReceipt for Validate & Pay billers.
+</Callout>
+
+<br />
+
+<hr class="tertiary" />
+
+###### Success response
+
+<CodeBlockWithCopy language="json">
+    {`{
+      "status": 200,
+      "success": true,
+      "data": {
+        "receipt": {
+          "id": "XYZ987-891234567",
+          "date": "2022-06-07T05:55:54.789Z"
+        },
+        "settlement": { // optional
+          "primaryAccount": {
+            "id": "123456789",
+            "ifsc": "AXISXXXX01",
+            "name": "John Doe"
+          },
+          "parts": [ // optional
+            {
+              "account": {
+                "id": "987654321",
+                "ifsc": "HDFCXXXX02",
+                "name": "Dan Jeffer"
+              },
+              "remarks": "string", // optional
+              "split": {
+                "unit": "INR",
+                "value": 250
+              }
+            }
+          ]
+        }
+      }
+}`}
+</CodeBlockWithCopy>
+
+<Callout type="warning">
+    Please note, that settlement object in fetchReceipt response is only allowed for "Realtime" billers, it is an Error to return settlement deatils in this repsonse for "Deemed" billers.
+</Callout>
+
+<WasPageHelpful />
