@@ -14,7 +14,32 @@ This document details the enhancements made to the dispute APIs to incorporate t
 
 ## API Changes
 
-### 1. Dispute Response API Updates
+
+### 1. Dispute Request API Updates
+
+The request api has been updated to include the new dispute types <a href='/payments/billpay/api-integration/api-reference#/category~Dispute/operation~DisputeRequest'> See API Reference </a>.
+
+#### Dispute Type Mappings
+
+The following table shows how dispute types map to dispositions and ticket types:
+
+| Dispute Type | Disposition | Disposition Name | Ticket Type | Category |
+|-------------|-------------|-------------|----------|
+| `service-not-received` | D11 | Transaction Successful, Amount Debited but services not received | DISPUTE | Service Issues |
+| `service-disconnected` | D12 | Transaction Successful, Amount Debited but Service Disconnected or Service Stopped | DISPUTE | Service Issues |
+| `late-payment-surcharge` | D13 | Transaction Successful, Amount Debited but Late Payment Surcharge Charges add in next bill | DISPUTE | Service Issues |
+| `paid-to-wrong-account` | D21 | Erroneously paid in wrong account | DISPUTE | Payment Issues |
+| `double-payment` | D22 | Duplicate Payment | DISPUTE | Payment Issues |
+| `wrong-amount` | D23 | Erroneously paid the wrong amount | DISPUTE | Payment Issues |
+| `payment-info-delay` | D31 | Payment  information  not  received from Biller or Delay in receiving payment information from the Biller | COMPLAINT | Information Issues |
+| `account-not-updated` | D32 | Bill Paid but Amount not adjusted or still showing due amount| COMPLAINT | Information Issues |
+
+
+
+### 2. Dispute Response API Updates
+
+The response api has been updated to include the new status values and fields <a href='/payments/billpay/api-integration/api-reference#/category~Dispute/operation~DisputeResponse'> See API Reference </a>.
+
 
 #### New Status Values
 
@@ -37,24 +62,6 @@ The `ComplaintStatus` enum has been updated with the following values:
 | `ticketTAT` | date | Format: YYYY-MM-DD (only available for DISPUTE ticket types) |
 | `disposition` | enum | Values: `D11`, `D12`, `D13`, `D21`, `D22`, `D23`, `D31`, `D32` |
 | `responseReason` | string | NPCI response reason (e.g., "SUCCESS" or "One ticket already in progress") |
-
-### 2. Dispute Request API Updates
-
-#### Dispute Type Mappings
-
-The following table shows how dispute types map to dispositions and ticket types:
-
-| Dispute Type | Disposition | Disposition Name | Ticket Type | Category |
-|-------------|-------------|-------------|----------|
-| `service-not-received` | D11 | Transaction Successful, Amount Debited but services not received | DISPUTE | Service Issues |
-| `service-disconnected` | D12 | Transaction Successful, Amount Debited but Service Disconnected or Service Stopped | DISPUTE | Service Issues |
-| `late-payment-surcharge` | D13 | Transaction Successful, Amount Debited but Late Payment Surcharge Charges add in next bill | DISPUTE | Service Issues |
-| `paid-to-wrong-account` | D21 | Erroneously paid in wrong account | DISPUTE | Payment Issues |
-| `double-payment` | D22 | Duplicate Payment | DISPUTE | Payment Issues |
-| `wrong-amount` | D23 | Erroneously paid the wrong amount | DISPUTE | Payment Issues |
-| `payment-info-delay` | D31 | Payment  information  not  received from Biller or Delay in receiving payment information from the Biller | COMPLAINT | Information Issues |
-| `account-not-updated` | D32 | Bill Paid but Amount not adjusted or still showing due amount| COMPLAINT | Information Issues |
-
 
 ## Business Rules
 
