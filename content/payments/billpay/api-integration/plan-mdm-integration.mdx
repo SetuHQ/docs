@@ -1,0 +1,975 @@
+---
+sidebar_title: Plans
+page_title: Learn how to integrate with BBPS billers that support plan-based payments via Setu's APIs
+order: 7
+visible_in_sidebar: true
+---
+# BBPS Plan MDM Integration Guide
+
+## Overview
+
+The **Bharath Bill Payment System (BBPS) Plan Master Data Management (MDM)** API enables billers to offer subscription-based services through the BBPS ecosystem. This system is specifically designed for billers who don't have traditional outstanding bills but instead offer plan-based services that customers must select and pay for upfront.
+
+### Key Use Cases
+- **Mobile Prepaid Recharges** - Choose data/talk time plans
+- **DTH Services** - Select channel packages and validity periods  
+
+### Benefits
+- **Single API Interface** - Handle both static and dynamic plans with consistent endpoints
+- **Real-time Plan Updates** - Webhook notifications for plan changes and availability
+- **Standardized Integration** - Same patterns work across all biller types  
+
+<br/>
+
+## API Architecture Overview
+
+The Plan MDM system supports two distinct biller types with different integration patterns:
+
+### A. Static Plan Billers
+- **Characteristics**: `planRequirement: MANDATORY`
+- **Plan Source**: Dedicated List Plans API
+- **Examples**: BSNL/MTNL, Hungama Play, Sun Direct TV
+
+### B. Dynamic Plan Billers  
+- **Characteristics**: `planRequirement: OPTIONAL` and `responseType: SELECTIVE`
+- **Plan Source**: Customer-specific plans from bill validation
+- **Examples**: You Broadband, Airtel Wi-Fi Recharge
+
+
+<br/>
+
+## Integration Flows
+
+### Static Plan Biller Flow
+
+Static plan billers maintain predefined plan catalogs. The integration follows this structured approach:
+
+#### Phase 1: Plan Discovery & Selection
+| Step | Actor | Action | API Endpoint |
+|------|--------|--------|--------------|
+| 1 | Customer | Initiates service subscription | - |
+| 2 | Client App | Retrieve available plans | `GET /api/v2/bbps/billers/plans` |
+| 3 | Client App | Display plans to customer | - |
+| 4 | Customer | Selects plan + enters account details | - |
+
+#### Phase 2: Validation & Payment  
+| Step | Actor | Action | API Endpoint |
+|------|--------|--------|--------------|
+| 5 | Client App | Validate customer details with plan ID | `POST /api/v2/bbps/bills/fetch/request` |
+| 6 | Setu API | Forward validation to biller | - |
+| 7 | Biller | Validate account and plan compatibility | - |
+| 8 | Client App | Check validation status | `POST /api/v2/bbps/bills/fetch/response` or via webhook |
+| 9 | Client App | Process payment with validated refId | `POST /api/v2/bbps/bills/payment/request` |
+| 10 | Client App | Confirm payment completion | `POST /api/v2/bbps/bills/payment/response` |
+
+
+> **💡 Key Insight:** Static plan billers require the plan ID to be included during the validation phase, ensuring plan availability before payment processing.
+
+
+### Dynamic Plan Biller Flow
+
+Dynamic plan billers offer personalized plans based on customer account details:
+
+#### Phase 1: Account Validation & Plan Discovery
+| Step | Actor | Action | API Endpoint |
+|------|--------|--------|--------------|
+| 1 | Customer | Enters account details (no plan selection) | - |
+| 2 | Client App | Validate account details | `POST /api/v2/bbps/bills/fetch/request` |
+| 3 | Biller | Return account status + custom plans | - |
+| 4 | Client App | Check validation + retrieve plans | `POST /api/v2/bbps/bills/fetch/response` |
+
+#### Phase 2: Plan Selection & Payment
+| Step | Actor | Action | API Endpoint |
+|------|--------|--------|--------------|
+| 5 | Client App | Display customer-specific plans | - |
+| 6 | Customer | Selects preferred plan | - |
+| 7 | Client App | Process payment with plan ID | `POST /api/v2/bbps/bills/payment/request` |
+| 8 | Client App | Confirm payment completion | `POST /api/v2/bbps/bills/payment/response` |
+
+
+> **💡 Key Insight:** Dynamic plan billers reveal available plans only after account validation, providing personalized offerings based on customer eligibility.
+
+
+### Flow Comparison
+
+| Aspect | Static Plan Billers | Dynamic Plan Billers |
+|--------|-------------------|---------------------|
+| **Plan Discovery** | Before customer input via List Plans API | After account validation via validation response |
+| **Plan Selection** | Customer selects from full catalog | Customer selects from personalized options |
+| **Validation Input** | Customer details + Plan ID | Customer details only |
+| **Validation Output** | Success/Failure status | Success/Failure + Available plans |
+| **Use Cases** | Mobile recharge, DTH, OTT subscriptions | Broadband services, personalized offerings |
+
+
+### Integration Decision Tree
+
+**Start Here:** What type of biller are you integrating?
+
+The `planRequirement` is a field obtained from the list billers api.
+
+```
+Is planRequirement = "MANDATORY"?
+├── YES → Static Plan Biller
+│   ├── Step 1: Fetch plans via List Plans API
+│   ├── Step 2: Display plans to customer
+│   ├── Step 3: Validate with plan ID included
+│   └── Step 4: Process payment
+│
+└── NO → Check responseType
+    └── Is responseType = "SELECTIVE"?
+        ├── YES → Dynamic Plan Biller
+        │   ├── Step 1: Validate customer account
+        │   ├── Step 2: Receive custom plans in response
+        │   ├── Step 3: Customer selects plan
+        │   └── Step 4: Process payment with plan ID
+        │
+        └── NO → Standard bill payment flow
+```
+
+
+<br/>
+
+## 1. Static Plan Billers
+
+Static plan billers maintain a predefined catalog of plans that can be retrieved independently of customer information.
+
+### Identification Parameters
+<CodeBlockWithCopy language="json">{`
+{
+  "planRequirement": "MANDATORY"
+}
+`}</CodeBlockWithCopy>
+
+### Common Examples
+
+| Biller | Customer Parameters | Plan Information |
+|--------|-------------------|------------------|
+| **BSNL/MTNL** | Mobile Number, Circle | Plan ID, Talktime, Validity, Data, Circle, Type |
+| **Hungama Play/Music** | Mobile Number, Email ID | Plan ID, Package Duration |
+| **Sun Direct TV** | Subscriber Number | Plan ID, Validity, Channel Type |
+
+### A. Retrieving Plans
+
+#### List Plans API
+
+Retrieve all available plans for specific billers using the dedicated endpoint <a href="/payments/billpay/api-integration/api-reference#/category~List/path~/api/v2/bbps/bills/plans/get">(See API Reference)</a>.
+
+**Request:**
+`GET /api/v2/bbps/billers/plans?billerIds=BILLER_ID`
+
+**Response:**
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "plans": [
+      {
+        "Id": "3",
+        "additionalInfo": [
+          {
+            "paramName": "Package Details",
+            "paramValue": "Family Package"
+          },
+          {
+            "paramName": "Channels", 
+            "paramValue": "200+"
+          },
+          {
+            "paramName": "Devices",
+            "paramValue": "Up to 3"
+          }
+        ],
+        "amountInRupees": "99",
+        "billerId": "ZEE500000NAT01",
+        "categorySubType": {
+          "subType": "Family"
+        },
+        "categoryType": "STANDARD",
+        "description": "Family Pack with 200+ channels",
+        "effectiveFrom": null,
+        "effectiveTo": null,
+        "status": "ACTIVE"
+      },
+      {
+        "Id": "2", 
+        "additionalInfo": [
+          {
+            "paramName": "Package Details",
+            "paramValue": "Entertainment Package"
+          },
+          {
+            "paramName": "Channels",
+            "paramValue": "100+"
+          }
+        ],
+        "amountInRupees": "49",
+        "billerId": "ZEE500000NAT01", 
+        "categorySubType": {
+          "subType": "Entertainment"
+        },
+        "categoryType": "BASIC",
+        "description": "Entertainment Pack with 100+ channels",
+        "effectiveFrom": null,
+        "effectiveTo": null,
+        "status": "ACTIVE"
+      }
+    ],
+    "total": 2
+  },
+  "success": true,
+  "traceId": "CVOHOVGATEUJ1SDODBKG"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+#### Pagination Support
+
+For billers with large plan catalogs, the API supports efficient pagination:
+
+**Initial Request:**
+`GET /api/v2/bbps/billers/plans?billerIds=YOUR_BILLER_ID&limit=1000`
+
+**Pagination Response Fields:**
+
+| Field | Description |
+|-------|-------------|
+| `data.plans` | Array containing current page plans |
+| `data.total` | Total number of plans matching query |
+| `data.nextPage` | URL for next page (null if last page) |
+
+
+**Next Page Request:**
+`GET /api/v2/bbps/billers/plans?billerIds=YOUR_BILLER_ID&limit=100&after=LAST_PLAN_ID_FROM_PAGE_1`
+
+**Pagination Example:**
+
+For a biller with 3,700 plans using `limit=1000`:
+
+| Request | Response | Next Page |
+|---------|----------|-----------|
+| `GET …&limit=1000` | 1000 plans | `after=PLAN_1000&limit=1000` |
+| `GET …&after=PLAN_1000` | 1000 plans | `after=PLAN_2000&limit=1000` |
+| `GET …&after=PLAN_2000` | 1000 plans | `after=PLAN_3000&limit=1000` |
+| `GET …&after=PLAN_3000` | 700 plans | `null` (complete) |
+
+#### Plan Structure
+
+Each plan object contains both mandatory and optional fields:
+
+<CodeBlockWithCopy language="typescript">{`
+interface Plan {
+  // Mandatory fields
+  Id: string;                    // 1-32 chars, alphanumeric
+  categoryType: string;          // 1-100 chars, alphanumeric  
+  amountInRupees: number;        // 1-10 digits, decimals supported
+  description: string;           // text with special chars allowed
+  effectiveFrom: string;         // ISO date format
+  effectiveTo: string;           // ISO date format
+  status: "ACTIVE" | "DEACTIVATED";
+  
+  // Optional fields
+  categorySubType?: {
+    subType: string;
+  };
+  additionalInfo?: Array<{
+    paramName: string;
+    paramValue: string;
+  }>;
+}
+`}</CodeBlockWithCopy>
+
+
+#### Plan Update Webhooks
+
+Receive real-time notifications when biller plans are modified <a href="/payments/billpay/api-integration/webhooks#biller-plan-updates-webhook">(See Webhook Reference)</a>:
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Webhook Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "event": "PLAN_UPDATES",
+  "timeStamp": "2025-04-08T12:34:29.603+05:30",
+  "data": {
+    "billerId": "ZEE500000NAT01",
+    "Id": "3",
+    "amountInRupees": "599.0",
+    "categoryType": "Premium",
+    "categorySubType": {
+      "subType": "6 Months"
+    },
+    "description": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows,\nKids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
+    "effectiveFrom": "2021-01-01",
+    "effectiveTo": "2021-12-31", 
+    "status": "ACTIVE"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+### B. Mobile Number Validation
+
+For prepaid mobile recharge billers, implement intelligent operator detection:
+
+> **🔧 Implementation Note:** Use MSISDN series mapping to auto-populate operator and circle from the first 4-5 digits of mobile numbers. Always allow users to override these values due to mobile number portability.
+
+### C. Customer Parameter Validation
+
+Validate customer details along with selected plan information.
+
+**Request:**
+`POST /api/v2/bbps/bills/fetch/request`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    // Agent details unchanged
+  },
+  "customer": {
+    "mobile": "8484943411",
+    "customerParams": [
+      {
+        "name": "Mobile Number",
+        "value": "9987654321"
+      },
+      {
+        "name": "Circle", 
+        "value": "Karnataka"
+      },
+      {
+        "name": "Id",
+        "value": "BSNL_PLAN_123"
+      }
+    ]
+  },
+  "biller": {
+    "id": "BILLER_ID"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+**Response:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737"
+  },
+  "success": true,
+  "traceId": "CSJ1BPJEA37IGH20GIL0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+#### Check Validation Status
+
+**Request:**
+`POST /api/v2/bbps/bills/fetch/response`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+**Response:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CR3J63KR22BP6FC8N9B0",
+  "data": {
+    "additionalInfo": [],
+    "billerRefId": "ABCD1234",
+    "exactness": "Any", 
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737",
+    "status": "Success"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+#### Validation Webhook
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Validation Webhook Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "event": "BILL_VALIDATE",
+  "timeStamp": "2024-11-26T08:06:44.060+05:30",
+  "data": {
+    "additionalInfo": [],
+    "billerRefId": "836480286",
+    "exactness": "Any",
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737",
+    "status": "Success"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+### D. Payment Processing
+
+Process payment for validated plans using the reference ID from validation.
+
+**Request:**
+`POST /api/v2/bbps/bills/payment/request`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737",
+  "paymentDetails": {
+    "mode": "Debit Card",
+    "paymentRefId": "1zw2B959aLpxqv", 
+    "amount": 2200,
+    "timestamp": "2024-11-18T19:12:05+05:30"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+> **💰 Amount Format:** All amounts must be specified in **paise** (1 Rupee = 100 paise) and must match the selected plan's amount exactly.
+
+**Response:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737"
+  },
+  "success": true,
+  "traceId": "CSJ1BRREA37IGH20GIO0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+#### Check Payment Status
+
+**Request:**
+`POST /api/v2/bbps/bills/payment/response`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Response:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CSJ1BSREA37IGH20GIQ0",
+  "data": {
+    "additionalInfo": [],
+    "billerRefId": "8925477974299500719",
+    "paymentDetails": {
+      "amount": 2200,
+      "mode": "Debit Card", 
+      "paymentRefId": "REZYOXmwbDF3bx",
+      "timestamp": "2024-11-02T17:37:11.000+05:30"
+    },
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737",
+    "status": "Success",
+    "transactionId": "DP014307173711LO95Q9"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+#### Payment Webhook
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Payment Webhook Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "event": "BILL_PAY",
+  "timeStamp": "2024-11-26T03:34:50.784Z",
+  "data": {
+    "additionalInfo": [],
+    "billerRefId": "AB123456",
+    "paymentDetails": {
+      "amount": 2200,
+      "mode": "UPI",
+      "paymentRefId": "2727513156LjQBKlR", 
+      "timestamp": "2024-11-26T03:34:50.784Z"
+    },
+    "refId": "CT2K3MHK2D2FSSSIAU30AqF86fl43310904",
+    "status": "Success",
+    "transactionId": "DP014331090450ttHQY8"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+<br/>
+
+## 2. Dynamic Plan Billers
+
+Dynamic plan billers offer customer-specific plans based on account validation, providing personalized offerings rather than generic catalogs.
+
+### Identification Parameters
+
+<CodeBlockWithCopy language="json">{`
+{
+  "planRequirement": "OPTIONAL",
+  "responseType": "SELECTIVE"
+}
+`}</CodeBlockWithCopy>
+
+
+### Common Examples
+
+| Biller | Customer Parameters |
+|--------|-------------------|
+| **You Broadband** | Username / Account No. |
+| **Airtel Wi-Fi Recharge** | Broadband Id/Landline Number |
+
+### A. Plan Sources
+
+Dynamic plan billers can offer plans through:
+- **Generic Plans**: Available via List Plans API (optional)
+- **Custom Plans**: Returned during customer account validation
+
+### B. Customer Parameter Validation
+
+Validate customer account without requiring plan selection upfront.
+
+**Request:**
+`POST /api/v2/bbps/bills/fetch/request`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    // Agent details unchanged
+  },
+  "customer": {
+    "mobile": "8484943411",
+    "customerParams": [
+      {
+        "name": "Username / Account No.",
+        "value": "1234"
+      }
+    ]
+  },
+  "biller": {
+    "id": "BILLER_ID"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+**Response:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737"
+  },
+  "success": true,
+  "traceId": "CSJ1BPJEA37IGH20GIL0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+#### Check Validation Status with Plans
+
+**Request:**
+`POST /api/v2/bbps/bills/fetch/response`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737"  
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+**Response with Dynamic Plans:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CR3J63KR22BP6FC8N9B0",
+  "data": {
+    "additionalInfo": [],
+    "billerRefId": "ABCD1234",
+    "exactness": "Any",
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737",
+    "status": "Success",
+    "billerPlanResponse": {
+      "planInfo": [
+        {
+          "type": "RECOMMENDED",
+          "details": [
+            {
+              "name": "Plan_ID",
+              "value": "1"
+            },
+            {
+              "name": "Plan_Amount_In_Rupees", 
+              "value": "599"
+            },
+            {
+              "name": "Plan_Description",
+              "value": "Unlimited Data"
+            },
+            {
+              "name": "Plan_Validity",
+              "value": "28 Days"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+#### Validation Webhook with Plans
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Validation Webhook Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "event": "BILL_VALIDATE",
+  "timeStamp": "2024-11-26T08:06:44.060+05:30",
+  "data": {
+    "additionalInfo": [],
+    "billerRefId": "836480286", 
+    "exactness": "Any",
+    "refId": "CT2J8EPK2D2FSSRG91EGNXTEK4U43310806",
+    "status": "Success",
+    "billerPlanResponse": {
+      "planInfo": [
+        {
+          "type": "RECOMMENDED",
+          "details": [
+            {
+              "name": "Plan_ID",
+              "value": "1"
+            },
+            {
+              "name": "Plan_Amount_In_Rupees",
+              "value": "599"
+            },
+            {
+              "name": "Plan_Description", 
+              "value": "Unlimited Data"
+            },
+            {
+              "name": "Plan_Validity",
+              "value": "28 Days"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+### C. Payment with Plan Selection
+
+Process payment including the selected plan ID in payment details.
+
+**Request:**
+`POST /api/v2/bbps/bills/payment/request`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737",
+  "paymentDetails": {
+    "mode": "Debit Card",
+    "paymentRefId": "1zw2B959aLpxqv",
+    "timestamp": "2024-11-18T19:12:05+05:30",
+    "amount": 2200,
+    "Id": "1"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+**Response:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737"
+  },
+  "success": true,
+  "traceId": "CSJ1BRREA37IGH20GIO0"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+#### Check Payment Status
+
+**Request:**
+`POST /api/v2/bbps/bills/payment/response`
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737"
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+**Response with Plan ID:**
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Response
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "traceId": "CSJ1BSREA37IGH20GIQ0", 
+  "data": {
+    "additionalInfo": [],
+    "billerRefId": "8925477974299500719",
+    "paymentDetails": {
+      "amount": 2200,
+      "mode": "Debit Card",
+      "paymentRefId": "REZYOXmwbDF3bx",
+      "timestamp": "2024-11-02T17:37:11.000+05:30",
+      "Id": "1"
+    },
+    "refId": "CSJ1BPJEA37IGH20GILGDfl3qOd43071737",
+    "status": "Success",
+    "transactionId": "DP014307173711LO95Q9"
+  }
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
+
+
+#### Payment Webhook with Plan ID
+
+It is similar to this  <a href="/payments/billpay/api-integration/webhooks#bill-payment-webhook">webhook</a> but with added plan details:
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text as="h6" marginBottom="none" marginTop="none">
+                Sample Webhook Payload
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="diff">{`
+{
+  "event": "BILL_PAY",
+  "timeStamp": "2024-11-26T03:34:50.784Z",
+  "data": {
+    "additionalInfo": [],
+    "billerRefId": "AB123456",
+    "paymentDetails": {
+      "amount": 2200,
+      "mode": "UPI", 
+      "paymentRefId": "2727513156LjQBKlR",
+      "timestamp": "2024-11-26T03:34:50.784Z",
++      "Id": "1"
+    },
+    "refId": "CT2K3MHK2D2FSSSIAU30AqF86fl43310904",
+    "status": "Success",
+    "transactionId": "DP014331090450ttHQY8"
+  },
+  "success": true,
+  "traceId": "C3SFG0O6N88R6UI7EQ",
+}
+        `}</CodeBlockWithCopy>
+    </details>
+</Card>
+<br />
