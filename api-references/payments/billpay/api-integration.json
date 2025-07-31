@@ -3859,6 +3859,344 @@
     },
     "/api/v2/bbps/billers/plans": {
       "get": {
+        "tags": ["List"],
+        "description": "Returns the list of plans for a given set of billers",
+        "operationId": "getBillerPlans",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "The Partner ID provided by Setu.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "billerIds",
+            "in": "query",
+            "description": "Biller IDs",
+            "required": true,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of plans to return per page",
+            "schema": {
+              "maximum": 1000.0,
+              "minimum": 1.0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "updatedSince",
+            "in": "query",
+            "description": "Used to fetch plans updated since the given date-time in IST",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of plans for the biller",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["success", "traceId"],
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": ["plans"],
+                      "type": "object",
+                      "properties": {
+                        "nextPage": {
+                          "type": "string",
+                          "example": "/api/bbps/billers/plans?biller_ids=BILLER_01&after=ABCC00000PTNNS"
+                        },
+                        "plans": {
+                          "type": "array",
+                          "items": {
+                            "required": [
+                              "Id",
+                              "amountInRupees",
+                              "categoryType",
+                              "description",
+                              "status"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "Id": {
+                                "type": "string",
+                                "description": "Plan ID",
+                                "example": "1.0",
+                                "x-order": 1.0
+                              },
+                              "additionalInfo": {
+                                "minItems": 1,
+                                "type": "array",
+                                "description": "Plan Additional information details provided by the Biller.",
+                                "example": [
+                                  {
+                                    "paramName": "Mobile Number",
+                                    "paramValue": "Text"
+                                  }
+                                ],
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "paramName": {
+                                      "type": "string",
+                                      "example": "Plan Additional information parameter name."
+                                    },
+                                    "paramValue": {
+                                      "type": "string",
+                                      "example": "Plan Additional information parameter value."
+                                    }
+                                  },
+                                  "example": {
+                                    "paramName": "Mobile Number",
+                                    "paramValue": "Text"
+                                  },
+                                  "x-go-name": "PlanAdditionalInfoItem"
+                                },
+                                "x-omitempty": true
+                              },
+                              "amountInRupees": {
+                                "type": "string",
+                                "example": "22.0",
+                                "x-order": 2.0
+                              },
+                              "billerId": {
+                                "type": "string",
+                                "description": "Biller ID to which the plan belongs to",
+                                "example": "1.0",
+                                "x-order": 0.0
+                              },
+                              "categorySubType": {
+                                "type": "object",
+                                "properties": {},
+                                "description": "Plan sub category as defined by the Biller.",
+                                "example": {
+                                  "subType": "1 Month"
+                                },
+                                "x-omitempty": true,
+                                "x-order": 4.0
+                              },
+                              "categoryType": {
+                                "type": "string",
+                                "description": "Plan category as defined by the Biller.",
+                                "example": "VIP",
+                                "x-order": 3.0
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "Plan description as defined by the Biller.",
+                                "example": "Unlimited Live Sports"
+                              },
+                              "effectiveFrom": {
+                                "type": "string",
+                                "description": "Effective from date of corresponding Plan.",
+                                "format": "date",
+                                "nullable": true,
+                                "example": "2017-07-21",
+                                "x-omitempty": false
+                              },
+                              "effectiveTo": {
+                                "type": "string",
+                                "description": "Effective to date of corresponding Plan.",
+                                "format": "date",
+                                "nullable": true,
+                                "example": "2020-08-21",
+                                "x-omitempty": false
+                              },
+                              "status": {
+                                "type": "string",
+                                "description": "Effective to date of corresponding Plan.",
+                                "example": "ACTIVE",
+                                "enum": ["ACTIVE", "DEACTIVATED"]
+                              }
+                            }
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "error": {
+                      "required": ["code", "message"],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["error", "success", "traceId"],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": ["code", "message"],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": ["error", "success", "traceId"],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": ["code", "message"],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Production": ["bbps:partner"]
+          },
+          {
+            "Sandbox": ["bbps:partner"]
+          },
+          {
+            "QA": ["bbps:partner"]
+          }
+        ]
+      }
+    },
+    "/api/v2/bbps/transactions": {
+      "get": {
         "tags": [
           "List"
         ],
