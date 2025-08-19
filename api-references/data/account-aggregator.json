@@ -105,6 +105,15 @@
                 "TEMPORARILY_INACTIVE"
               ]
             }
+          },
+          {
+            "in": "query",
+            "name": "expanded",
+            "required": false,
+            "description": "When set to true, returns detailed health metrics from AAs including event-level latency percentiles and success rates",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -139,6 +148,15 @@
             "description": "AA entity handle to filter FIPs for a specific AA",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "expanded",
+            "required": false,
+            "description": "When set to true, returns detailed health metrics from AAs including event-level latency percentiles and success rates",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -4206,6 +4224,16 @@
             "items": {
               "$ref": "#/components/schemas/AASuccessRate"
             }
+          },
+          "aaWiseHealthMetrics": {
+            "type": "object",
+            "description": "AA wise detailed health metrics including event-level latency and success rates. Available only when expanded=true query parameter is used.",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/AAHealthMetric"
+              }
+            }
           }
         },
         "required": [
@@ -4230,6 +4258,59 @@
             "type": "number"
           }
         }
+      },
+      "AAHealthMetric": {
+        "type": "object",
+        "properties": {
+          "eventName": {
+            "type": "string",
+            "enum": [
+              "DISCOVERY",
+              "CONSENT_REQUEST",
+              "LINKING",
+              "LINKING_CONFIRM",
+              "FI_NOTIFICATION",
+              "FI_REQUEST",
+              "DATA_FETCH",
+              "UNLINKING"
+            ],
+            "description": "Name of the AA flow event"
+          },
+          "metrics_as_of": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp when the metrics were last updated"
+          },
+          "latency_avg": {
+            "type": "number",
+            "description": "Average response time in milliseconds"
+          },
+          "latency_p50": {
+            "type": "number",
+            "description": "50th percentile (median) response time in milliseconds"
+          },
+          "latency_p95": {
+            "type": "number",
+            "description": "95th percentile response time in milliseconds"
+          },
+          "latency_p99": {
+            "type": "number",
+            "description": "99th percentile response time in milliseconds"
+          },
+          "success_rate": {
+            "type": "number",
+            "description": "Success rate percentage for this event"
+          }
+        },
+        "required": [
+          "eventName",
+          "latency_avg",
+          "latency_p50",
+          "latency_p95",
+          "latency_p99",
+          "success_rate"
+        ]
       }
     },
     "responses": {
