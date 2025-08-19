@@ -630,7 +630,7 @@
                                                             {
                                                                 "indicatorName": "name",
                                                                 "status": "success",
-                                                                "value": "Rajesh Kumar",
+                                                                "value": "REDACTED",
                                                                 "error": null,
                                                                 "meta": null
                                                             },
@@ -639,9 +639,9 @@
                                                                 "status": "error",
                                                                 "value": null,
                                                                 "error": {
-                                                                    "code": "ins_computation_error",
+                                                                    "code": "ins_data_missing",
                                                                     "type": "insight",
-                                                                    "message": "could not compute insight",
+                                                                    "message": "No data available",
                                                                     "details": null
                                                                 },
                                                                 "meta": null
@@ -649,7 +649,14 @@
                                                             {
                                                                 "indicatorName": "current_quarterly_average_eod_balance",
                                                                 "status": "success",
-                                                                "value": 83162.22,
+                                                                "value": 83162.22222222222,
+                                                                "error": null,
+                                                                "meta": null
+                                                            },
+                                                            {
+                                                                "indicatorName": "previous_quarterly_average_eod_balance",
+                                                                "status": "success",
+                                                                "value": 84035.55555555556,
                                                                 "error": null,
                                                                 "meta": null
                                                             },
@@ -749,7 +756,10 @@
                                                         "meta": null,
                                                         "aggregatedInsightMeta": null
                                                     }
-                                                ]
+                                                ],
+                                                "additionalInfo": {
+                                                    "id": 123456
+                                                }
                                             }
                                         }
                                     },
@@ -1364,11 +1374,21 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "RequestErrorResponse": {
-                                        "summary": "RequestErrorResponse",
+                                    "RefIdMissingError": {
+                                        "summary": "RefIdMissingError",
                                         "value": {
-                                            "errorCode": "400",
-                                            "errorMsg": "Missing required parameter: refId",
+                                            "errorCode": "api_ref_id_not_found",
+                                            "errorMsg": "ref_id parameter is null/empty/missing",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    },
+                                    "InvalidRefIdError": {
+                                        "summary": "InvalidRefIdError",
+                                        "value": {
+                                            "errorCode": "api_invalid_ref_id",
+                                            "errorMsg": "ref_id contains invalid characters",
                                             "timestamp": "2023-04-18T17:10:12.904153",
                                             "ver": "1",
                                             "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
@@ -1389,8 +1409,8 @@
                                     "AuthenticationErrorResponse": {
                                         "summary": "AuthenticationErrorResponse",
                                         "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to authenticate with provided credentials",
+                                            "errorCode": "auth_unauthorized",
+                                            "errorMsg": "Missing or invalid authentication headers",
                                             "timestamp": "2023-04-18T17:10:12.904153",
                                             "ver": "1",
                                             "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
@@ -1411,8 +1431,30 @@
                                     "NotFoundResponse": {
                                         "summary": "NotFoundResponse",
                                         "value": {
-                                            "errorCode": "404",
-                                            "errorMsg": "No data found for the provided refId",
+                                            "errorCode": "api_ref_id_not_found",
+                                            "errorMsg": "ref_id doesn't exist in transaction service",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ValidationErrorResponse": {
+                                        "summary": "ValidationErrorResponse",
+                                        "value": {
+                                            "errorCode": "api_validation_error",
+                                            "errorMsg": "FastAPI request validation failure",
                                             "timestamp": "2023-04-18T17:10:12.904153",
                                             "ver": "1",
                                             "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
@@ -1430,11 +1472,31 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
+                                    "TransactionServiceError": {
+                                        "summary": "TransactionServiceError",
                                         "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
+                                            "errorCode": "internal_error",
+                                            "errorMsg": "Transaction service validation error",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    },
+                                    "RepositoryPurgeError": {
+                                        "summary": "RepositoryPurgeError",
+                                        "value": {
+                                            "errorCode": "internal_error",
+                                            "errorMsg": "Repository purge operation error",
+                                            "timestamp": "2023-04-18T17:10:12.904153",
+                                            "ver": "1",
+                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                        }
+                                    },
+                                    "GeneralServerError": {
+                                        "summary": "GeneralServerError",
+                                        "value": {
+                                            "errorCode": "internal_error",
+                                            "errorMsg": "General unhandled exceptions",
                                             "timestamp": "2023-04-18T17:10:12.904153",
                                             "ver": "1",
                                             "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
@@ -1617,12 +1679,49 @@
                       "title": "Indicatorname",
                       "type": "string"
                   },
+                  "status": {
+                      "title": "Status",
+                      "type": "string",
+                      "enum": ["success", "error"]
+                  },
                   "value": {
-                      "title": "Value"
+                      "title": "Value",
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The computed insight value, null when status is error"
+                  },
+                  "error": {
+                      "title": "Error",
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Error details when status is error, null when status is success",
+                      "properties": {
+                          "code": {
+                              "type": "string",
+                              "enum": ["ins_data_missing", "ins_insufficient_history", "ins_invalid_format", "ins_computation_error"],
+                              "description": "Error code indicating the type of error"
+                          },
+                          "type": {
+                              "type": "string",
+                              "enum": ["insight"],
+                              "description": "Error type classification"
+                          },
+                          "message": {
+                              "type": "string",
+                              "description": "Human-readable error message"
+                          },
+                          "details": {
+                              "type": "object",
+                              "nullable": true,
+                              "description": "Additional error details"
+                          }
+                      }
                   },
                   "meta": {
                       "title": "Meta",
-                      "type": "object"
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Additional metadata for the insight"
                   }
               }
           },
@@ -1715,8 +1814,43 @@
                       "title": "Indicatorname",
                       "type": "string"
                   },
+                  "status": {
+                      "title": "Status",
+                      "type": "string",
+                      "enum": ["success", "error"]
+                  },
                   "value": {
-                      "title": "Value"
+                      "title": "Value",
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The computed aggregated insight value, null when status is error"
+                  },
+                  "error": {
+                      "title": "Error",
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Error details when status is error, null when status is success",
+                      "properties": {
+                          "code": {
+                              "type": "string",
+                              "enum": ["ins_data_missing", "ins_insufficient_history", "ins_invalid_format", "ins_computation_error"],
+                              "description": "Error code indicating the type of error"
+                          },
+                          "type": {
+                              "type": "string",
+                              "enum": ["insight"],
+                              "description": "Error type classification"
+                          },
+                          "message": {
+                              "type": "string",
+                              "description": "Human-readable error message"
+                          },
+                          "details": {
+                              "type": "object",
+                              "nullable": true,
+                              "description": "Additional error details"
+                          }
+                      }
                   },
                   "meta": {
                       "$ref": "#/components/schemas/AggregatedInsightMeta"
@@ -2262,6 +2396,11 @@
                       "items": {
                           "$ref": "#/components/schemas/AggregatedInsight"
                       }
+                  },
+                  "additionalInfo": {
+                      "title": "Additional Information",
+                      "type": "object",
+                      "description": "Flexible JSON object containing additional metadata or information"
                   }
               }
           },
