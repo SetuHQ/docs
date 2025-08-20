@@ -137,14 +137,39 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
+                                    "AuthenticationError": {
+                                        "summary": "Authentication Error",
                                         "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "auth_unauthorized",
+                                            "type": "auth",
+                                            "message": "Unable to fetch FIU config. Please pass `x-client-id`, `x-client-secret`, `x-product-account-id` headers properly.",
+                                            "details": {
+                                                "http_status": 401
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404 Template Not Found": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "TemplateNotFound": {
+                                        "summary": "Template not found",
+                                        "value": {
+                                            "code": "api_template_not_found",
+                                            "type": "validation",
+                                            "message": "Template with id 593ee9b4-58ad-4e97-5df5-afc65a8b5970 not found",
+                                            "details": {
+                                                "param": "templateId",
+                                                "http_status": 404
+                                            }
                                         }
                                     }
                                 }
@@ -159,14 +184,15 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
+                                    "ValidationError": {
+                                        "summary": "Validation Error",
                                         "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "422",
+                                            "type": "validation",
+                                            "message": "Validation failed",
+                                            "details": {
+                                                "http_status": 422
+                                            }
                                         }
                                     }
                                 }
@@ -181,14 +207,15 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
+                                    "ServerError": {
+                                        "summary": "Server Error",
                                         "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "internal_error",
+                                            "type": "internal",
+                                            "message": "Internal Server Error",
+                                            "details": {
+                                                "http_status": 500
+                                            }
                                         }
                                     }
                                 }
@@ -307,6 +334,199 @@
                             }
                         }
                     },
+                    "400 Empty Template Name": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "EmptyTemplateName": {
+                                        "summary": "Empty template name",
+                                        "value": {
+                                            "code": "api_empty_template_name",
+                                            "type": "validation",
+                                            "message": "Template name cannot be empty",
+                                            "details": {
+                                                "param": "name",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400 No Insights Provided": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "NoInsightsProvided": {
+                                        "summary": "No insights provided",
+                                        "value": {
+                                            "code": "api_validation_error",
+                                            "type": "validation",
+                                            "message": "Insights must be provided in a template",
+                                            "details": {
+                                                "param": "insights",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400 No Valid Insights": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "NoValidInsights": {
+                                        "summary": "No valid insights",
+                                        "value": {
+                                            "code": "api_validation_error",
+                                            "type": "validation",
+                                            "message": "At least one static, configurable, or aggregated insight must be provided in a template",
+                                            "details": {
+                                                "param": "insights",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400 Duplicate Ref Key Config": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "DuplicateRefKeyConfig": {
+                                        "summary": "Duplicate ref key config",
+                                        "value": {
+                                            "code": "api_validation_error",
+                                            "type": "validation",
+                                            "message": "Use different ref_key for following, {insight_type} config already exists: {conflicts}",
+                                            "details": {
+                                                "param": "ref_key",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400 Integrity Error": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "IntegrityError": {
+                                        "summary": "Integrity error",
+                                        "value": {
+                                            "code": "api_validation_error",
+                                            "type": "validation",
+                                            "message": "Cannot create insights with same ref_key",
+                                            "details": {
+                                                "param": "ref_key",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400 Duplicate Ref Keys": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "DuplicateRefKeys": {
+                                        "summary": "Duplicate ref keys",
+                                        "value": {
+                                            "code": "api_duplicate_ref_key",
+                                            "type": "validation",
+                                            "message": "Duplicate ref_keys found in request: {duplicate_ref_keys}",
+                                            "details": {
+                                                "param": "ref_keys",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400 Invalid Ref Key Format": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "InvalidRefKeyFormat": {
+                                        "summary": "Invalid ref key format",
+                                        "value": {
+                                            "code": "api_invalid_ref_key",
+                                            "type": "validation",
+                                            "message": "Invalid ref_key format: \"Monthly EOD Balance\". Must not contain spaces or special characters.",
+                                            "details": {
+                                                "param": "ref_key",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400 Invalid Insight Name": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "InvalidInsightName": {
+                                        "summary": "Invalid insight name",
+                                        "value": {
+                                            "code": "api_invalid_insight_name",
+                                            "type": "validation",
+                                            "message": "Invalid insight name: {insight_name}. Must start with 'static_', 'configurable_', or 'aggregated_'",
+                                            "details": {
+                                                "param": "insight_name",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+
                     "401": {
                         "description": "Authentication Error",
                         "content": {
@@ -315,14 +535,39 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
+                                    "AuthenticationError": {
+                                        "summary": "Authentication Error",
                                         "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "auth_unauthorized",
+                                            "type": "auth",
+                                            "message": "Unable to fetch FIU config. Please pass `x-client-id`, `x-client-secret`, `x-product-account-id` headers properly.",
+                                            "details": {
+                                                "http_status": 401
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404 Insight Not Found": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "InsightNotFound": {
+                                        "summary": "Insight not found",
+                                        "value": {
+                                            "code": "api_insight_not_found",
+                                            "type": "validation",
+                                            "message": "Insights not found (case-sensitive): {missing_insights}",
+                                            "details": {
+                                                "param": "insights",
+                                                "http_status": 404
+                                            }
                                         }
                                     }
                                 }
@@ -337,36 +582,62 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
+                                    "ValidationError": {
+                                        "summary": "Validation Error",
                                         "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "422",
+                                            "type": "validation",
+                                            "message": "Validation failed",
+                                            "details": {
+                                                "http_status": 422
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "500 Insight Master Not Found": {
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
+                                    "InsightMasterNotFound": {
+                                        "summary": "Insight master not found",
                                         "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "api_insight_not_found",
+                                            "type": "internal",
+                                            "message": "Unexpected error: Insight master not found after validation: {item.insight}",
+                                            "details": {
+                                                "param": "insight_master",
+                                                "http_status": 500
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500 Server Error": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ServerError": {
+                                        "summary": "Server Error",
+                                        "value": {
+                                            "code": "internal_error",
+                                            "type": "internal",
+                                            "message": "Internal Server Error",
+                                            "details": {
+                                                "http_status": 500
+                                            }
                                         }
                                     }
                                 }
@@ -482,6 +753,54 @@
                             }
                         }
                     },
+                    "400 Invalid Ref ID Format": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "InvalidRefIdFormat": {
+                                        "summary": "Invalid refId format",
+                                        "value": {
+                                            "code": "api_invalid_ref_id",
+                                            "type": "validation",
+                                            "message": "Invalid refId: must not contain spaces or special characters.",
+                                            "details": {
+                                                "param": "refId",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400 Missing Linked Acc Ref": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "MissingLinkedAccRef": {
+                                        "summary": "Missing linked account reference",
+                                        "value": {
+                                            "code": "api_missing_linked_acc_ref",
+                                            "type": "validation",
+                                            "message": "Linked acc ref is required for each account",
+                                            "details": {
+                                                "param": "linked_acc_ref",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "401": {
                         "description": "Authentication Error",
                         "content": {
@@ -490,14 +809,15 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
+                                    "AuthenticationError": {
+                                        "summary": "Authentication Error",
                                         "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "auth_unauthorized",
+                                            "type": "auth",
+                                            "message": "Unable to fetch FIU config. Please pass `x-client-id`, `x-client-secret`, `x-product-account-id` headers properly.",
+                                            "details": {
+                                                "http_status": 401
+                                            }
                                         }
                                     }
                                 }
@@ -512,36 +832,63 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
+                                    "ValidationError": {
+                                        "summary": "Validation Error",
                                         "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "422",
+                                            "type": "validation",
+                                            "message": "Validation failed",
+                                            "details": {
+                                                "http_status": 422
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "500 Transaction Service Error": {
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
+                                    "TransactionServiceError": {
+                                        "summary": "Transaction service error",
                                         "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "internal_error",
+                                            "type": "internal",
+                                            "message": "{error message from service}",
+                                            "details": {
+                                                "param": "service",
+                                                "http_status": 500
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500 Internal Server Error": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "UnexpectedError": {
+                                        "summary": "Unexpected error",
+                                        "value": {
+                                            "code": "internal_error",
+                                            "type": "internal",
+                                            "message": "Internal Server Error",
+                                            "details": {
+                                                "param": "exception_type",
+                                                "http_status": 500
+                                            }
                                         }
                                     }
                                 }
@@ -704,6 +1051,30 @@
                             }
                         }
                     },
+                    "400 Invalid Report Id": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "InvalidReportId": {
+                                        "summary": "Invalid report ID",
+                                        "value": {
+                                            "code": "api_invalid_ref_id",
+                                            "type": "validation",
+                                            "message": "Invalid report id",
+                                            "details": {
+                                                "param": "reportId",
+                                                "http_status": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "401": {
                         "description": "Authentication Error",
                         "content": {
@@ -712,14 +1083,39 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
+                                    "AuthenticationError": {
+                                        "summary": "Authentication Error",
                                         "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "auth_unauthorized",
+                                            "type": "auth",
+                                            "message": "Unable to fetch FIU config. Please pass `x-client-id`, `x-client-secret`, `x-product-account-id` headers properly.",
+                                            "details": {
+                                                "http_status": 401
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404 Report Not Found": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "ReportNotFound": {
+                                        "summary": "Report not found",
+                                        "value": {
+                                            "code": "api_report_not_found",
+                                            "type": "validation",
+                                            "message": "Unable to find report with id: 293ee9b4-58ad-4e97-9df5-afc65a8b5970",
+                                            "details": {
+                                                "param": "reportId",
+                                                "http_status": 404
+                                            }
                                         }
                                     }
                                 }
@@ -734,14 +1130,15 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
+                                    "ValidationError": {
+                                        "summary": "Validation Error",
                                         "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "422",
+                                            "type": "validation",
+                                            "message": "Validation failed",
+                                            "details": {
+                                                "http_status": 422
+                                            }
                                         }
                                     }
                                 }
@@ -756,14 +1153,15 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
+                                    "ServerError": {
+                                        "summary": "Server Error",
                                         "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "internal_error",
+                                            "type": "internal",
+                                            "message": "Internal Server Error",
+                                            "details": {
+                                                "http_status": 500
+                                            }
                                         }
                                     }
                                 }
@@ -777,7 +1175,7 @@
                     "Insight generation"
                 ],
                 "summary": "Create Insights",
-                "description": "Call this API with the template-id received from Setu along with a ref_id, to trigger an Report generation job. The created Report will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to fetch the generated Report.",
+                "description": "Call this API with the template-id received from Setu along with a refId, to trigger an Report generation job. The created Report will be shared via a notification to the endpoint configured by the FIU.This API will respond with a report-id, which can also be used to fetch the generated Report.",
                 "operationId": "process_insights_v3_insight_post",
                 "parameters": [
                     {
@@ -868,14 +1266,15 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
+                                    "AuthenticationError": {
+                                        "summary": "Authentication Error",
                                         "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to fetch FIU config",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "auth_unauthorized",
+                                            "type": "auth",
+                                            "message": "Unable to fetch FIU config. Please pass `x-client-id`, `x-client-secret`, `x-product-account-id` headers properly.",
+                                            "details": {
+                                                "http_status": 401
+                                            }
                                         }
                                     }
                                 }
@@ -890,14 +1289,16 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ValidationErrorResponse": {
-                                        "summary": "ValidationErrorResponse",
+                                    "ValidationError": {
+                                        "summary": "Validation Error",
                                         "value": {
-                                            "errorCode": "422",
-                                            "errorMsg": "field required -> account",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "422",
+                                            "type": "validation",
+                                            "message": "Validation failed",
+                                            "details": {
+                                                "param": "refId",
+                                                "http_status": 422
+                                            }
                                         }
                                     }
                                 }
@@ -912,58 +1313,87 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
+                                    "ServerError": {
+                                        "summary": "Server Error",
                                         "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "internal_error",
+                                            "type": "internal",
+                                            "message": "Internal Server Error",
+                                            "details": {
+                                                "http_status": 500
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "400 Invalid RefId Format": {
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "RequestErrorResponse": {
-                                        "summary": "RequestErrorResponse",
+                                    "InvalidRefIdFormat": {
+                                        "summary": "Invalid refId format",
                                         "value": {
-                                            "errorCode": "400",
-                                            "errorMsg": "Empty data_ids input",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "api_invalid_ref_id",
+                                            "type": "validation",
+                                            "message": "Invalid refId: must not contain spaces or special characters.",
+                                            "details": {
+                                                "param": "refId",
+                                                "http_status": 400
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     },
-                    "404": {
-                        "description": "Not Found Error",
+                    "404 RefId Not Found": {
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "NotFoundResponse": {
-                                        "summary": "NotFoundResponse",
+                                    "RefIdNotFound": {
+                                        "summary": "Ref ID not found",
                                         "value": {
-                                            "errorCode": "404",
-                                            "errorMsg": "Unable to find FIData with id: 4e8e6d50-2dd4-43d0-a79a-5348b935ecf4",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "api_ref_id_not_found",
+                                            "type": "validation",
+                                            "message": "Unable to find refId: 293ee9b4-58ad-4e97-9df5-afc65a8b5970",
+                                            "details": {
+                                                "param": "refId",
+                                                "http_status": 404
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404 Template Not Found": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "TemplateNotFound": {
+                                        "summary": "Template not found",
+                                        "value": {
+                                            "code": "api_template_not_found",
+                                            "type": "validation",
+                                            "message": "Unable to find template with id: 453ee9b4-58ad-4e97-9df5-afc65a8b5970",
+                                            "details": {
+                                                "param": "templateId",
+                                                "http_status": 404
+                                            }
                                         }
                                     }
                                 }
@@ -1278,21 +1708,23 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Validation Error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "RequestErrorResponse": {
-                                        "summary": "RequestErrorResponse",
+                                    "InvalidRefId": {
+                                        "summary": "Invalid ref_id format",
                                         "value": {
-                                            "errorCode": "400",
-                                            "errorMsg": "Missing required parameter: refId",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "api_invalid_ref_id",
+                                            "type": "validation",
+                                            "message": "Invalid ref_id format",
+                                            "details": {
+                                                "param": "refId",
+                                                "http_status": 400
+                                            }
                                         }
                                     }
                                 }
@@ -1307,14 +1739,15 @@
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "AuthenticationErrorResponse": {
-                                        "summary": "AuthenticationErrorResponse",
+                                    "AuthenticationError": {
+                                        "summary": "Authentication Error",
                                         "value": {
-                                            "errorCode": "401",
-                                            "errorMsg": "Unable to authenticate with provided credentials",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "auth_unauthorized",
+                                            "type": "auth",
+                                            "message": "Unable to fetch FIU config. Please pass `x-client-id`, `x-client-secret`, `x-product-account-id` headers properly.",
+                                            "details": {
+                                                "http_status": 401
+                                            }
                                         }
                                     }
                                 }
@@ -1322,21 +1755,23 @@
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "RefId Not Found",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "NotFoundResponse": {
-                                        "summary": "NotFoundResponse",
+                                    "RefIdNotFound": {
+                                        "summary": "Unable to find ref_id",
                                         "value": {
-                                            "errorCode": "404",
-                                            "errorMsg": "No data found for the provided refId",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "api_ref_id_not_found",
+                                            "type": "validation",
+                                            "message": "Unable to find ref_id",
+                                            "details": {
+                                                "param": "refId",
+                                                "http_status": 404
+                                            }
                                         }
                                     }
                                 }
@@ -1344,21 +1779,24 @@
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ErrorResponse"
                                 },
                                 "examples": {
-                                    "ServerErrorResponse": {
-                                        "summary": "ServerErrorResponse",
+                                    "ServerError": {
+                                        "summary": "Error purging data from repository",
                                         "value": {
-                                            "errorCode": "500",
-                                            "errorMsg": "Internal Server Error",
-                                            "timestamp": "2023-04-18T17:10:12.904153",
-                                            "ver": "1",
-                                            "txnid": "4e8e6d50-2dd4-43d0-a79a-5348b935ecf4"
+                                            "code": "internal_error",
+                                            "type": "internal",
+                                            "message": "Error purging data from repository",
+                                            "details": {
+                                                "ref_id": "[ref_id]",
+                                                "http_status": 500,
+                                                "param": "refId"
+                                            }
                                         }
                                     }
                                 }
@@ -1938,35 +2376,59 @@
           "ErrorResponse": {
               "title": "ErrorResponse",
               "required": [
-                  "errorCode",
-                  "errorMsg"
+                  "code",
+                  "type",
+                  "message"
               ],
               "type": "object",
               "properties": {
-                  "errorCode": {
-                      "title": "Errorcode",
-                      "type": "string"
-                  },
-                  "errorMsg": {
-                      "title": "Errormsg",
-                      "type": "string"
-                  },
-                  "timestamp": {
-                      "title": "Timestamp",
+                  "code": {
+                      "title": "Error Code",
                       "type": "string",
-                      "format": "date-time"
+                      "description": "Unique identifier for specific error conditions"
                   },
-                  "version": {
-                      "title": "Version",
-                      "type": "string",
-                      "default": "0.74.0"
+                  "type": {
+                      "title": "Error Type",
+                      "$ref": "#/components/schemas/ErrorType",
+                      "description": "Category of the error"
                   },
-                  "txnid": {
-                      "title": "Txnid",
+                  "message": {
+                      "title": "Error Message",
                       "type": "string",
-                      "default": ""
+                      "description": "Human-readable description of the error"
+                  },
+                  "details": {
+                      "title": "Error Details",
+                      "type": "object",
+                      "properties": {
+                          "param": {
+                              "title": "Parameter",
+                              "type": "string",
+                              "description": "Parameter causing the error"
+                          },
+                          "http_status": {
+                              "title": "HTTP Status",
+                              "type": "integer",
+                              "description": "HTTP status code"
+                          }
+                      },
+                      "additionalProperties": true
                   }
               }
+          },
+          "ErrorType": {
+              "title": "ErrorType",
+              "enum": [
+                  "validation",
+                  "internal",
+                  "auth",
+                  "business",
+                  "insight",
+                  "rate_limit",
+                  "upstream"
+              ],
+              "type": "string",
+              "description": "Category of the error that occurred"
           },
           "FIDataBlockCreateResponse": {
               "title": "FIDataBlockCreateResponse",
@@ -2612,6 +3074,18 @@
                   }
               }
           },
+          "ReportJobStatus": {
+              "title": "ReportJobStatus",
+              "enum": [
+                  "in-progress",
+                  "complete",
+                  "failed",
+                  "queued",
+                  "pdf_in_progress"
+              ],
+              "type": "string",
+              "description": "Status of the report generation job"
+          },
           "ReportJobResponseBody": {
               "title": "ReportJobResponseBody",
               "required": [
@@ -2627,7 +3101,7 @@
                   },
                   "status": {
                       "title": "Status",
-                      "type": "string"
+                      "$ref": "#/components/schemas/ReportJobStatus"
                   },
                   "reason": {
                       "title": "Reason",
