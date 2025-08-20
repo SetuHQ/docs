@@ -13,59 +13,77 @@ The `base_url` is your server URL configured to receive notifications, which is 
 
 <hr class="primary" />
 
-#### Insights generated notification
+## Insights generated notification
 
 This notification is used to communicate the generated insights which was requested by you in <a href="/data/insights/quickstart/api-integration#create-insight-report" target="_blank">
 Create Insight Report API</a>.
 
-###### Notification payload
+## Field Descriptions
 
-Setu will post this payload to your notification endpoint when Insights report is successfully generated.
+The table below describes each field in the notification payload:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `version` | `string` | Version of the Insights API (e.g., "v3") |
+| `notificationId` | `UUID` | Unique identifier for this specific notification |
+| `type` | `string` | Type of notification (always "INSIGHT_STATUS_UPDATE" for insights) |
+| `timestamp` | `datetime` | ISO 8601 timestamp when the notification was sent |
+| `reportId` | `UUID` | Reference ID of the insights generation report. Use this to fetch insights via the Get Insights API |
+| `status` | `enum` | Status of insight processing: `SUCCESS`, `PARTIAL_SUCCESS`, or `FAILURE` |
+| `message` | `string` | Human-readable message describing the current status |
+| `additionalInfo` | `object` | Passthrough field for additional metadata  |
+
+#### Success Case
+
+When all insights are successfully generated, you'll receive a notification with `status: "SUCCESS"`. The actual insights data will be available via the Get Insights API.
 
 <CodeBlockWithCopy language="json">
-  {`{
-    "type": "INSIGHT_STATUS_UPDATE",
-    "timestamp": "2025-06-18 09:39:27.244",
-    "reportId": "8af477ff-d97e-4eda-a6c0-b5acd5714262",
-    "success": true,
-    "data": {
-        "status": "READY",
-        "insights": [
-            {
-                "linked_acc_ref": "a1f89fea-4075-4900-9a28-75d9f04b98de",
-                "insight_values": {
-                    "mutualfunds_holdings_summary": {
-                        "total_current_amount": "0.0",
-                        "holdings": [
-                            {
-                                "isin": "INF277KA1CX6",
-                                "current_value": "0.0",
-                                "fund_name": null,
-                                "amc": "Tata Asset Management Private Limited",
-                                "units": "0.0"
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                "linked_acc_ref": "8a467ff9-51a5-4c8e-9cec-396dffffda13",
-                "insight_values": {
-                    "bank_account_number": null,
-                    "fraud_flags": [],
-                    "insight_errors": {
-                        "message": "We encountered an issue while calculating some of your financial insights.",
-                        "affected_insights": [
-                            "bank_account_number"
-                        ]
-                    }
-                }
-            }
-        ]
-    },
-    "error": {}
-}
-`}
+{`{
+  "version": "v3",
+  "notificationId": "b7c8d9e0-f1a2-4b3c-8d4e-9f5a6b7c8d9e",
+  "type": "INSIGHT_STATUS_UPDATE",
+  "timestamp": "2025-06-18T09:39:27.244Z",
+  "reportId": "8af477ff-d97e-4eda-a6c0-b5acd5714262",
+  "status": "SUCCESS",
+  "message": "Insights generation completed successfully",
+  "additionalInfo": {}
+}`}
 </CodeBlockWithCopy>
+
+#### Partial Success Case
+
+When some insights are generated successfully while others fail, you'll receive a notification with `status: "PARTIAL_SUCCESS"`. Check the Get Insights API for insight data and any errors.
+
+<CodeBlockWithCopy language="json">
+{`{
+  "version": "v3",
+  "notificationId": "c8d9e0f1-a2b3-4c5d-9e6f-7a8b9c0d1e2f",
+  "type": "INSIGHT_STATUS_UPDATE",
+  "timestamp": "2025-06-18T09:39:27.244Z",
+  "reportId": "8af477ff-d97e-4eda-a6c0-b5acd5714262",
+  "status": "PARTIAL_SUCCESS",
+  "message": "Generation of some insights failed. Call get insights to get the details",
+  "additionalInfo": {}
+}`}
+</CodeBlockWithCopy>
+
+#### Failure Case
+
+When the entire insight generation process fails, you'll receive a notification with `status: "FAILURE"`.
+
+<CodeBlockWithCopy language="json">
+{`{
+  "version": "v3",
+  "notificationId": "d9e0f1a2-b3c4-4d5e-9f6a-8b9c0d1e2f3a",
+  "type": "INSIGHT_STATUS_UPDATE",
+  "timestamp": "2025-06-18T09:39:27.244Z",
+  "reportId": "8af477ff-d97e-4eda-a6c0-b5acd5714262",
+  "status": "FAILURE",
+  "message": "Insights generation failed",
+  "additionalInfo": {}
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
 
 <WasPageHelpful />
