@@ -1,0 +1,298 @@
+---
+sidebar_title: Error codes
+page_title: Setu Insights error codes
+order: 5
+visible_in_sidebar: true
+---
+
+## Error codes
+
+This guide documents all error codes returned by the Setu Insights API. Understanding these codes will help you handle errors gracefully and debug integration issues effectively.
+
+<hr class="primary" />
+
+### Error response structure
+
+All API v3 error responses follow a consistent structure:
+
+<CodeBlockWithCopy language="json">
+{`{
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "version": "0.73.1",
+  "txnid": "txn_12345",
+  "error": {
+    "code": "api_template_not_found",
+    "type": "validation",
+    "message": "Template with id tpl_123 not found",
+    "details": {
+      "template_id": "tpl_123",
+      "http_status": 404,
+      "param": "templateId"
+    }
+  }
+}`}
+</CodeBlockWithCopy>
+
+The error object contains:
+- **code**—Unique identifier for programmatic error handling
+- **type**—Error category (validation, auth, internal, etc.)  
+- **message**—Human-readable description
+- **details**—Additional context including the parameter causing the error
+
+<Callout type="tip">
+  Always check the error code for programmatic error handling, and use the message for displaying errors to end users.
+</Callout>
+
+<hr class="primary" />
+
+### Error codes reference
+
+All possible error codes returned by the API:
+
+| Code | Description |
+|------|-------------|
+| `api_validation_error` | General validation error for requests |
+| `api_invalid_request` | Request format is invalid |
+| `api_empty_template_name` | Template name cannot be empty |
+| `api_template_not_found` | Template with specified ID not found |
+| `api_report_not_found` | Report with specified ID not found |
+| `api_ref_id_not_found` | Ref ID not found |
+| `api_invalid_ref_id` | Ref ID format is invalid |
+| `api_template_conflict` | Template configuration conflict |
+| `api_missing_linked_acc_ref` | Linked account reference is missing |
+| `api_duplicate_ref_key` | Duplicate Ref keys found |
+| `api_invalid_ref_key` | Ref key format is invalid |
+| `api_invalid_insight_name` | Insight name format is invalid |
+| `api_insight_not_found` | Specified insight not found |
+| `ins_data_missing` | Required data missing for insight computation |
+| `ins_insufficient_history` | Insufficient transaction history |
+| `ins_invalid_format` | Data format is invalid for processing |
+| `ins_computation_error` | Error during insight calculation |
+| `auth_unauthorized` | Authentication required |
+| `auth_forbidden` | Access forbidden |
+| `rate_limit_exceeded` | API rate limit exceeded |
+| `upstream_error` | Upstream service error |
+| `internal_error` | Internal server error |
+| `business_error` | Business logic error |
+
+### Error types
+
+Errors are categorized into the following types:
+
+| Type | Description |
+|------|-------------|
+| `validation` | Input validation errors (malformed data, missing required fields) |
+| `auth` | Authentication and authorization errors |
+| `internal` | Internal server errors |
+| `business` | Business logic errors |
+| `insight` | Insight-specific processing errors |
+| `rate_limit` | Rate limiting errors |
+| `upstream` | Upstream service errors |
+| `config` | Configuration errors |
+
+
+
+<hr class="primary" />
+
+## API Error Codes
+
+### Template Management
+
+#### GET /v3/template
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `api_template_not_found` | 404 | Template not found | When requesting a template that doesn't exist | Verify the template ID is correct and exists |
+
+#### POST /v3/template
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `api_empty_template_name` | 400 | Template name cannot be empty | When creating a template without providing a name | Provide a valid template name |
+| `api_validation_error` | 400 | Insights must be provided in a template | When creating a template without any insights | Include at least one insight in the template |
+| `api_duplicate_ref_key` | 400 | Duplicate ref_keys found in request | When the same ref_key is used multiple times | Use unique ref_keys for each insight in the template |
+| `api_invalid_ref_key` | 400 | Invalid ref_key format | When ref_key contains spaces or special characters | Use only alphanumeric characters and underscores in ref_keys |
+| `api_invalid_insight_name` | 400 | Invalid insight name format | When insight name doesn't follow the required naming convention | Ensure insight names follow the required naming convention |
+| `api_insight_not_found` | 404 | Insights not found (case-sensitive) | When requesting insights that don't exist | Verify insight names are spelled correctly and exist in the system |
+
+### Data Ingestion
+
+#### POST /v3/fiData
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `api_invalid_ref_id` | 400 | Invalid ref_id format | When ref_id contains spaces or special characters | Use only alphanumeric characters and underscores in ref_id |
+| `api_missing_linked_acc_ref` | 400 | Linked acc ref is required for each account | When account data is missing linked_acc_ref | Ensure all accounts have a valid linked_acc_ref field |
+| `internal_error` | 500 | Data processing error or unexpected error | When data processing fails or unexpected exceptions occur | Contact support if the error persists |
+
+### Insight Generation
+
+#### POST /v3/insight
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `api_invalid_ref_id` | 400 | Invalid ref_id format | When ref_id contains spaces or special characters | Use only alphanumeric characters and underscores in ref_id |
+| `api_ref_id_not_found` | 404 | Unable to find ref_id | When generating insights for a non-existent ref_id | Ensure data has been uploaded for the ref_id first |
+| `api_template_not_found` | 404 | Unable to find template | When using a template that doesn't exist | Verify the template ID is correct and exists |
+
+#### GET /v3/insight
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `api_invalid_ref_id` | 400 | Invalid report id | When the report ID format is invalid | Provide a valid report ID from the insight generation response |
+| `api_report_not_found` | 404 | Unable to find report | When requesting a report that doesn't exist | Verify the report ID is correct and the report has been generated |
+
+### Data Purging
+
+#### DELETE /v3/purge
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `api_invalid_ref_id` | 400 | Invalid ref_id format | When ref_id contains spaces or special characters | Use only alphanumeric characters and underscores in ref_id |
+| `api_ref_id_not_found` | 404 | Unable to find ref_id | When purging data for a non-existent ref_id | Verify the ref_id exists before attempting to purge |
+| `internal_error` | 500 | Error purging data | When the purge operation fails | Contact support if the error persists |
+
+<hr class="primary" />
+
+## Authentication & Authorization
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `auth_unauthorized` | 401 | Authentication required | When API credentials are missing or invalid or client configuration cannot be accessed | Verify x-client-id, x-client-secret, and x-product-account-id headers are correct |
+| `auth_forbidden` | 403 | Access forbidden | When the client doesn't have permission for the requested resource | Contact support to verify your access permissions |
+
+<hr class="primary" />
+
+## Rate Limiting
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `rate_limit_exceeded` | 429 | Too many requests | When API rate limits are exceeded | Implement exponential backoff and reduce request frequency |
+
+<hr class="primary" />
+
+## Generic Validation Errors
+
+These errors occur when request validation fails at the API level.
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `api_validation_error` | 422 | Request validation failed | When request body, query parameters, or headers fail validation | Check the error details for specific validation failures and correct the request format |
+
+### Example validation error response
+
+<CodeBlockWithCopy language="json">
+{`{
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "version": "0.73.1",
+  "txnid": "txn_12345",
+  "error": {
+    "code": "api_validation_error",
+    "type": "validation",
+    "message": "Request validation failed",
+    "details": {
+      "total_errors": 2,
+      "error_message": [
+        "field required -> templateId",
+        "ensure this value has at least 1 characters -> refId"
+      ]
+    }
+  }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+## Insight Processing Errors
+
+These errors occur during insight computation and are returned within successful API responses (2xx status) but with `status: "error"` for affected insights.
+
+| Error Code | Description | When it occurs | Resolution |
+|------------|-------------|---------------|-----------|
+| `ins_data_missing` | Required data is missing for insight computation | When account data lacks necessary transactions or fields | Ensure complete financial data is provided |
+| `ins_insufficient_history` | Insufficient transaction history | When there's not enough historical data for analysis | Provide data spanning a longer time period |
+| `ins_invalid_format` | Data format is invalid for processing | When transaction or account data is malformed | Verify data follows the ReBIT schema format |
+| `ins_computation_error` | Error occurred during insight calculation | When the insight algorithm encounters an unexpected error | Contact support if the error persists |
+
+### Example insight error response
+
+<CodeBlockWithCopy language="json">
+{`{
+  "status": "Success",
+  "body": {
+    "accounts": [
+      {
+        "accountIdentifierKey": "acc_123",
+        "insights": [
+          {
+            "indicatorName": "salary_analysis",
+            "status": "error",
+            "error": {
+              "code": "ins_insufficient_history",
+              "type": "insight",
+              "message": "Insufficient transaction history for salary analysis",
+              "details": {
+                "required_months": 6,
+                "available_months": 2
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+## System Errors
+
+| Error Code | HTTP Status | Description | When it occurs | Resolution |
+|------------|-------------|-------------|---------------|-----------|
+| `internal_error` | 500 | Internal server error | When unexpected system errors, unhandled exceptions, or internal service failures occur | Contact support if the error persists |
+| `business_error` | 400 | Business logic error | When business rules are violated | Review the error details and adjust your request accordingly |
+| `upstream_error` | 502/503 | Upstream service error | When dependent services are unavailable | Retry after a brief delay; contact support if the issue persists |
+
+### Example internal server error response
+
+<CodeBlockWithCopy language="json">
+{`{
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "version": "0.73.1",
+  "txnid": "txn_12345",
+  "error": {
+    "code": "internal_error",
+    "type": "internal",
+    "message": "Internal Server Error",
+    "details": {
+      "exception_type": "ServiceConnectionError"
+    }
+  }
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+## Best Practices
+
+1. **Programmatic handling**—Always check the error code rather than parsing error messages for conditional logic
+2. **User experience**—Display the human-readable message to end users
+3. **Debugging**—Use the details object for additional context during troubleshooting
+4. **Retry logic**—Implement appropriate retry mechanisms for temporary errors (rate limits, upstream errors)
+5. **Monitoring**—Track error rates by code to identify systematic issues
+
+<hr class="primary" />
+
+## HTTP Status Code Reference
+
+- **400 Bad Request**—Business logic errors, specific validation failures
+- **401 Unauthorized**—Missing or invalid authentication
+- **403 Forbidden**—Insufficient permissions  
+- **404 Not Found**—Resource doesn't exist
+- **422 Unprocessable Entity**—Request validation failed (malformed requests)
+- **429 Too Many Requests**—Rate limit exceeded
+- **500 Internal Server Error**—Unexpected server errors
+- **502/503 Service Unavailable**—Upstream service issues
+
+<WasPageHelpful />
