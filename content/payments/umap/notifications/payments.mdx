@@ -9,7 +9,7 @@ visible_in_sidebar: true
 
 Most of the products on our platform end up creating a payment event when a customer interacts with it from a Payer PSP. We provide consistent and transparent payment statuses for a merchant, to be able to track the life-cycle of a payment request. These statuses are shown in the diagram below.
 
-Any UPI Setu product relies on creating and presenting payment request to a customer. Setu’s UPI Setu stack provides consistent and transparent payment statuses for a merchant, to be able to track the life-cycle of a payment request. These statuses are shown in the diagram below.
+Any UPI Setu product relies on creating and presenting payment request to a customer. Setu's UPI Setu stack provides consistent and transparent payment statuses for a merchant, to be able to track the life-cycle of a payment request. These statuses are shown in the diagram below.
 
 <img
   src="https://storage.googleapis.com/strapi-assets/latest/Frame_72/Frame_72.png"
@@ -19,7 +19,7 @@ Any UPI Setu product relies on creating and presenting payment request to a cust
 | **Payment statuses** | **Description**                                  |
 | -------------------- | ------------------------------------------------ |
 | `payment.initiated`  | Payment has been attempted by a customer         |
-| `payment.ending`     | Payment is currently being processed by UPI Setu |
+| `payment.pending`    | Payment is currently being processed by UPI Setu |
 | `payment.success`    | Payment has been successfully completed          |
 | `payment.failed`     | Payment could not be processed                   |
 
@@ -55,18 +55,28 @@ While most of the attributes in the notificiation payload are the same for all p
    // Payment context
    "productInstanceType": "pay_single_tpv",
    //  TPV attributes
-   “tpv”: {
-      "sourceAccounts": [
-         {
-            "ifsc": "HDFC00123",
-            "accountNumber": "**** **** **** 1234",
-            "accountName": "M*N* T*O*M*A*S",
-         }
-      ],
+   "tpv": {
       "customerAccount": {
          "ifsc": "HDFC00123",
          "accountNumber": "**** **** **** 1234",
          "accountName": "M*N* T*O*M*A*S",
+      }
+   }
+}`}
+</CodeBlockWithCopy>
+
+- `tpvPlus` — conditional, this object is populated only when the productInstanceType is `pay_single_tpv_plus`
+
+<CodeBlockWithCopy language="json">
+  {`{
+   // Payment context
+   "productInstanceType": "pay_single_tpv_plus",
+   //  TPV attributes
+   "tpvPlus": {
+      "customerAccount": {
+         "payerApp": "GPay",
+         "payerBank": "HDFC",
+         "payerVpa": "customer@upi"
       }
    }
 }`}
@@ -88,32 +98,43 @@ While most of the attributes in the notificiation payload are the same for all p
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "txnTs": "2023-09-04T12:08:20+0530",
-   "eventType": "payment.initiated",
-   "resource": "payment",
-   "status": "initiated",   
-   // Payment context
-   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "productInstanceType": "<TYPE>", // collect | pay_single | pay_multi | pay_single_tpv
-   // References
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Payment attributes
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "txnType": "pay", // collect | pay
-   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
-   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV", // tr field in the intent
-   "rrn": "124068997913",
-   "txnNote": "testpay",
-   "amount": 1000,
-   "currency": "INR",
-   "merchantVpa": "fastestupi@pineaxis",
-   "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
-   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
-   "bin": "652926"
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",                                              // Unique event identifier, generated using UUID
+  "eventType": "payment.initiated",                     
+  "eventTs": "2025-06-29T19:12:35+05:30",                                                         // Event timestamp
+  "resource": "payment",                               
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                                                             // Payment ID
+  "status": "initiated",                              
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                                                     // Merchant ID
+  "merchantReferenceId": "order_123456789",                                                       // dqr / sqr / oqr / tpv / tpv-plus referenceId
+  "productInstanceId": "01JYXYSV8B19XAWSFRPARXY35E",                                              // dqr / sqr / oqr / tpv / tpv-plus id
+  "productInstanceType": "pay_single",                                                            // Type of product instance (pay_single, pay_multi, pay_single_tpv, pay_single_tpv_plus, offline_qr)
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                                                 // NPCI Txn.id
+  "txnType": "pay",                                   
+  "txnTs": "2025-06-29T19:12:35+05:30",                                                           // NPCI Txn.ts
+  "refId": "SU01JYXYSV8B19XAWSFRPARXY35E",                                                        // NPCI Txn.refId; intent link tr param value
+  "rrn": "123456789012",                                                                          // NPCI Txn.custRef
+  "amount": 1000,                                                                                 // Transaction amount in paise
+  "currency": "INR",                                                                              // Transaction currency
+  "customerVpa": "9650974246@ybl",                                                                // Payer VPA address
+  "merchantVpa": "setu.merchant@pineaxis",                                                        // Payee VPA address
+  "customerAccountType": "SAVINGS",                                                               // Type of payer account (SAVINGS, CURRENT, CREDIT, etc.)
+  "txnNote": "Payment for order 123456789",                                                       // NPCI Txn.note
+  "bin": "123456",                                                                                // First 6 digits of card number, Populated only when the customerAccountType is CREDIT
+  // TPV Specific Information (only present if productInstanceType is pay_single_tpv)
+  "tpv": {
+    "customerAccount": {}                                                                         // Empty object for payment.initiated notifications
+  },
+  // TPV Plus Specific Information (only present if productInstanceType is pay_single_tpv_plus)
+  "tpvPlus": {
+    "customerAccount": {}                                                                         // Empty object for payment.initiated notifications
+  },
+  // Information about payment failure reason
+  "reason": {},                                                                                   // Empty object for payment.initiated notifications
+  // Additional Information
+  "metadata": {                                                                                   // Optional metadata, only present for pay_single product instance type
+    "key1": "value1",
+    "key2": "value2"
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -126,37 +147,60 @@ While most of the attributes in the notificiation payload are the same for all p
         <>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "eventTs": "2023-09-04T12:08:20+0530",
-   "txnTs": "2023-09-04T12:08:20+0530",
-   "eventType": "payment.pending",
-   "resource": "payment",
-   "status": "pending",
-   // Payment context
-   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "productInstanceType": "<type>", 
-   // References
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Payment references
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // mandate reference (in case of mandate related payment)
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   // Payment attributes
-   "txnType": "pay",
-   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
-   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "rrn": "124068997913",
-   "txnNote": "testpay",
-   "amount": 1000,
-   "currency": "INR",
-   "merchantVpa": "fastestupi@pineaxis",
-   "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
-   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
-   "bin": "652926",
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",                                              // Unique event identifier, generated using UUID
+  "eventType": "payment.pending",                     
+  "eventTs": "2025-06-29T19:12:35+05:30",                                                         // Event timestamp
+  "resource": "payment",                              
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                                                             // Payment ID
+  "status": "pending",                                
+  "reason": {
+    "code": "payment-pending",                                                                    // Reason code
+    "desc": "payment is pending",                                                                 // Reason description
+    "npciErrCode": "XY",                                                                          // NPCI error code
+    "npciErrDesc": "Transaction is pending",                                                      // NPCI error code description
+    "npciErrCategory": "TD",                                                                      // NPCI error category (NA, TD, or BD)
+    "npciRespCode": "XY",                                                                         // NPCI response code
+    "npciRespDesc": "Transaction is under process",                                               // NPCI response code description
+    "setuDescription": "Transaction is being processed",                                          // Setu description
+    "suggestedAction": "Please wait for final confirmation"                                       // Suggested action for the user
+  },
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                                                     // Merchant ID
+  "merchantReferenceId": "order_123456789",                                                       // dqr / sqr / oqr / tpv / tpv-plus / collect referenceId
+  "productInstanceId": "01JYXYSV8B19XAWSFRPARXY35E",                                              // dqr / sqr / oqr / tpv / tpv-plus / collect id
+  "productInstanceType": "pay_single",                                                            // Type of product instance (pay_single, pay_multi, pay_single_tpv, pay_single_tpv_plus, offline_qr, collect)
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                                                 // NPCI Txn.id
+  "txnType": "pay",                                                                               // "pay" for pay flow payments, "collect" for collect flow payments
+  "txnTs": "2025-06-29T19:12:35+05:30",                                                           // NPCI Txn.ts
+  "refId": "SU01JYXYSV8B19XAWSFRPARXY35E",                                                        // NPCI Txn.refId
+  "rrn": "123456789012",                                                                          // NPCI Txn.custRef
+  "amount": 1000,                                                                                 // Transaction amount in paise
+  "currency": "INR",                                                                              // Transaction currency
+  "customerVpa": "9650974246@ybl",                                                                // Payer VPA address
+  "merchantVpa": "setu.merchant@pineaxis",                                                        // Payee VPA address
+  "customerAccountType": "SAVINGS",                                                               // Type of payer account (SAVINGS, CURRENT, CREDIT, etc.)
+  "txnNote": "Payment for order 123456789",                                                       // NPCI Txn.note
+  "bin": "123456",                                                                                // First 6 digits of card number, Populated only when the customerAccountType is CREDIT
+  // TPV Specific Information (populated only if productInstanceType is pay_single_tpv otherwise populated as "tpv": {"customerAccount": {}})
+  "tpv": {
+    "customerAccount": {
+      "ifsc": "HDFC00123",
+      "accountNumber": "**** **** **** 1234",                                                     // Masked payer account number
+      "accountName": "M*N* T*O*M*A*S"                                                             // Masked payer account name
+    }
+  },
+  // TPV Plus Specific Information (populated only if productInstanceType is pay_single_tpv_plus otherwise populated as "tpvPlus": {"customerAccount": {}})
+  "tpvPlus": {
+    "customerAccount": {
+      "payerApp": "GPay",
+      "payerBank": "HDFC",                                                                        // First 4 chars of payer account ifsc
+      "payerVpa": "9650974246@ybl"
+    }
+  },
+  // Additional Information (only for pay_single product instance type)
+  "metadata": {                                                                                   // Optional metadata from payment record
+    "key1": "value1",
+    "key2": "value2"
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -169,39 +213,60 @@ While most of the attributes in the notificiation payload are the same for all p
         <>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "eventTs": "2023-09-04T12:08:20+0530",
-   "txnTs": "2023-09-04T12:08:20+0530",
-   "eventType": "payment.success",
-   "resource": "payment",
-   "status": "success",
-   // Payment context
-   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "productInstanceType": "<type>",
-   // References
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Payment references
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // mandate reference (in case of mandate related payment)
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   // Payment attributes
-   "txnType": "pay",
-   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
-   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "rrn": "124068997913",
-   "txnNote": "testpay",
-   "amount": 1000,
-   "currency": "INR",
-   "merchantVpa": "fastestupi@pineaxis",
-   "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
-   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
-   "bin": "652926",
-   //  TPV attributes
-   “tpv”: {},
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",                                              // Unique event identifier, generated using UUID
+  "eventType": "payment.success",                     
+  "eventTs": "2025-06-29T19:12:35+05:30",                                                         // Event timestamp
+  "resource": "payment",                              
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                                                             // Payment ID
+  "status": "success",                                
+  "reason": {
+    "code": "payment-success",                                                                    // Reason code
+    "desc": "payment is success",                                                                 // Reason description
+    "npciErrCode": "00",                                                                          // NPCI error code
+    "npciErrDesc": "SUCCESS",                                                                     // NPCI error code description
+    "npciErrCategory": "NA",                                                                      // NPCI error category (NA, TD, or BD)
+    "npciRespCode": "00",                                                                         // NPCI response code
+    "npciRespDesc": "SUCCESS",                                                                    // NPCI response code description
+    "setuDescription": "",                                                                        // Setu description
+    "suggestedAction": ""                                                                         // Suggested action for the user
+  },
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                                                     // Merchant ID
+  "merchantReferenceId": "order_123456789",                                                       // dqr / sqr / oqr / tpv / tpv-plus / collect referenceId
+  "productInstanceId": "01JYXYSV8B19XAWSFRPARXY35E",                                              // dqr / sqr / oqr / tpv / tpv-plus / collect id
+  "productInstanceType": "pay_single",                                                            // Type of product instance (pay_single, pay_multi, pay_single_tpv, pay_single_tpv_plus, offline_qr, collect)
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                                                 // NPCI Txn.id
+  "txnType": "pay",                                                                               // "pay" for pay flow payments, "collect" for collect flow payments
+  "txnTs": "2025-06-29T19:12:35+05:30",                                                           // NPCI Txn.ts
+  "refId": "SU01JYXYSV8B19XAWSFRPARXY35E",                                                        // NPCI Txn.refId
+  "rrn": "123456789012",                                                                          // NPCI Txn.custRef
+  "amount": 1000,                                                                                 // Transaction amount in paise
+  "currency": "INR",                                                                              // Transaction currency
+  "customerVpa": "9650974246@ybl",                                                                // Payer VPA address
+  "merchantVpa": "setu.merchant@pineaxis",                                                        // Payee VPA address
+  "customerAccountType": "SAVINGS",                                                               // Type of payer account (SAVINGS, CURRENT, CREDIT, etc.)
+  "txnNote": "Payment for order 123456789",                                                       // NPCI Txn.note
+  "bin": "123456",                                                                                // First 6 digits of card number, Populated only when the customerAccountType is CREDIT
+  // TPV Specific Information (populated only if productInstanceType is pay_single_tpv otherwise populated as "tpv": {"customerAccount": {}})
+  "tpv": {
+    "customerAccount": {
+      "ifsc": "HDFC00123",
+      "accountNumber": "**** **** **** 1234",                                                     // Masked payer account number
+      "accountName": "M*N* T*O*M*A*S"                                                             // Masked payer account name
+    }
+  },
+  // TPV Plus Specific Information (populated only if productInstanceType is pay_single_tpv_plus otherwise populated as "tpvPlus": {"customerAccount": {}})
+  "tpvPlus": {
+    "customerAccount": {
+      "payerApp": "GPay",
+      "payerBank": "HDFC",                                                                        // First 4 chars of payer account ifsc
+      "payerVpa": "9650974246@ybl"
+    }
+  },
+  // Additional Information (only for pay_single product instance type)
+  "metadata": {                                                                                   // Optional metadata from payment record
+    "key1": "value1",
+    "key2": "value2"
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -219,48 +284,60 @@ While most of the attributes in the notificiation payload are the same for all p
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "eventTs": "2023-09-04T12:08:20+0530",
-   "txnTs": "2023-09-04T12:08:20+0530",
-   "eventType": "payment.failed",
-   "resource": "payment",
-   "status": "failed",
-   // Payment context
-   "productInstanceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "productInstanceType": "<type>",
-   // References
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "referenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Payment references
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // mandate reference (in case of mandate related payment)
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   // Payment attributes
-   "txnType": "pay",
-   // Attributes shared with the platform, when a customer initiates a payment from a payer PSP
-   "refId": "SU01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "rrn": "124068997913",
-   "txnNote": "testpay",
-   "amount": 1000,
-   "currency": "INR",
-   "merchantVpa": "fastestupi@pineaxis",
-   "customerVpa": "test-auto-9xsabx8n8x@pineaxis",
-   "customerAccountType": "SAVINGS", // SAVINGS, CREDIT,...
-   "bin": "652926",
-   //  TPV attributes
-   “tpv”: {},
-   // Reason
-   "reason": {
-      "code": "payment-failed",
-      "desc": "payment failed",
-      "npciErrCategory": "TD",
-      "npciErrCode": "U28",
-      "npciErrDesc": "REMITTER BANK NOT AVAILABLE",
-      "setuDescription": "The customer's bank is unavailable.",
-      "suggestedAction": "Inform the customer and suggest trying again later or using a different bank or payment method."
-   }
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",                                              // Unique event identifier, generated using UUID
+  "eventType": "payment.failed",                     
+  "eventTs": "2025-06-29T19:12:35+05:30",                                                         // Event timestamp
+  "resource": "payment",                              
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                                                             // Payment ID
+  "status": "failed",                                
+  "reason": {
+    "code": "payment-failed",                                                                     // Reason code
+    "desc": "INVALID / INCORRECT MPIN",                                                           // Reason description
+    "npciErrCode": "U30",                                                                         // NPCI error code
+    "npciErrDesc": "DEBIT HAS BEEN FAILED",                                                       // NPCI error code description
+    "npciErrCategory": "BD",                                                                      // NPCI error category (NA, TD, or BD)
+    "npciRespCode": "ZM",                                                                         // NPCI response code
+    "npciRespDesc": "INVALID / INCORRECT MPIN",                                                   // NPCI response code description
+    "setuDescription": "",                                                                        // Setu description
+    "suggestedAction": ""                                                                         // Suggested action for the user
+  },
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                                                     // Merchant ID
+  "merchantReferenceId": "order_123456789",                                                       // dqr / sqr / oqr / tpv / tpv-plus / collect referenceId
+  "productInstanceId": "01JYXYSV8B19XAWSFRPARXY35E",                                              // dqr / sqr / oqr / tpv / tpv-plus / collect id
+  "productInstanceType": "pay_single",                                                            // Type of product instance (pay_single, pay_multi, pay_single_tpv, pay_single_tpv_plus, offline_qr, collect)
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                                                 // NPCI Txn.id
+  "txnType": "pay",                                                                               // "pay" for pay flow payments, "collect" for collect flow payments
+  "txnTs": "2025-06-29T19:12:35+05:30",                                                           // NPCI Txn.ts
+  "refId": "SU01JYXYSV8B19XAWSFRPARXY35E",                                                        // NPCI Txn.refId
+  "rrn": "123456789012",                                                                          // NPCI Txn.custRef
+  "amount": 1000,                                                                                 // Transaction amount in paise
+  "currency": "INR",                                                                              // Transaction currency
+  "customerVpa": "9650974246@ybl",                                                                // Payer VPA address
+  "merchantVpa": "setu.merchant@pineaxis",                                                        // Payee VPA address
+  "customerAccountType": "SAVINGS",                                                               // Type of payer account (SAVINGS, CURRENT, CREDIT, etc.)
+  "txnNote": "Payment for order 123456789",                                                       // NPCI Txn.note
+  "bin": "123456",                                                                                // First 6 digits of card number, Populated only when the customerAccountType is CREDIT
+  // TPV Specific Information (populated only if productInstanceType is pay_single_tpv otherwise populated as "tpv": {"customerAccount": {}})
+  "tpv": {
+    "customerAccount": {
+      "ifsc": "HDFC00123",
+      "accountNumber": "**** **** **** 1234",                                                     // Masked payer account number
+      "accountName": "M*N* T*O*M*A*S"                                                             // Masked payer account name
+    }
+  },
+  // TPV Plus Specific Information (populated only if productInstanceType is pay_single_tpv_plus otherwise populated as "tpvPlus": {"customerAccount": {}})
+  "tpvPlus": {
+    "customerAccount": {
+      "payerApp": "GPay",
+      "payerBank": "HDFC",                                                                        // First 4 chars of payer account ifsc
+      "payerVpa": "9650974246@ybl"
+    }
+  },
+  // Additional Information (only for pay_single product instance type)
+  "metadata": {                                                                                   // Optional metadata from payment record
+    "key1": "value1",
+    "key2": "value2"
+  }
 }`}
           </CodeBlockWithCopy>
         </>
