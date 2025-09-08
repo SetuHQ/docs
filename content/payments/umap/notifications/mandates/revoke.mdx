@@ -48,23 +48,38 @@ These are the available webhooks for merchants, when revoking of mandate is done
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.revoke.initiated",
-   "resource": "mandate_operation",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate operation id
-   "operation": "revoke", // create | update | revoke | notify | execute
-   "status": "initiated", // initiated | success | failed
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>",
-   // Mandate reference
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",                                              // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.revoke.initiated",
+  "eventTs": "2025-06-29T19:12:35+05:30",                                                         // Event timestamp
+  "resource": "mandate_operation",                     
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                                                             // Mandate operation ID
+  "operation": "revoke",                              
+  "status": "initiated",                             
+  // Empty reason object for initiated status
+  "reason": {},
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                                                     // Merchant ID
+  "merchantReferenceId": "mandate_123456789",                                                     // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                                                 // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",                                                           // NPCI Txn.ts
+  "rrn": "123456789012",                                                                          // NPCI Txn.custRef
+  "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",                                                // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",                                                      // ID of the mandate being operated on
+  // Amount Information
+  "amount": 1000,                                                                                 // Mandate amount in paise
+  "amountLimit": 1000,                                                                            // Mandate amount in paise
+  "endDate": "20032025",                                                                          // Mandate end date in DDMMYYYY format
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                                                                            // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "fhDBZ4fC2RtNyiW5rB-jDnzzs_YpYwPGerwAwDTd",                         // Encrypted account number
+    "hashedAccountNumber": "d49f354241572a261cfd3a7f210f1919c79fa9993b29e34c5511c3ecefc9f3ea",    // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",                                                 // Masked account number
+    "hashedAccountName": "cceaad99aec841a21be45f02368d0d332493a5a62fdda20c3d85bfb617ef176b",      // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",                                                        // Masked account name
+    "encryptedAccountName": "n6MUSW1KXaSWh1E38zxhh1amv9E6rPmZ2Tw=",                               // Encrypted account name
+    "ifsc": "HDFC0000053",                                                                        // IFSC code
+    "accountType": "SAVINGS"                                                                      // Account type
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -92,23 +107,96 @@ These are the available webhooks for merchants, when revoking of mandate is done
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.revoke.success",
-   "resource": "mandate_operation",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate operation id
-   "operation": "revoke", // create | update | revoke | notify | execute
-   "status": "success", // initiated | success | failed
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>",
-   // Mandate reference
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",                                              // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.revoke.success",
+  "eventTs": "2025-06-29T19:12:35+05:30",                                                         // Event timestamp
+  "resource": "mandate_operation",                     
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                                                             // Mandate operation ID
+  "operation": "revoke",                              
+  "status": "success",                               
+  "reason": {
+    "code": "mandate-operation-success",                                                          // Reason code
+    "desc": "mandate operation has succeeded",                                                    // Reason description
+    "npciErrCode": "00",                                                                          // NPCI error code
+    "npciErrDesc": "SUCCESS",                                                                     // NPCI error code description
+    "npciErrCategory": "NA",                                                                      // NPCI error category
+    "npciRespCode": "00",                                                                         // NPCI response code
+    "npciRespDesc": "SUCCESS",                                                                    // NPCI response code description
+    "setuDescription": "",                                                                        // Setu description
+    "suggestedAction": "",                                                                        // Suggested action
+    "mandateRevokeReason": "merchant-initiated"                                                   // Indicates the reason for revoking the mandate
+  },
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                                                     // Merchant ID
+  "merchantReferenceId": "mandate_123456789",                                                     // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                                                 // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",                                                           // NPCI Txn.ts
+  "rrn": "123456789012",                                                                          // NPCI Txn.custRef
+  "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",                                                // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",                                                      // ID of the mandate being operated on
+  // Amount Information
+  "amount": 1000,                                                                                 // Mandate amount in paise
+  "amountLimit": 1000,                                                                            // Mandate amount in paise
+  "endDate": "20032025",                                                                          // Mandate end date in DDMMYYYY format
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                                                                            // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "fhDBZ4fC2RtNyiW5rB-jDnzzs_YpYwPGerwAwDTd",                         // Encrypted account number
+    "hashedAccountNumber": "d49f354241572a261cfd3a7f210f1919c79fa9993b29e34c5511c3ecefc9f3ea",    // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",                                                 // Masked account number
+    "hashedAccountName": "cceaad99aec841a21be45f02368d0d332493a5a62fdda20c3d85bfb617ef176b",      // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",                                                        // Masked account name
+    "encryptedAccountName": "n6MUSW1KXaSWh1E38zxhh1amv9E6rPmZ2Tw=",                               // Encrypted account name
+    "ifsc": "HDFC0000053",                                                                        // IFSC code
+    "accountType": "SAVINGS"                                                                      // Account type
+  }
+}`}
+          </CodeBlockWithCopy>
+          <Text>
+            In addition to <code>mandate_operation.revoke.success</code>, a <code>mandate.revoked</code> event is also sent.
+          </Text>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",                                              // Unique event identifier, generated using UUID
+  "eventType": "mandate.revoked",                       
+  "eventTs": "2025-06-29T19:12:35+05:30",                                                         // Event timestamp
+  "resource": "mandate",                              
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                                                             // Mandate ID
+  "status": "revoked",                                 
+  "reason": {
+    "code": "mandate-revoked",                                                                    // Reason code
+    "desc": "mandate is revoked",                                                                 // Reason description
+    "npciErrCode": "00",                                                                          // NPCI error code
+    "npciErrDesc": "SUCCESS",                                                                     // NPCI error code description
+    "npciErrCategory": "NA",                                                                      // NPCI error category
+    "npciRespCode": "00",                                                                         // NPCI response code
+    "npciRespDesc": "SUCCESS",                                                                    // NPCI response code description
+    "setuDescription": "",                                                                        // Setu description
+    "suggestedAction": "",                                                                        // Suggested action
+    "mandateRevokeReason": "merchant-initiated"                                                   // Indicates the reason for revoking the mandate
+  },
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                                                     // Merchant ID
+  "merchantReferenceId": "mandate_123456789",                                                     // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                                                 // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",                                                           // NPCI Txn.ts
+  "rrn": "123456789012",                                                                          // NPCI Txn.custRef
+  "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",                                                // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",                                                      // Same as id field
+  // Amount Information
+  "amount": 1000,                                                                                 // Current mandate amount in paise
+  "amountLimit": 1000,                                                                            // Current mandate amount in paise
+  "endDate": "20032025",                                                                          // Current mandate end date in DDMMYYYY format
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                                                                            // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "fhDBZ4fC2RtNyiW5rB-jDnzzs_YpYwPGerwAwDTd",                         // Encrypted account number
+    "hashedAccountNumber": "d49f354241572a261cfd3a7f210f1919c79fa9993b29e34c5511c3ecefc9f3ea",    // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",                                                 // Masked account number
+    "hashedAccountName": "cceaad99aec841a21be45f02368d0d332493a5a62fdda20c3d85bfb617ef176b",      // Hashed account name
+    "maskedAccountName": "M*N* T*O*M*A*S",                                                        // Masked account name
+    "encryptedAccountName": "n6MUSW1KXaSWh1E38zxhh1amv9E6rPmZ2Tw=",                               // Encrypted account name
+    "ifsc": "HDFC0000053",                                                                        // IFSC code
+    "accountType": "SAVINGS"                                                                      // Account type
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -136,25 +224,54 @@ These are the available webhooks for merchants, when revoking of mandate is done
           </Text>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "mandate_operation.revoke.failed",
-   "resource": "mandate_operation",
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // mandate operation id
-   "operation": "revoke", // create | update | revoke | notify | execute
-   "status": "failed", // initiated | success | failed
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Mandate context
-   // "mandateType": "<type>",
-   // Mandate reference
-   "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",                                              // Unique event identifier, generated using UUID
+  "eventType": "mandate_operation.revoke.failed",      
+  "eventTs": "2025-06-29T19:12:35+05:30",                                                         // Event timestamp
+  "resource": "mandate_operation",                    
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                                                             // Mandate operation ID
+  "operation": "revoke",                              
+  "status": "failed",                                
+  // Failure reason object
+  "reason": {
+    "code": "mandate-operation-failed",                                                           // Reason code
+    "desc": "INVALID / INCORRECT MPIN",                                                           // Reason description
+    "npciErrCode": "UM8",                                                                         // NPCI error code
+    "npciErrDesc": "RESPMANDATE DECLINED BY REMITTER BANK",                                       // NPCI error code description
+    "npciErrCategory": "BD",                                                                      // NPCI error category
+    "npciRespCode": "ZM",                                                                         // NPCI response code
+    "npciRespDesc": "INVALID / INCORRECT MPIN",                                                   // NPCI response code description
+    "setuDescription": "",                                                                        // Setu description
+    "suggestedAction": "",                                                                        // Suggested action for the user
+    "mandateRevokeReason": "merchant-initiated"                                                   // Indicates the reason for revoking the mandate
+  },
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",                                                     // Merchant ID
+  "merchantReferenceId": "mandate_123456789",                                                     // mandate referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",                                                 // NPCI Txn.id
+  "txnTs": "2025-06-29T19:12:35+05:30",                                                           // NPCI Txn.ts
+  "rrn": "123456789012",                                                                          // NPCI Txn.custRef
+  "umn": "c27f5fc30d344e9594fce0afa34f8859@mypsp",                                                // Unique Mandate Number from NPCI
+  "mandateId": "01JYXYSV8B19XAWSFRPARXY35E",                                                      // ID of the mandate being operated on
+  // Amount Information
+  "amount": 1000,                                                                                 // Current mandate amount in paise
+  "amountLimit": 1000,                                                                            // Current mandate amount in paise
+  "endDate": "20032025",                                                                          // Mandate end date in DDMMYYYY format
+  // TPV Specific Information (empty object for non-TPV mandates)
+  "customerAccount": {                                                                            // Payer account details, empty object for non-TPV mandates
+    "encryptedAccountNumber": "fhDBZ4fC2RtNyiW5rB-jDnzzs_YpYwPGerwAwDTd",                         // Encrypted account number
+    "hashedAccountNumber": "d49f354241572a261cfd3a7f210f1919c79fa9993b29e34c5511c3ecefc9f3ea",    // Hashed account number
+    "maskedAccountNumber": "**** **** **** 1234",                                                 // Masked account number
+    "hashedAccountName": "cceaad99aec841a21be45f02368d0d332493a5a62fdda20c3d85bfb617ef176b",      // Hashed account name
+    "maskedAccountName": "M*J*O*H*N* D*O*E",                                                      // Masked account name
+    "encryptedAccountName": "n6MUSW1KXaSWh1E38zxhh1amv9E6rPmZ2Tw=",                               // Encrypted account name
+    "ifsc": "HDFC0000053",                                                                        // IFSC code
+    "accountType": "SAVINGS"                                                                      // Account type
+  }
 }`}
           </CodeBlockWithCopy>
+          <Text>
+            In addition to <code>mandate_operation.revoke.failed</code>, a mandate status event is also sent to indicate current mandate status.
+          </Text>
         </>
       ),
     },

@@ -25,17 +25,10 @@ The statuses are consistent across all UPI Setu products—
 <Text>
   <ul>
     <li>
-      <code>refund.initiated</code>&nbsp;Refund request has been create at UPI
-      Setu
-    </li>
-    <li>
-      <code>refund.pending</code>&nbsp;Refund is in queue to be processed
+      <code>refund.pending</code>&nbsp;Refund has been initiated successfully
     </li>
     <li>
       <code>refund.successful</code>&nbsp;Refund has been successfully completed
-    </li>
-    <li>
-      <code>refund.failed</code>&nbsp;Refund could not be processed
     </li>
   </ul>
 </Text>
@@ -51,34 +44,27 @@ Here is the life-cycle for refund statuses—
   tabs={[
     {
       key: "1",
-      label: "Refund success",
+      label: "Refund pending",
       content: (
         <>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "refund.success",
-   "resource": "refund",
-   "status": "success", // success | failed
-   // Payment context
-   "paymentId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "orgTxnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // References
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Refund references
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "rrn": "123456789012",
-   "crn": "UPI123456789012",
-   // Refund attributes
-   // "refundType": "online", // online | offline
-   "amount": 10000,
-   "currency": "INR",
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "refund.pending",                      
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "refund",                               
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Refund ID
+  "status": "pending",                                
+  // Empty reason object for pending status
+  "reason": {},
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // Merchant ID
+  "paymentId": "01JYXYSV8B19XAWSFRPARXY35E",          // Original payment ID
+  "orgTxnId": "HDF10e4ab8a07f447eea54581383d92b507",  // Original payment transaction ID
+  "referenceId": "refund_123456789",                  // refund referenceId
+  // Amount Information
+  "amount": 1000,                                     // Refund amount in paise
+  "currency": "INR"                                   // Transaction currency
 }`}
           </CodeBlockWithCopy>
         </>
@@ -86,34 +72,28 @@ Here is the life-cycle for refund statuses—
     },
     {
       key: "2",
-      label: "Refund failed",
+      label: "Refund successful",
       content: (
         <>
           <CodeBlockWithCopy language="json">
             {`{
-   // Event attributes
-   "eventId": "01ARZ3NDEKTSV4RRFFQ69G5FAV", // Id of an event (unique for each event)
-   "eventTs": "2023-09-04T12:08:20+0530", // Timestamp associated with the event
-   "eventType": "refund.failed",
-   "resource": "refund",
-   "status": "failed", // success | failed
-   // Payment context
-   "paymentId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "orgTxnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   // References
-   "merchantId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "merchantReferenceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   // Refund references
-   "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-   "txnId": "SETmBZkQOV0M7wyyP1V4PIFhRSzW5eSjmYI",
-   "rrn": "123456789012",
-   "crn": "UPI123456789012",
-   // Refund attributes
-   // "refundType": "online", // online | offline
-   "amount": 10000,
-   "currency": "INR",
-   // Reason
-   "reason": {}
+  "eventId": "1c94fdeb-2167-443d-99f4-f5fe21d079ae",  // Unique event identifier, generated using UUID
+  "eventType": "refund.successful",                    
+  "eventTs": "2025-06-29T19:12:35+05:30",             // Event timestamp
+  "resource": "refund",                               
+  "id": "01JYXYSV8B19XAWSFRPARXY35E",                 // Refund ID
+  "status": "success",                                
+  "reason": {},
+  // Merchant and Reference Information
+  "merchantId": "01JYXYSV8B19XAWSFRPARXY35E",         // merchant ID
+  "paymentId": "01JYXYSV8B19XAWSFRPARXY35E",          // Original payment ID
+  "orgTxnId": "HDF10e4ab8a07f447eea54581383d92b507",  // NPCI Txn.id for original payment
+  "referenceId": "refund_123456789",                  // Refund referenceId
+  "txnId": "HDF10e4ab8a07f447eea54581383d92b507",     // NPCI Txn.id for refund transaction
+  "crn": "UPI123456789",                              // Refund CRN
+  // Amount Information
+  "amount": 1000,                                     // Refund amount in paise
+  "currency": "INR"                                   // Transaction currency
 }`}
           </CodeBlockWithCopy>
         </>
