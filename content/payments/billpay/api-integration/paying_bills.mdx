@@ -1,0 +1,698 @@
+---
+sidebar_title: Paying Bills
+page_title: BBPS Bill Payment Integration Guide
+order: 5
+visible_in_sidebar: true
+---
+
+# Paying Bills
+
+**Scope**: This guide covers paying bills through the BBPS (Bharat Bill Payment System) network. For prepaid mobile recharge, refer to the separate prepaid recharge API documentation.
+
+## Table of Contents
+
+1. [Understanding Bill Fetch Responses](#1-understanding-bill-fetch-responses)
+    1.1 [API Versions](#11-api-versions)
+    1.2 [Response Structure Overview](#12-response-structure-overview)
+    1.3 [UI Decision Fields](#13-ui-decision-fields)
+    1.4 [Status Handling](#14-status-handling)
+2. [RefId-Based Payment Construction](#2-refid-based-payment-construction)
+    2.1 [Required Headers](#21-required-headers)
+    2.2 [RefId Payment Flow](#22-refid-payment-flow)
+    2.3 [RefId Payment Request Template](#23-refid-payment-request-template)
+    2.4 [Payment Request Construction](#24-payment-request-construction)
+    2.5 [Amount Validation Rules](#25-amount-validation-rules)
+    2.6 [Plan-Based Billers](#26-plan-based-billers)
+3. [Payment Details and Remitter Information](#3-payment-details-and-remitter-information)
+    3.1 [Account Info and Remitter Requirements](#31-account-info-and-remitter-requirements)
+    3.2 [Common Payment Mode Examples](#32-common-payment-mode-examples)
+4. [Payment Limits and Amount Validation](#4-payment-limits-and-amount-validation)
+    4.1 [Reading Payment Limits from Fetch Response](#41-reading-payment-limits-from-fetch-response)
+    4.2 [Payment Mode Support](#42-payment-mode-support)
+    4.3 [Amount Validation](#43-amount-validation)
+5. [Category-Specific Payment Examples](#5-category-specific-payment-examples)
+    5.1 [Electricity Bill Payment](#51-electricity-bill-payment)
+    5.2 [Credit Card Bill Payment](#52-credit-card-bill-payment)
+    5.3 [Mobile Postpaid Bill Payment](#53-mobile-postpaid-bill-payment)
+    5.4 [Gas Bill Payment](#54-gas-bill-payment)
+    5.5 [Water Bill Payment](#55-water-bill-payment)
+    5.6 [Multi-Bill Payment Example](#56-multi-bill-payment-example)
+6. [Common Validation Rules and Edge Cases](#6-common-validation-rules-and-edge-cases)
+    6.1 [Amount Precision Rules (Pseudocode)](#61-amount-precision-rules-pseudocode)
+    6.2 [RefId Validity and Same-Day Policy (Pseudocode)](#62-refid-validity-and-same-day-policy-pseudocode)
+    6.3 [Customer Parameter Validation (Pseudocode)](#63-customer-parameter-validation-pseudocode)
+    6.4 [Error Handling Best Practices (Pseudocode)](#64-error-handling-best-practices-pseudocode)
+    6.5 [Complete Payment Flow Implementation (Pseudocode)](#65-complete-payment-flow-implementation-pseudocode)
+
+---
+
+## 1. Understanding Bill Fetch Responses
+
+### 1.1 API Versions
+
+| Aspect | V1 API | V2 API |
+|--------|--------|--------|
+| **Bill Structure** | `"bill": { ... }` (single object) | `"bills": [ { ... } ]` (array) |
+| **Payment Limits** | Includes `paymentLimits` object | Bill-level limits only |
+| **Endpoints** | `/api/v1/bbps/bills/*` | `/api/v2/bbps/bills/*` |
+
+📖 **For complete API migration details and field-level diffs → [V2 Migration Guide](./v2-migration.mdx)**
+
+### 1.2 Response Structure Overview
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Sample Fetch Response</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "data": {
+    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",         // → Use in payment request
+    "status": "Success",                                    // → Processing|Success|Failure
+    "bills": [                                              // → V2 uses "bills" array (V1 uses "bill" object)
+      {
+        "amount": 150000,                                   // → Base bill amount (paise)
+        "billNumber": "1232332",
+        "billDate": "2021-01-02", 
+        "dueDate": "2021-09-24",
+        "billPeriod": "MONTHLY",                            
+        "customerName": "Manoj Chekuri",
+        "minAmount": 100000,                                // → Minimum payment amount for this bill (nulllable)
+        "maxAmount": 150000,                                // → Maximum payment amount for this bill (nulllable)
+        "amountMultiple": 100,                              // → Payment amount must be multiple of this (nullable)
+        "label": "Advance EMI",                             // → Bill description (optional)
+        "paymentOptions": [                                 // → Alternative payment options for this bill
+          { "name": "Full Payment", "amount": 150000, "minAmount": 150000, "maxAmount": 150000 },
+          { "name": "Minimum Due", "amount": 100000, "minAmount": 100000, "maxAmount": 150000 }
+        ]
+      }
+    ],
+    "billerResponseType": "SINGLE",                         // → SINGLE|LIST|SELECTIVE
+    "billerSelectionType": "SINGLE",                       // → SINGLE|MULTIPLE|ALL (Applicable for LIST only)
+    "exactness": "Exact",                                  // → Payment amount rules
+    "additionalInfo": [                                    // → Generate dynamic form fields
+      { "DataType": "ALPHANUMERIC", "Optional": false, "ParamName": "Wallet balance" }
+    ],
+    "paymentLimits": [                                     // → V1 only: mode-specific limits  
+      { "paymentMode": "Internet Banking", "minAmount": 100, "maxAmount": 500000 }
+    ]
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 1.3 UI Decision Fields
+
+**Bill Selection Logic:**
+- `billerResponseType: "SINGLE"` → Display single bill interface
+- `billerResponseType: "LIST"` → Display multi-bill interface based on `billerSelectionType`
+
+**Payment Amount Logic:**  
+- `paymentOptions: null` → Standard amount input field
+- `paymentOptions: [...]` → Payment option buttons ("Full Payment", "Minimum Due", etc.)
+- `exactness + minAmount/maxAmount` → Amount validation rules
+
+**Additional Form Fields:**
+- `additionalInfo` → Additional bill details for the bill `ParamName` (required if `Optional: false`)
+
+🔧 **For multi-bill implementation patterns, advanced constraints, and V1.1 features → [BBPS V1.1 Features Guide](./bbps-v1_1-features.mdx)**
+
+### 1.4 Status Handling
+
+- `status: "Success"` → Proceed with payment request
+- `status: "Processing"` → Poll fetch response API until Success/Failure
+- `status: "Failure"` → Bill fetch failed, cannot initiate payment
+
+---
+
+## 2. RefId-Based Payment Construction
+
+### 2.1 Required Headers
+
+All API requests must include these headers:
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Required Headers</Text>
+    </summary>
+    <CodeBlockWithCopy language="http">{`
+X-PARTNER-ID: {your-partner-id}
+Authorization: Bearer {your-oauth-token}
+Content-Type: application/json
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 2.2 RefId Payment Flow
+
+1. Fetch the bill using the fetch API
+2. Extract the `refId` from the fetch response
+3. Use the `refId` in your payment request
+4. Respect exactness and biller limits from the fetch response
+5. Note: payment completion is async; poll the payment response API with `refId` or subscribe to BillPay webhooks to receive updates
+
+### 2.3 RefId Payment Request Template
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Payment Request (RefId)</Text>
+    </summary>
+    <CodeBlockWithCopy language="http">{`
+POST /api/v2/bbps/bills/payment/request HTTP/1.1
+Host: coudc.setu.co
+X-PARTNER-ID: {{YOUR_PARTNER_ID}}
+Authorization: Bearer {{YOUR_OAUTH_TOKEN}}
+Content-Type: application/json
+
+{
+  // [Required] From the latest successful fetch response
+  "refId": "{{FETCH_RESPONSE_REF_ID}}",
+
+  // [Conditional] Only for LIST billers when a bill subset must be paid for
+  // Populate using bill numbers and amounts shown in the fetch response
+  "bills": [
+    { "billNumber": "{{BILL_NUMBER}}", "amount": {{AMOUNT_IN_PAISE}} }
+  ],
+
+  // [Required] Payment instrument and amount details
+  "paymentDetails": {
+    // [Required] Integer amount in paise after applying exactness/limits
+    "amount": {{CALCULATED_AMOUNT_IN_PAISE}},
+
+    // [Required] One of supported modes
+    "mode": "{{PAYMENT_MODE}}",
+
+    // [Required] Unique idempotency key generated at the time of debit for this payment
+    "paymentRefId": "{{UNIQUE_PAYMENT_REF_ID}}",
+
+    // [Required] ISO-8601 timestamp with timezone offset
+    "timestamp": "{{DEBIT_TIMESTAMP}}",
+
+    // [Required] NPCI-compatible instrument info. See Section 3.1
+    // Examples: "dummy@ybl" (UPI), "IFSC|ACCOUNT_NO" (NetBanking), "CARD_NO|AUTH_CODE" (Cards)
+    "accountInfo": "{{INSTRUMENT_INFO}}",
+
+    // [Optional | Plan billers] Include when plan selection is required
+    // Capitalized key is as per API. Value is the selected plan identifier
+    "Id": "{{PLAN_ID}}",
+
+    // [Optional] Required only when user explicitly picks a biller-provided option from fetch.paymentOptions
+    // Must echo back the chosen option(s) exactly (name and amount)
+    "selectedPaymentOptions": [
+      { "name": "{{OPTION_NAME}}", "amount": {{OPTION_AMOUNT_IN_PAISE}} }
+    ]
+  },
+
+  // [Conditional] Required for certain categories or per compliance
+  // Provide when advised by integration team or biller specification
+  "remitter": {
+    "name": "{{PAYER_NAME}}",            // Required for some categories
+    "email": "{{PAYER_EMAIL}}",          // Optional
+    "aadhaar": "{{AADHAAR_NUMBER}}",     // Optional
+    "pan": "{{PAN_NUMBER}}"              // Optional
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 2.4 Payment Request Construction
+
+**Required Fields to Forward:**
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Required Fields to Forward</Text>
+    </summary>
+    <CodeBlockWithCopy language="javascript">{`
+// From fetch response → payment request
+fetchResponse.data.refId → paymentRequest.refId                    // Always required
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+**Amount Calculation Logic:**
+
+- `bills[].amount` = Base bill amount
+- `paymentOptions[].amount` = Alternative amounts provided by biller (user can choose)
+- Payment amount = Base bill amount OR selected payment option amount
+- Apply `exactness` rules to determine if user can modify the chosen amount
+
+### 2.5 Amount Validation Rules
+
+**Basic Exactness Rules:**
+
+- `"Exact"` → Payment amount must equal bill amount exactly
+- `"Any"` → No bill-level restrictions (user can pay any amount)
+- `"RANGE"` → Payment amount must be within `minAmount`/`maxAmount` constraints
+
+**Additional Constraints:**
+
+- `minAmount`/`maxAmount` → Payment range limits (if present)
+- `amountMultiple` → Payment increment requirements (if present)
+
+**Biller Types:**
+
+- `fetchApiType: "BILL_FETCH"` → Returns valid bill(s) in `bills` array
+- `fetchApiType: "BILL_VALIDATE"` → May return empty `bills` array (e.g., donation billers)
+
+🔧 **For detailed constraint scenarios, V1.1 features, and validation examples → [BBPS V1.1 Features Guide](./bbps-v1_1-features.mdx#amount-configuration)**
+
+### 2.6 Plan-Based Billers
+
+Some billers require plan selection before payment (mobile prepaid, DTH, broadband services):
+
+**Biller Type Identification:**
+- **Static Plan Billers**: `planRequirement: "MANDATORY"` → Use List Plans API to fetch available plans first
+- **Dynamic Plan Billers**: `planRequirement: "OPTIONAL"` + `responseType: "SELECTIVE"` → Plans returned in validation response
+
+**Key Differences from Standard Flow:**
+- **Plan Discovery**: Required before or during validation
+- **Plan ID**: Must be included in customer parameters or payment details
+- **Validation Response**: May include customer-specific plan offerings
+
+**Example Plan Biller Payment:**
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Plan Biller Payment Request</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "paymentDetails": {
+    "amount": 59900,
+    "mode": "UPI",
+    "paymentRefId": "BD019181220291", 
+    "timestamp": "2020-12-12T13:12:00+05:30",
+    "Id": "PLAN_123"  // Plan ID for dynamic billers
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+🔧 **For complete plan-based integration patterns, List Plans API, and specialized workflows → [Plan MDM Integration Guide](./plan-mdm-integration.mdx)**
+
+---
+
+## 3. Payment Details and Remitter Information
+
+### 3.1 Account Info and Remitter Requirements
+
+**Both accountInfo and remitter details are required for all bill payments:**
+
+- **`paymentDetails.accountInfo`**: NPCI-compatible format corresponding to payment mode
+- **`remitter` object**: Information about the person making the payment
+
+**Basic Structure:**
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Payment + Remitter Structure</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "paymentDetails": {
+    "mode": "UPI",
+    "amount": 150000,
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30",
+    "accountInfo": "user@ybl"  // Format varies by payment mode
+  },
+  "remitter": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "aadhaar": "123456789012",
+    "pan": "ABCDE1234F"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+📖 **For complete NPCI specifications, validation rules, and all payment mode formats → [Remitter Details Integration Guide](./remittance_flows_guide.mdx)**
+
+### 3.2 Common Payment Mode Examples
+
+**UPI:**
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">UPI Example</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "paymentDetails": {
+    "mode": "UPI",
+    "accountInfo": "user@ybl"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+**Internet Banking:**
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Internet Banking Example</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "paymentDetails": {
+    "mode": "Internet Banking",
+    "accountInfo": "ICIC0000152|1234567890"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+**Credit/Debit Cards:**
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Card Example</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "paymentDetails": {
+    "mode": "Credit Card",
+    "accountInfo": "1234567890123456|123456"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+📖 **For all payment modes and detailed format specifications → [Remitter Details Integration Guide](./remittance_flows_guide.mdx#npci-specifications)**
+
+---
+
+## 4. Payment Limits and Amount Validation
+
+### 4.1 Reading Payment Limits from Fetch Response
+
+**V1 API**: Use `paymentLimits` array for mode-specific limits plus bill-level `minAmount`/`maxAmount`/`amountMultiple`:
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">V1 Mode Payment Limits</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+"paymentLimits": [
+  {
+    "paymentMode": "Internet Banking",
+    "minAmount": 100,
+    "maxAmount": 500000
+  },
+  {
+    "paymentMode": "UPI", 
+    "minAmount": 100,
+    "maxAmount": 100000
+  }
+]
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+**V2 API**: Only bill-level limits (`minAmount`/`maxAmount`/`amountMultiple`) and `paymentOptions` are available.
+
+**Both APIs**: Always respect biller-mode-channel specific limits; your request is validated against these.
+
+### 4.3 Amount Validation
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Amount Validation Pseudocode</Text>
+    </summary>
+    <CodeBlockWithCopy language="text">{`
+FUNCTION VALIDATE_PAYMENT_AMOUNT(amount, bill, exactness) RETURNS BOOLEAN
+    // Validate against bill-specific limits
+    IF bill.minAmount EXISTS AND amount < bill.minAmount THEN
+        RAISE ERROR "Amount below bill minimum of " + bill.minAmount
+    END IF
+
+    IF bill.maxAmount EXISTS AND amount > bill.maxAmount THEN
+        RAISE ERROR "Amount exceeds bill maximum of " + bill.maxAmount
+    END IF
+
+    IF bill.amountMultiple EXISTS AND (amount MOD bill.amountMultiple) ≠ 0 THEN
+        RAISE ERROR "Amount must be multiple of " + bill.amountMultiple
+    END IF
+
+    // Validate against exactness rules
+    IF exactness = "Exact" AND amount ≠ bill.amount THEN
+        RAISE ERROR "Amount must be exactly " + bill.amount
+    ELSE IF exactness = "Exact and above" AND amount < bill.amount THEN
+        RAISE ERROR "Amount must be at least " + bill.amount
+    ELSE IF exactness = "Exact and below" AND amount > bill.amount THEN
+        RAISE ERROR "Amount cannot exceed " + bill.amount
+    END IF
+
+    RETURN TRUE
+END FUNCTION
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 4.2 Payment Mode Support
+
+All payment modes are processed through `paymentDetails`. Supported modes (exact enum values):
+
+- `"Internet Banking"`
+- `"Debit Card"`
+- `"Credit Card"`
+- `"Prepaid Card"`
+- `"IMPS"`
+- `"Cash"`
+- `"UPI"`
+- `"Wallet"`
+- `"NEFT"`
+- `"AEPS"`
+- `"Account Transfer"`
+- `"Bharat QR"`
+- `"USSD"`
+
+Note: Actual availability is biller-specific and validated against MDM limits. Always use the exact enum values shown above.
+
+---
+
+## 5. Category-Specific Payment Examples
+
+### 5.1 Electricity Bill Payment
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Electricity Payment</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "biller": { "id": "MAHI00000NATIC" },
+  "customer": {
+    "mobile": "9876543210",
+    "customerParams": [
+      { "name": "Consumer Number", "value": "123456789012" },
+      { "name": "Mobile Number", "value": "9876543210" }
+    ]
+  },
+  "agent": { 
+    "id": "AX01AI06512391457204",
+    "channel": "AGT",
+    "geocode": "19.0139,72.8254",
+    "postalCode": "600001",
+    "terminalId": "6000011234"
+  },
+  "paymentDetails": {
+    "amount": 245000,
+    "mode": "Internet Banking",
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 5.2 Credit Card Bill Payment
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Credit Card Payment</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "biller": { "id": "MAHI00000NATIC" },
+  "customer": {
+    "mobile": "9876543210",
+    "customerParams": [
+      { "name": "Credit Card Number", "value": "1234567890123456" },
+      { "name": "Mobile Number", "value": "9876543210" }
+    ]
+  },
+  "agent": { 
+    "id": "AX01AI06512391457204",
+    "channel": "AGT",
+    "geocode": "19.0139,72.8254",
+    "postalCode": "600001",
+    "terminalId": "6000011234"
+  },
+  "paymentDetails": {
+    "amount": 50000,
+    "mode": "Internet Banking",
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30"
+  },
+  "remitter": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "aadhaar": "123456789012",
+    "pan": "ABCDE1234F"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 5.3 Mobile Postpaid Bill Payment
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Mobile Postpaid Payment</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "biller": { "id": "MAHI00000NATIC" },
+  "customer": {
+    "mobile": "9876543210",
+    "customerParams": [
+      { "name": "Mobile Number", "value": "9876543210" }
+    ]
+  },
+  "agent": { 
+    "id": "AX01AI06512391457204",
+    "channel": "AGT",
+    "geocode": "19.0139,72.8254",
+    "postalCode": "600001",
+    "terminalId": "6000011234"
+  },
+  "paymentDetails": {
+    "amount": 59900,
+    "mode": "UPI",
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 5.4 Gas Bill Payment
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Gas Bill Payment</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "biller": { "id": "MAHI00000NATIC" },
+  "customer": {
+    "mobile": "9876543210",
+    "customerParams": [
+      { "name": "Consumer Number", "value": "123456789" },
+      { "name": "Mobile Number", "value": "9876543210" }
+    ]
+  },
+  "agent": { 
+    "id": "AX01AI06512391457204",
+    "channel": "AGT",
+    "geocode": "19.0139,72.8254",
+    "postalCode": "600001",
+    "terminalId": "6000011234"
+  },
+  "paymentDetails": {
+    "amount": 78500,
+    "mode": "Debit Card",
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 5.5 Water Bill Payment
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Water Bill Payment</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "paymentDetails": {
+    "amount": 120000,
+    "mode": "Wallet",
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+### 5.6 Multi-Bill Payment Example
+
+**Basic List Biller (Single Selection):**
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">Multi-Bill Payment Request</Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "bills": [
+    {
+      "billNumber": "B123",
+      "amount": 10000
+    }
+  ],
+  "paymentDetails": {
+    "amount": 10000,
+    "mode": "Internet Banking",
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30"
+  },
+  "remitter": {
+    "name": "John Doe",
+    "email": "john.doe@example.com"
+  }
+}
+`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+🔧 **For all 4 implementation patterns (Single, Multi-Single, Multi-Multiple, Bundle), detailed examples, and multi-bill scenarios → [BBPS V1.1 Features Guide](./bbps-v1_1-features.mdx#implementation-patterns)**
+
+---

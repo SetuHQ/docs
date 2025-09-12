@@ -10,30 +10,31 @@ visible_in_sidebar: true
 
 ## Overview
 
-NPCI has introduced comprehensive remittance information handling across two distinct integration flows to accommodate acceptance of remittance data from Agent Institutions for Credit Card Bill Payments. These enhancements ensure compliance with NPCI specifications while providing flexibility for different integration approaches.
+This guide provides comprehensive specifications for remitter details and account information formatting in bill payments. Remitter details are part of the overall payment integration flow.
+
+📖 **For complete payment integration context and examples → [Paying Bills Integration Guide](./paying_bills.mdx)**
+
+NPCI has introduced comprehensive remittance information handling to accommodate acceptance of remittance data for all bill payments. 
 
 
 ## Remitter Details Specification
 
 | Property | Type | Constraints | Purpose | Notes |
 |-------|------|-------------|---------|-------|
-| `accountInfo` | String (variable) | Must correspond to selected payment mode | Contains customer's remittance information in NPCI-compatible format | Required field |
-| `remitter` | Object | - | Captures information about the person making the payment | May differ from credit card holder |
+| `accountInfo` | String | Format varies by payment mode | Contains customer's remittance information in NPCI-compatible format | Required field |
+| `remitter` | Object | - | Captures information about the person making the payment | May differ from account holder |
 
 #### Remitter Object Properties
 
 | Property | Type | Constraints | Purpose | Notes |
 |----------|------|-------------|---------|-------|
-| `name` | String | min: 1, max: 50 | Remitter's full name | Auto-fallback: 'Not Available' for CC payments if not provided |
+| `name` | String | min: 1, max: 50 | Remitter's full name | Auto-fallback: 'Not Available' if not provided |
 | `email` | String | min: 1, max: 50 | Remitter's email address | - |
 | `pan` | String | min: 1, max: 50 | Remitter's PAN number | - |
 | `aadhaar` | String | min: 1, max: 50 | Remitter's Aadhaar number | - |
 
-### Key Notes
 
-- **NPCI Compatibility**: The `accountInfo` field must be formatted according to [NPCI specifications](#npci-specifications) and to be passed with all Bill Payments and the `remitter` object to be passed with all Credit Card Bill Payments.
-- **Credit Card Fallback**: When remitter name is not provided for credit card payments, the system automatically sends "Not Available" to NPCI
-- **Remitter vs Cardholder**: The person making the payment (remitter) may be different from the credit card holder
+
 
 
 ## Remitter Details in Bill Payment API Flow
