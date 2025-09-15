@@ -1,0 +1,492 @@
+---
+sidebar_title: API Integration
+page_title: Penny drop + PennyLess API Integration
+order: 1
+visible_in_sidebar: true
+---
+
+## Penny drop + PennyLess API Integration
+
+The following guide describes an Penny drop + PennyLess implementation of our bank account verification APIs. This lets you initiate a verification request and let it complete asynchronously—without having to wait for an immediate response and it generates webhook when bank account verification is completed.
+
+You will need the following 2 APIs—
+
+-   **Create Penny drop + PennyLess**—This lets you initiate a verification request.
+-   **GET Penny drop + PennyLess details**—This lets you check the status associated with the verification request.
+
+Here are the URLs you would need for this integration—
+
+-   Sandbox—`https://dg-sandbox.setu.co`
+-   Production—`https://dg.setu.co`
+-   Headers—Contact Setu for providing the credentials required to successfully call Setu APIs. This contains:
+    -   `x-client-id`
+    -   `x-client-secret`
+    -   `x-product-instance-id`
+
+<hr class="primary" />
+
+### Create Penny drop + PennyLess
+
+Call this API to initiate bank account verification of your customer. A quick explanation of the request params—
+
+-   `accountNumber` is the bank account number that has to be verified.
+-   `ifsc` is the IFSC (Indian Financial System Code) of the bank branch, where the bank account is held.
+
+<Callout type="tip">
+  Sample account number and ifsc for Sandbox.
+
+-   accountNumber:1234567890, ifsc:UTIB0002083 - Successful Verification Type 1 (PennyLess Drop)
+-   accountNumber:1234567891, ifsc:UTIB0002083 - Successful Verification Type 2 (PennyLess Drop)
+-   accountNumber:1234567895, ifsc:UTIB0002083 - Successful Verification Type 3 (Penny Drop)
+
+</Callout>
+
+<br />
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <p>
+                                <Badge type="success">SUCCESS</Badge> Your
+                                request contains a valid bank account number and
+                                the verification request has been successfully
+                                initiated.
+                            </p>
+                            <hr className="tertiary" />
+                            <h5>Request</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`POST  /api/verify/setu-bav/async
+ 
+{ 
+  "ifsc": "UTIB0002083",  
+  "accountNumber": "1234567890", 
+} `}
+                            </CodeBlockWithCopy>
+                            <hr className="tertiary" />
+                            <h5>Response</h5>
+                            <p>
+                                You get an <code>id</code> associated with the
+                                verification request, which you can use to check
+                                verification status asynchronously.
+                            </p>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+    "status": "CREATED",
+    "traceId": "e99b6f9a-41bc-4063-adcf-cd27043785d4"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "400",
+                    content: (
+                        <>
+                            <>
+                                <Text size="small" weight="600">
+                                    Response Type 1
+                                </Text>
+                                <Card
+                                    padding="nano"
+                                    shape="rounded"
+                                    marginBottom="micro"
+                                >
+                                    <details>
+                                        <summary>
+                                            <Badge type="failure">
+                                                BAD REQUEST
+                                            </Badge>{" "}
+                                            The request contains bad account
+                                            number or ifsc format.
+                                        </summary>
+                                        <hr className="tertiary" />
+                                        <h5>Request</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`POST /api/verify/setu-bav/async 
+ 
+{
+    "error": {
+        "code": "BAVM1", // Penny drop + PennyLessCode
+        "detail": "Either ifsc or bank account is invalid",
+        "traceId": "f8d0e4f2-674f-4192-863a-6e9c1f595bc3"
+    }
+} `}
+                                        </CodeBlockWithCopy>
+                                        <hr className="tertiary" />
+                                        <h5>Response</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`{ 
+    "error": { 
+        "code": "invalid_redirect_url", 
+        "detail": "Please enter a valid redirect URL.", 
+        "traceId": "" 
+    } 
+}`}
+                                        </CodeBlockWithCopy>
+                                    </details>
+                                </Card>
+                            </>
+                            <>
+                                <Text size="small" weight="600">
+                                    Response Type 2
+                                </Text>
+                                <Card
+                                    padding="nano"
+                                    shape="rounded"
+                                    marginBottom="micro"
+                                >
+                                    <details>
+                                        <summary>
+                                            <Badge type="failure">
+                                                BAD REQUEST
+                                            </Badge>{" "}
+                                            invalid payload
+                                        </summary>
+                                        <hr className="tertiary" />
+                                        <h5>Request</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`POST /api/verify/setu-bav/async 
+ 
+{ 
+} `}
+                                        </CodeBlockWithCopy>
+                                        <hr className="tertiary" />
+                                        <h5>Response</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`{
+    "error": {
+        "code": "bad_request",
+        "detail": "Invalid request body. Please refer to our docs to send an appropriate request",
+        "traceId": "1-64f6d54d-72b7566b3335e1c27172c176"
+    }
+}`}
+                                        </CodeBlockWithCopy>
+                                    </details>
+                                </Card>
+                            </>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
+<hr class="primary" />
+
+### GET Penny drop + PennyLess details
+
+Call this API to know verification status of request that was previously initiated, against the `id` associated with it.
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: "200",
+                    content: (
+                        <>
+                            <>
+                                <Text size="small" weight="600">
+                                    Response Type 1
+                                </Text>
+                                <Card
+                                    padding="nano"
+                                    shape="rounded"
+                                    marginBottom="micro"
+                                >
+                                    <details>
+                                        <summary>
+                                            <Badge type="success">
+                                                SUCCESS
+                                            </Badge>{" "}
+                                            In processing
+                                        </summary>
+                                        <hr className="tertiary" />
+                                        <h5>Request</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`GET /api/verify/setu-bav/:requestId`}
+                                        </CodeBlockWithCopy>
+                                        <hr className="tertiary" />
+                                        <h5>Response</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`{
+    "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+    "status": "IN_PROGRESS",
+    "traceId": "e99b6f9a-41bc-4063-adcf-cd27043785d4"
+}`}
+                                        </CodeBlockWithCopy>
+                                    </details>
+                                </Card>
+                            </>
+                            <>
+                                <Text size="small" weight="600">
+                                    Response Type 2
+                                </Text>
+                                <Card
+                                    padding="nano"
+                                    shape="rounded"
+                                    marginBottom="micro"
+                                >
+                                    <details>
+                                        <summary>
+                                            <Badge type="success">
+                                                SUCCESS
+                                            </Badge>{" "}
+                                            Verification done through PennyLess
+                                            Drop
+                                        </summary>
+                                        <hr className="tertiary" />
+                                        <h5>Request</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`GET /api/verify/setu-bav/:requestId`}
+                                        </CodeBlockWithCopy>
+                                        <hr className="tertiary" />
+                                        <h5>Response</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`{
+    "id": "50c4b0a4-7de2-4eb3-9d78-153fb4d9991d",
+    "status": "SUCCESS",
+    "fulfillmentType": "PENNYLESS",
+    "data": {
+        "bankAccountNumber": "1234567890",
+        "bankAccountIfsc": "UTIB0002083",
+        "bankAccountName": "PAVANKUMAR KAMAT BIZ",
+        "ifscCrossCheck": true,
+        "ifscDetails": { // if ifscCrossCheck is true
+            "name": "Axis Bank",
+            "branch": "KAPODRA, SURAT",
+            "center": "SURAT",
+            "district": "SURAT",
+            "state": "GUJARAT",
+            "address": "J R SQUARE, MAMTA PARK - 1 KAPODRA, VARACHHA MAIN ROAD,  SURAT - 395 006",
+            "contact": "+919824188896",
+            "imps": "true",
+            "rtgs": "true",
+            "city": "SURAT",
+            "iso3166": "IN-GJ",
+            "neft": "true",
+            "micr": "395211016",
+            "upi": "true",
+            "swift": ""
+        },
+        "entityType": "MERCHANT", // or 'INDIVIDUAL'
+        "merchantDetails": { // if entityType is MERCHANT
+            "mccCode": "1520",
+            "identifier": {
+                "merchantType": "SMALL",
+                "merchantGenre": "OFFLINE",
+                "onBoardingType": "BANK"
+            },
+            "name": {
+                "brand": "praimports",
+                "legal": "Indian",
+                "franchise": "rajababuimpor"
+            },
+            "ownership": {
+                "type": "PRIVATE"
+            }
+        }
+    },
+    "traceId": "1ab2fbc8-5b10-4358-8a87-a46592b89a6b"
+}`}
+                                        </CodeBlockWithCopy>
+                                    </details>
+                                </Card>
+                            </>
+                            <>
+                                <Text size="small" weight="600">
+                                    Response Type 3
+                                </Text>
+                                <Card
+                                    padding="nano"
+                                    shape="rounded"
+                                    marginBottom="micro"
+                                >
+                                    <details>
+                                        <summary>
+                                            <Badge type="success">
+                                                SUCCESS
+                                            </Badge>{" "}
+                                            Verification done through PennyDrop
+                                        </summary>
+                                        <hr className="tertiary" />
+                                        <h5>Request</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`GET /api/verify/setu-bav/:requestId`}
+                                        </CodeBlockWithCopy>
+                                        <hr className="tertiary" />
+                                        <h5>Response</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`{
+    "id": "3afb7ca0-535a-4d5a-9892-960c03c4e966",
+    "status": "SUCCESS",
+    "fulfillmentType": "PENNYDROP",
+    "data": {
+        // No "entityType" and "merchantDetails" in case of PennyDrop
+        "bankAccountNumber": "1234567890",
+        "bankAccountIfsc": "ABCD0123456",
+        "bankAccountName": "Test User Name",
+        "ifscCrossCheck": true,
+        "ifscDetails": {
+            "name": "State Bank of India",
+            "branch": "CANTONMENT, BARODA",
+            "center": "BARODA",
+            "district": "BARODA",
+            "state": "GUJARAT",
+            "address": "BARODA MUNICIPAL CORPN. SHOPPING COMPLEX,NEAR FATEHGUNJ PETROL PUMP ,FATEHGUNJ BARODA ,PIN - 390002",
+            "contact": "+912652795129",
+            "imps": "true",
+            "rtgs": "true",
+            "city": "VADODARA",
+            "iso3166": "IN-GJ",
+            "neft": "true",
+            "micr": "390002022",
+            "upi": "true",
+            "swift": ""
+        }
+    },
+    "traceId": "cf7d0e36-1eb8-46b1-ac66-e0576d4d18f1"
+}`}
+                                        </CodeBlockWithCopy>
+                                    </details>
+                                </Card>
+                            </>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "400",
+                    content: (
+                        <>
+                            <>
+                                <Text size="small" weight="600">
+                                    Response Type 1
+                                </Text>
+                                <Card
+                                    padding="nano"
+                                    shape="rounded"
+                                    marginBottom="micro"
+                                >
+                                    <details>
+                                        <summary>
+                                            <Badge type="failure">FAILED</Badge>{" "}
+                                            Verification failed
+                                        </summary>
+                                        <hr className="tertiary" />
+                                        <h5>Request</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`GET /api/verify/setu-bav/:requestId`}
+                                        </CodeBlockWithCopy>
+                                        <hr className="tertiary" />
+                                        <h5>Response</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`{
+    "error": {
+        "code": "BAV52", // Penny drop + PennyLessCODE
+        "detail": "Invalid account", // Penny drop + PennyLessCODE description
+        "traceId": "38e6b7c5-7e64-47b0-975b-26bf07efbc58"
+    }
+}`}
+                                        </CodeBlockWithCopy>
+                                    </details>
+                                </Card>
+                            </>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
+                    label: "500",
+                    content: (
+                        <>
+                            <>
+                                <Text size="small" weight="600">
+                                    Response Type 1
+                                </Text>
+                                <Card
+                                    padding="nano"
+                                    shape="rounded"
+                                    marginBottom="micro"
+                                >
+                                    <details>
+                                        <summary>
+                                            <Badge type="failure">ERROR</Badge>{" "}
+                                            Internal Server Error or Upstream
+                                            Failure
+                                        </summary>
+                                        <hr className="tertiary" />
+                                        <h5>Request</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`GET /api/verify/setu-bav/:requestId`}
+                                        </CodeBlockWithCopy>
+                                        <hr className="tertiary" />
+                                        <h5>Response</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`{
+    "error": {
+        "code": "BAV2000", // or BAV2001 for internal error
+        "detail": "Upsteam error", // Penny drop + PennyLessCODE description
+        "traceId": "38e6b7c5-7e64-47b0-975b-26bf07efbc58"
+    }
+}`}
+                                        </CodeBlockWithCopy>
+                                    </details>
+                                </Card>
+                            </>
+                            <>
+                                <Text size="small" weight="600">
+                                    Response Type 2
+                                </Text>
+                                <Card
+                                    padding="nano"
+                                    shape="rounded"
+                                    marginBottom="micro"
+                                >
+                                    <details>
+                                        <summary>
+                                            <Badge type="failure">ERROR</Badge>{" "}
+                                            Generic Internal Server Error
+                                        </summary>
+                                        <hr className="tertiary" />
+                                        <h5>Request</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`GET /api/verify/setu-bav/:requestId`}
+                                        </CodeBlockWithCopy>
+                                        <hr className="tertiary" />
+                                        <h5>Response</h5>
+                                        <CodeBlockWithCopy language="json">
+                                            {`{
+    "error": {
+        "code": "internal_server_error",
+        "detail": "Internal server error",
+        "traceId": "38e6b7c5-7e64-47b0-975b-26bf07efbc58"
+    }
+}`}
+                                        </CodeBlockWithCopy>
+                                    </details>
+                                </Card>
+                            </>
+                        </>
+                    ),
+                },
+            ]}
+        ></Tabs>
+    </Portion>
+</Row>
+
+### Get notified via webhook
+
+As soon as Penny drop + PennyLess compelete (success or failed). Setu triggers a near realtime notification via webhook mechanism.
+See <a href="./notifications" target="_blank">Notifications</a> page for more information
+
+<WasPageHelpful />
