@@ -1,0 +1,281 @@
+---
+sidebar_title: Bill Payment Options
+page_title: Bill Payment Options Integration Guide
+order: 7
+visible_in_sidebar: true
+---
+
+# Bill Payment Options Integration Guide
+
+Some billers (eg: Loan repayments) offer multiple payment amounts for a single bill.
+
+📖 **For basic payment integration → [Paying Bills Integration Guide](./paying_bills.mdx)**
+
+## Overview
+
+Bill payment options allow customers to choose from different payment amounts for a single bill, such as:
+- **Minimum Due**: Pay only the minimum required amount
+- **Full Payment**: Pay the complete bill amount  
+- **Advance Payment**: Pay more than the bill amount
+- **Partial Payment**: Pay a custom amount within limits
+- **Foreclosure**: Pay the full outstanding amount
+
+**The `paymentOptions` field appears in fetch responses when billers support multiple payment amounts.**
+
+## Implementation Guide
+
+### Step 1: Detect Payment Options in Fetch Response
+
+Check for the `paymentOptions` field in your bill fetch response:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "success": true,
+  "data": {
+    "refId": "FETCH_REF_123",
+    "status": "Success",
+    "bills": [
+      {
+        "amount": 200000,  // Base bill amount
+        "billNumber": "LOAN001",
+        "customerName": "John Doe",
+        "dueDate": "2024-12-30",
+        "paymentOptions": [
+          {
+            "name": "Minimum Due",
+            "amount": 50000,
+            "minAmount": 50000,
+            "maxAmount": 50000
+          },
+          {
+            "name": "Full Payment", 
+            "amount": 200000,
+            "minAmount": 200000,
+            "maxAmount": 200000
+          },
+          {
+            "name": "Advance Payment",
+            "amount": 300000,
+            "minAmount": 300000,
+            "maxAmount": 1000000,
+            "amountMultiple": 50000
+          }
+        ]
+      }
+    ]
+  }
+}
+`}</CodeBlockWithCopy>
+
+### Step 2: Present Options to Users
+
+**UI Implementation:**
+- Display payment options as selectable buttons or dropdown
+- Show option names with their corresponding amounts
+- Allow custom amount input within option constraints
+- Validate amounts against `minAmount`, `maxAmount`, and `amountMultiple`
+
+**Example UI Flow:**
+```
+┌─────────────────────────────────┐
+│ Choose Payment Amount:          │
+│                                 │
+│ ○ Minimum Due - ₹500.00         │
+│ ○ Full Payment - ₹2,000.00      │
+│ ● Advance Payment - ₹3,000.00   │
+│                                 │
+│ Custom Amount: [₹3,000.00    ]  │
+│ (₹3,000 - ₹10,000, multiples    │
+│  of ₹500)                       │
+└─────────────────────────────────┘
+```
+
+### Step 3: Build Payment Request
+
+**When user selects a payment option:**
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "FETCH_REF_123",
+  "paymentDetails": {
+    "amount": 300000,  // Must match selected option amount
+    "mode": "UPI",
+    "paymentRefId": "PAY_REF_456", 
+    "timestamp": "2024-06-04T14:30:00+05:30",
+    "accountInfo": "user@ybl",
+    "selectedPaymentOptions": [
+      {
+        "name": "Advance Payment",  // Must match option name from fetch response
+        "amount": 300000            // Must match paymentDetails.amount
+      }
+    ]
+  },
+  "remitter": {
+    "name": "John Doe"
+  }
+}
+`}</CodeBlockWithCopy>
+
+**When user pays base bill amount (no option selected):**
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "FETCH_REF_123", 
+  "paymentDetails": {
+    "amount": 200000,  // Base bill amount
+    "mode": "UPI",
+    "paymentRefId": "PAY_REF_789",
+    "timestamp": "2024-06-04T14:30:00+05:30", 
+    "accountInfo": "user@ybl"
+    // No selectedPaymentOptions field when paying base amount
+  },
+  "remitter": {
+    "name": "John Doe"
+  }
+}
+`}</CodeBlockWithCopy>
+
+## How Payment Options Work
+
+**Relationship to Base Bill:**
+- Base bill has `amount` and may have `exactness` rules
+- Payment options **override** base bill constraints when selected
+- Each option defines its own amount limits and validation rules
+
+**Key Fields:**
+- `name`: Option identifier (must match exactly in payment request)
+- `amount`: Default amount for this option
+- `minAmount`/`maxAmount`: Payment range for this option
+- `amountMultiple`: Required increments (if specified)
+
+## Validation Rules
+
+**Step-by-Step Validation:**
+
+1. **Option Selection**: Choose option from `paymentOptions` array or use base bill amount
+2. **Amount Constraints**: If option selected, validate against option's `minAmount`/`maxAmount`
+3. **Multiple Validation**: If `amountMultiple` specified: `amount % amountMultiple == 0`
+4. **Request Consistency**: `paymentDetails.amount` must equal `selectedPaymentOptions[0].amount`
+
+**Example Validation Logic:**
+<CodeBlockWithCopy language="text">{`
+IF user selects payment option:
+  amount = user_chosen_amount
+  validate: option.minAmount <= amount <= option.maxAmount
+  validate: amount % option.amountMultiple == 0 (if specified)
+  include: selectedPaymentOptions field
+ELSE:
+  amount = bill.amount (or user amount within bill constraints)
+  validate: according to bill exactness rules
+  omit: selectedPaymentOptions field
+`}</CodeBlockWithCopy>
+
+## Real-World Example: Loan Repayment
+
+**Complete flow showing payment options in action:**
+
+<CodeBlockWithCopy language="json">{`
+// Fetch Response
+{
+  "data": {
+    "refId": "LOAN_FETCH_123",
+    "bills": [{
+      "amount": 50000,  // Monthly EMI
+      "paymentOptions": [
+        {
+          "name": "Monthly EMI",
+          "amount": 50000,
+          "minAmount": 50000,
+          "maxAmount": 50000
+        },
+        {
+          "name": "Partial Prepayment",
+          "amount": 100000,
+          "minAmount": 100000,
+          "maxAmount": 500000,
+          "amountMultiple": 10000
+        },
+        {
+          "name": "Foreclosure",
+          "amount": 1200000,
+          "minAmount": 1200000,
+          "maxAmount": 1200000
+        }
+      ]
+    }]
+  }
+}
+
+// Payment Request (Partial Prepayment)
+{
+  "refId": "LOAN_FETCH_123",
+  "paymentDetails": {
+    "amount": 250000,  // User chose custom amount
+    "selectedPaymentOptions": [{
+      "name": "Partial Prepayment",
+      "amount": 250000
+    }]
+  }
+}
+`}</CodeBlockWithCopy>
+
+## Error Handling
+
+**Common Validation Errors:**
+
+1. **Invalid option name**: Selected option doesn't exist in fetch response
+2. **Amount mismatch**: `paymentDetails.amount` ≠ `selectedPaymentOptions[0].amount`
+3. **Out of range**: Amount outside option's `minAmount`/`maxAmount`
+4. **Invalid multiple**: Amount not a multiple of `amountMultiple`
+5. **Missing selection**: Option required but `selectedPaymentOptions` not provided
+
+**Example Error Responses:**
+<CodeBlockWithCopy language="json">{`
+// Out of range error
+{
+  "success": false,
+  "error": {
+    "code": "AMOUNT_OUT_OF_RANGE",
+    "message": "Amount 75000 is below minimum 100000 for option 'Partial Prepayment'"
+  }
+}
+
+// Invalid multiple error  
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_AMOUNT_MULTIPLE",
+    "message": "Amount 155000 must be multiple of 10000 for option 'Partial Prepayment'"
+  }
+}
+`}</CodeBlockWithCopy>
+
+## Integration with CCF and Other Features
+
+**Customer Convenience Fee (CCF):**
+- CCF calculation applies to the **final payment amount** (including selected option amount)
+- Recalculate CCF when user changes payment options
+- CCF applies to `paymentDetails.amount`, not base bill amount
+
+**Exactness Rules:**
+- When payment option is selected: option constraints override bill exactness
+- When no option selected: standard exactness rules apply to base bill
+- `selectedPaymentOptions` signals which validation rules to use
+
+## Best Practices
+
+1. **Implement as standard feature** - not optional for comprehensive bill payment
+2. **Validate in real-time** as users select options and enter amounts
+3. **Clear option presentation** with amount ranges and constraints
+4. **Handle gracefully** when paymentOptions is null/empty
+5. **Consistent refId usage** throughout fetch-to-payment flow
+
+## Reference Links
+
+📖 **Related Guides:**
+- [Paying Bills Integration Guide](./paying_bills.mdx) — Master guide with Flow 1 implementation
+- [Multi-Bill Processing Guide](./multi-bill-processing.mdx) — Multiple bills handling (optional)
+- [API Reference](./api-reference.mdx) — Complete endpoint specifications
+- [Webhooks Integration](./webhooks.mdx) — Real-time payment status updates
+
+<WasPageHelpful />

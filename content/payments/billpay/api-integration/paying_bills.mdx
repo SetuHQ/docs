@@ -1,0 +1,502 @@
+---
+sidebar_title: Paying Bills
+page_title: BBPS Bill Payment Integration Guide
+order: 5
+visible_in_sidebar: true
+---
+
+# Paying Bills
+
+**Scope**: This guide covers using Setu APIs to pay bills through the BBPS (Bharat Bill Payment System) network. For prepaid mobile recharge, refer to the separate prepaid recharge API documentation.
+
+<Callout type="tip">
+  This guide works for both v1 and v2 APIs. Key differences:
+  <ul>
+    <li><strong>Customer parameters</strong>: v2 uses <code>customer.customerParams</code>, v1 uses <code>customer.billParameters</code></li>
+    <li><strong>Bill fetch response</strong>: v2 returns <code>bills[]</code> array, v1 returns single <code>bill</code> object</li>
+    <li><strong>Endpoints</strong>: Use <code>/api/v1/</code> or <code>/api/v2/</code> as needed</li>
+  </ul>
+  For complete migration details → <a href="./v2-migration.mdx">V2 Migration Guide</a>
+</Callout>
+
+## Understanding Bill Payment Models
+
+BBPS network supports three different payment models. Each biller determines which model they support:
+
+**Flow 1: Bill Fetch → Payment**
+- Retrieve the current amount due for the bill, then allow the customer to pay the bill
+- Common with: Electricity, Gas, Credit cards, Loan repayments
+- **[Jump to Flow 1 →](#flow-1-bill-fetch--payment)**
+
+**Flow 2: Bill Validation → Payment** 
+- Validate customer's account exists with the biller, then allow them to pay the bill
+- Common with: Broadband postpaid, Mobile postpaid, DTH/Cable TV, NCMC Recharge
+- **[Jump to Flow 2 →](#flow-2-bill-validation--payment)**
+
+**Flow 3: Direct Payment**
+- Customer can pay any amount they want, without requiring prior bill fetch or validation
+- Common with: Donations
+- **[Jump to Flow 3 →](#flow-3-direct-payment)**
+
+
+### Determining Which Flow to Implement
+
+**Get biller metadata from the  <a href="/payments/billpay/api-reference#/category~List/operation~BillerList">List Billers API</a>** to determine which flow to implement:
+
+Check `biller.fetchApiType` field:
+
+  - `BILL_FETCH` → Implement the Bill Fetch → Payment flow
+  - `BILL_VALIDATE` → Implement the Bill Validation → Payment flow
+  - `BILL_DIRECT` → Implement the Direct Payment flow
+
+
+## Basic Requirements
+
+Use this as a quick checklist and minimal request skeleton. These are the minimum requirements common across all flows.
+
+For behavior and rules (amount exactness, CCF, idempotency), see Cross‑Flow Rules & Patterns below.
+
+**Required Headers:**
+<CodeBlockWithCopy language="http">{`
+X-PARTNER-ID: {your-partner-id}
+Authorization: Bearer {your-oauth-token}
+Content-Type: application/json
+`}</CodeBlockWithCopy>
+
+
+**Basic Payment Structure:**
+<CodeBlockWithCopy language="json">{`
+{
+  "paymentDetails": {
+    "mode": "UPI",                             // Required: Debit mode
+    "amount": 150000,                          // Required: Debit amount in paise
+    "custConvFee": 3540,                       // Optional: Customer convenience fee in paise (separate from amount)
+    "paymentRefId": "TXN123456789",            // Required: Unique ID for the debit; acts as idempotency key
+    "timestamp": "2023-12-01T10:30:00+05:30",  // Required: Time of debit in ISO-8601 with timezone
+    "accountInfo": "user@ybl"                  // Required: Debit instrument info
+  },
+  "remitter": {
+    "name": "John Doe",                        // Required: Payer's name
+    "email": "john.doe@example.com",           // Optional: Payer's email
+    "aadhaar": "123456789012",                 // Optional: Payer's Aadhaar number
+    "pan": "ABCDE1234F"                        // Optional: Payer's PAN number
+  }
+}
+`}</CodeBlockWithCopy>
+
+
+## Cross-Flow Rules & Patterns
+
+<a id="common-patterns" />
+
+### Amounts & Exactness
+
+- All amounts are in paise.
+
+### Remitter Details
+
+- All bill payment requests require you to include <code>remitter.name</code> and <code>paymentDetails.accountInfo</code> for traceability.
+- You can find NPCI-compatible formats and examples in the [Remitter Details Guide](./remittance_flows_guide.mdx)
+
+### Customer Convenience Fee (CCF)
+
+<a id="ccf-rules" />
+
+- Detect: In List Billers, use <code>biller.interchangeFee[]</code> entries with <code>feeCode = "CCF1"</code> and <code>feeDirection = "C2B"</code>.
+- If absent: Omit <code>paymentDetails.custConvFee</code>.
+- Compute in paise: <code>ccf = (flatFee + (billAmount`*`percentFee/100))`*`(1 + GST/100)</code>. 
+- Send: Put only the final value in <code>paymentDetails.custConvFee</code>. Do not add CCF to <code>paymentDetails.amount</code>.
+- Ignore: EBF/PBF (B2C) are not customer fees and must not be computed or sent by clients.
+- Total to debit/refund: <code>paymentDetails.amount + paymentDetails.custConvFee</code>.
+
+### Idempotency and Retry Logic
+
+**Basic Idempotency:**
+- Always generate unique <code>paymentDetails.paymentRefId</code> per debit attempt
+- Reuse same key when retrying the same debit
+
+**Payment Retry Logic:**
+
+When a payment fails after funds are debited, you cannot retry with the same `refId`. Here's the correct retry flow:
+1. Initiate a new bill fetch/validation request to get a fresh `refId`
+2. Use the same `paymentRefId` (your debit identifier) in the new bill payment request <strong>within 24 hours</strong> of the original bill payment request.
+This allows proper retry while maintaining payment traceability
+
+**Example retry sequence:**
+```
+Original: Fetch → refId: ABC123 → Payment (paymentRefId: PAY456) → Fails
+Retry:    Fetch → refId: XYZ789 → Payment (paymentRefId: PAY456) → Success
+```
+
+<Callout type="tip">
+  <strong>Important:</strong> Idempotency logic applies for 24 hours after the initial payment request. Plan your retry mechanism accordingly.
+</Callout>
+
+
+## Flow 1: Bill Fetch → Payment
+
+<a id="flow-1-bill-fetch--payment" />
+
+Use when customers want to see their current amount due before paying. Majority of the billers on the network use this model.
+
+**Implementation Steps:**
+1. Fetch Bill Details → [Initiate bill fetch](/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchRequest) and monitor status ([poll response](/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchResponse) or [accept webhook](./webhooks.mdx#bill-fetch-webhook))
+2. Initiate Payment → [Initiate bill payment](/payments/billpay/api-integration/api-reference#/category~Payment/operation~PaymentRequest) and monitor status ([poll response](/payments/billpay/api-integration/api-reference#/category~Payment/operation~PaymentResponse) or [accept webhook](./webhooks.mdx#bill-payment-webhook))
+
+### Step 1: Fetch Bill Details
+
+**Bill Fetch Request:**
+<CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "{{AGENT_ID}}",
+    "channel": "{{AGENT_CHANNEL}}", // See Objects guide for channel-specific required parameters
+    // Required parameters depend on channel - see: /payments/billpay/api-integration/objects#agent
+  },
+  "biller": {
+    "id": "{{BILLER_ID}}" // biller id from list billers response
+  },
+  "customer": {
+    "mobile": "{{MOBILE}}", // mobile number of the logged in user
+    "customerParams": [ // v1 users: use "billParameters"
+      {
+        "name": "{{Param}}", // biller.customerParams[].name
+        "value": "{{Value}}" // value entered by the user
+      }
+    ]
+  }
+}
+`}</CodeBlockWithCopy>
+
+**Bill Fetch Response:**
+<CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "refId": "FETCH_REF_123",
+    "status": "Success",
+    "bills": [
+      {
+        "amount": 150000,
+        "customerName": "John Doe",
+        "dueDate": "2024-01-15",
+        "billNumber": "BILL123"
+        // See Objects guide for complete bill response: /payments/billpay/api-integration/objects#fetched-bill
+      }
+    ]
+  }
+}
+`}</CodeBlockWithCopy>
+
+### Step 2: Initiate Bill Payment for the fetched bill
+
+Call `/api/v{1|2}/bbps/bills/payment/request` with:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "{{BILL_FETCH_REF_ID}}", // data.refId from fetch response
+  "paymentDetails": {
+    "amount": {{CALCULATED_DEBIT_AMOUNT_IN_PAISE}},
+    "mode": "{{DEBIT_PAYMENT_MODE}}",
+    "custConvFee": {{COMPUTED_CCF_IN_PAISE}},
+    "paymentRefId": "{{DEBIT_ID}}",    
+    "timestamp": "{{DEBIT_TIMESTAMP}}",                   
+    "accountInfo": "{{DEBIT_PAYMENT_INSTRUMENT_INFO}}"               
+  },
+  "remitter": { 
+    "name": "{{PAYER_NAME}}" 
+  }
+}
+`}</CodeBlockWithCopy>
+
+**Amount Validation Rules based on the `exactness` field in the bill fetch response:**
+- `"Exact"` → Must equal bill amount exactly
+- `"Exact and above"` → Must be at least bill amount
+- `"Exact and below"` → Must not exceed bill amount
+- `"RANGE"` → Must be within `minAmount`/`maxAmount`
+- `"Any"` → Any amount is allowed (within biller/payment mode limits)
+- Validate that the paymentDetails.amount is a multiple of `amountMultiple` if present
+
+
+### Paying for a specific option
+
+Some billers (eg: Loan repayments) offer multiple payment amounts for a single bill.
+
+**Sample Bill Fetch Response with Payment Options:**
+<CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "refId": "FETCH_REF_123",
+    "status": "Success",
+    "bills": [{
+      "amount": 50000,
+      "customerName": "John Doe",
+      "paymentOptions": [
+        { "name": "1 Month EMI", "amount": 15000 },
+        { "name": "3 Month EMI", "amount": 45000 },
+        { "name": "Full Payment", "amount": 50000 }
+      ]
+    }]
+  }
+}
+`}</CodeBlockWithCopy>
+
+**When your bill fetch response includes `paymentOptions`:**
+- Present payment choices to users (e.g., "1 month EMI", "Partial repayment", "Foreclosure")
+- Include selected option in payment request using `selectedPaymentOptions` field
+
+**Payment Request with Selected Option:**
+
+Call `/api/v{1|2}/bbps/bills/payment/request` with:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "{{BILL_FETCH_REF_ID}}",
+  "paymentDetails": {
+    "amount": {{SELECTED_OPTION_AMOUNT}},
+    "mode": "{{DEBIT_PAYMENT_MODE}}",
+    "custConvFee": {{COMPUTED_CCF_IN_PAISE}},  // Total debit = amount + custConvFee
+    "paymentRefId": "{{DEBIT_ID}}",
+    "timestamp": "{{DEBIT_TIMESTAMP}}",
+    "accountInfo": "{{DEBIT_PAYMENT_INSTRUMENT_INFO}}",
+    "selectedPaymentOptions": [
+      {
+        "name": "{{SELECTED_OPTION_NAME}}",
+        "amount": {{SELECTED_OPTION_AMOUNT}}
+      }
+    ]
+  },
+  "remitter": { 
+    "name": "{{PAYER_NAME}}" 
+  }
+}
+`}</CodeBlockWithCopy>
+
+📖 **Complete payment options implementation → [Bill Payment Options Guide](./bill-payment-options.mdx)**
+
+### Paying for multiple bills (Optional)
+
+**Note:** A small set of billers (< 1%) support returning multiple bills in a single bill fetch. These billers primarily belong to B2B/eChallan categories.
+
+**Most developers can skip this section.** Only needed for billers returning `billerResponseType: "LIST"`.
+
+**Enhanced Payment Request (when needed):**
+
+Call `/api/v{1|2}/bbps/bills/payment/request` with:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "{{BILL_FETCH_REF_ID}}",
+  "bills": [ // Required: Subset of bills from the bill fetch response you want to pay for
+    { "billNumber": "B123", "amount": {{B123_AMOUNT_IN_PAISE}} },
+    { "billNumber": "B124", "amount": {{B124_AMOUNT_IN_PAISE}} }
+  ],
+  "paymentDetails": {
+    "amount": {{SUM_OF_SELECTED_BILL_AMOUNTS_IN_PAISE}},  
+    "mode": "{{DEBIT_PAYMENT_MODE}}",
+    "paymentRefId": "{{DEBIT_ID}}",
+    "timestamp": "{{DEBIT_TIMESTAMP}}",
+    "accountInfo": "{{DEBIT_PAYMENT_INSTRUMENT_INFO}}"
+  },
+  "remitter": { 
+    "name": "{{PAYER_NAME}}" 
+  }
+}
+`}</CodeBlockWithCopy>
+
+📖 **Complete multi-bill implementation → [Multi-Bill Processing Guide](./multi-bill-processing.mdx)**
+
+
+## Flow 2: Bill Validation → Payment
+
+<a id="flow-2-bill-validation--payment" />
+
+Use when you need to validate account existence before payment. Common with services like broadband postpaid, mobile postpaid, DTH/Cable TV.
+
+**Key Differences from the Bill Fetch → Payment model:**
+- Validates customer account exists with biller
+- May return empty `bills` array (since these billers only validate account existence)
+- Uses same bill fetch endpoint but for validation purpose
+
+**Implementation Steps:**
+1. Validate Account → [Initiate bill validation](/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchRequest) and monitor status ([poll response](/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchResponse) or [accept webhook](./webhooks.mdx#bill-fetch-webhook))
+2. Initiate Payment → [Initiate bill payment](/payments/billpay/api-integration/api-reference#/category~Payment/operation~PaymentRequest) and monitor status ([poll response](/payments/billpay/api-integration/api-reference#/category~Payment/operation~PaymentResponse) or [accept webhook](./webhooks.mdx#bill-payment-webhook))
+
+### Basic Validation → Payment
+
+**Most common use case for this model:** Validate account exists, then allow user to pay any amount.
+
+**Bill Validation Request:**
+<CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "{{AGENT_ID}}",
+    "channel": "{{AGENT_CHANNEL}}", // See Objects guide for channel-specific required parameters
+    // Required parameters depend on channel - see: /payments/billpay/api-integration/objects#agent
+  },
+  "biller": {
+    "id": "{{BILLER_ID}}" // biller id from list billers response
+  },
+  "customer": {
+    "mobile": "{{MOBILE}}", // mobile number of the logged in user
+    "customerParams": [ // v1 users: use "billParameters"
+      {
+        "name": "{{Param}}", // biller.customerParams[].name
+        "value": "{{Value}}" // value entered by the user
+      }
+    ]
+  }
+}
+`}</CodeBlockWithCopy>
+
+**Typical Bill Validation Response:**
+<CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "refId": "VALIDATION_REF_123",
+    "status": "Success", 
+    "bills": [],  // Empty - no specific bill amount
+    "customerName": "John Doe",
+    "dueDate": null
+  }
+}
+`}</CodeBlockWithCopy>
+
+**Payment Request (after successful validation):**
+
+Call `/api/v{1|2}/bbps/bills/payment/request` with:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "VALIDATION_REF_123",
+  "paymentDetails": {
+    "amount": {{USER_CHOSEN_AMOUNT_IN_PAISE}},
+    "mode": "{{DEBIT_PAYMENT_MODE}}", 
+    "custConvFee": {{COMPUTED_CCF_IN_PAISE}},  // Include if biller charges CCF; Total debit = amount + custConvFee
+    "paymentRefId": "{{DEBIT_ID}}",
+    "timestamp": "{{DEBIT_TIMESTAMP}}",
+    "accountInfo": "{{DEBIT_PAYMENT_INSTRUMENT_INFO}}"
+  },
+  "remitter": { 
+    "name": "{{PAYER_NAME}}" 
+  }
+}
+`}</CodeBlockWithCopy>
+
+### Paying for plans
+
+Some billers require users to choose a plan before payment - like mobile recharge, DTH packages, or broadband subscriptions.
+
+**Two user experience patterns you'll encounter:**
+
+**Pattern 1: Browse Plans First**
+- Show users all available plans offered by the biller upfront (List Plans API)
+- User selects plan → validate account/selected plan details → initiate bill payment
+
+**Pattern 2: Account-Specific Plans**
+- User enters account details in bill validation request
+- Biller returns plans available for this user in bill validation response
+- User selects from personalized options → initiate bill payment with the selected plan
+
+**Initiate Bill Payment with Selected Plan:**
+
+Call `/api/v{1|2}/bbps/bills/payment/request` with:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "{{VALIDATION_RESPONSE_REF_ID}}",
+  "paymentDetails": {
+    "amount": {{PLAN_AMOUNT_IN_PAISE}},
+    "mode": "UPI",
+    "custConvFee": {{COMPUTED_CCF_IN_PAISE}},  // Include if biller charges CCF; Total debit = amount + custConvFee
+    "paymentRefId": "{{UNIQUE_ID}}",
+    "timestamp": "{{ISO_8601}}",
+    "accountInfo": "user@ybl",
+    "Id": "PLAN_123"  // Plan ID from selection
+  },
+  "remitter": { 
+    "name": "{{PAYER_NAME}}" 
+  }
+}
+`}</CodeBlockWithCopy>
+
+📖 **Complete plan selection implementation guide → [Paying for plans](./plan-mdm-integration.mdx)**
+
+## Flow 3: Direct Payment
+
+<a id="flow-3-direct-payment" />
+
+Use for ad-hoc payments where no prior bill fetch/bill validation is required and the user knows the exact amount.
+
+**Prerequisites:** Only use when `biller.fetchApiType = "BILL_DIRECT"`.
+
+**Direct Payment Request:**
+
+Call `/api/v{1|2}/bbps/bills/payment/request` with:
+
+<CodeBlockWithCopy language="json">{`
+{
+  {
+    "agent": {
+      "id": "{{AGENT_ID}}",
+      "channel": "{{AGENT_CHANNEL}}", // See Objects guide for channel-specific required parameters
+      // Required parameters depend on channel - see: /payments/billpay/api-integration/objects#agent
+    },
+    "biller": {
+      "id": "{{BILLER_ID}}" // biller id from list billers response
+    },
+    "customer": {
+      "mobile": "{{MOBILE}}", // mobile number of the logged in user
+      "customerParams": [ // v1 users: use "billParameters"
+        {
+          "name": "{{Param}}", // biller.customerParams[].name
+          "value": "{{Value}}" // value entered by the user
+        }
+      ]
+    }
+  },
+  "paymentDetails": {
+    "amount": {{AMOUNT_IN_PAISE}},
+    "mode": "{{PAYMENT_MODE}}",
+    "custConvFee": {{COMPUTED_CCF_IN_PAISE}},  // Include if biller charges CCF; Total debit = amount + custConvFee
+    "paymentRefId": "{{UNIQUE_IDEMPOTENT_ID}}",
+    "timestamp": "{{ISO_8601}}",
+    "accountInfo": "{{NPCI_FORMAT}}"
+  },
+  "remitter": { 
+    "name": "{{PAYER_NAME}}" 
+  }
+}
+`}</CodeBlockWithCopy>
+
+<Text size="small">V1 users: use <code>customer.billParameters</code> in place of <code>customer.customerParams</code>.</Text>
+
+**Implementation Note:** Strip empty `customer.customerParams` (v2 users) or `customer.billParameters` (v1 users) before calling APIs.
+
+## Payment Response Handling
+
+After initiating a payment across any flow, you'll receive responses that require specific handling:
+
+**Status Interpretation:**
+- `Processing` → Show "Payment in progress" to user, continue polling
+- `Success` → Payment complete, update UI, store `transactionId` for future reference
+- `Failure` → Payment failed, check `failureReason`, follow retry logic above if needed
+
+**Polling Guidelines:**
+- Poll every 3-5 seconds for up to 2 minutes for standard billers
+- For billers with `supportsPendingStatus: true`, poll up to 48 hours
+- Always store `transactionId` from successful payments for disputes/reconciliation
+
+📖 **Complete response format → [Objects Reference](./objects.mdx#payment-response)**
+📖 **Webhook alternative → [Bill Payment Webhook](./webhooks.mdx#bill-payment-webhook)**
+
+## Reference Links
+
+📖 **Essential References:**
+- [Complete API Documentation](./api-reference.mdx) — Full endpoint specifications
+- [Bill Payment Options Guide](./bill-payment-options.mdx) — Handle multiple payment amounts (essential)
+- [Plan MDM Integration](./plan-mdm-integration.mdx) — Plan-based biller patterns
+- [Multi-Bill Processing Guide](./multi-bill-processing.mdx) — Multiple bills handling (optional)
+- [Remitter Details Guide](./remittance_flows_guide.mdx) — Payment format specifications  
+- [Webhooks Integration](./webhooks.mdx) — Real-time status updates
+
+<WasPageHelpful />
