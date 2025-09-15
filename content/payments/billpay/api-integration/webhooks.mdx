@@ -12,7 +12,7 @@ Here is the general structure of any webhook—
 <CodeBlockWithCopy language="json">{`{
     "traceId"   : "C3SFG0O6N88R6UI7EQ",
     "timeStamp" : "2021-11-12T00:12:29+05:30",
-    "event"     : "BILLER_UPDATES",
+    "event"     : "BILL_FETCH / BILL_PAY / BILL_DISPUTE / BILLER_UPDATES / PLAN_UPDATES / CREATE_UPMS_REGISTRATION / UPDATE_UPMS_REGISTRATION / CANCEL_UPMS_REGISTRATION / SKIP_PAYMENT",
     "data"      : { /* Present on success */ },
     "error"     : { /* Present on failure */ }
 }`}</CodeBlockWithCopy>
@@ -120,6 +120,60 @@ If this field is absent or null, the callback corresponds to a manual bill fetch
     </details>
 </Card>
 
+> **Note**: When a bill is presented automatically for a registered customer, this callback will include an additional field `upmsRegistrationRefId` within the `data` object, linking the bill to the specific registration. 
+If this field is absent or null, the callback corresponds to a manual bill fetch request. See example below.
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Bill presentment sample request
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "BILL_FETCH",
+    "timeStamp": "2025-04-17T17:56:55.159+05:30",
+    "data": {
+        "additionalInfo": [
+        {
+            "name": "Biller Unique Number",
+            "value": "Scaroasis"
+        }
+        ],
+        "billerResponseType": "SINGLE",
+        "billerSelectionType": null,
+        "bills": [
+        {
+            "amount": 83400,
+            "billDate": "2025-04-17",
+            "billNumber": "BILL-226131",
+            "billPeriod": "MONTHLY",
+            "customerName": "Nitin Gupta",
+            "dueDate": "2025-05-02",
+            "paymentOptions": [
+            {
+                "amount": 75060,
+                "name": "Early Payment Amount"
+            },
+            {
+                "amount": 91740,
+                "name": "Late Payment Amount"
+            }
+            ]
+        }
+        ],
+        "exactness": "RANGE",
+        "refId": "D00F73QLFUHJFPQC2800HVDeelt51071756", // Ref ID for this specific generated bill. Use this to initiate a payment.
+        "status": "Success",
+        "upmsRegistrationRefId": "D00EP9IJSBI05F06U9K0eBQWOq851071727" // Links to the UPMS registration
+    }
+}
+`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
 <hr class="primary" />
 
 ### Bill payment webhook
@@ -134,7 +188,7 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     <details>
         <summary>
             <Text weight="600" marginBottom="none">
-                Bill payment sample request
+                Bill payment sample request (Success)
             </Text>
         </summary>
         <CodeBlockWithCopy language="json">
@@ -142,7 +196,35 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     "event": "BILL_PAY",
     "data": {
         "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
-        "status": "PROCESSING/SUCCESS/FAILURE",
+        "status": "SUCCESS",
+        "billerRefId": "ABC1235",
+        "transactionId": "AX01122999900001",
+        "paymentDetails": {
+            "mode": "Internet Banking/Debit Card/Credit Card/Cash/UPI/Wallet/Prepaid Card/AEPS/Account Transfer/Bharat QR/USSD",
+            "paymentRefId": "N2001121212344",
+            "amount": 10000,
+            "timestamp": "2020-12-12T13:12:00+05:30"
+        },
+        "billerId": "VODA00000MUM03"
+    }
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Bill payment sample request (Failed)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "BILL_PAY",
+    "data": {
+        "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+        "status": "FAILURE",
         "billerRefId": "ABC1235",
         "transactionId": "AX01122999900001",
         "failureReason": {
@@ -150,16 +232,13 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
             "message": "Biller not accepting payments at the moment"
         },
         "paymentDetails": {
-            "mode": "Internet Banking/Debit Card/Credit Card/IMPS/Cash/UPI/Wallet/NEFT/Prepaid Card/AEPS/Account Transfer/Bharat QR/USSD",
+            "mode": "Internet Banking/Debit Card/Credit Card/Cash/UPI/Wallet/Prepaid Card/AEPS/Account Transfer/Bharat QR/USSD",
             "paymentRefId": "N2001121212344",
             "amount": 10000,
             "timestamp": "2020-12-12T13:12:00+05:30"
         },
         "billerId": "VODA00000MUM03"
-    },
-    "success": true,
-    "traceId": "C3SFG0O6N88R6UI7EQ",
-    "error": null
+    }
 }`}
         </CodeBlockWithCopy>
     </details>
@@ -187,12 +266,10 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     "data": {
         "refId": "JPMRPBOGGDTP1EFRZVXVESQVQIS10461642",
         "disputeId": "OP0121046567755",
-        "status": "INITIALIZED/ASSIGNED/RE_ASSIGNED/ASSIGNED_TO_BOU/ASSIGNED_TO_COU/ASSIGNED_TO_OU/ESCALATED/RESOLVED/UNRESOLVED",
+        "status": "ASSIGNED/RESOLVED/REJECTED/DEFAULT_RESOLVED/REFUNDED/PENDING_REFUND",
         "assignedTo": "AX39",
         "remarks": "Resolved in favour of customer"
-    },
-    "success": true,
-    "error": null
+    }
 }
 `}
         </CodeBlockWithCopy>
@@ -394,6 +471,8 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     </details>
 </Card>
 
+
+
 <hr class="primary" />
 
 ### Biller Plan updates webhook
@@ -404,31 +483,30 @@ request contains the plan with the new modification.
 
 <CodeBlockWithCopy language="json">{`Method : POST
 URL    : To be provided by partner`}</CodeBlockWithCopy>
-
 <Card padding="nano" shape="rounded">
     <details>
         <summary>
             <Text weight="600" marginBottom="none">
                 Biller plan updates sample request
-            </Text>
+                  </Text>
         </summary>
         <CodeBlockWithCopy language="json">
             {`{
-  "event": "PLAN_UPDATES",
-  "timeStamp": "2025-04-08T12:34:29.603+05:30",
-  "data": {
-    "billerId": "ZEE500000NAT01",
-    "Id": "3",
-    "amountInRupees": "599.0",
-    "categoryType": "Premium",
-    "categorySubType": {
-      "subType": "6 Months"
-    },
-    "description": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows, Kids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
-    "effectiveFrom": "2021-01-01",
-    "effectiveTo": "2021-12-31", 
-    "status": "ACTIVE"
-  }
+    "event": "PLAN_UPDATES",
+    "timeStamp": "2025-04-08T12:34:29.603+05:30",
+    "data": {
+        "billerId": "ZEE500000NAT01",
+        "Id": "3",
+        "amountInRupees": "599.0",
+        "categoryType": "Premium",
+        "categorySubType": {
+            "subType": "6 Months"
+        },
+        "description": "All ZEE5 Originals and Exclusives, Blockbuster Movies, All ALT Balaji Shows, Zindagi TV Shows, Kids, Live TV, TV shows before telecast. Watch on 5 devices at a time",
+        "effectiveFrom": "2021-01-01",
+        "effectiveTo": "2021-12-31",
+        "status": "ACTIVE"
+    }
 }`}
         </CodeBlockWithCopy>
     </details>

@@ -34,8 +34,6 @@ Payment modes supported by a biller.
 | Credit Card      |
 | Debit Card       |
 | Prepaid Card     |
-| IMPS             |
-| NEFT             |
 | UPI              |
 | Wallet           |
 | AEPS             |
@@ -45,22 +43,11 @@ Payment modes supported by a biller.
 
 ## State and City mapping
 
-[Click here &#8599](https://docs.google.com/spreadsheets/d/18LYdPbEw5JCB-bOp3gacbV6xUeHun_gBxbLeGxBuhK8/edit?usp=sharing) for State and City Biller Coverage Mapping
+[Click here &#8599](https://docs.google.com/spreadsheets/d/18LYdPbEw5JCB-bOp3gacbV6xUeHun_gBxbLeGxBuhK8/edit?usp=sharing) for State and City Biller Coverage Mapping                                              |
 
 ## Customer
 
-Customer object holds the customer mobile number and the customer bill parameters. This object is used in the V1 API.
-
-| parameter                  | type                               | description                                                                                                                                       |
-| -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mobile`                   | `string` (6, 10 and 20 digits)     | Customer Mobile Number                                                                                                                            |
-| `billParameters`           | `{ name: string, value: string}[]` | Bill Parameters used for standard bill fetch/payment. The parameters to send is found in the biller details API.                                  |
-| `billParameters[].name`    | `string`                           | Name of the bill parameter. name should match the parameter in biller details API.                                                                |
-| `billParameters[].value`   | `string`                           | Value of the bill parameter. Value is validate according to the regex found in the biller details.                                                |
-
-## CustomerV2
-
-CustomerV2 object holds the customer mobile number and the customer bill parameters. This is a new object introduced in the V2 API.
+CustomerV2 object holds the customer mobile number and the customer bill parameters. This is a new object introduced in the V2 API Spec.
 
 | parameter                  | type                               | description                                                                                                                     |
 | -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -70,7 +57,7 @@ CustomerV2 object holds the customer mobile number and the customer bill paramet
 | `customerParams[].value`   | `string`                           | Value of the customer parameter. Value is validate according to the regex found in the biller details.                          |
 | `name`                     | `string` (Optional)                | Customer's name as registered with the biller. Only present in UPMS registration callbacks if provided by the biller's system.  |
 
-Note: `customerParams` is a new field introduced in the V2 API in place of `billParameters`.
+Note: `customerParams` is a new field introduced in the V2 API in place of `billParameters` (Refer [V2 migration guide](/payments/billpay/api-integration/v2-migration#bill-fetch-request)).
 
 ## Biller
 
@@ -122,8 +109,6 @@ Details pertaining to the Agent which initiates the transaction. Values of the f
 | Credit Card      | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
 | Debit Card       | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
 | Prepaid Card     | Y   | Y    | Y   | Y    | Y   | Y        | Y     | Y   | Y   |
-| IMPS             | Y   | Y    | Y   | Y    | N   | Y        | N     | Y   | Y   |
-| NEFT             | Y   | Y    | Y   | Y    | Y   | Y        | N     | Y   | Y   |
 | UPI              | Y   | Y    | Y   | Y    | N   | Y        | N     | Y   | Y   |
 | Wallet           | Y   | Y    | Y   | Y    | N   | Y        | Y     | Y   | Y   |
 | AEPS             | N   | N    | Y   | N    | N   | Y        | N     | Y   | Y   |
@@ -151,13 +136,13 @@ A standard structure for representing errors in API responses or callbacks.
 
 ## Payment Details
 
-| parameter              | type                                                    | description                          |
-| ---------------------- | ------------------------------------------------------- | ------------------------------------ |
-| mode                   | [Payment Mode](#payment-mode)                           | Payment Mode                         |
-| paymentRefId           | `string` (6 - 35 characters)                            | Payment Reference ID tagged by agent |
-| amount                 | `integer`                                               | Amount in paise                      |
-| timestamp              | `date-time`                                             | Timestamp                            |
-| selectedPaymentOptions | [Selected Payment Option](#selected-payment-option)`[]` | Array of selected payment options    |
+| parameter              | type                                                    | description                                 |
+| ---------------------- | ------------------------------------------------------- | ------------------------------------------- |
+| mode                   | [Payment Mode](#payment-mode)                           | Payment Mode                                |
+| paymentRefId           | `string` (6 - 35 characters)                            | Unique Payment Reference ID tagged by agent |
+| amount                 | `integer`                                               | Amount in paise                             |
+| timestamp              | `date-time`                                             | Timestamp                                   |
+| selectedPaymentOptions | [Selected Payment Option](#selected-payment-option)`[]` | Array of selected payment options           |
 
 ## Payment Bill
 
@@ -265,7 +250,7 @@ Represents the customer's mandate details provided during UPMS registration crea
 | `debitInfo`        | [UPMS Debit Info](#upms-debit-info) (Optional)                | Required only if `registrationType` is `AUTO_PAY`. Contains auto-debit parameters.                                                |
 | `billerParams`     | `{ name: string, value: string}[]` (Optional)                 | Additional parameters specific to the biller for the mandate (e.g., "Low Balance Threshold"). Structure matches `billParameters`. |
 
-## UPMSRegistration
+## UPMS Registration
 
 Represents the complete details of a UPMS registration, typically received in webhook callbacks.
 

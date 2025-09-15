@@ -15,6 +15,8 @@ The GET Active FIP List API is the new version of our API to call the list of Ac
 -   Multi-AA Support: Now tracking OneMoney, Finvu, Anumati, Saafe, and more!
 -   Dual-Metric System: Combined data fetch + consent approval rates
 -   Provides real-time success rates to help FIUs make data-driven decisions about creating consents, allowing them to route users to alternate data collection methods when FIP performance is poor.
+-   Get detailed event-level performance metrics directly from AAs (Finvu, Anumati) including latency percentiles and success rates for each step in the AA flow
+-   Access P50, P95, P99 latency metrics and success rates for specific events like Discovery, Consent Request, Data Fetch, etc.
 
 #### Details Shared in the FIP List API
 
@@ -97,6 +99,14 @@ These key details can be used by you for purposes like - offering a list of FIPs
             If consent approval rate data is unavailable (Minimum 20 opened consent needed): System will use only data fetch success rate
         </td>
     </tr>
+    <tr>
+        <td>
+            <code>aaWiseHealthMetrics</code>
+        </td>
+        <td>
+            Available only with <code>expanded=true</code> query parameter. Provides detailed event-level metrics from each AA including latency percentiles (P50, P95, P99) and success rates for specific AA flow events like Discovery, Consent Request, Data Fetch, etc. Data is sourced directly from AA health APIs and updated every 10 minutes.
+        </td>
+    </tr>
 </table>
 
 #### Categories of FIP Status
@@ -145,6 +155,117 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
             TEMPORARILY_INACTIVE as that will mean their consents and/or data
             fetches are likely to fail.
         </td>
+    </tr>
+</table>
+
+### Enhanced Health Metrics provided by AAs
+
+By adding the `expanded=true` query parameter to any FIP API endpoint, you get access to detailed health metrics provided directly by Account Aggregators. This gives you:
+
+**Business Value:**
+- **Granular Performance Monitoring**: Track performance at each step of the AA flow
+- **Latency Analysis**: Understand response times with P50, P95, P99 percentiles  
+- **AA-Specific Insights**: Compare performance across different AAs (Finvu, Anumati)
+- **Real-time Decision Making**: Route users based on current AA and event-level performance
+
+**When to Use:**
+- Building advanced FIP selection logic
+- Monitoring AA performance trends
+- Debugging integration issues
+- Creating performance dashboards
+- Making data-driven routing decisions
+
+**Data Freshness:** Health metrics are updated every 10 minutes by polling AA endpoints directly.
+
+#### AA Flow Event Types
+
+When using `expanded=true`, you get metrics for these Account Aggregator flow events:
+
+<table>
+    <tr>
+        <th><strong>Event Name</strong></th>
+        <th><strong>Description</strong></th>
+        <th><strong>Business Impact</strong></th>
+    </tr>
+    <tr>
+        <td><code>DISCOVERY</code></td>
+        <td>Account discovery process when user searches for accounts at the FIP</td>
+        <td>High latency affects user experience during account selection</td>
+    </tr>
+    <tr>
+        <td><code>CONSENT_REQUEST</code></td>
+        <td>Consent creation and submission to the FIP</td>
+        <td>Failures here prevent users from proceeding with consent flow</td>
+    </tr>
+    <tr>
+        <td><code>LINKING</code></td>
+        <td>Account linking process after user provides credentials</td>
+        <td>Critical for successful account connection</td>
+    </tr>
+    <tr>
+        <td><code>LINKING_CONFIRM</code></td>
+        <td>Confirmation of successful account linking</td>
+        <td>Affects user confidence in the linking process</td>
+    </tr>
+    <tr>
+        <td><code>FI_NOTIFICATION</code></td>
+        <td>Notification sent by FIP about data request</td>
+        <td>Low success rates indicate FIP communication issues</td>
+    </tr>
+    <tr>
+        <td><code>FI_REQUEST</code></td>
+        <td>Actual data request sent to the FIP</td>
+        <td>High latency delays data availability to users</td>
+    </tr>
+    <tr>
+        <td><code>DATA_FETCH</code></td>
+        <td>Retrieval of financial data from the FIP</td>
+        <td>Core metric for data availability and speed</td>
+    </tr>
+    <tr>
+        <td><code>UNLINKING</code></td>
+        <td>Account unlinking/disconnection process</td>
+        <td>Important for account management features</td>
+    </tr>
+</table>
+
+#### Health Metrics Explained
+
+<table>
+    <tr>
+        <th><strong>Metric</strong></th>
+        <th><strong>Description</strong></th>
+        <th><strong>Use Case</strong></th>
+    </tr>
+    <tr>
+        <td><code>latency_avg</code></td>
+        <td>Average response time in milliseconds</td>
+        <td>Overall performance indicator</td>
+    </tr>
+    <tr>
+        <td><code>latency_p50</code></td>
+        <td>50th percentile (median) response time</td>
+        <td>Typical user experience</td>
+    </tr>
+    <tr>
+        <td><code>latency_p95</code></td>
+        <td>95th percentile response time</td>
+        <td>Performance under load</td>
+    </tr>
+    <tr>
+        <td><code>latency_p99</code></td>
+        <td>99th percentile response time</td>
+        <td>Worst-case performance scenarios</td>
+    </tr>
+    <tr>
+        <td><code>success_rate</code></td>
+        <td>Percentage of successful operations</td>
+        <td>Reliability indicator</td>
+    </tr>
+    <tr>
+        <td><code>metrics_as_of</code></td>
+        <td>Timestamp of when metrics were last updated</td>
+        <td>Data freshness verification</td>
     </tr>
 </table>
 
@@ -491,6 +612,206 @@ Below is the list of statuses for FIPs that you will see in a typical GET FIP Li
         />
     </Portion>
 </Row>
+
+### Enhanced FIP List API with Health Metrics
+
+###### Request
+
+<CodeBlockWithCopy language="json">{` GET /v2/fips?expanded=true `}</CodeBlockWithCopy>
+
+<Row>
+    <Portion desktopSpan="whole">
+        <Tabs
+            tabs={[
+                {
+                    key: "1",
+                    label: <Badge type="success">SUCCESS</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+    "data": [
+        {
+            "name": "Axis Bank",
+            "fipId": "AXIS001",
+            "fiTypes": [
+                "DEPOSIT"
+            ],
+            "institutionType": "BANK",
+            "status": "ACTIVE",
+            "consentConversionRate": 69.88,
+            "dataFetchSuccessRate": 54.63,
+            "aaWiseSuccessRate": [
+                {
+                    "aa": "onemoney",
+                    "dataFetchSuccessRate": 54.63,
+                    "consentConversionRate": 69.88
+                }
+            ],
+            "aaWiseHealthMetrics": {
+                "finvu": [
+                    {
+                        "eventName": "DISCOVERY",
+                        "metrics_as_of": "2025-08-19T03:46:00.000+00:00",
+                        "latency_avg": 174,
+                        "latency_p50": 119,
+                        "latency_p95": 460,
+                        "latency_p99": 634,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "CONSENT_REQUEST",
+                        "metrics_as_of": "2025-08-19T03:46:00.000+00:00",
+                        "latency_avg": 52,
+                        "latency_p50": 45,
+                        "latency_p95": 68,
+                        "latency_p99": 68,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "LINKING",
+                        "metrics_as_of": "2025-08-19T03:46:00.000+00:00",
+                        "latency_avg": 404,
+                        "latency_p50": 383,
+                        "latency_p95": 405,
+                        "latency_p99": 405,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "LINKING_CONFIRM",
+                        "metrics_as_of": "2025-08-19T03:46:00.000+00:00",
+                        "latency_avg": 72,
+                        "latency_p50": 66,
+                        "latency_p95": 67,
+                        "latency_p99": 67,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "FI_NOTIFICATION",
+                        "metrics_as_of": "2025-08-19T03:46:00.000+00:00",
+                        "latency_avg": 5,
+                        "latency_p50": 5,
+                        "latency_p95": 6,
+                        "latency_p99": 7,
+                        "success_rate": 89.11
+                    },
+                    {
+                        "eventName": "FI_REQUEST",
+                        "metrics_as_of": "2025-08-19T03:46:00.000+00:00",
+                        "latency_avg": 66,
+                        "latency_p50": 59,
+                        "latency_p95": 105,
+                        "latency_p99": 167,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "DATA_FETCH",
+                        "metrics_as_of": "2025-08-19T03:46:00.000+00:00",
+                        "latency_avg": 38,
+                        "latency_p50": 32,
+                        "latency_p95": 65,
+                        "latency_p99": 93,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "UNLINKING",
+                        "metrics_as_of": null,
+                        "latency_avg": 0,
+                        "latency_p50": 0,
+                        "latency_p95": 0,
+                        "latency_p99": 0,
+                        "success_rate": 0.0
+                    }
+                ],
+                "anumati": [
+                    {
+                        "eventName": "DISCOVERY",
+                        "metrics_as_of": "2025-08-19T03:32:31.653+00:00",
+                        "latency_avg": 203.21848739495798,
+                        "latency_p50": 74.0,
+                        "latency_p95": 74.242,
+                        "latency_p99": 74.3364,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "CONSENT_REQUEST",
+                        "metrics_as_of": "2025-08-19T03:32:31.653+00:00",
+                        "latency_avg": 50.94230769230769,
+                        "latency_p50": 34.255,
+                        "latency_p95": 34.4845,
+                        "latency_p99": 34.5049,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "DATA_FETCH",
+                        "metrics_as_of": "2025-08-19T03:32:31.653+00:00",
+                        "latency_avg": 46.38053544367739,
+                        "latency_p50": 23.0,
+                        "latency_p95": 23.0,
+                        "latency_p99": 23.0,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "FI_REQUEST",
+                        "metrics_as_of": "2025-08-19T03:32:31.653+00:00",
+                        "latency_avg": 83.22635476270617,
+                        "latency_p50": 49.0,
+                        "latency_p95": 50.0,
+                        "latency_p99": 50.0,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "LINKING",
+                        "metrics_as_of": "2025-08-19T03:32:31.653+00:00",
+                        "latency_avg": 375.38461538461536,
+                        "latency_p50": 340.36,
+                        "latency_p95": 340.684,
+                        "latency_p99": 340.7128,
+                        "success_rate": 100.0
+                    },
+                    {
+                        "eventName": "LINKING_CONFIRM",
+                        "metrics_as_of": "2025-08-19T03:32:31.653+00:00",
+                        "latency_avg": 98.22222222222223,
+                        "latency_p50": 31.28,
+                        "latency_p95": 32.432,
+                        "latency_p99": 32.5344,
+                        "success_rate": 100.0
+                    }
+                ]
+            }
+        }
+    ],
+    "traceId": "1-64313583-255e3a0705424652664584b2"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+                {
+                    key: "2",
+                    label: <Badge type="failure">FAIL</Badge>,
+                    content: (
+                        <>
+                            <h5>Response</h5>
+                            <CodeBlockWithCopy language="json">
+                                {`{
+  "errorMsg": "string",
+  "errorCode": "string",
+  "txnid": "string",
+  "timestamp": "2023-03-30T08:20:31.367Z",
+  "ver": "string"
+}`}
+                            </CodeBlockWithCopy>
+                        </>
+                    ),
+                },
+            ]}
+        />
+    </Portion>
+</Row>
+
 
 ##### Using Get FIP List for routing end-users to AA Flows
 

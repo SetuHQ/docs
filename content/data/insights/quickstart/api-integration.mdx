@@ -28,67 +28,75 @@ Call this API to create an FI data block for the user data you would like to fee
 
 Send the financial data as payload in the body. The payload should be same as the data provided by the FIP. The payload is validated against the <a href="https://api.rebit.org.in/schema" target="_blank">ReBIT schema</a>.
 
-<CodeBlockWithCopy language="json">
-  {`POST /v1/fiData 
-{
-  account: {
-    profile: {
-      holders: {
-        holder: [
-          {
-            name: 'string',
-            dob: '2019-08-24',
-            mobile: 0,
-            nominee: 'REGISTERED',
-            landline: 'string',
-            address: 'string',
-            email: 'string',
-            pan: 'string',
-            ckycCompliance: true
-          }
-        ],
-        type: 'SINGLE'
-      }
-    },
-    summary: {
-      pending: {transactionType: 'CREDIT', amount: 0},
-      currentBalance: 'string',
-      currency: 'string',
-      exchgeRate: 'string',
-      balanceDateTime: '2019-08-24T14:15:22Z',
-      type: 'SAVINGS',
-      branch: 'string',
-      facility: 'OD',
-      ifscCode: 'string',
-      micrCode: 'string',
-      openingDate: '2019-08-24',
-      currentODLimit: 'string',
-      drawingLimit: 'string',
-      status: 'ACTIVE'
-    },
-    transactions: {
-      transaction: [
-        {
-          type: 'CREDIT',
-          mode: 'CASH',
-          amount: 0,
-          currentBalance: 'string',
-          transactionTimestamp: '2019-08-24T14:15:22Z',
-          valueDate: '2019-08-24',
-          txnId: 'string',
-          narration: 'string',
-          reference: 'string'
+If you need to pass multiple accounts of same type for a customer, you can go about it in one of the following ways,
+
+1. Pass the data for all accounts in a single call to the ingest API.
+2. If you feel the data is too large, you can pass the data for each account in a separate call to this API. Remember to pass the same refId parameter in each call.
+
+<Callout type="tip">We recommend using the first approach. There should be no issues with JSON data of upto 1 MB.</Callout>
+
+<br />
+
+<Callout type="info">If you want to pass accounts of different types, ie deposit, mutual_fund, etf etc. we recommend the second approach. Remember to pass the same refId parameter in each call. We plan to support this with a single API call approach in the future.</Callout>
+
+<br />
+
+<CodeBlockWithCopy language="http">
+  {`POST /v3/fiData?refId=your-unique-ref-id
+  --header 'Content-Type: application/json'
+  --header 'x-client-id: <client_id>'
+  --header 'x-client-secret: <client_secret>'
+  --header 'x-product-instance-id: <product_instance_id>'
+  --data-raw '[{
+        "account": {
+            "linkedAccRef": "8a467ff9-51a5-4c8e-9cec-396d56acda13",
+            "maskedAccNumber": "XXXXXXXXXX2381",
+            "type": "deposit",
+            "version": "1.2",
+            "profile": {
+                "holders": {
+                    "holder": [
+                        {
+                            "name": "Ashok Kumar",
+                            "dob": "2019-08-24",
+                            "mobile": "9999999999",
+                            "nominee": "REGISTERED",
+                            "landline": "1234567890",
+                            "address": "123 Main Street",
+                            "email": "ashok@xyz.com",
+                            "pan": "ABCD1234X",
+                            "ckycCompliance": true
+                        }
+                    ],
+                    "type": "SINGLE"
+                }
+            },
+            "summary": {
+                "balanceDateTime": "2022-11-08T20:45:48+05:30",
+                "branch": "BALTANA",
+                "currency": "INR",
+                "currentBalance": "680.56",
+                "status": "ACTIVE",
+                "type": "SAVINGS"
+            },
+            "transactions": {
+                "startDate": "2021-09-01",
+                "endDate": "2023-09-07",
+                "transaction": [
+                    {
+                        "amount": "1000",
+                        "currentBalance": "20000",
+                        "mode": "OTHERS",
+                        "narration": "CDM Service Charges",
+                        "transactionTimestamp": "2021-10-02T23:59:59+05:30",
+                        "type": "CREDIT",
+                        "valueDate": "2021-10-02"
+                    }
+                ]
+            }
         }
-      ],
-      startDate: '2019-08-24',
-      endDate: '2019-08-24'
-    },
-    type: 'deposit',
-    maskedAccNumber: 'string',
-    version: 0,
-    linkedAccRef: 'string'
-  }
-}`}
+    }]
+`}
 </CodeBlockWithCopy>
 
 <hr class="tertiary" />
@@ -108,6 +116,17 @@ Send the financial data as payload in the body. The payload should be same as th
           </p>
           <CodeBlockWithCopy language="json">
             {`{
+    "status": "Success",
+    "version": "0.73.1",
+    "body": {
+        "refId": "test-single-account-15",
+        "fiSchema": [
+            "deposit"
+        ],
+        "expiryDate": "2025-07-06 07:03:12.312"
+    }
+}
+`}
   "status": "Success",
   "statusDescription": "statusDescription",
   "body": {
@@ -116,6 +135,7 @@ Send the financial data as payload in the body. The payload should be same as th
     "expiryDate": "2023-05-16T09:23:39.115Z"
   }
 }`}
+>>>>>>> staging
           </CodeBlockWithCopy>
         </>
       ),
@@ -200,24 +220,27 @@ Call this API to get a list of all FI data blocks created by you.
 
 #### Create Insight report
 
-Call this API to generate an Insights report based on the FI data block created earlier. Each FI data block is identified by it's `dataId`.  Pass the `templateId` obtained from template creation step, which will determine the ouput insights parameters that will be present in the report.
+This endpoint triggers an asynchronous job to generate insights on the data previously submitted with a `refId`.
+
+<Callout type="tip">You can use the same <code>refId</code> for multiple data blocks for a single customer.</Callout>
 
 ###### Request
 
-Send the list of FI data block IDs and the template ID as the payload.
+Send the customer `refId` and the `templateId` as the payload. You can also provide an optional `accounts` filter to generate insights only for specific accounts.
 
-<Callout type="warning">Currently, only one <code>dataId</code> is supported in the request body.</Callout>
-<br />
-
-
-<CodeBlockWithCopy language="json">
-{`POST /v1/insight
-{
-  "templateId": "4777db7e-e604-4c0c-a410-51be9d17d00b",
-  "dataIds": [
-    "cfbd63ef-ea1a-44b2-a9e8-9f834214f5c6"
-  ]
-}`}
+<CodeBlockWithCopy language="http">
+  {`POST /v3/insight
+  --header 'Content-Type: application/json'
+  --header 'x-client-id: <client_id>'
+  --header 'x-client-secret: <client_secret>'
+  --header 'x-product-instance-id: <product_instance_id>'
+  --data-raw '{
+    "templateId": "b6418647-6397-47a8-8219-1bff5f7ddfe5",
+    "refId": "test-single-account-15",
+    "filters": {
+        "accounts": []
+    }
+  }'`}
 </CodeBlockWithCopy>
 
 <hr class="tertiary" />
@@ -272,8 +295,12 @@ Call this API to fetch the Insights report. Pass the `reportId` as a URL paramet
 
 ###### Request
 
-<CodeBlockWithCopy language="json">
-{`GET /v1/insight?reportId=4b108e83-07b6-47a4-84cd-a77d0e9e2b3d`}
+<CodeBlockWithCopy language="http">
+{`GET /v3/insight?reportId={reportId}
+--header 'Accept: application/json'
+--header 'x-client-id: <client_id>'
+--header 'x-client-secret: <client_secret>'
+--header 'x-product-instance-id: <product_instance_id>'`}
 </CodeBlockWithCopy>
 
 <hr class="tertiary" />

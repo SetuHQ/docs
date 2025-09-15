@@ -17,7 +17,7 @@ For this, the core `fetch`, `pay` and `dispute` APIs are asynchronous. Each API 
 
 ### Fetch bill
 
-The <a href="/payments/billpay/api-integration/api-reference#/category~Fetch_bill/operation~FetchRequest">Fetch bill API</a> with endpoint `/bbps/bills/fetch/request` is used to get bill details for a customer. You need to pass the details of the customer and also the business they want to fetch their bill from.
+The <a href="/payments/billpay/api-integration/api-reference#/category~Fetch/operation~FetchRequest">Fetch bill API</a> with endpoint `/bbps/bills/fetch/request` is used to get bill details for a customer. You need to pass the details of the customer and also the business they want to fetch their bill from.
 
 For e.g., if your customer wants to pay their phone bill for Vodafone Postpaid, you will need to provide—
 
@@ -30,7 +30,7 @@ For e.g., if your customer wants to pay their phone bill for Vodafone Postpaid, 
     </li>
 </ul>
 
-Optionally, you can also register the customer with this biller simultaneously to receive future bills as and when they are generated (See [UPMS Integration Guide](upms.mdx)).
+Optionally, you can also register the customer with this biller simultaneously to receive future bills as and when they are generated (See [UPMS Integration Guide](payments/billpay/api-integration/upms)).
 If you include the `mandate` object in the request, a registration will be initiated for the customer with the biller.
 
 
@@ -77,6 +77,7 @@ If you include the `mandate` object in the request, a registration will be initi
   "biller": {
     "id": "VODA00000MUM03"
   },
+  // optional - include to register customer with biller using UPMS
   "mandate": {
     "registrationType": "VIEW_N_PAY",
     "billPeriod": "ASPRESENTED"
@@ -270,20 +271,17 @@ In the response you either get the bill details, or "Processing" status if the b
     </details>
 </Card>
 
-<hr class="tertiary" />
-
-
 <hr class="primary" />
 
 ### Pay bill
 
-The <a href="/payments/billpay/api-integration/api-reference#/category~Pay_bill/operation~PaymentRequest" target="_blank">Pay bill API</a> is used to send details of a payment done by a user on your app/website to Setu. Setu uses this information to confirm payment with the biller.
+The <a href="/payments/billpay/api-integration/api-reference#/category~Pay/operation~PaymentRequest" target="_blank">Pay bill API</a> is used to send details of a payment done by a user on your app/website to Setu. Setu uses this information to confirm a payment with the biller.
 
 <hr class="primary" />
 
 ### Raise dispute
 
-The <a href="/payments/billpay/api-integration/api-reference#/category~Manage_Dispute/operation~DisputeRequest" target="_blank">Raise Dispute API</a> is used to Raise a compliant for a payment done by a user on your app/website to Setu. Setu uses this information and raises a compliant on the BBPS Platform.
+The <a href="/payments/billpay/api-integration/api-reference#/category~Dispute/operation~DisputeRequest" target="_blank">Raise Dispute API</a> is used to Raise a compliant for a payment done by a user on your app/website to Setu. Setu uses this information and raises a compliant on the BBPS Platform.
 
 <hr class="primary" />
 
@@ -310,15 +308,15 @@ For your convenience, Setu also provides actions to list data in bulk, that can 
         </a>
         —lists all billers on BBPS.
     </li>
-	<li>
-		<a
-			target="_blank"
-			href="/payments/billpay/api-integration/api-reference#/category~List/operation~getBillerPlans"
-		>
-			List plans
-		</a>
-		—lists all plans for billers on BBPS.
-	</li>
+    <li>
+        <a
+            target="_blank"
+            href="/payments/billpay/api-integration/api-reference#/category~List/operation~getBillerPlans"
+        >
+            List plans
+        </a>
+        —lists all plans for billers on BBPS.
+    </li>
     <li>
         <a
             target="_blank"
@@ -326,43 +324,21 @@ For your convenience, Setu also provides actions to list data in bulk, that can 
         >
             List disputes
         </a>
-        —lists all the raised disputes using the <a target="_blank" href="/payments/billpay/api-integration/api-reference#/category~Dispute/path~/api/v2/bbps/bills/complaint/request/post">Dispute API</a>.
-    </li>
-    <li>
-        <a
-            target="_blank"
-            href="/payments/billpay/api-integration/api-reference#/category~Take_bulk_actions/operation~getFetchedBills"
-        >
-            List fetched Bills
-        </a>
-        —lists all the fetched bills that were fetched using <a target="_blank" href="/payments/billpay/api-integration/api-reference#/category~Fetch_bill/operation~FetchRequest">
-            Fetch API
-        </a>.
-    </li>
-    <li>
-        <a
-            target="_blank"
-            href="/payments/billpay/api-integration/api-reference#/category~List/path~/api/v2/bbps/transactions/get"
-        >
-            List paid bills
-        </a>
-        —lists all the bill pay transactions paid using <a target="_blank" href="/payments/billpay/api-integration/api-reference#/category~Pay_bill/operation~PaymentRequest">
-            Pay API
-        </a>.
+        —lists all the raised disputes using the <a target="_blank" href="/payments/billpay/api-integration/api-reference#/category~Dispute/operation~DisputeRequest">Dispute API</a>.
     </li>
 </ul>
 
 <hr class="primary" />
 
-### Managing Customer Registrations
+### Managing Customer Registrations via UPMS
 
-These APIs allow you to manage the lifecycle of UPMS (Unified Presentment Management Service) registrations for your customers. Refer to the [UPMS Integration Guide](upms.mdx) for detailed flows and callback handling.
+These APIs allow you to manage the lifecycle of UPMS (Unified Presentment Management Service) registrations for your customers. Refer to the [UPMS Integration Guide](/payments/billpay/api-integration/upms) for detailed flows and callback handling.
 
 #### Viewing Registration Details
 
 To retrieve the current status and details of a specific, existing UPMS registration.
 
-**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS_Registrations/operation~GetUPMSRegistrationDetails" target="_blank">GET /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
+**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~ViewUPMSRegistration" target="_blank">GET /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -424,7 +400,7 @@ To retrieve the current status and details of a specific, existing UPMS registra
 
 To modify specific details of an existing, active UPMS registration. This is an asynchronous operation; the final result is delivered via the [Update UPMS Registration webhook](/content/payments/billpay/api-integration/webhooks.mdx#update-upms-registration-webhook).
 
-**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS_Registrations/operation~UpdateUPMSRegistration" target="_blank">PATCH /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
+**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~UpdateUPMSRegistration" target="_blank">PATCH /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -468,7 +444,7 @@ To modify specific details of an existing, active UPMS registration. This is an 
 
 To permanently cancel an existing UPMS registration. This is an asynchronous operation; confirmation comes via the [Cancel UPMS Registration webhook](/content/payments/billpay/api-integration/webhooks.mdx#cancel-upms-registration-webhook).
 
-**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS_Registrations/operation~CancelUPMSRegistration" target="_blank">DELETE /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
+**API Reference:** <a href="/payments/billpay/api-integration/api-reference#/category~UPMS/operation~CancelUPMSRegistration" target="_blank">DELETE /api/v2/upms/registrations/{upmsRegistrationRefID}</a>
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -493,3 +469,5 @@ To permanently cancel an existing UPMS registration. This is an asynchronous ope
 The <a href="/payments/billpay/api-integration/api-reference#/category~Health/operation~getHealth">health check API</a> tells you the health of the Setu BillPay server.
 
 Aside from the above, there are other APIs which are also vital for a complete customer payment experience. See the <a href="/payments/billpay/api-integration/api-reference" target="_blank">full API reference</a> for more details.
+
+<WasPageHelpful />
