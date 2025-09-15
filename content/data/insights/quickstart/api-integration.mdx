@@ -22,14 +22,11 @@ Here are the URLs you would need for calling Setu Insights APIs—
 
 #### Create FI Data block API
 
-Call this API to create an FI data block for the customer data you would like to feed into Setu Insights.
-
+Call this API to create an FI data block for the user data you would like to feed into Setu Insights.
 
 ###### Request
 
-Send the financial data as payload in the body. The payload should be same as the data provided by the FIP.
-The JSON schema for different data types is available in <a href="/data/account-aggregator/fi-data-types" target="_blank">FI Data Types</a>.
-The ReBIT schema is available <a href="https://api.rebit.org.in/schema" target="_blank">here</a>.
+Send the financial data as payload in the body. The payload should be same as the data provided by the FIP. The payload is validated against the <a href="https://api.rebit.org.in/schema" target="_blank">ReBIT schema</a>.
 
 If you need to pass multiple accounts of same type for a customer, you can go about it in one of the following ways,
 
@@ -114,7 +111,8 @@ If you need to pass multiple accounts of same type for a customer, you can go ab
       content: (
         <>
           <p>
-            The response confirms the data has been received and provides the `refId` and an expiry date for the data.
+            A <code>dataId</code> is assigned for this FI data block for usage
+            in other APIs.
           </p>
           <CodeBlockWithCopy language="json">
             {`{
@@ -129,6 +127,15 @@ If you need to pass multiple accounts of same type for a customer, you can go ab
     }
 }
 `}
+  "status": "Success",
+  "statusDescription": "statusDescription",
+  "body": {
+    "dataId": "4e0ba220-9575-11eb-a8b3-0242ac130003",
+    "fiSchema": "deposit",
+    "expiryDate": "2023-05-16T09:23:39.115Z"
+  }
+}`}
+>>>>>>> staging
           </CodeBlockWithCopy>
         </>
       ),
@@ -141,8 +148,64 @@ If you need to pass multiple accounts of same type for a customer, you can go ab
           {`{
   "errorCode": "errorCode",
   "errorMsg": "errorMsg",
-  "timestamp": "2023-05-16 09:23:39.115",
-  "version": "1.0",
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "ver": "1",
+  "txnid": "txnid"
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+<hr class="tertiary" />
+
+#### Get FI data blocks API
+
+Call this API to get a list of all FI data blocks created by you.
+
+###### Request
+
+<CodeBlockWithCopy language="json">{`GET /v1/fiData`}</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+###### Response
+
+<Tabs
+  tabs={[
+    {
+      key: "tab1",
+      label: "Success",
+      content: (
+        <>
+          <p>An array of FI data blocks created by you is returned.</p>
+          <CodeBlockWithCopy language="json">
+            {`{
+  "status": "Success",
+  "statusDescription": "statusDescription",
+  "body": [
+    {
+      "dataId": "4e0ba220-9575-11eb-a8b3-0242ac130003",
+      "fiSchema": "deposit",
+      "expiryDate": "2023-05-16T10:16:53.334Z"
+    }
+  ]
+}`}
+          </CodeBlockWithCopy>
+        </>
+      ),
+    },
+    {
+      key: "tab2",
+      label: "Error",
+      content: (
+        <CodeBlockWithCopy language="json">
+          {`{
+  "errorCode": "errorCode",
+  "errorMsg": "errorMsg",
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "ver": "1",
   "txnid": "txnid"
 }`}
         </CodeBlockWithCopy>
@@ -154,9 +217,8 @@ If you need to pass multiple accounts of same type for a customer, you can go ab
 <hr class="primary" />
 
 ### Insight generation APIs
-The Insights API is a two-step process. First, you request insight generation for a given `refId`. Then, you poll another endpoint to retrieve the results.
 
-#### 1. Request Insight Generation
+#### Create Insight report
 
 This endpoint triggers an asynchronous job to generate insights on the data previously submitted with a `refId`.
 
@@ -193,18 +255,15 @@ Send the customer `refId` and the `templateId` as the payload. You can also prov
       content: (
         <>
           <p>
-            A successful request queues the insight generation job and returns a `reportId`. A notification will be posted after successful generation of insights. See <a href="/data/insights/notifications" target="_blank">notifications</a>.<br /><br />  The <code>reportId</code> also can be used fetch the Insights report using <b>2. Retrieve Insights</b> API.
+            A <code>reportId</code> is returned along with the status of the Insights generation job. A notification will be posted after successful generation of insights. See <a href="/data/insights/notifications" target="_blank">notifications</a>.<br /><br />  The <code>reportId</code> also can be used fetch the Insights report using <b>Get Insight report</b> API, if the report status is <code>Success</code>.
           </p>
           <CodeBlockWithCopy language="json">
             {`{
-    "status": "Success",
-    "version": "0.73.1",
-    "statusDescription": null,
-    "body": {
-        "reportId": "05a5a389-b922-4197-be03-b309cdcc575a",
-        "status": "queued",
-        "reason": "NA"
-    }
+  "status": "Success",
+  "body": {
+    "reportId": "4b108e83-07b6-47a4-84cd-a77d0e9e2b3d",
+    "status": "in-progress"
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -218,8 +277,8 @@ Send the customer `refId` and the `templateId` as the payload. You can also prov
           {`{
   "errorCode": "errorCode",
   "errorMsg": "errorMsg",
-  "timestamp": "2023-05-16 09:23:39.115",
-  "version": "1.0",
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "ver": "1",
   "txnid": "txnid"
 }`}
         </CodeBlockWithCopy>
@@ -230,9 +289,9 @@ Send the customer `refId` and the `templateId` as the payload. You can also prov
 
 <hr class="tertiary" />
 
-#### 2. Retrieve Insights
+#### Get Insight report
 
-Use the `reportId` from the previous step to poll this endpoint for the insight report.
+Call this API to fetch the Insights report. Pass the `reportId` as a URL parameter, which was returned in the response body of **Create Insight report** API.
 
 ###### Request
 
@@ -255,43 +314,81 @@ Use the `reportId` from the previous step to poll this endpoint for the insight 
       label: "Success",
       content: (
         <>
-          <p>The response will contain the generated insights. The `status` field for each account indicates whether insights were generated successfully.</p>
+          <p>A dictionary, where insight names are keys and insights are values, is returned</p>
           <CodeBlockWithCopy language="json">
             {`{
-    "status": "Success",
-    "version": "0.73.1",
-    "statusDescription": null,
-    "body": {
-        "accounts": [
-            {
-                "accountIdentifierKey": "8a467ff9-51a5-4c8e-9cec-396d56acda13",
-                "insights": [
-                    {
-                        "indicatorName": "fraud_flags",
-                        "value": [
-                            {
-                                "title": "Mostly Cash Mode",
-                                "description": "Maximum transactions (80%) involving cash deposit or withdrawals",
-                                "value": "100% of transactions were cash based"
-                            }
-                        ],
-                        "meta": null
-                    }
-                ],
-                "status": "success",
-                "reason": "NA",
-                "fiType": "deposit"
-            },
-            {
-                "accountIdentifierKey": "99967ff9-51a5-4c8e-9cec-396d56acda13",
-                "insights": [],
-                "status": "skipped",
-                "reason": "NA",
-                "fiType": "NA"
-            }
-        ],
-        "aggregatedInsights": null
+  "status": "Success",
+  "body": {
+    "name": "Redacted Services",
+    "dob": "2006-06-27",
+    "email": "redacted@gmail.com",
+    "pan": "redacted",
+    "ckyc_compliance": false,
+    "mobile": 9999912345,
+    "bank_branch": "NARKATIAGANJ BH",
+    "bank_account_number": "XXXXXXXXXXX1234",
+    "bank_account_type": "CURRENT",
+    "opening_date": "2019-02-26",
+    "closing_balance": 27929.84,
+    "end_of_month_balances": {
+      "2021": {
+        "9": 245676.89,
+        "10": 48650.54,
+        "11": 145487.41,
+        "12": 97725.67
+      },
+      "2022": {
+        "1": 9152.09,
+        "2": 5957.19,
+        "3": 545.59,
+        "4": 1282299.18,
+        "5": 134376.04,
+        "6": 84468.46,
+        "7": 135585.11,
+        "8": 3346.11,
+        "9": 268766.7,
+        "10": 50049.84,
+        "11": 27929.84
+      }
+    },
+    "balances_on_10th": {
+      "2021": {
+        "12": 55387.41
+      },
+      "2022": {
+        "1": 2426.67,
+        "2": 9629.59,
+        "3": 97487.45,
+        "4": 1641.09,
+        "5": 52517.54,
+        "6": 72084.28,
+        "7": 165864.04,
+        "8": 63465.11,
+        "9": 11226.11,
+        "10": 418535.81,
+        "11": 27929.84
+      }
+    },
+    "average_end_of_day_balance": 297715.03,
+    "maximum_end_of_day_balance": 1818766.7,
+    "total_credits": 153,
+    "total_credits_value": 44810341.06,
+    "total_debits": 473,
+    "total_debits_value": 45178088.11,
+    "quarterly_salary_average": {
+      "2021": {
+        "4": 15072
+      }
+    },
+    "cash_deposit_x_total_credit": {
+      "2021": {
+        "12": 0.0095
+      },
+      "2022": {
+        "3": 0.0018
+      }
     }
+  }
 }`}
           </CodeBlockWithCopy>
         </>
@@ -305,8 +402,8 @@ Use the `reportId` from the previous step to poll this endpoint for the insight 
           {`{
   "errorCode": "errorCode",
   "errorMsg": "errorMsg",
-  "timestamp": "2023-05-16 09:23:39.115",
-  "version": "1.0",
+  "timestamp": "2023-05-16T09:23:39.115Z",
+  "ver": "1",
   "txnid": "txnid"
 }`}
         </CodeBlockWithCopy>
