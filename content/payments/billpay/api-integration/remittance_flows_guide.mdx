@@ -1,226 +1,79 @@
 ---
-sidebar_title: Remitter Details
-page_title: Remitter Details For Bill Payments Integration Guide
-order: 6
+sidebar_title: Passing Remitter Details
+page_title: Passing Remitter Details
+order: 5
 visible_in_sidebar: true
 ---
 
 
-# Remitter Details Integration Guide
+# Remitter & Account Info
 
-## Overview
+## 1. NPCI Requirements for Remitter Details and Account Info for all Bill Payments
 
-NPCI has introduced comprehensive remittance information handling across two distinct integration flows to accommodate acceptance of remittance data from Agent Institutions for Credit Card Bill Payments. These enhancements ensure compliance with NPCI specifications while providing flexibility for different integration approaches.
+Bill payments require remitter details and payment instrument information, and you will need to format them correctly for different payment methods. This guide provides the exact formatting specifications NPCI requires for each payment mode, plus validation rules to ensure your requests are accepted.
+
+The key principle: each payment method has its own format requirements, from simple UPI addresses to complex card authorization codes, and getting these wrong will cause payment failures.
 
 
-## Remitter Details Specification
+## 2. Fields Reference
 
 | Property | Type | Constraints | Purpose | Notes |
 |-------|------|-------------|---------|-------|
-| `accountInfo` | String (variable) | Must correspond to selected payment mode | Contains customer's remittance information in NPCI-compatible format | Required field |
-| `remitter` | Object | - | Captures information about the person making the payment | May differ from credit card holder |
+| `paymentDetails.accountInfo` | String | Format varies by payment mode | NPCI-compatible instrument info for the debit instrument | Required in payment requests |
+| `remitter` | Object | - | Captures information about the person making the payment | May differ from account holder |
 
-#### Remitter Object Properties
+### 2.1 Remitter Object Properties
 
 | Property | Type | Constraints | Purpose | Notes |
 |----------|------|-------------|---------|-------|
-| `name` | String | min: 1, max: 50 | Remitter's full name | Auto-fallback: 'Not Available' for CC payments if not provided |
-| `email` | String | min: 1, max: 50 | Remitter's email address | - |
-| `pan` | String | min: 1, max: 50 | Remitter's PAN number | - |
-| `aadhaar` | String | min: 1, max: 50 | Remitter's Aadhaar number | - |
-
-### Key Notes
-
-- **NPCI Compatibility**: The `accountInfo` field must be formatted according to [NPCI specifications](#npci-specifications) and to be passed with all Bill Payments and the `remitter` object to be passed with all Credit Card Bill Payments.
-- **Credit Card Fallback**: When remitter name is not provided for credit card payments, the system automatically sends "Not Available" to NPCI
-- **Remitter vs Cardholder**: The person making the payment (remitter) may be different from the credit card holder
+| `name` | String | min: 1, max: 50 | Remitter's full name | **Required in payment requests** |
+| `email` | String | min: 1, max: 50 | Remitter's email address | Optional |
+| `pan` | String | min: 1, max: 50 | Remitter's PAN number | Optional |
+| `aadhaar` | String | min: 1, max: 50 | Remitter's Aadhaar number | Optional |
 
 
-## Remitter Details in Bill Payment API Flow
 
-### Bill Fetch Request API Enhancement
 
-The bill fetch request API has been enhanced to include remitter details within the `remitter` object.
 
-<Card padding="nano" shape="rounded">
-    <details>
-        <summary>
-            <Text weight="600" marginBottom="none">
-                Sample Request
-            </Text>
-        </summary>
-        <CodeBlockWithCopy language="diff">
-            {`
+## 3. Usage Across Flows
+
+- Fetch/Validation requests: <code>remitter</code> is optional.
+- Payment requests (Flow 1–3): <code>remitter.name</code> and <code>paymentDetails.accountInfo</code> are required.
+
+### 3.1 Sample Payment Request
+
+<CodeBlockWithCopy language="json">{`
 {
-    "agent": {
-        "mac": "48-4D-7E-CB-DB-6F",
-        "mobile": "string",
-        "postalCode": "600001",
-        "id": "AX01AI06512391457204",
-        "ifsc": "ICIC0000152",
-        "imei": "123456789012345",
-        "ip": "124.170.23.24",
-        "os": "iOS",
-        "app": "SmartPay",
-        "channel": "INT",
-        "geocode": "19.0139,72.8254",
-        "terminalId": "6000011234"
-    },
-+   "remitter": {
-+       "aadhaar": "123456789012",
-+       "email": "test@example.com",
-+       "name": "John Doe",
-+       "pan": "ABDCE1121E"
-+   },
-    "biller": {
-        "id": "MAHI00000NATIC"
-    },
-    "customer": {
-        "customerId": "4881317598",
-        "mobile": "string",
-        "customerParams": [
-            {
-                "name": "John Doe",
-                "value": "1895159"
-            }
-        ]
-    }
+  "refId": "{{REF_ID_FROM_FETCH_OR_VALIDATION}}",
+  "paymentDetails": {
+    "amount": 50000,
+    "mode": "UPI",
+    "custConvFee": 120,              // Optional; Total to debit = amount + custConvFee
+    "paymentRefId": "{{UNIQUE_DEBIT_ID}}",
+    "timestamp": "{{ISO_8601}}",
+    "accountInfo": "user@ybl"
+  },
+  "remitter": {
+    "name": "{{PAYER_NAME}}"
+  }
 }
-`}
-        </CodeBlockWithCopy>
-    </details>
-</Card>
-
-### Bill Payment Request API Enhancement
-
-The bill payment request API has been enhanced to include remitter details under the `remitter` object and account information within the `accountInfo` property of the `paymentDetails` object.
-
-#### RefId Based Payment Request
-- The `bill fetch request API` must be called to get the bill details before initiating the payment.
-- The `refId` from the bill fetch request API must be used to make the payment.
-
-<Card padding="nano" shape="rounded">
-    <details>
-        <summary>
-            <Text weight="600" marginBottom="none">
-                Sample Request
-            </Text>
-        </summary>
-<CodeBlockWithCopy language="diff">{`
-{
-    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
-+   "remitter": {
-+       "aadhaar": "123456789012",
-+       "email": "test@example.com",
-+       "name": "John Doe",
-+       "pan": "ABDCE1121E"
-+   },
-    "bills": "Selection on bills in case of list billers",
-    "paymentDetails": {
-        "custConvFee": 0,
-        "paymentRefId": "BD019181220291",
-        "timestamp": "2020-12-12T13:12:00+05:30",
-        "COUcustConvFee": 0,
-+       "accountInfo": "ICIC0000152|1234567890",
-        "amount": 1,
-        "currency": 0,
-        "mode": "Internet Banking",
-        "selectedPaymentOptions": [
-            {
-                "amount": 1,
-                "name": "John Doe"
-            }
-        ]
-    }
-}
-`}
-          </CodeBlockWithCopy>
-    </details>
-</Card>
-
-#### Direct Payment Request
-
-<Card padding="nano" shape="rounded">
-    <details>
-        <summary>
-            <Text weight="600" marginBottom="none">
-                Sample Request
-            </Text>
-        </summary>
-<CodeBlockWithCopy language="diff">{`
-{
-    "biller": {
-        "id": "MAHI00000NATIC"
-    },
-    "agent": {
-        "mac": "48-4D-7E-CB-DB-6F",
-        "mobile": "string",
-        "postalCode": "600001",
-        "id": "AX01AI06512391457204",
-        "ifsc": "ICIC0000152",
-        "imei": "123456789012345",
-        "ip": "124.170.23.24",
-        "os": "iOS",
-        "app": "SmartPay",
-        "channel": "INT",
-        "geocode": "19.0139,72.8254",
-        "terminalId": "6000011234"
-    },
-+   "remitter": {
-+       "aadhaar": "123456789012",
-+       "email": "test@example.com",
-+       "name": "John Doe",
-+       "pan": "ABDCE1121E"
-+   },
-    "paymentDetails": {
-        "custConvFee": 0,
-        "paymentRefId": "BD019181220291",
-        "timestamp": "2020-12-12T13:12:00+05:30",
-        "COUcustConvFee": 0,
-+       "accountInfo": "ICIC0000152|1234567890",
-        "amount": 1,
-        "currency": 0,
-        "mode": "Internet Banking",
-        "selectedPaymentOptions": [
-            {
-                "amount": 1,
-                "name": "John Doe"
-            }
-        ]
-    },
-    "bills": "Selection on bills in case of list billers",
-    "customer": {
-        "customerId": "4881317598",
-        "mobile": "string",
-        "customerParams": [
-            {
-                "name": "John Doe",
-                "value": "1895159"
-            }
-        ]
-    }
-}
-`}
-          </CodeBlockWithCopy>
-    </details>
-</Card>
+`}</CodeBlockWithCopy>
 
 
-## NPCI Specifications
+## 4. NPCI Specifications
 
-### Account Information Format by Payment Mode
+### 4.1 Account Information Format by Payment Mode
 
 | Payment Mode | Value Example | Length Constraints | NPCI Code | Description |
 |--------------|---------------|-------------------|-----------|-------------|
-| **IMPS** | <code>9240111\|9004644121</code> | Fixed: 18 | MMID\|MobileNo | MMID and mobile number used for payment |
-| **NEFT, AccountTransfer, BharatQR, InternetBanking** | <code>SRAN0000341\|9912345123456</code> | Min: 3, Max: 50 | IFSC\|AccountNo | IFSC and account number used for payment |
+| **AccountTransfer, BharatQR, InternetBanking** | <code>SRAN0000341\|9912345123456</code> | Min: 3, Max: 50 | IFSC\|AccountNo | IFSC and account number used for payment |
 | **CreditCard, DebitCard, PrepaidCard** | <code>1234567890123456\|123456</code> | Min: 3, Max: 50 | CardNum\|AuthCode | Card number and authorization code used for payment |
 | **UPI** | `dummy@ybl` | Min: 3, Max: 50 | VPA | Virtual Provider Address used for payment |
 | **Wallet** | <code>PayTM\|9004644121</code> | Min: 12, Max: 50 | WalletName\|MobileNo | Wallet name and mobile number used for payment |
 | **AEPS, BHIM Aadhaar Pay** | <code>123456789012\|1234567</code> | Min: 3, Max: 50 | Aadhaar\|IIN | Aadhaar number and IIN used for payment |
 | **Cash, USSD** | `<Payment remarks>` | Min: 1, Max: 50 | Remarks | Remarks when payment mode is cash |
 
-### Code Format Examples
+### 4.2 Code Format Examples
 
 The following table provides detailed formatting specifications for different NPCI codes:
 
@@ -234,13 +87,10 @@ The following table provides detailed formatting specifications for different NP
 | **VPA** | Alphanumeric Special<br/>Min Length: 3, Max Length: 50 | `manoj@icici` |
 | **Aadhaar\|IIN** | Alphanumeric with characters on either side of '\|' separator<br/>Min Length: 3, Max Length: 50 | <code>123456789012\|1234567</code> |
 
-### Field Handling Rules
+### 4.3 Field Handling Rules
 
-#### Mandatory Behavior
-- The `accountInfo` field must contain NPCI-compatible values corresponding to the selected payment mode
-- For credit card bill payments, both the `accountInfo` and `remitter` objects must be provided.
+#### 4.3.1 Mandatory Behavior
+- In payment requests across Flow 1–3, `remitter.name` and `paymentDetails.accountInfo` are required
+- The `paymentDetails.accountInfo` field must contain NPCI-compatible values corresponding to the selected payment mode
 
-#### Optional Field Handling
-- If remitter details or account information are not available, the fields should be omitted entirely
-- System automatically handles fallback scenarios
-
+<WasPageHelpful />

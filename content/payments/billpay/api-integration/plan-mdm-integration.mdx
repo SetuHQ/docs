@@ -1,158 +1,134 @@
 ---
-sidebar_title: Plans
-page_title: Learn how to integrate with BBPS billers that support plan-based payments via Setu's APIs
-order: 7
+sidebar_title: Paying for plans
+page_title: Paying for plans
+order: 9
 visible_in_sidebar: true
 ---
-# BBPS Plan MDM Integration Guide
+# When Users Need to Select Plans
 
-## Overview
+## 1. Overview
 
-The **Bharath Bill Payment System (BBPS) Plan Master Data Management (MDM)** API enables billers to offer subscription-based services through the BBPS ecosystem. This system is specifically designed for billers who don't have traditional outstanding bills but instead offer plan-based services that customers must select and pay for upfront.
+Some services require your users to choose a plan before payment - like mobile recharge plans, DTH packages, or broadband subscriptions. This guide shows you how to handle these plan selection flows in your app.
 
-### Key Use Cases
-- **Mobile Prepaid Recharges** - Choose data/talk time plans
-- **DTH Services** - Select channel packages and validity periods  
+📖 **This extends <a href="/payments/billpay/api-integration/paying_bills#4-flow-2-bill-validation--payment" target="_blank">Flow 2: Bill Validation → Payment</a> from the master guide**
 
-### Benefits
-- **Single API Interface** - Handle both static and dynamic plans with consistent endpoints
-- **Real-time Plan Updates** - Webhook notifications for plan changes and availability
-- **Standardized Integration** - Same patterns work across all biller types  
+**What this means for your users:**
+- Instead of paying a bill amount, they choose from available plans
+- Plans have fixed prices and specific benefits (data, validity, channels, etc.)
+- Payment happens after plan selection
 
-<br/>
+### 1.1 Common Services That Need Plans
+- **Mobile Prepaid Recharge** - Data plans, talk time, combo offers
+- **DTH/Cable TV** - Channel packages, validity periods
+- **Broadband Services** - Speed upgrades, data top-ups
+- **OTT Subscriptions** - Monthly, annual, family plans
 
-## API Architecture Overview
-
-The Plan MDM system supports two distinct biller types with different integration patterns:
-
-### A. Static Plan Billers
-- **Characteristics**: `planRequirement: MANDATORY`
-- **Plan Source**: Dedicated List Plans API
-- **Examples**: BSNL/MTNL, Hungama Play, Sun Direct TV
-
-### B. Dynamic Plan Billers  
-- **Characteristics**: `planRequirement: OPTIONAL` and `responseType: SELECTIVE`
-- **Plan Source**: Customer-specific plans from bill validation
-- **Examples**: You Broadband, Airtel Wi-Fi Recharge
-
+### 1.2 What You'll Build
+- Plan selection screens for your users
+- Integration with plan APIs
+- Validation and payment flows with selected plans  
 
 <br/>
 
-## Integration Flows
+## 2. Two User Experience Patterns
 
-### Static Plan Biller Flow
+Your users will encounter one of two plan selection patterns, depending on the service:
 
-Static plan billers maintain predefined plan catalogs. The integration follows this structured approach:
+### 2.1 Pattern 1: Choose From Full Catalog
+**User Flow:** Browse plans → Select plan → Enter account details → Pay
 
-#### Phase 1: Plan Discovery & Selection
-| Step | Actor | Action | API Endpoint |
-|------|--------|--------|--------------|
-| 1 | Customer | Initiates service subscription | - |
-| 2 | Client App | Retrieve available plans | `GET /api/v2/bbps/billers/plans` |
-| 3 | Client App | Display plans to customer | - |
-| 4 | Customer | Selects plan + enters account details | - |
+**What users see:** Complete list of available plans upfront (like mobile recharge plans)
 
-#### Phase 2: Validation & Payment  
-| Step | Actor | Action | API Endpoint |
-|------|--------|--------|--------------|
-| 5 | Client App | Validate customer details with plan ID | `POST /api/v2/bbps/bills/fetch/request` |
-| 6 | Setu API | Forward validation to biller | - |
-| 7 | Biller | Validate account and plan compatibility | - |
-| 8 | Client App | Check validation status | `POST /api/v2/bbps/bills/fetch/response` or via webhook |
-| 9 | Client App | Process payment with validated refId | `POST /api/v2/bbps/bills/payment/request` |
-| 10 | Client App | Confirm payment completion | `POST /api/v2/bbps/bills/payment/response` |
+**Examples:** BSNL/MTNL mobile recharge, DTH packages, OTT subscriptions
 
+### 2.2 Pattern 2: Get Personalized Options
+**User Flow:** Enter account details → See custom plans → Select plan → Pay
 
-> **💡 Key Insight:** Static plan billers require the plan ID to be included during the validation phase, ensuring plan availability before payment processing.
+**What users see:** Plans tailored to their account (like broadband upgrade options)
 
-
-### Dynamic Plan Biller Flow
-
-Dynamic plan billers offer personalized plans based on customer account details:
-
-#### Phase 1: Account Validation & Plan Discovery
-| Step | Actor | Action | API Endpoint |
-|------|--------|--------|--------------|
-| 1 | Customer | Enters account details (no plan selection) | - |
-| 2 | Client App | Validate account details | `POST /api/v2/bbps/bills/fetch/request` |
-| 3 | Biller | Return account status + custom plans | - |
-| 4 | Client App | Check validation + retrieve plans | `POST /api/v2/bbps/bills/fetch/response` |
-
-#### Phase 2: Plan Selection & Payment
-| Step | Actor | Action | API Endpoint |
-|------|--------|--------|--------------|
-| 5 | Client App | Display customer-specific plans | - |
-| 6 | Customer | Selects preferred plan | - |
-| 7 | Client App | Process payment with plan ID | `POST /api/v2/bbps/bills/payment/request` |
-| 8 | Client App | Confirm payment completion | `POST /api/v2/bbps/bills/payment/response` |
-
-
-> **💡 Key Insight:** Dynamic plan billers reveal available plans only after account validation, providing personalized offerings based on customer eligibility.
-
-
-### Flow Comparison
-
-| Aspect | Static Plan Billers | Dynamic Plan Billers |
-|--------|-------------------|---------------------|
-| **Plan Discovery** | Before customer input via List Plans API | After account validation via validation response |
-| **Plan Selection** | Customer selects from full catalog | Customer selects from personalized options |
-| **Validation Input** | Customer details + Plan ID | Customer details only |
-| **Validation Output** | Success/Failure status | Success/Failure + Available plans |
-| **Use Cases** | Mobile recharge, DTH, OTT subscriptions | Broadband services, personalized offerings |
-
-
-### Integration Decision Tree
-
-**Start Here:** What type of biller are you integrating?
-
-The `planRequirement` is a field obtained from the list billers api.
-
-```
-Is planRequirement = "MANDATORY"?
-├── YES → Static Plan Biller
-│   ├── Step 1: Fetch plans via List Plans API
-│   ├── Step 2: Display plans to customer
-│   ├── Step 3: Validate with plan ID included
-│   └── Step 4: Process payment
-│
-└── NO → Check responseType
-    └── Is responseType = "SELECTIVE"?
-        ├── YES → Dynamic Plan Biller
-        │   ├── Step 1: Validate customer account
-        │   ├── Step 2: Receive custom plans in response
-        │   ├── Step 3: Customer selects plan
-        │   └── Step 4: Process payment with plan ID
-        │
-        └── NO → Standard bill payment flow
-```
+**Examples:** You Broadband plans, Airtel Wi-Fi recharge options
 
 
 <br/>
 
-## 1. Static Plan Billers
+## 3. Implementation Guide
 
-Static plan billers maintain a predefined catalog of plans that can be retrieved independently of customer information.
+### 3.1 Pattern 1: Choose From Full Catalog
 
-### Identification Parameters
-<CodeBlockWithCopy language="json">{`
+**User Experience:** Show all available plans immediately, let user choose, then collect account details.
+
+**Implementation Steps:**
+1. **Get Available Plans** → `GET /api/v2/bbps/billers/plans`
+2. **User Selects Plan + Enters Details** → Your app collects both
+3. **Validate Account + Plan** → `POST /api/v2/bbps/bills/fetch/request` (include plan ID)
+4. **Process Payment** → `POST /api/v2/bbps/bills/payment/request`
+
+> **💡 Key Point:** You must include the selected plan ID when validating the account to ensure the plan is still available.
+
+### 3.2 Pattern 2: Get Personalized Options
+
+**User Experience:** Collect account details first, then show plans customized for that account.
+
+**Implementation Steps:**
+1. **User Enters Account Details** → Your app collects account info
+2. **Validate Account** → `POST /api/v2/bbps/bills/fetch/request` (no plan ID)
+3. **Get Custom Plans** → Response includes plans available for this account
+4. **User Selects Plan** → Your app presents the options
+5. **Process Payment** → `POST /api/v2/bbps/bills/payment/request` (include plan ID)
+
+> **💡 Key Point:** Plans are revealed only after account validation, so you can't show them upfront.
+
+
+### 3.3 Quick Reference: Which Pattern to Use
+
+| Pattern | When Plans Are Shown | User Flow | Common Examples |
+|---------|---------------------|-----------|----------------|
+| **Pattern 1** | Immediately available | Browse plans → Select → Enter details → Pay | Mobile recharge, DTH packages |
+| **Pattern 2** | After account validation | Enter details → See custom plans → Select → Pay | Broadband upgrades, account-specific offers |
+
+### 3.4 How to Detect Which Pattern to Implement
+
+Check the biller metadata from <a href="/payments/billpay/api-integration/api-reference" target="_blank">List Billers API</a> to determine the pattern:
+
+**Pattern 1 Detection:**
+```json
 {
   "planRequirement": "MANDATORY"
 }
-`}</CodeBlockWithCopy>
+```
 
-### Common Examples
+**Pattern 2 Detection:**
+```json
+{
+  "planRequirement": "OPTIONAL",
+  "responseType": "SELECTIVE"
+}
+```
 
-| Biller | Customer Parameters | Plan Information |
-|--------|-------------------|------------------|
-| **BSNL/MTNL** | Mobile Number, Circle | Plan ID, Talktime, Validity, Data, Circle, Type |
-| **Hungama Play/Music** | Mobile Number, Email ID | Plan ID, Package Duration |
-| **Sun Direct TV** | Subscriber Number | Plan ID, Validity, Channel Type |
+Other billers require no plan selection.
 
-### A. Retrieving Plans
+→ Use standard <a href="/payments/billpay/api-integration/paying_bills#4-flow-2-bill-validation--payment" target="_blank">Bill Validation flow</a>
 
-#### List Plans API
 
-Retrieve all available plans for specific billers using the dedicated endpoint <a href="/payments/billpay/api-integration/api-reference#/category~List/path~/api/v2/bbps/bills/plans/get">(See API Reference)</a>.
+<br/>
+
+## 4. Pattern 1: Full Catalog Selection
+
+**What this means:** All available plans can be fetched upfront and shown to users immediately.
+
+### 4.1 Examples of This Pattern
+
+| Service | What User Enters | What User Selects From |
+|---------|------------------|------------------------|
+| **BSNL/MTNL Mobile** | Mobile Number, Circle | Data plans, talk time, combo offers |
+| **Hungama Play** | Mobile Number, Email | Monthly, yearly subscription plans |
+| **Sun Direct TV** | Subscriber Number | Channel packages, validity periods |
+
+### 4.2 Step 1: Get Available Plans
+
+#### 4.2.1 Fetch All Plans for a Service
+
+Retrieve all available plans for specific billers using the dedicated endpoint <a href="/payments/billpay/api-integration/api-reference#/category~List/path~/api/v2/bbps/bills/plans">(See API Reference)</a>.
 
 **Request:**
 `GET /api/v2/bbps/billers/plans?billerIds=BILLER_ID`
@@ -231,7 +207,7 @@ Retrieve all available plans for specific billers using the dedicated endpoint <
 <br />
 
 
-#### Pagination Support
+#### 4.2.2 Pagination Support
 
 For billers with large plan catalogs, the API supports efficient pagination:
 
@@ -261,7 +237,7 @@ For a biller with 3,700 plans using `limit=1000`:
 | `GET …&after=PLAN_2000` | 1000 plans | `after=PLAN_3000&limit=1000` |
 | `GET …&after=PLAN_3000` | 700 plans | `null` (complete) |
 
-#### Plan Structure
+#### 4.2.3 Plan Structure
 
 Each plan object contains both mandatory and optional fields:
 
@@ -270,7 +246,7 @@ interface Plan {
   // Mandatory fields
   Id: string;                    // 1-32 chars, alphanumeric
   categoryType: string;          // 1-100 chars, alphanumeric  
-  amountInRupees: number;        // 1-10 digits, decimals supported
+  amountInRupees: string;        // 1-10 digits, decimals supported
   description: string;           // text with special chars allowed
   effectiveFrom: string;         // ISO date format
   effectiveTo: string;           // ISO date format
@@ -288,7 +264,7 @@ interface Plan {
 `}</CodeBlockWithCopy>
 
 
-#### Plan Update Webhooks
+#### 4.2.4 Plan Update Webhooks
 
 Receive real-time notifications when biller plans are modified <a href="/payments/billpay/api-integration/webhooks#biller-plan-updates-webhook">(See Webhook Reference)</a>:
 
@@ -323,18 +299,36 @@ Receive real-time notifications when biller plans are modified <a href="/payment
 <br />
 
 
-### B. Mobile Number Validation
+### 4.3 Step 2: Present Plans to Users
 
-For prepaid mobile recharge billers, implement intelligent operator detection:
+**For Mobile Recharge:**
+Use the first 4-5 digits of the mobile number to auto-detect operator and circle, but always let users change these values.
 
-> **🔧 Implementation Note:** Use MSISDN series mapping to auto-populate operator and circle from the first 4-5 digits of mobile numbers. Always allow users to override these values due to mobile number portability.
+### 4.4 Step 3: Validate Account + Selected Plan
 
-### C. Customer Parameter Validation
+**Request Format:**
+Most static plan billers accept the plan ID as `customer.customerParams[name="Id"]`. Include the plan ID from Step 1 along with the user's account details.
 
-Validate customer details along with selected plan information.
+<CodeBlockWithCopy language="json">{`
+POST /api/v2/bbps/bills/fetch/request
+{
+  "biller": { "id": "{{BILLER_ID}}" },
+  "customer": {
+    "mobile": "9999999999",
+    "customerParams": [
+      { "name": "Id", "value": "3" },
+      { "name": "Subscriber Number", "value": "ABC12345" }
+    ]
+  },
+  "agent": { "id": "{{AGENT_ID}}", "channel": "INT" }
+}
+`}</CodeBlockWithCopy>
 
-**Request:**
-`POST /api/v2/bbps/bills/fetch/request`
+> **Note:** If a biller uses a different parameter name for plan ID, check that biller's specification from List Billers API.
+
+<Text size="small">**V1 users:** Use <Code>customer.billParameters</Code> instead of <Code>customer.customerParams</Code>.</Text>
+
+**Complete Request Example:**
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -345,9 +339,7 @@ Validate customer details along with selected plan information.
         </summary>
         <CodeBlockWithCopy language="json">{`
 {
-  "agent": {
-    // Agent details unchanged
-  },
+  "agent": {},
   "customer": {
     "mobile": "8484943411",
     "customerParams": [
@@ -398,7 +390,7 @@ Validate customer details along with selected plan information.
 <br />
 
 
-#### Check Validation Status
+#### 4.4.1 Check Validation Status
 
 **Request:**
 `POST /api/v2/bbps/bills/fetch/response`
@@ -447,7 +439,7 @@ Validate customer details along with selected plan information.
 <br />
 
 
-#### Validation Webhook
+#### 4.4.2 Validation Webhook
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -474,7 +466,7 @@ Validate customer details along with selected plan information.
 <br />
 
 
-### D. Payment Processing
+### 4.5 Step 4: Process Payment
 
 Process payment for validated plans using the reference ID from validation.
 
@@ -527,7 +519,7 @@ Process payment for validated plans using the reference ID from validation.
 </Card>
 <br />
 
-#### Check Payment Status
+#### 4.5.1 Check Payment Status
 
 **Request:**
 `POST /api/v2/bbps/bills/payment/response`
@@ -580,7 +572,7 @@ Process payment for validated plans using the reference ID from validation.
 </Card>
 <br />
 
-#### Payment Webhook
+#### 4.5.2 Payment Webhook
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -599,7 +591,7 @@ Process payment for validated plans using the reference ID from validation.
     "paymentDetails": {
       "amount": 2200,
       "mode": "UPI",
-      "paymentRefId": "2727513156LjQBKlR", 
+      "paymentRefId": "2727513156LjQBKlR",
       "timestamp": "2024-11-26T03:34:50.784Z"
     },
     "refId": "CT2K3MHK2D2FSSSIAU30AqF86fl43310904",
@@ -615,34 +607,18 @@ Process payment for validated plans using the reference ID from validation.
 
 <br/>
 
-## 2. Dynamic Plan Billers
+## 5. Pattern 2: Personalized Options
 
-Dynamic plan billers offer customer-specific plans based on account validation, providing personalized offerings rather than generic catalogs.
+**What this means:** Plans are customized based on the user's account and only shown after account validation.
 
-### Identification Parameters
+### 5.1 Examples of This Pattern
 
-<CodeBlockWithCopy language="json">{`
-{
-  "planRequirement": "OPTIONAL",
-  "responseType": "SELECTIVE"
-}
-`}</CodeBlockWithCopy>
+| Service | What User Enters | What User Gets |
+|---------|------------------|----------------|
+| **You Broadband** | Username/Account Number | Plans available for their connection |
+| **Airtel Wi-Fi** | Broadband ID/Landline | Recharge options for their specific plan |
 
-
-### Common Examples
-
-| Biller | Customer Parameters |
-|--------|-------------------|
-| **You Broadband** | Username / Account No. |
-| **Airtel Wi-Fi Recharge** | Broadband Id/Landline Number |
-
-### A. Plan Sources
-
-Dynamic plan billers can offer plans through:
-- **Generic Plans**: Available via List Plans API (optional)
-- **Custom Plans**: Returned during customer account validation
-
-### B. Customer Parameter Validation
+### 5.2 Step 1: Validate Account (Without Plan Selection)
 
 Validate customer account without requiring plan selection upfront.
 
@@ -658,9 +634,7 @@ Validate customer account without requiring plan selection upfront.
         </summary>
         <CodeBlockWithCopy language="json">{`
 {
-  "agent": {
-    // Agent details unchanged
-  },
+  "agent": {},
   "customer": {
     "mobile": "8484943411",
     "customerParams": [
@@ -702,7 +676,7 @@ Validate customer account without requiring plan selection upfront.
 </Card>
 <br />
 
-#### Check Validation Status with Plans
+### 5.3 Step 2: Get Personalized Plans from Validation Response
 
 **Request:**
 `POST /api/v2/bbps/bills/fetch/response`
@@ -776,7 +750,7 @@ Validate customer account without requiring plan selection upfront.
 <br />
 
 
-#### Validation Webhook with Plans
+#### 5.3.1 Validation Webhook with Plans
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -791,7 +765,7 @@ Validate customer account without requiring plan selection upfront.
   "timeStamp": "2024-11-26T08:06:44.060+05:30",
   "data": {
     "additionalInfo": [],
-    "billerRefId": "836480286", 
+    "billerRefId": "836480286",
     "exactness": "Any",
     "refId": "CT2J8EPK2D2FSSRG91EGNXTEK4U43310806",
     "status": "Success",
@@ -828,7 +802,7 @@ Validate customer account without requiring plan selection upfront.
 <br />
 
 
-### C. Payment with Plan Selection
+### 5.4 Step 3: Process Payment with Selected Plan
 
 Process payment including the selected plan ID in payment details.
 
@@ -882,7 +856,7 @@ Process payment including the selected plan ID in payment details.
 <br />
 
 
-#### Check Payment Status
+#### 5.4.1 Check Payment Status
 
 **Request:**
 `POST /api/v2/bbps/bills/payment/response`
@@ -937,7 +911,7 @@ Process payment including the selected plan ID in payment details.
 <br />
 
 
-#### Payment Webhook with Plan ID
+#### 5.4.2 Payment Webhook with Plan ID
 
 It is similar to this  <a href="/payments/billpay/api-integration/webhooks#bill-payment-webhook">webhook</a> but with added plan details:
 
@@ -973,3 +947,5 @@ It is similar to this  <a href="/payments/billpay/api-integration/webhooks#bill-
     </details>
 </Card>
 <br />
+
+<WasPageHelpful />

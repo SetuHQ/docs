@@ -1,7 +1,7 @@
 ---
 sidebar_title: Webhooks
 page_title: BBPS COU — Webhooks
-order: 4
+order: 3
 visible_in_sidebar: true
 ---
 
@@ -12,7 +12,7 @@ Here is the general structure of any webhook—
 <CodeBlockWithCopy language="json">{`{
     "traceId"   : "C3SFG0O6N88R6UI7EQ",
     "timeStamp" : "2021-11-12T00:12:29+05:30",
-    "event"     : "BILLER_UPDATES",
+    "event"     : "BILL_FETCH / BILL_PAY / BILL_DISPUTE / BILLER_UPDATES / PLAN_UPDATES / CREATE_UPMS_REGISTRATION / UPDATE_UPMS_REGISTRATION / CANCEL_UPMS_REGISTRATION / SKIP_PAYMENT",
     "data"      : { /* Present on success */ },
     "error"     : { /* Present on failure */ }
 }`}</CodeBlockWithCopy>
@@ -57,8 +57,7 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
         "billerRefId": "9540207519",
         "exactness": "Exact",
         "refId": "CJLJBQK91PA0FD9MPMK0W75BD9M32391709",
-        "status": "Success",
-        "upmsRegistrationRefId": "CJLJBQK91PA0FD9MPMK0W75BD9M32391709"
+        "status": "Success"
     }
 }
 `}
@@ -134,7 +133,7 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     <details>
         <summary>
             <Text weight="600" marginBottom="none">
-                Bill payment sample request
+                Bill payment sample request (Success)
             </Text>
         </summary>
         <CodeBlockWithCopy language="json">
@@ -142,7 +141,35 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     "event": "BILL_PAY",
     "data": {
         "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
-        "status": "PROCESSING/SUCCESS/FAILURE",
+        "status": "SUCCESS",
+        "billerRefId": "ABC1235",
+        "transactionId": "AX01122999900001",
+        "paymentDetails": {
+            "mode": "Internet Banking/Debit Card/Credit Card/Cash/UPI/Wallet/Prepaid Card/AEPS/Account Transfer/Bharat QR/USSD",
+            "paymentRefId": "N2001121212344",
+            "amount": 10000,
+            "timestamp": "2020-12-12T13:12:00+05:30"
+        },
+        "billerId": "VODA00000MUM03"
+    }
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Bill payment sample request (Failed)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+    "event": "BILL_PAY",
+    "data": {
+        "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+        "status": "FAILURE",
         "billerRefId": "ABC1235",
         "transactionId": "AX01122999900001",
         "failureReason": {
@@ -150,16 +177,13 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
             "message": "Biller not accepting payments at the moment"
         },
         "paymentDetails": {
-            "mode": "Internet Banking/Debit Card/Credit Card/IMPS/Cash/UPI/Wallet/NEFT/Prepaid Card/AEPS/Account Transfer/Bharat QR/USSD",
+            "mode": "Internet Banking/Debit Card/Credit Card/Cash/UPI/Wallet/Prepaid Card/AEPS/Account Transfer/Bharat QR/USSD",
             "paymentRefId": "N2001121212344",
             "amount": 10000,
             "timestamp": "2020-12-12T13:12:00+05:30"
         },
         "billerId": "VODA00000MUM03"
-    },
-    "success": true,
-    "traceId": "C3SFG0O6N88R6UI7EQ",
-    "error": null
+    }
 }`}
         </CodeBlockWithCopy>
     </details>
@@ -187,12 +211,10 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     "data": {
         "refId": "JPMRPBOGGDTP1EFRZVXVESQVQIS10461642",
         "disputeId": "OP0121046567755",
-        "status": "INITIALIZED/ASSIGNED/RE_ASSIGNED/ASSIGNED_TO_BOU/ASSIGNED_TO_COU/ASSIGNED_TO_OU/ESCALATED/RESOLVED/UNRESOLVED",
+        "status": "ASSIGNED/RESOLVED/REJECTED/DEFAULT_RESOLVED/REFUNDED/PENDING_REFUND",
         "assignedTo": "AX39",
         "remarks": "Resolved in favour of customer"
-    },
-    "success": true,
-    "error": null
+    }
 }
 `}
         </CodeBlockWithCopy>

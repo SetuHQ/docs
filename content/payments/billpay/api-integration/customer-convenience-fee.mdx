@@ -1,0 +1,254 @@
+---
+sidebar_title: Passing CCF
+page_title: Customer Convenience Fee (CCF) Integration Guide
+order: 6
+visible_in_sidebar: true
+---
+
+# Customer Convenience Fee (CCF) Integration Guide
+
+## 1. Some Billers Charge Customer Convenience Fee (CCF)
+
+Customer Convenience Fee (CCF) is an additional charge some billers impose on top of the bill amount—essentially a fee your users pay for the convenience of digital bill payment through BBPS.
+
+You'll discover CCF when calling the <a href="/payments/billpay/api-integration/api-reference#/category~List/operation~getBillers" target="_blank">List Billers API</a>, where it appears in the biller's metadata. Here's what CCF looks like in biller responses:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "id": "SOME00000NATRR",
+  "name": "Some Bank NCMC Pune Metro",
+  "interchangeFee": [
+    {
+      "feeCode": "CCF1",
+      "feeDesc": "Customer_Convenience_Fee",
+      "feeDirection": "C2B",
+      "interchangeFeeDetails": {
+        "effctvFrom": "2023-07-28",
+        "effctvTo": "",
+        "flatFee": 100,        // ₹1.00 in paise
+        "percentFee": 0,       // No percentage component
+        "tranAmtRangeMax": 999999999999,
+        "tranAmtRangeMin": 1
+      }
+    }
+  ]
+}
+`}</CodeBlockWithCopy>
+
+## 2. What CCF Means for Your Users
+
+When a biller charges CCF, your users pay more than just the bill amount. For example, if someone's metro card recharge is ₹500 and the CCF is ₹1, they'll be debited ₹501 total. Your application needs to clearly communicate this additional cost and handle it correctly in payment requests.
+
+**Key principle**: CCF is always separate from the bill amount in your payment request—never add it to `paymentDetails.amount`, always include it as `paymentDetails.custConvFee`.
+
+## 3. Most Billers Have Zero CCF
+
+Before diving into complex calculations, understand that most billers on the BBPS network charge zero CCF. Many billers will have CCF entries in their metadata with `flatFee: 0` and `percentFee: 0`, which means no additional charge.
+
+**Zero CCF examples:**
+<CodeBlockWithCopy language="json">{`
+{
+  "feeCode": "CCF1",
+  "feeDirection": "C2B",
+  "interchangeFeeDetails": {
+    "flatFee": 0,           // No flat fee
+    "percentFee": 0,        // No percentage fee
+    "tranAmtRangeMax": 9999999999,
+    "tranAmtRangeMin": 1
+  }
+}
+`}</CodeBlockWithCopy>
+
+**When CCF is zero**, you can omit the `custConvFee` field entirely from your payment request.
+
+## 4. When CCF Actually Applies (Real Examples)
+
+Some categories of billers do charge meaningful CCF. Here are some examples from the BBPS network:
+Note: The values are for illustration purposes only.
+
+### 4.1 National Pension System (₹0.50 CCF)
+<CodeBlockWithCopy language="json">{`
+{
+  "id": "SOME00000NATC3",
+  "name": "National Pension System",
+  "interchangeFee": [
+    {
+      "feeCode": "CCF1",
+      "feeDesc": "Customer_Convenience_Fee",
+      "feeDirection": "C2B",
+      "interchangeFeeDetails": {
+        "effctvFrom": "2024-08-05",
+        "effctvTo": "",
+        "flatFee": 50,          // ₹0.50 in paise
+        "percentFee": 0,        // No percentage component
+        "tranAmtRangeMax": 999999999999,
+        "tranAmtRangeMin": 1
+      }
+    }
+  ]
+}
+`}</CodeBlockWithCopy>
+
+### 4.2 HDFC NCMC Pune Metro (₹1.00 CCF)
+<CodeBlockWithCopy language="json">{`
+{
+  "id": "SOME00000NATRR",
+  "name": "HDFC Bank NCMC Pune Metro",
+  "interchangeFee": [
+    {
+      "feeCode": "CCF1",
+      "feeDesc": "Customer_Convenience_Fee",
+      "feeDirection": "C2B",
+      "interchangeFeeDetails": {
+        "effctvFrom": "2023-07-28",
+        "effctvTo": "",
+        "flatFee": 100,         // ₹1.00 in paise
+        "percentFee": 0,        // No percentage component
+        "tranAmtRangeMax": 999999999999,
+        "tranAmtRangeMin": 1
+      }
+    }
+  ]
+}
+`}</CodeBlockWithCopy>
+
+### 4.3 Airtel Payments Bank NCMC (Zero CCF)
+<CodeBlockWithCopy language="json">{`
+{
+  "id": "AIRT00000NATCL",
+  "name": "Airtel Payments Bank RuPay NCMC",
+  "interchangeFee": [
+    {
+      "feeCode": "CCF1",
+      "feeDesc": "Customer_Convenience_Fee",
+      "feeDirection": "C2B",
+      "interchangeFeeDetails": {
+        "effctvFrom": "2024-01-01",
+        "effctvTo": "",
+        "flatFee": 0,           // No CCF charged
+        "percentFee": 0,        // No percentage component
+        "tranAmtRangeMax": 9999999999,
+        "tranAmtRangeMin": 1
+      }
+    }
+  ]
+}
+`}</CodeBlockWithCopy>
+
+## 5. How to Calculate and Implement CCF
+
+### 5.1 Detection Logic
+
+First, identify billers that charge CCF by looking for specific entries in the `interchangeFee` array which have `feeCode: "CCF1"` and `feeDirection: "C2B"`.
+
+### 5.2 CCF Calculation Formula
+
+When CCF applies, use this formula to calculate the fee in paise:
+
+**Formula**: `ccf = (flatFee + (billAmount × percentFee/100)) × (1 + GST/100)`
+
+**Note**: Currently, GST is 18% on CCF in the BBPS network. (Might change in future)
+
+### 5.3 Real Calculation Examples
+
+**Example 1: National Pension System (₹2000 contribution)**
+- Bill amount: ₹2000 (200000 paise)
+- CCF: flatFee = 50, percentFee = 0
+- Calculation: `(50 + (200000 × 0/100)) × (1 + 18/100) = 50 × 1.18 = 59 paise`
+- Total debit: ₹2000.59
+
+**Example 2: HDFC NCMC (₹500 recharge)**
+- Bill amount: ₹500 (50000 paise)
+- CCF: flatFee = 100, percentFee = 0
+- Calculation: `(100 + (50000 × 0/100)) × (1 + 18/100) = 100 × 1.18 = 118 paise`
+- Total debit: ₹501.18
+
+**Example 3: Zero CCF biller (₹1500 bill)**
+- Bill amount: ₹1500 (150000 paise)
+- CCF: flatFee = 0, percentFee = 0
+- Calculation: CCF = 0
+- Total debit: ₹1500 (omit custConvFee field)
+
+## 6. Building Your Payment Request
+
+### 6.1 Payment Request with CCF
+
+When CCF applies, include it as a separate `custConvFee` field:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "FETCH_REF_123",
+  "paymentDetails": {
+    "amount": 200000,           // Bill amount: ₹2000 in paise
+    "custConvFee": 59,          // CCF: ₹0.59 in paise (separate field)
+    "mode": "UPI",
+    "paymentRefId": "PAY_REF_456",
+    "timestamp": "2024-06-04T14:30:00+05:30",
+    "accountInfo": "user@ybl"
+  },
+  "remitter": { "name": "John Doe" }
+}
+`}</CodeBlockWithCopy>
+
+**Total debit from user**: `paymentDetails.amount + paymentDetails.custConvFee = 200059 paise (₹2000.59)`
+
+### 6.2 Payment Request without CCF
+
+When CCF is zero, omit the `custConvFee` field entirely:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "FETCH_REF_123",
+  "paymentDetails": {
+    "amount": 150000,           // Bill amount: ₹1500 in paise
+    // No custConvFee field when CCF is zero
+    "mode": "UPI",
+    "paymentRefId": "PAY_REF_789",
+    "timestamp": "2024-06-04T14:30:00+05:30",
+    "accountInfo": "user@ybl"
+  },
+  "remitter": { "name": "John Doe" }
+}
+`}</CodeBlockWithCopy>
+
+**Total debit from user**: `paymentDetails.amount = 150000 paise (₹1500)`
+
+## 7. Edge Cases and Important Rules
+
+### 7.1 What to Ignore
+
+**Ignore EBF and PBF fees**: Only handle `CCF1` with `C2B` direction. Electronic Biller Fee (EBF) and Physical Biller Fee (PBF) with `B2C` direction are not customer charges.
+
+### 7.2 Zero CCF Handling
+
+When calculated CCF is zero, you can omit the `custConvFee` field from your payment request.
+
+### 7.3 CCF with Payment Options
+
+When using payment options (alternative amounts), calculate CCF on the final selected amount (`paymentDetails.amount`), not the base bill amount.
+
+## 8. Complete Implementation Checklist
+
+- **Detect CCF**: Look for `CCF1` entries with `C2B` direction in biller metadata
+- **Calculate properly**: Use the complete formula including 18% GST
+- **Handle zero CCF**: Omit `custConvFee` field when CCF is zero
+- **Separate from bill amount**: Never add CCF to `paymentDetails.amount`
+- **Calculate on final amount**: For payment options, use selected amount not base amount
+- **Ignore irrelevant fees**: Skip EBF/PBF entries (they're biller fees, not customer fees)
+- **Communicate clearly**: Show users the total debit amount (bill + CCF) upfront
+
+## 9. User Experience Considerations
+
+**Transparency**: Always show users the CCF amount separately before payment:
+- "Bill Amount: ₹500.00"
+- "Convenience Fee: ₹1.18"
+- "**Total: ₹501.18**"
+
+## 10. Reference Links
+
+- **Master guide**: Bill payment flows → <a href="/payments/billpay/api-integration/paying_bills" target="_blank">Paying Bills</a>
+- **Payment options**: CCF with alternative amounts → <a href="/payments/billpay/api-integration/bill-payment-options" target="_blank">Bill Payment Options</a>
+- **API specifications**: Complete endpoint documentation → <a href="/payments/billpay/api-integration/api-reference" target="_blank">API Reference</a>
+- **List Billers API**: Biller metadata and fee structure → <a href="/payments/billpay/api-reference#/category~List/operation~BillerList" target="_blank">List Billers</a>
+
+<WasPageHelpful />
