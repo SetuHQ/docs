@@ -11,7 +11,7 @@ visible_in_sidebar: true
 
 Customer Convenience Fee (CCF) is an additional charge some billers impose on top of the bill amount—essentially a fee your users pay for the convenience of digital bill payment through BBPS.
 
-Here's what CCF looks like in biller metadata:
+You'll discover CCF when calling the <a href="/payments/billpay/api-integration/api-reference#/category~List/operation~getBillers" target="_blank">List Billers API</a>, where it appears in the biller's metadata. Here's what CCF looks like in biller responses:
 
 <CodeBlockWithCopy language="json">{`
 {
@@ -71,26 +71,44 @@ Note: The values are for illustration purposes only.
 {
   "id": "SOME00000NATC3",
   "name": "National Pension System",
-  "interchangeFeeDetails": {
-    "flatFee": 50,          // ₹0.50 in paise
-    "percentFee": 0,        // No percentage component
-    "tranAmtRangeMax": 999999999999,
-    "tranAmtRangeMin": 1
-  }
+  "interchangeFee": [
+    {
+      "feeCode": "CCF1",
+      "feeDesc": "Customer_Convenience_Fee",
+      "feeDirection": "C2B",
+      "interchangeFeeDetails": {
+        "effctvFrom": "2024-08-05",
+        "effctvTo": "",
+        "flatFee": 50,          // ₹0.50 in paise
+        "percentFee": 0,        // No percentage component
+        "tranAmtRangeMax": 999999999999,
+        "tranAmtRangeMin": 1
+      }
+    }
+  ]
 }
 `}</CodeBlockWithCopy>
 
 ### 4.2 HDFC NCMC Pune Metro (₹1.00 CCF)
 <CodeBlockWithCopy language="json">{`
 {
-  "id": "HDFC00000NATRR",
+  "id": "SOME00000NATRR",
   "name": "HDFC Bank NCMC Pune Metro",
-  "interchangeFeeDetails": {
-    "flatFee": 100,         // ₹1.00 in paise
-    "percentFee": 0,        // No percentage component
-    "tranAmtRangeMax": 999999999999,
-    "tranAmtRangeMin": 1
-  }
+  "interchangeFee": [
+    {
+      "feeCode": "CCF1",
+      "feeDesc": "Customer_Convenience_Fee",
+      "feeDirection": "C2B",
+      "interchangeFeeDetails": {
+        "effctvFrom": "2023-07-28",
+        "effctvTo": "",
+        "flatFee": 100,         // ₹1.00 in paise
+        "percentFee": 0,        // No percentage component
+        "tranAmtRangeMax": 999999999999,
+        "tranAmtRangeMin": 1
+      }
+    }
+  ]
 }
 `}</CodeBlockWithCopy>
 
@@ -99,12 +117,21 @@ Note: The values are for illustration purposes only.
 {
   "id": "AIRT00000NATCL",
   "name": "Airtel Payments Bank RuPay NCMC",
-  "interchangeFeeDetails": {
-    "flatFee": 0,           // No CCF charged
-    "percentFee": 0,        // No percentage component
-    "tranAmtRangeMax": 9999999999,
-    "tranAmtRangeMin": 1
-  }
+  "interchangeFee": [
+    {
+      "feeCode": "CCF1",
+      "feeDesc": "Customer_Convenience_Fee",
+      "feeDirection": "C2B",
+      "interchangeFeeDetails": {
+        "effctvFrom": "2024-01-01",
+        "effctvTo": "",
+        "flatFee": 0,           // No CCF charged
+        "percentFee": 0,        // No percentage component
+        "tranAmtRangeMax": 9999999999,
+        "tranAmtRangeMin": 1
+      }
+    }
+  ]
 }
 `}</CodeBlockWithCopy>
 
@@ -137,6 +164,7 @@ When CCF applies, use this formula to calculate the fee in paise:
 - Total debit: ₹501.18
 
 **Example 3: Zero CCF biller (₹1500 bill)**
+- Bill amount: ₹1500 (150000 paise)
 - CCF: flatFee = 0, percentFee = 0
 - Calculation: CCF = 0
 - Total debit: ₹1500 (omit custConvFee field)
@@ -193,7 +221,7 @@ When CCF is zero, omit the `custConvFee` field entirely:
 
 ### 7.2 Zero CCF Handling
 
-When calculated CCF is zero (or rounds to zero), you can omit the `custConvFee` field from your payment request.
+When calculated CCF is zero, you can omit the `custConvFee` field from your payment request.
 
 ### 7.3 CCF with Payment Options
 
