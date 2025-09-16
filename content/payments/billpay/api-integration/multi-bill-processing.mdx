@@ -1,0 +1,138 @@
+---
+sidebar_title: Paying for multiple bills
+page_title: Paying for multiple bills
+order: 8
+visible_in_sidebar: true
+---
+
+# Multi-Bill Processing Integration Guide
+
+**This extends <a href="/payments/billpay/api-integration/paying_bills#3-flow-1-bill-fetch--payment" target="_blank">Flow 1 (Bill Fetch → Payment)</a> from the master guide.** Only needed when billers return multiple bills in a single fetch (< 1% of billers).
+
+📖 **Start here first → <a href="/payments/billpay/api-integration/paying_bills" target="_blank">Paying Bills Integration Guide</a>**
+
+## 1. When You Need This Guide
+
+**Most developers can skip this guide.** You only need multi-bill processing when your Flow 1 fetch response shows:
+
+```json
+{
+  "billerResponseType": "LIST"
+}
+```
+
+**This indicates the biller can return multiple bills that require selection before payment.**
+
+### 1.1 Quick Detection Check
+
+<CodeBlockWithCopy language="javascript">{`
+// Add to your existing Flow 1 fetch response handler
+if (fetchResponse.data.billerResponseType === "LIST") {
+  // Multiple bills detected - implement multi-bill selection UI
+  handleMultiBillFlow(fetchResponse);
+} else {
+  // Single bill - continue with standard Flow 1 implementation
+  handleSingleBillFlow(fetchResponse);
+}
+`}</CodeBlockWithCopy>
+
+**Example LIST Response Structure:**
+<CodeBlockWithCopy language="json">{`
+{
+  "data": {
+    "refId": "FETCH_REF_123",
+    "billerResponseType": "LIST",
+    "billerSelectionType": "MULTIPLE",
+    "bills": [
+      { "billNumber": "BILL_001", "amount": 50000 },
+      { "billNumber": "BILL_002", "amount": 75000 }
+    ]
+  }
+}
+`}</CodeBlockWithCopy>
+
+## 2. Common Multi-Bill Scenarios
+
+**When billers return multiple outstanding bills:**
+- **Corporate credit cards**: Multiple outstanding bills
+- **B2B invoices**: Multiple outstanding invoices requiring payment
+- **Government eChallans**: Bulk payment processing
+
+## 3. Selection Rules
+
+**The `billerSelectionType` field determines how many bills users can select:**
+
+- **`"SINGLE"`** → Choose exactly 1 bill (e.g., one credit card bill)
+- **`"MULTIPLE"`** → Choose 1+ bills (e.g., select which invoices to pay)
+- **`"ALL"`** → Must pay all bills together (pay all bills at once)
+
+## 4. Implementation Guide
+
+### 4.1 Step 1: Build Selection UI
+
+**Based on your detection, implement selection interface:**
+
+<CodeBlockWithCopy language="javascript">{`
+function renderBillSelection(fetchResponse) {
+  const { billerSelectionType, bills } = fetchResponse.data;
+  
+  switch(billerSelectionType) {
+    case "SINGLE":
+      return renderRadioButtons(bills);  // Only one bill can be paid
+    case "MULTIPLE": 
+      return renderCheckboxes(bills);    // Any combination of bills can be paid
+    case "ALL":
+      return renderAllSelected(bills);   // All bills must be paid together
+  }
+}
+`}</CodeBlockWithCopy>
+
+### 4.2 Step 2: Build Payment Request
+
+**Multi-bill payment extends your existing Flow 1 payment with:**
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "MULTI_FETCH_REF_123",
+  "bills": [
+    { "billNumber": "EMP_001_TRAVEL", "amount": 45000 },
+    { "billNumber": "EMP_003_TRAINING", "amount": 67000 }
+  ],
+  "paymentDetails": {
+    "amount": 112000,
+    "mode": "UPI",
+    "paymentRefId": "MULTI_PAY_456",
+    "timestamp": "2024-06-04T16:20:00+05:30",
+    "accountInfo": "user@ybl"
+  },
+  "remitter": { "name": "Corporate Account" }
+}
+`}</CodeBlockWithCopy>
+
+**Key Differences from Single Bill Payment:**
+- Add `bills` array with selected bill details  
+- Set `paymentDetails.amount` to sum of selected bills
+- Each bill amount must match fetch response exactly
+
+## 5. Validation Requirements
+
+**Essential Checks:**
+1. **Selection count**: Match `billerSelectionType` requirements (1 for SINGLE, 1+ for MULTIPLE, all for ALL)
+2. **Amount consistency**: `paymentDetails.amount` must equal sum of selected bill amounts  
+3. **Bill matching**: All selected `billNumber` values must exist in fetch response
+
+## 6. Implementation Checklist
+
+1. **Add detection logic** to your existing Flow 1 fetch handler
+2. **Build selection UI** based on `billerSelectionType` (radio/checkbox/all-selected)
+3. **Validate in real-time** as users select/deselect bills
+4. **Use same `refId`** from fetch response in payment request
+
+## 7. Reference Links
+
+📖 **Related Guides:**
+- <a href="/payments/billpay/api-integration/paying_bills" target="_blank">Paying Bills Integration Guide</a> — Master guide with Flow 1 implementation
+- <a href="/payments/billpay/api-integration/bill-payment-options" target="_blank">Paying for alternative options</a> — Handle payment options within bills
+- <a href="/payments/billpay/api-integration/api-reference" target="_blank">API Reference</a> — Complete endpoint specifications
+- <a href="/payments/billpay/api-integration/webhooks" target="_blank">Webhooks Integration</a> — Real-time payment status updates
+
+<WasPageHelpful />
