@@ -7,32 +7,23 @@ visible_in_sidebar: true
 
 # Bill Payment Options Integration Guide
 
-Some billers (eg: Loan repayments) offer multiple payment amounts for a single bill.
-
-📖 **For basic payment integration → <a href="/payments/billpay/api-integration/paying_bills" target="_blank">Paying Bills Integration Guide</a>**
 
 ## Overview
 
-Bill payment options allow customers to choose from different payment amounts for a single bill, such as:
-- **Minimum Due**: Pay only the minimum required amount
-- **Advance Payment**: Pay more than the bill amount
-- **Partial Payment**: Pay a custom amount within limits
-- **Foreclosure**: Pay the full outstanding amount
+Bill payment options let customers choose a different amount from the base bill when supported by the biller (e.g., Minimum Due, Partial/Prepayment, Advance/Top‑up, Foreclosure).
 
-**The `paymentOptions` field appears in fetch responses when billers support multiple payment amounts.**
+The `paymentOptions` array appears in fetch responses only when the biller supports multiple amounts.
 
 ## Implementation Guide
 
-### Step 1: Detect Payment Options in Fetch Response
+### Step 1: Detect alternative paymentOptions in bill fetch
 
-Check for the `paymentOptions` field in your bill fetch response:
+Check for `bills[].paymentOptions` in the fetch response:
 
 <CodeBlockWithCopy language="json">{`
 {
-  "success": true,
   "data": {
     "refId": "FETCH_REF_123",
-    "status": "Success",
     "bills": [
       {
         "amount": 200000,  
@@ -40,25 +31,8 @@ Check for the `paymentOptions` field in your bill fetch response:
         "customerName": "John Doe",
         "dueDate": "2024-12-30",
         "paymentOptions": [
-          {
-            "name": "Minimum Due",
-            "amount": 50000,
-            "minAmount": 50000,
-            "maxAmount": 50000
-          },
-          {
-            "name": "Full Payment", 
-            "amount": 200000,
-            "minAmount": 200000,
-            "maxAmount": 200000
-          },
-          {
-            "name": "Advance Payment",
-            "amount": 300000,
-            "minAmount": 300000,
-            "maxAmount": 1000000,
-            "amountMultiple": 50000
-          }
+          { "name": "Minimum Due", "amount": 50000, "minAmount": 50000, "maxAmount": 50000 },
+          { "name": "Advance Payment", "amount": 300000, "minAmount": 300000, "maxAmount": 1000000, "amountMultiple": 50000 }
         ]
       }
     ]
@@ -66,17 +40,13 @@ Check for the `paymentOptions` field in your bill fetch response:
 }
 `}</CodeBlockWithCopy>
 
-### Step 2: Present Options to Users
+### Step 2: Present choices
 
-**UI Implementation:**
-- Display payment options as selectable buttons or dropdown
-- Show option names with their corresponding amounts
-- Allow custom amount input within option constraints
-- Validate amounts against `minAmount`, `maxAmount`, and `amountMultiple`
+- Present the base `bill.amount` alongside any `paymentOptions`.
 
-### Step 3: Build Payment Request
+### Step 3: Build payment request
 
-**When user selects a payment option:**
+- When a non‑base option is chosen, include exactly one `selectedPaymentOptions` item and match amounts.
 
 <CodeBlockWithCopy language="json">{`
   {
@@ -100,7 +70,7 @@ Check for the `paymentOptions` field in your bill fetch response:
   }
 `}</CodeBlockWithCopy>
 
-**When user pays base bill amount (no option selected):**
+- When paying the base amount, omit `selectedPaymentOptions`.
 
 <CodeBlockWithCopy language="json">{`
 {
@@ -118,91 +88,42 @@ Check for the `paymentOptions` field in your bill fetch response:
 }
 `}</CodeBlockWithCopy>
 
-## How Payment Options Work
+## Time‑Based Options
 
-**Relationship to Base Bill:**
-- Base bill has `amount` and may have `exactness` rules
-- Payment options **override** base bill constraints when selected
-- Each option defines its own amount limits and validation rules
+Some billers expose time‑based amounts such as `Early Payment Amount`, `Late Payment Amount` in the bill fetch response. These can be used to determine the default option to be selected.
 
-**Key Fields:**
-- `name`: Option identifier (must match exactly in payment request)
-- `amount`: Default amount for this option
-- `minAmount`/`maxAmount`: Payment range for this option
-- `amountMultiple`: Required increments (if specified)
+Signals to check in bill fetch response:
+  - `bills[].paymentOptions[].name` equals `Early Payment Amount` or `Late Payment Amount`.
+  - `bills[].dueDate` for past‑due checks.
+  - `bills[].additionalInfo[]` includes `{ name: "Early Payment Date", value: YYYY-MM-DD }`.
+
+Bill amount selection rules:
+- Precedence: `Late Payment Amount` > `Early Payment Amount` > Base bill amount.
+- Show `Late Payment Amount` only if today > `dueDate` and a `Late Payment Amount` option exists.
+- Show `Early Payment Amount` only if a `Early Payment Amount` option exists and today ≤ `Early Payment Date` from `additionalInfo`.
+- Otherwise show the base bill amount and optionally show all choices.
+
+Edge cases:
+- Both Early and Late present: if past due, Late; else if within Early window, Early; else Base.
+- Missing `dueDate`: default Base.
+- Missing or invalid `Early Payment Date`: default Base.
+- Options present but none match Early/Late labels: default Base.
+
+All date comparisons are in IST.
+
+## Key Fields in Payment Options
+
+- `name`: Option identifier (must match exactly in the request when selected)
+- `amount`: Amount to pay when this option is chosen
+- `minAmount` / `maxAmount`: Allowed range when the option supports variable amounts
+- `amountMultiple`: Required increment (if provided)
 
 ## Validation Rules
 
-**Step-by-Step Validation:**
+- When an option is selected, the amount must be within `minAmount`–`maxAmount` and respect `amountMultiple` if present.
+- `paymentDetails.amount` must equal the chosen amount (base or selected option amount).
+- Option `name` must match exactly one of the names in `paymentOptions`.
 
-1. **Option Selection**: Choose option from `paymentOptions` array or use base bill amount
-2. **Amount Constraints**: If option selected, validate against option's `minAmount`/`maxAmount`
-3. **Multiple Validation**: If `amountMultiple` specified: `amount % amountMultiple == 0`
-4. **Request Consistency**: `paymentDetails.amount` must equal `selectedPaymentOptions[0].amount`
-
-**Example Validation Logic:**
-<CodeBlockWithCopy language="text">{`
-IF user selects payment option:
-  amount = user_chosen_amount
-  validate: option.minAmount <= amount <= option.maxAmount
-  validate: amount % option.amountMultiple == 0 (if specified)
-  include: selectedPaymentOptions field
-ELSE:
-  amount = bill.amount (or user amount within bill constraints)
-  validate: according to bill exactness rules
-  omit: selectedPaymentOptions field
-`}</CodeBlockWithCopy>
-
-## Real-World Example: Loan Repayment
-
-**Complete flow showing payment options in action:**
-
-<CodeBlockWithCopy language="json">{`
-{
-  "data": {
-    "refId": "LOAN_FETCH_123",
-    "bills": [{
-      "amount": 50000,  // Monthly EMI
-      "paymentOptions": [
-        {
-          "name": "Monthly EMI",
-          "amount": 50000,
-          "minAmount": 50000,
-          "maxAmount": 50000
-        },
-        {
-          "name": "Partial Prepayment",
-          "amount": 100000,
-          "minAmount": 100000,
-          "maxAmount": 500000,
-          "amountMultiple": 10000
-        },
-        {
-          "name": "Foreclosure",
-          "amount": 1200000,
-          "minAmount": 1200000,
-          "maxAmount": 1200000
-        }
-      ]
-    }]
-  }
-}
-`}</CodeBlockWithCopy>
-
-
-<CodeBlockWithCopy language="json">{`
-// Payment Request (Partial Prepayment)
-{
-  "refId": "LOAN_FETCH_123",
-  "paymentDetails": {
-    "amount": 250000,  // User chose custom amount
-    "selectedPaymentOptions": [{
-      "name": "Partial Prepayment",
-      "amount": 250000
-    }]
-  }
-}
-`}</CodeBlockWithCopy>
 
 ## Error Handling
 
@@ -212,50 +133,33 @@ ELSE:
 2. **Amount mismatch**: `paymentDetails.amount` ≠ `selectedPaymentOptions[0].amount`
 3. **Out of range**: Amount outside option's `minAmount`/`maxAmount`
 4. **Invalid multiple**: Amount not a multiple of `amountMultiple`
-5. **Missing selection**: Option required but `selectedPaymentOptions` not provided
 
 **Example Error Responses:**
 <CodeBlockWithCopy language="json">{`
 {
   "success": false,
   "error": {
-    "code": "AMOUNT_OUT_OF_RANGE",
+    "code": "invalid-amount",
     "message": "Amount 75000 is below minimum 100000 for option 'Partial Prepayment'"
-  }
+  },
+  "traceId": "C3SFG0O6N88R6UI7EQ"
 }
 `}</CodeBlockWithCopy>
 
-
-<CodeBlockWithCopy language="json">{`
-// Invalid multiple error  
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_AMOUNT_MULTIPLE",
-    "message": "Amount 155000 must be multiple of 10000 for option 'Partial Prepayment'"
-  }
-}
-`}</CodeBlockWithCopy>
 
 ## Integration with CCF and Other Features
 
 **Customer Convenience Fee (CCF):**
-- CCF calculation applies to the **final payment amount** (including selected option amount)
+- CCF calculation applies to the **final payment amount** (i.e. paymentDetails.amount)
 - Recalculate CCF when user changes payment options
 - CCF applies to `paymentDetails.amount`, not base bill amount
 
-**Exactness Rules:**
-- When payment option is selected: option constraints override bill exactness
-- When no option selected: standard exactness rules apply to base bill
-- `selectedPaymentOptions` signals which validation rules to use
+## Quick Checklist
 
-## Best Practices
-
-1. **Implement as standard feature** - not optional for comprehensive bill payment
-2. **Validate in real-time** as users select options and enter amounts
-3. **Clear option presentation** with amount ranges and constraints
-4. **Handle gracefully** when paymentOptions is null/empty
-5. **Consistent refId usage** throughout fetch-to-payment flow
+- Detect `paymentOptions`; always present base `bill.amount` alongside options.
+- Choose exactly one: base (omit `selectedPaymentOptions`) or one option (include one item; amounts match).
+- Optional: Apply Early/Late defaulting as described
+- Recompute CCF (if applicable) for the final amount (base or selected option).
 
 ## Reference Links
 
