@@ -1,24 +1,17 @@
 ---
 sidebar_title: Paying for alternative options
 page_title: Paying for alternative options
-order: 7
+order: 6
 visible_in_sidebar: true
 ---
 
 # Bill Payment Options Integration Guide
 
+## 1. You're Here Because Your Fetch Returned Payment Options
 
-## Overview
+You successfully completed a Flow 1 bill fetch and discovered your response includes a `paymentOptions` array alongside the standard bill amount. This happens when billers—typically credit cards, loan providers, or utilities—offer customers multiple payment amounts instead of just the fixed bill amount.
 
-Bill payment options let customers choose a different amount from the base bill when supported by the biller (e.g., Minimum Due, Partial/Prepayment, Advance/Top‑up, Foreclosure).
-
-The `paymentOptions` array appears in fetch responses only when the biller supports multiple amounts.
-
-## Implementation Guide
-
-### Step 1: Detect alternative paymentOptions in bill fetch
-
-Check for `bills[].paymentOptions` in the fetch response:
+Here's what your fetch response looks like when this happens:
 
 <CodeBlockWithCopy language="json">{`
 {
@@ -28,9 +21,12 @@ Check for `bills[].paymentOptions` in the fetch response:
       {
         "amount": 200000,
         "dueDate": "2024-12-30",
+        "additionalInfo": [
+          { "name": "Early Payment Date", "value": "2024-12-20" }
+        ],
         "paymentOptions": [
-          { "name": "Minimum Due", "amount": 50000, "minAmount": 50000, "maxAmount": 50000 },
-          { "name": "Advance Payment", "amount": 300000, "minAmount": 300000, "maxAmount": 1000000, "amountMultiple": 50000 }
+          { "name": "Early Payment Amount", "amount": 195000 },
+          { "name": "Late Payment Amount", "amount": 205000 }
         ]
       }
     ]
@@ -38,134 +34,183 @@ Check for `bills[].paymentOptions` in the fetch response:
 }
 `}</CodeBlockWithCopy>
 
-### Step 2: Present choices
+## 2. What This Means for Your Implementation
 
-- Present the base `bill.amount` alongside any `paymentOptions`.
+You now have multiple valid payment amounts: the base `bills[].amount` plus each amount in `paymentOptions`. Your job is to let either the user or your application logic choose exactly one of these amounts, then build your payment request accordingly.
 
-### Step 3: Build payment request
+The fundamental rule: you're either paying the base amount (simple case) or paying one of the alternative options (requires additional request fields). All amounts are in paise, and the server will validate your choice—don't override the server's rules on the client side.
 
-- When a non‑base option is chosen, include exactly one `selectedPaymentOptions` item and match amounts.
+## 3. The Simple Case: Let Users Choose
+
+Most teams handle payment options by showing all available amounts to the user and letting them pick. Present the base bill amount alongside each payment option, clearly labeled with the option name and amount.
+
+### 3.1 Common Business Scenarios
+
+Payment options appear across many different types of services, each with their own business logic:
+
+**Credit Card Bills**: Users can pay minimum due, total outstanding, or a custom amount
+<CodeBlockWithCopy language="json">{`
+{
+  "bills": [{
+    "amount": 500000,  // ₹5000 total outstanding
+    "paymentOptions": [
+      { "name": "Minimum Due", "amount": 50000 },      // ₹500
+      { "name": "Previous Balance", "amount": 350000 }, // ₹3500
+      { "name": "Custom Amount", "minAmount": 50000, "maxAmount": 1000000, "amountMultiple": 100 }
+    ]
+  }]
+}
+`}</CodeBlockWithCopy>
+
+**Loan EMI Payments**: Borrowers can pay single month, multiple months, or full outstanding
+<CodeBlockWithCopy language="json">{`
+{
+  "bills": [{
+    "amount": 1200000,  // ₹12000 full outstanding
+    "paymentOptions": [
+      { "name": "1 Month EMI", "amount": 300000 },     // ₹3000
+      { "name": "3 Month EMI", "amount": 900000 },     // ₹9000
+      { "name": "Foreclosure", "amount": 1150000 }     // ₹11500 (with discount)
+    ]
+  }]
+}
+`}</CodeBlockWithCopy>
+
+**Insurance Premiums**: Policyholders can pay full premium, partial premium, or renewal with penalties
+<CodeBlockWithCopy language="json">{`
+{
+  "bills": [{
+    "amount": 2500000,  // ₹25000 annual premium
+    "paymentOptions": [
+      { "name": "Quarterly Premium", "amount": 650000 },   // ₹6500
+      { "name": "Late Payment", "amount": 2750000 },       // ₹27500 (with penalty)
+      { "name": "Partial Payment", "minAmount": 500000, "maxAmount": 2500000, "amountMultiple": 10000 }
+    ]
+  }]
+}
+`}</CodeBlockWithCopy>
+
+### 3.2 Implementation Pattern
+
+Regardless of the business scenario, the implementation pattern remains consistent:
+
+1. **Present all choices**: Show the base `amount` alongside every `paymentOptions` entry
+2. **Handle selection**: When users pick the base amount, omit `selectedPaymentOptions`. When they pick an alternative, include exactly one item in `selectedPaymentOptions`
+3. **Validate constraints**: Respect any `minAmount`, `maxAmount`, or `amountMultiple` rules on selected options
+
+When the user selects the base amount, you build a standard payment request. When they select an alternative option, you include that choice in your payment request using the `selectedPaymentOptions` field.
+
+## 4. Smart Defaults: Automatic Early/Late Selection
+
+Some billers offer time-based pricing—early payment discounts or late payment fees—that you can handle automatically. When you see options named `Early Payment Amount` or `Late Payment Amount` in your fetch response, you can use simple date logic to pick the most appropriate default for your users.
+
+The logic is straightforward: if the bill is past due and a late payment option exists, default to that. If the bill is within an early payment window and an early payment option exists, default to that. Otherwise, use the base amount. All date comparisons use IST timezone.
+
+Here's the complete decision tree:
+- **Late payment**: Use `Late Payment Amount` when today > `dueDate` and the option exists
+- **Early payment**: Use `Early Payment Amount` when today ≤ `Early Payment Date` (from `additionalInfo`) and the option exists
+- **Standard payment**: Use base `amount` in all other cases
+
+**Edge cases** (all intentional fallbacks):
+- Both Early and Late options present: if past due, pick Late; else if within early window, pick Early; else Base
+- Missing `dueDate` or invalid `Early Payment Date`: fallback to Base
+- Option names don't match exactly: fallback to Base
+
+## 5. Building Your Payment Request
+
+Regardless of whether users choose manually or you use smart defaults, you'll build one of two request types:
+
+### 5.1 Paying the Base Amount
+
+When paying the standard bill amount, omit the `selectedPaymentOptions` field entirely:
 
 <CodeBlockWithCopy language="json">{`
 {
   "refId": "FETCH_REF_123",
   "paymentDetails": {
-    "amount": 300000,  // Must match selected option amount
+    "amount": 200000,
     "mode": "UPI",
-    "paymentRefId": "PAY_REF_456", 
+    "paymentRefId": "PAY_REF_789",
+    "timestamp": "2024-06-04T14:30:00+05:30",
+    "accountInfo": "user@ybl"
+  },
+  "remitter": { "name": "John Doe" }
+}
+`}</CodeBlockWithCopy>
+
+### 5.2 Paying an Alternative Option
+
+When paying any amount from `paymentOptions`, include exactly one item in `selectedPaymentOptions` with the exact `name` and `amount` from your fetch response:
+
+<CodeBlockWithCopy language="json">{`
+{
+  "refId": "FETCH_REF_123",
+  "paymentDetails": {
+    "amount": 205000,
+    "mode": "UPI",
+    "paymentRefId": "PAY_REF_456",
     "timestamp": "2024-06-04T14:30:00+05:30",
     "accountInfo": "user@ybl",
     "selectedPaymentOptions": [
-      {
-        "name": "Advance Payment",  // Must match option name from fetch response
-        "amount": 300000            // Must match paymentDetails.amount
-      }
+      { "name": "Late Payment Amount", "amount": 205000 }
     ]
   },
-  "remitter": {
-    "name": "John Doe"
-  }
+  "remitter": { "name": "John Doe" }
 }
 `}</CodeBlockWithCopy>
 
-- When paying the base amount, omit `selectedPaymentOptions`.
+**Key rule**: The `paymentDetails.amount` must always match either the base `bill.amount` or the selected option's `amount` exactly.
+
+## 6. Validation Rules and Common Issues
+
+Before sending your payment request, validate these requirements to avoid API rejections:
+
+**Essential validations:**
+- **Exclusive choice**: Either omit `selectedPaymentOptions` entirely (base amount) or include exactly one item (alternative option)
+- **Exact name match**: The `name` in `selectedPaymentOptions` must match exactly one option from your fetch response
+- **Amount consistency**: `paymentDetails.amount` must equal either the base `bill.amount` or the selected option's `amount`
+- **Constraint compliance**: If the selected option specifies `minAmount`, `maxAmount`, or `amountMultiple`, your amount must satisfy those constraints; otherwise fall back to bill-level rules (like `exactness`)
+
+## 7. Customer Convenience Fee (CCF) Considerations
+
+If your biller charges CCF, compute it on the final payable amount (base or selected option amount) and include it only in `paymentDetails.custConvFee`. Never add CCF to the `paymentDetails.amount` field.
+
+📖 **Complete CCF implementation → <a href="/payments/billpay/api-integration/customer-convenience-fee" target="_blank">Customer Convenience Fee Guide</a>**
+
+## 8. Complete Example: Smart Default in Action
+
+Scenario: Today is 2024‑12‑31 10:00 IST. Your fetch returned a base amount of ₹2000, an Early Payment Amount of ₹1950, and a Late Payment Amount of ₹2050. The due date was 2024‑12‑30, so you automatically default to the Late Payment Amount:
 
 <CodeBlockWithCopy language="json">{`
 {
-  "refId": "FETCH_REF_123", 
+  "refId": "FETCH_REF_123",
   "paymentDetails": {
-    "amount": 200000,  // Base bill amount
+    "amount": 205000,
     "mode": "UPI",
-    "paymentRefId": "PAY_REF_789",
-    "timestamp": "2024-06-04T14:30:00+05:30", 
-    "accountInfo": "user@ybl"
-    // No selectedPaymentOptions field when paying base amount
+    "paymentRefId": "PAY_REF_999",
+    "timestamp": "2024-12-31T10:00:00+05:30",
+    "accountInfo": "user@ybl",
+    "selectedPaymentOptions": [
+      { "name": "Late Payment Amount", "amount": 205000 }
+    ]
   },
-  "remitter": {
-    "name": "John Doe"
-  }
+  "remitter": { "name": "John Doe" }
 }
 `}</CodeBlockWithCopy>
 
-## Time‑Based Options
+## 9. Implementation Checklist
 
-Some billers expose time‑based amounts such as `Early Payment Amount`, `Late Payment Amount` in the bill fetch response. These can be used to determine the default option to be selected.
+- **Detect options**: Check for `paymentOptions` array in your fetch response
+- **Present choices**: Show base amount alongside all available options with clear labels
+- **Handle selection**: Support either user choice or smart defaults based on your UX needs
+- **Build request**: Use the correct format—omit `selectedPaymentOptions` for base, include exactly one item for options
+- **Validate locally**: Check name matching and amount consistency before sending
+- **Calculate CCF**: Compute on final amount if applicable
 
-Signals to check in bill fetch response:
-  - `bills[].paymentOptions[].name` equals `Early Payment Amount` or `Late Payment Amount`.
-  - `bills[].dueDate` for past‑due checks.
-  - `bills[].additionalInfo[]` includes `{ name: "Early Payment Date", value: YYYY-MM-DD }`.
+## 10. Reference Links
 
-Bill amount selection rules:
-- Precedence: `Late Payment Amount` > `Early Payment Amount` > Base bill amount.
-- Show `Late Payment Amount` only if today > `dueDate` and a `Late Payment Amount` option exists.
-- Show `Early Payment Amount` only if a `Early Payment Amount` option exists and today ≤ `Early Payment Date` from `additionalInfo`.
-- Otherwise show the base bill amount and optionally show all choices.
-
-Edge cases:
-- Both Early and Late present: if past due, Late; else if within Early window, Early; else Base.
-- Missing `dueDate`: default Base.
-- Missing or invalid `Early Payment Date`: default Base.
-- Options present but none match Early/Late labels: default Base.
-
-All date comparisons are in IST.
-
-## Key Fields in Payment Options
-
-- `name`: Option identifier (must match exactly in the request when selected)
-- `amount`: Amount to pay when this option is chosen
-- `minAmount` / `maxAmount`: Allowed range when the option supports variable amounts
-- `amountMultiple`: Required increment (if provided)
-
-## Validation Rules
-
-- When an option is selected, the amount must be within `minAmount`–`maxAmount` and respect `amountMultiple` if present.
-- `paymentDetails.amount` must equal the chosen amount (base or selected option amount).
-- Option `name` must match exactly one of the names in `paymentOptions`.
-
-
-## Error Handling
-
-**Common Validation Errors:**
-
-1. **Invalid option name**: Selected option doesn't exist in fetch response
-2. **Amount mismatch**: `paymentDetails.amount` ≠ `selectedPaymentOptions[0].amount`
-3. **Out of range**: Amount outside option's `minAmount`/`maxAmount`
-4. **Invalid multiple**: Amount not a multiple of `amountMultiple`
-
-**Example Error Responses:**
-<CodeBlockWithCopy language="json">{`
-{
-  "success": false,
-  "error": {
-    "code": "invalid-amount",
-    "message": "Amount 75000 is below minimum 100000 for option 'Partial Prepayment'"
-  },
-  "traceId": "C3SFG0O6N88R6UI7EQ"
-}
-`}</CodeBlockWithCopy>
-
-
-## Integration with CCF and Other Features
-
-**Customer Convenience Fee (CCF):**
-- CCF calculation applies to the **final payment amount** (i.e. paymentDetails.amount)
-- Recalculate CCF when user changes payment options
-- CCF applies to `paymentDetails.amount`, not base bill amount
-
-## Quick Checklist
-
-- Detect `paymentOptions`; always present base `bill.amount` alongside options.
-- Choose exactly one: base (omit `selectedPaymentOptions`) or one option (include one item; amounts match).
-- Optional: Apply Early/Late defaulting as described
-- Recompute CCF (if applicable) for the final amount (base or selected option).
-
-## Reference Links
-
-📖 **Related Guides:**
-- <a href="/payments/billpay/api-integration/paying_bills" target="_blank">Paying Bills Integration Guide</a> — Master guide with Flow 1 implementation
-- <a href="/payments/billpay/api-integration/multi-bill-processing" target="_blank">Paying for multiple bills</a> — Multiple bills handling 
-- <a href="/payments/billpay/api-integration/api-reference" target="_blank">API Reference</a> — Complete endpoint specifications
-- <a href="/payments/billpay/api-integration/webhooks" target="_blank">Webhooks Integration</a> — Real-time payment status updates
+- **Master guide**: Flow 1 implementation details → <a href="/payments/billpay/api-integration/paying_bills#3-flow-1-bill-fetch--payment" target="_blank">Paying Bills</a>
+- **API specifications**: Complete endpoint documentation → <a href="/payments/billpay/api-integration/api-reference" target="_blank">API Reference</a>
+- **Real‑time updates**: Payment status webhooks → <a href="/payments/billpay/api-integration/webhooks" target="_blank">Webhooks Integration</a>
 
 <WasPageHelpful />
