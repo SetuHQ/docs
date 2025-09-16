@@ -11,6 +11,11 @@ The consent object is the core of the AA framework. When an FIU requires data ab
 
 Consent object contains the information about all the different types of data the FIU needs, the purpose of the data, and how the FIU plans to use the data and so on.
 
+
+## FIP Selector Screen
+
+**→ Scroll down to see the detailed FIP Selector Screen section**
+
 <Callout type="warning">
   As specified in the table below, some parameters have to be passed mandatorily
   when creating a consent.
@@ -218,6 +223,146 @@ The `context` parameter accepts key-value pairs to customize the consent flow. B
   }
 }`}
 </CodeBlockWithCopy>
+
+<br />
+
+<hr class="primary" />
+
+## FIP Selector Screen
+
+<Callout type="info">
+  This feature is coming soon and will be available in future releases.
+</Callout>
+
+### Overview
+
+The FIP Selector Screen is a feature that helps improve AA journey success rates by intelligently routing users to the best performing Account Aggregator (AA) - FIP pair.
+
+It enables FIUs to:
+
+- Select the best-performing AA for a given FIP (instead of just the highest overall-performing AA).
+- Provide explicit user consent for using PII (mobile number) to discover pre-existing handles on AAs.
+- Reduce drop-offs on the account linking page by routing users to an AA where they already have a handle.
+- Move away from latency-prone autodiscovery flows by adopting a faster, targeted manual discovery approach.
+
+All of this enables better consent conversion across the funnel
+
+### How it works
+
+1. User lands on the FIP Selector Screen before the AA journey
+2. FIU (or Setu module) shows available FIPs and takes explicit user consent to use PII data via a checkbox.
+3. Setu uses this consent to:
+   - Discover pre-existing AA handles (using mobile number).
+   - Route requests to the best-performing AA for that specific FIP.
+4. The improved routing logic kicks in, reducing drop-offs and boosting success rates.
+
+### Flow diagram
+
+<MainImage
+    src="https://storage.googleapis.com/strapi-assets/latest/consent_object_flow/consent-flow.png"
+    alt="FIP Selector Screen flow diagram showing the consent object flow process"
+/>
+
+The FIP Selector Screen flow works as follows:
+
+1. **User selects FIP** → User chooses their preferred Financial Information Provider
+2. **Consent checkbox for discovery** → User provides explicit consent for PII usage
+3. **Setu checks AA handles using mobile number** → System discovers pre-existing handles
+4. **Best performing AA for FIP** → Intelligent routing based on performance data
+5. **Consent creation via AA** → Consent is created through the optimal AA
+6. **Account linking + Data fetch** → Final step of account connection and data retrieval
+
+### How FIUs can enable this
+
+#### ✅ Case 1: FIUs with an existing FIP Selector Screen
+
+1. Add the consent checkbox to your FIP Selector Screen.
+2. Share a screenshot of the updated screen with Setu.
+3. For Finvu, also complete the AA Profile Discovery API Access Request form.
+4. For OneMoney and Anumati, Setu will share your screenshot with the AA for approval.
+5. Once confirmed, this data will be used in the AA routing logic.
+
+**Example consent box text:** *[Add whatever we are using in the FE screen as a sample]*
+
+#### ✅ Case 2: FIUs without an FIP Selector Screen
+
+1. Setu will provide an opt-in module for the FIP Selector Screen.
+2. No need to share screenshots - Setu will handle UI, routing, and compliance requirements end-to-end.
+3. Setu will also assist with form submissions for AA sign-offs
+
+### Tech implementation
+
+#### Case 1: FIUs NOT passing Account Aggregator the context filter (Multi AA)
+
+**Create Consent API Changes**
+
+Request Payload:
+```json
+{
+  "vua": "9999999999"  // Only mobile number (no AA suffix)
+}
+```
+
+Response Payload:
+```json
+{
+  "vua": "9999999999",     // Only mobile number
+  "status": "INITIATED",   // Initial status (PENDING status sent via notification once actual consent is created with AA)
+  // ...other fields remain unchanged
+}
+```
+
+**Key Changes:**
+- Initial status is `INITIATED` instead of `PENDING`
+- VUA contains only mobile number without AA suffix
+- Actual `PENDING` status communicated via notification after consent creation
+
+**Notification Handler Updates**
+
+Once the user completes the bank selection, we'll create consent on the most optimal Account Aggregator (AA) for the selected Financial Information Provider (FIP) and then send the PENDING status.
+
+Success Notification Payload:
+```json
+{
+  "data": {
+    "status": "PENDING",                    // New additional status
+    "vua": "9999999999@selectedAA"        // Updated with selected AA
+  },
+  "success": true,
+  "type": "CONSENT_STATUS_UPDATE", 
+  "error": null,
+  "consentId": "<<consentId>>",
+  "notificationId": "<<notificationId>>",
+  "timestamp": "2024-01-29T07:28:24.547Z"
+}
+```
+
+Failure Notification Payload:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ConsentObjectCreationFailure", 
+    "message": "Internal server error occurred while fetching consent details from upstream AA"
+  },
+  "data": null,
+  "consentId": "<<consentId>>",
+  "notificationId": "<<notificationId>>",
+  "timestamp": "2024-01-29T07:28:24.547Z",
+  "type": "CONSENT_STATUS_UPDATE"
+}
+```
+
+**Required Implementation:**
+- Add `CONSENT_STATUS_UPDATE` notification handler
+- Update status management logic
+- Handle VUA format changes
+
+#### Case 2: FIUs passing specific AA in the context filter
+
+✅ **No changes required from FIUs for Case 2**
+
+This case works immediately with existing implementations as it's purely an optimization that doesn't affect consent status transitions.
 
 <br />
 
