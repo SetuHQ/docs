@@ -54,7 +54,7 @@ if (fetchResponse.data.billerResponseType === "LIST") {
 ## Common Multi-Bill Scenarios
 
 **When billers return multiple outstanding bills:**
-- **Corporate credit cards**: Multiple billing periods (May + June statements)
+- **Corporate credit cards**: Multiple outstanding bills
 - **B2B invoices**: Multiple outstanding invoices requiring payment
 - **Government eChallans**: Bulk payment processing
 
@@ -62,9 +62,9 @@ if (fetchResponse.data.billerResponseType === "LIST") {
 
 **The `billerSelectionType` field determines how many bills users can select:**
 
-- **`"SINGLE"`** → Choose exactly 1 bill (e.g., May OR June credit card statement)
+- **`"SINGLE"`** → Choose exactly 1 bill (e.g., one credit card bill)
 - **`"MULTIPLE"`** → Choose 1+ bills (e.g., select which invoices to pay)
-- **`"ALL"`** → Must pay all bills together (no selection)
+- **`"ALL"`** → Must pay all bills together (pay all bills at once)
 
 ## Implementation Guide
 
@@ -120,13 +120,6 @@ function renderBillSelection(fetchResponse) {
 2. **Amount consistency**: `paymentDetails.amount` must equal sum of selected bill amounts  
 3. **Bill matching**: All selected `billNumber` values must exist in fetch response
 
-**Multi-Bill + Payment Options:**
-Individual bills in LIST responses can also have `paymentOptions`. Handle bill selection first, then payment options for selected bills.
-
-📖 **Payment options implementation → <a href="/payments/billpay/api-integration/bill-payment-options" target="_blank">Bill Payment Options Guide</a>**
-
-**Transaction responses include individual bill breakdown for detailed reconciliation and audit trails.**
-
 ## Implementation Checklist
 
 1. **Add detection logic** to your existing Flow 1 fetch handler
@@ -138,7 +131,7 @@ Individual bills in LIST responses can also have `paymentOptions`. Handle bill s
 
 📖 **Related Guides:**
 - <a href="/payments/billpay/api-integration/paying_bills" target="_blank">Paying Bills Integration Guide</a> — Master guide with Flow 1 implementation
-- <a href="/payments/billpay/api-integration/bill-payment-options" target="_blank">Bill Payment Options Guide</a> — Handle payment options within bills
+- <a href="/payments/billpay/api-integration/bill-payment-options" target="_blank">Paying for alternative options</a> — Handle payment options within bills
 - <a href="/payments/billpay/api-integration/api-reference" target="_blank">API Reference</a> — Complete endpoint specifications
 - <a href="/payments/billpay/api-integration/webhooks" target="_blank">Webhooks Integration</a> — Real-time payment status updates
 
