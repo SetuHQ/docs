@@ -15,6 +15,7 @@ Some billers (eg: Loan repayments) offer multiple payment amounts for a single b
 
 Bill payment options allow customers to choose from different payment amounts for a single bill, such as:
 - **Minimum Due**: Pay only the minimum required amount
+- **Full Payment**: Pay the complete bill amount  
 - **Advance Payment**: Pay more than the bill amount
 - **Partial Payment**: Pay a custom amount within limits
 - **Foreclosure**: Pay the full outstanding amount
@@ -35,7 +36,7 @@ Check for the `paymentOptions` field in your bill fetch response:
     "status": "Success",
     "bills": [
       {
-        "amount": 200000,  
+        "amount": 200000,  // Base bill amount
         "billNumber": "LOAN001",
         "customerName": "John Doe",
         "dueDate": "2024-12-30",
@@ -79,25 +80,25 @@ Check for the `paymentOptions` field in your bill fetch response:
 **When user selects a payment option:**
 
 <CodeBlockWithCopy language="json">{`
-  {
-    "refId": "FETCH_REF_123",
-    "paymentDetails": {
-      "amount": 300000, 
-      "mode": "UPI",
-      "paymentRefId": "PAY_REF_456", 
-      "timestamp": "2024-06-04T14:30:00+05:30",
-      "accountInfo": "user@ybl",
-      "selectedPaymentOptions": [
-        {
-          "name": "Advance Payment",  
-          "amount": 300000            
-        }
-      ]
-    },
-    "remitter": {
-      "name": "John Doe"
-    }
+{
+  "refId": "FETCH_REF_123",
+  "paymentDetails": {
+    "amount": 300000,  // Must match selected option amount
+    "mode": "UPI",
+    "paymentRefId": "PAY_REF_456", 
+    "timestamp": "2024-06-04T14:30:00+05:30",
+    "accountInfo": "user@ybl",
+    "selectedPaymentOptions": [
+      {
+        "name": "Advance Payment",  // Must match option name from fetch response
+        "amount": 300000            // Must match paymentDetails.amount
+      }
+    ]
+  },
+  "remitter": {
+    "name": "John Doe"
   }
+}
 `}</CodeBlockWithCopy>
 
 **When user pays base bill amount (no option selected):**
@@ -110,7 +111,8 @@ Check for the `paymentOptions` field in your bill fetch response:
     "mode": "UPI",
     "paymentRefId": "PAY_REF_789",
     "timestamp": "2024-06-04T14:30:00+05:30", 
-    "accountInfo": "user@ybl"  // No selectedPaymentOptions field when paying base amount
+    "accountInfo": "user@ybl"
+    // No selectedPaymentOptions field when paying base amount
   },
   "remitter": {
     "name": "John Doe"
@@ -158,6 +160,7 @@ ELSE:
 **Complete flow showing payment options in action:**
 
 <CodeBlockWithCopy language="json">{`
+// Fetch Response
 {
   "data": {
     "refId": "LOAN_FETCH_123",
@@ -187,9 +190,8 @@ ELSE:
     }]
   }
 }
-`}</CodeBlockWithCopy>
 
-<CodeBlockWithCopy language="json">{`
+// Payment Request (Partial Prepayment)
 {
   "refId": "LOAN_FETCH_123",
   "paymentDetails": {
@@ -214,6 +216,7 @@ ELSE:
 
 **Example Error Responses:**
 <CodeBlockWithCopy language="json">{`
+// Out of range error
 {
   "success": false,
   "error": {
@@ -221,9 +224,8 @@ ELSE:
     "message": "Amount 75000 is below minimum 100000 for option 'Partial Prepayment'"
   }
 }
-`}</CodeBlockWithCopy>
 
-<CodeBlockWithCopy language="json">{`
+// Invalid multiple error  
 {
   "success": false,
   "error": {
