@@ -259,7 +259,7 @@ All of this enables better consent conversion across the funnel
 ### Flow diagram
 
 <MainImage
-    src="https://storage.googleapis.com/strapi-assets/latest/consent_object_flow/consent-flow.png"
+    src="https://storage.googleapis.com/strapi-assets/latest/consent_object_flow/fip-selector-flow.png"
     alt="FIP Selector Screen flow diagram showing the consent object flow process"
 />
 
@@ -295,20 +295,22 @@ The FIP Selector Screen flow works as follows:
 **Create Consent API Changes**
 
 Request Payload:
-```json
-{
+
+<CodeBlockWithCopy language="json">
+{`{
   "vua": "9999999999"  // Only mobile number (no AA suffix)
-}
-```
+}`}
+</CodeBlockWithCopy>
 
 Response Payload:
-```json
-{
+
+<CodeBlockWithCopy language="json">
+{`{
   "vua": "9999999999",     // Only mobile number
   "status": "INITIATED",   // Initial status (PENDING status sent via notification once actual consent is created with AA)
   // ...other fields remain unchanged
-}
-```
+}`}
+</CodeBlockWithCopy>
 
 **Key Changes:**
 - Initial status is `INITIATED` instead of `PENDING`
@@ -320,8 +322,9 @@ Response Payload:
 Once the user completes the bank selection, we'll create consent on the most optimal Account Aggregator (AA) for the selected Financial Information Provider (FIP) and then send the PENDING status.
 
 Success Notification Payload:
-```json
-{
+
+<CodeBlockWithCopy language="json">
+{`{
   "data": {
     "status": "PENDING",                    // New additional status
     "vua": "9999999999@selectedAA"        // Updated with selected AA
@@ -332,12 +335,13 @@ Success Notification Payload:
   "consentId": "<<consentId>>",
   "notificationId": "<<notificationId>>",
   "timestamp": "2024-01-29T07:28:24.547Z"
-}
-```
+}`}
+</CodeBlockWithCopy>
 
 Failure Notification Payload:
-```json
-{
+
+<CodeBlockWithCopy language="json">
+{`{
   "success": false,
   "error": {
     "code": "ConsentObjectCreationFailure", 
@@ -348,8 +352,8 @@ Failure Notification Payload:
   "notificationId": "<<notificationId>>",
   "timestamp": "2024-01-29T07:28:24.547Z",
   "type": "CONSENT_STATUS_UPDATE"
-}
-```
+}`}
+</CodeBlockWithCopy>
 
 **Required Implementation:**
 - Add `CONSENT_STATUS_UPDATE` notification handler
