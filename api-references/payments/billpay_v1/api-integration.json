@@ -2148,6 +2148,17 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "requestBody": {
@@ -2173,7 +2184,12 @@
                           "others",
                           "amount-deducted-biller-credited-no-transaction-id",
                           "amount-deducted-biller-not-credited-no-transaction-id",
-                          "amount-deducted-multiple-times"
+                          "amount-deducted-multiple-times",
+                          "service-not-received",
+                          "service-disconnected",
+                          "late-payment-surcharge",
+                          "wrong-amount",
+                          "payment-info-delay"
                         ]
                       }
                     }
@@ -2391,19 +2407,31 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "required": ["refId"],
+                "required": [
+                  "refId"
+                ],
                 "type": "object",
                 "properties": {
                   "refId": {
                     "type": "string",
-                    "description": "The generated BBPS Reference ID for the request.",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                    "description": "The generated Reference ID for the request."
                   }
                 },
                 "x-go-name": "RefIdBasedRequest",
@@ -2415,7 +2443,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Success - Dispute assigned to appropriate resolver for investigation",
             "headers": {
               "X-Frame-Options": {
                 "description": "X Frame options",
@@ -2463,7 +2491,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "required": ["success", "traceId"],
+                  "required": [
+                    "success",
+                    "traceId"
+                  ],
                   "type": "object",
                   "properties": {
                     "data": {
@@ -2476,9 +2507,58 @@
                       ],
                       "type": "object",
                       "properties": {
+                        "remarks": {
+                          "type": "string",
+                          "example": "Dispute assigned to appropriate resolver for investigation"
+                        },
+                        "ticketType": {
+                          "type": "string",
+                          "enum": [
+                            "DISPUTE",
+                            "COMPLAINT"
+                          ],
+                          "example": "DISPUTE"
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-20"
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "D11",
+                            "D12",
+                            "D13",
+                            "D21",
+                            "D22",
+                            "D23",
+                            "D31",
+                            "D32"
+                          ],
+                          "example": "D11"
+                        },
+                        "responseReason": {
+                          "type": "string",
+                          "example": "Dispute assigned to appropriate resolver for investigation"
+                        },
                         "assignedTo": {
                           "type": "string",
                           "example": "ICICI BOU"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "BBPS Complaint status",
+                          "example": "ASSIGNED",
+                          "enum": [
+                            "ASSIGNED",
+                            "RESOLVED",
+                            "REJECTED",
+                            "DEFAULT_RESOLVED",
+                            "REFUNDED",
+                            "PENDING_REFUND"
+                          ]
                         },
                         "disputeId": {
                           "type": "string",
@@ -2486,28 +2566,702 @@
                         },
                         "refId": {
                           "type": "string",
-                          "description": "The generated BBPS Reference ID for the request.",
-                          "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                        },
+                          "description": "The generated Reference ID for the request."
+                        }
+                      },
+                      "x-go-name": "DisputeResponseData"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  },
+                  "x-go-name": "CouAgentDisputeResponse",
+                  "x-omitempty": true
+                }
+              }
+            }
+          },
+          "200-dispute-default-resolved": {
+            "description": "Success - Dispute automatically resolved due to timeout or default process in favour of customer",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": [
+                        "assignedTo",
+                        "disputeId",
+                        "refId",
+                        "remarks",
+                        "status"
+                      ],
+                      "type": "object",
+                      "properties": {
                         "remarks": {
                           "type": "string",
-                          "example": "Resolved in favour of Biller"
+                          "example": "Dispute automatically resolved due to timeout or default process in favour of customer"
+                        },
+                        "responseReason": {
+                          "type": "string",
+                          "example": "Automatic resolution due to timeout"
+                        },
+                        "ticketType": {
+                          "type": "string",
+                          "enum": [
+                            "DISPUTE",
+                            "COMPLAINT"
+                          ],
+                          "example": "DISPUTE"
+                        },
+                        "assignedTo": {
+                          "type": "string",
+                          "example": "ICICI BOU"
                         },
                         "status": {
                           "type": "string",
                           "description": "BBPS Complaint status",
-                          "example": "ASSIGNED",
+                          "example": "DEFAULT_RESOLVED",
                           "enum": [
-                            "INITIALIZED",
-                            "ASSIGNED",
-                            "RE_ASSIGNED",
-                            "ASSIGNED_TO_BOU",
-                            "ASSIGNED_TO_COU",
-                            "ASSIGNED_TO_OU",
-                            "ESCALATED",
-                            "RESOLVED",
-                            "UNRESOLVED"
+                            "DEFAULT_RESOLVED"
                           ]
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-20"
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "D11",
+                            "D12",
+                            "D13",
+                            "D21",
+                            "D22",
+                            "D23",
+                            "D31",
+                            "D32"
+                          ],
+                          "example": "D11"
+                        },
+                        "disputeId": {
+                          "type": "string",
+                          "example": "OP0121046567755"
+                        },
+                        "refId": {
+                          "type": "string",
+                          "description": "The generated Reference ID for the request."
+                        }
+                      },
+                      "x-go-name": "DisputeResponseData"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  },
+                  "x-go-name": "CouAgentDisputeResponse",
+                  "x-omitempty": true
+                }
+              }
+            }
+          },
+          "200-dispute-pending-refund": {
+            "description": "Success - Refund approved and currently being processed",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": [
+                        "assignedTo",
+                        "disputeId",
+                        "refId",
+                        "remarks",
+                        "status"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "remarks": {
+                          "type": "string",
+                          "example": "Refund approved and currently being processed"
+                        },
+                        "responseReason": {
+                          "type": "string",
+                          "example": "Refund processing in progress"
+                        },
+                        "ticketType": {
+                          "type": "string",
+                          "enum": [
+                            "DISPUTE",
+                            "COMPLAINT"
+                          ],
+                          "example": "DISPUTE"
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-20"
+                        },
+                        "assignedTo": {
+                          "type": "string",
+                          "example": "ICICI BOU"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "BBPS Complaint status",
+                          "example": "PENDING_REFUND",
+                          "enum": [
+                            "PENDING_REFUND"
+                          ]
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "D11",
+                            "D12",
+                            "D13",
+                            "D21",
+                            "D22",
+                            "D23",
+                            "D31",
+                            "D32"
+                          ],
+                          "example": "D11"
+                        },
+                        "disputeId": {
+                          "type": "string",
+                          "example": "OP0121046567755"
+                        },
+                        "refId": {
+                          "type": "string",
+                          "description": "The generated Reference ID for the request."
+                        }
+                      },
+                      "x-go-name": "DisputeResponseData"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  },
+                  "x-go-name": "CouAgentDisputeResponse",
+                  "x-omitempty": true
+                }
+              }
+            }
+          },
+          "200-dispute-refunded": {
+            "description": "Success - Refund successfully processed and completed",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": [
+                        "assignedTo",
+                        "disputeId",
+                        "refId",
+                        "remarks",
+                        "status"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "remarks": {
+                          "type": "string",
+                          "example": "Refund successfully processed and completed"
+                        },
+                        "responseReason": {
+                          "type": "string",
+                          "example": "Refund initiated as per resolution"
+                        },
+                        "ticketType": {
+                          "type": "string",
+                          "enum": [
+                            "DISPUTE",
+                            "COMPLAINT"
+                          ],
+                          "example": "DISPUTE"
+                        },
+                        "assignedTo": {
+                          "type": "string",
+                          "example": "ICICI BOU"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "BBPS Complaint status",
+                          "example": "REFUNDED",
+                          "enum": [
+                            "REFUNDED"
+                          ]
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-20"
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "D11",
+                            "D12",
+                            "D13",
+                            "D21",
+                            "D22",
+                            "D23",
+                            "D31",
+                            "D32"
+                          ],
+                          "example": "D11"
+                        },
+                        "disputeId": {
+                          "type": "string",
+                          "example": "OP0121046567755"
+                        },
+                        "refId": {
+                          "type": "string",
+                          "description": "The generated Reference ID for the request."
+                        }
+                      },
+                      "x-go-name": "DisputeResponseData"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  },
+                  "x-go-name": "CouAgentDisputeResponse",
+                  "x-omitempty": true
+                }
+              }
+            }
+          },
+          "200-dispute-rejected": {
+            "description": "Success - Dispute rejected due to insufficient evidence or invalid claims at biller's end",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": [
+                        "assignedTo",
+                        "disputeId",
+                        "refId",
+                        "remarks",
+                        "status"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "remarks": {
+                          "type": "string",
+                          "example": "Dispute rejected due to insufficient evidence or invalid claims at biller's end"
+                        },
+                        "responseReason": {
+                          "type": "string",
+                          "example": "Invalid complaint type or missing documentation"
+                        },
+                        "ticketType": {
+                          "type": "string",
+                          "enum": [
+                            "DISPUTE",
+                            "COMPLAINT"
+                          ],
+                          "example": "DISPUTE"
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-20"
+                        },
+                        "assignedTo": {
+                          "type": "string",
+                          "example": "ICICI BOU"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "BBPS Complaint status",
+                          "example": "REJECTED",
+                          "enum": [
+                            "REJECTED"
+                          ]
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "D11",
+                            "D12",
+                            "D13",
+                            "D21",
+                            "D22",
+                            "D23",
+                            "D31",
+                            "D32"
+                          ],
+                          "example": "D32"
+                        },
+                        "disputeId": {
+                          "type": "string",
+                          "example": "OP0121046567755"
+                        },
+                        "refId": {
+                          "type": "string",
+                          "description": "The generated Reference ID for the request."
+                        }
+                      },
+                      "x-go-name": "DisputeResponseData"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  },
+                  "x-go-name": "CouAgentDisputeResponse",
+                  "x-omitempty": true
+                }
+              }
+            }
+          },
+          "200-dispute-resolved": {
+            "description": "Success - Dispute successfully resolved through investigation in favour of customer",
+            "headers": {
+              "X-Frame-Options": {
+                "description": "X Frame options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "Strict transport security",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "X Content type options",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "Content security policy",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Pragma": {
+                "description": "Pragma",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-XSS-Protection": {
+                "description": "X Xss Protection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "success",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "required": [
+                        "assignedTo",
+                        "disputeId",
+                        "refId",
+                        "remarks",
+                        "status"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "remarks": {
+                          "type": "string",
+                          "example": "Dispute successfully resolved through investigation in favour of customer"
+                        },
+                        "responseReason": {
+                          "type": "string",
+                          "example": "Customer complaint validated"
+                        },
+                        "ticketType": {
+                          "type": "string",
+                          "enum": [
+                            "DISPUTE",
+                            "COMPLAINT"
+                          ],
+                          "example": "DISPUTE"
+                        },
+                        "assignedTo": {
+                          "type": "string",
+                          "example": "ICICI BOU"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "BBPS Complaint status",
+                          "example": "RESOLVED",
+                          "enum": [
+                            "RESOLVED"
+                          ]
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-15"
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "D11",
+                            "D12",
+                            "D13",
+                            "D21",
+                            "D22",
+                            "D23",
+                            "D31",
+                            "D32"
+                          ],
+                          "example": "D11"
+                        },
+                        "disputeId": {
+                          "type": "string",
+                          "example": "OP0121046567755"
+                        },
+                        "refId": {
+                          "type": "string",
+                          "description": "The generated Reference ID for the request."
                         }
                       },
                       "x-go-name": "DisputeResponseData"
@@ -2532,30 +3286,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "required": ["error", "success", "traceId"],
+                  "required": [
+                    "error",
+                    "success",
+                    "traceId"
+                  ],
                   "type": "object",
                   "properties": {
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    },
                     "error": {
-                      "required": ["code", "message"],
+                      "required": [
+                        "code",
+                        "message"
+                      ],
                       "type": "object",
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "error-code-if-any"
+                          "example": "validation-error"
                         },
                         "message": {
                           "type": "string",
-                          "example": "error-message-if-any"
+                          "example": "Input is invalid"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
@@ -2567,30 +3328,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "required": ["error", "success", "traceId"],
+                  "required": [
+                    "error",
+                    "success",
+                    "traceId"
+                  ],
                   "type": "object",
                   "properties": {
-                    "traceId": {
-                      "type": "string",
-                      "example": "C3SFG0O6N88R6UI7EQ"
-                    },
                     "error": {
-                      "required": ["code", "message"],
+                      "required": [
+                        "code",
+                        "message"
+                      ],
                       "type": "object",
                       "properties": {
                         "code": {
                           "type": "string",
-                          "example": "error-code-if-any"
+                          "example": "validation-error"
                         },
                         "message": {
                           "type": "string",
-                          "example": "error-message-if-any"
+                          "example": "Input is invalid"
                         }
                       }
                     },
                     "success": {
                       "type": "boolean",
                       "example": false
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "C3SFG0O6N88R6UI7EQ"
                     }
                   }
                 }
