@@ -2148,6 +2148,17 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "requestBody": {
@@ -2396,19 +2407,31 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "required": ["refId"],
+                "required": [
+                  "refId"
+                ],
                 "type": "object",
                 "properties": {
                   "refId": {
                     "type": "string",
-                    "description": "The generated BBPS Reference ID for the request.",
-                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                    "description": "The generated Reference ID for the request."
                   }
                 },
                 "x-go-name": "RefIdBasedRequest",
@@ -2420,7 +2443,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Success - Dispute assigned to appropriate resolver for investigation",
             "headers": {
               "X-Frame-Options": {
                 "description": "X Frame options",
@@ -2468,7 +2491,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "required": ["success", "traceId"],
+                  "required": [
+                    "success",
+                    "traceId"
+                  ],
                   "type": "object",
                   "properties": {
                     "data": {
@@ -2481,9 +2507,58 @@
                       ],
                       "type": "object",
                       "properties": {
+                        "remarks": {
+                          "type": "string",
+                          "example": "Dispute assigned to appropriate resolver for investigation"
+                        },
+                        "ticketType": {
+                          "type": "string",
+                          "enum": [
+                            "DISPUTE",
+                            "COMPLAINT"
+                          ],
+                          "example": "DISPUTE"
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-20"
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "D11",
+                            "D12",
+                            "D13",
+                            "D21",
+                            "D22",
+                            "D23",
+                            "D31",
+                            "D32"
+                          ],
+                          "example": "D11"
+                        },
+                        "responseReason": {
+                          "type": "string",
+                          "example": "Dispute assigned to appropriate resolver for investigation"
+                        },
                         "assignedTo": {
                           "type": "string",
                           "example": "ICICI BOU"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "BBPS Complaint status",
+                          "example": "ASSIGNED",
+                          "enum": [
+                            "ASSIGNED",
+                            "RESOLVED",
+                            "REJECTED",
+                            "DEFAULT_RESOLVED",
+                            "REFUNDED",
+                            "PENDING_REFUND"
+                          ]
                         },
                         "disputeId": {
                           "type": "string",
@@ -2491,28 +2566,7 @@
                         },
                         "refId": {
                           "type": "string",
-                          "description": "The generated BBPS Reference ID for the request.",
-                          "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
-                        },
-                        "remarks": {
-                          "type": "string",
-                          "example": "Resolved in favour of Biller"
-                        },
-                        "status": {
-                          "type": "string",
-                          "description": "BBPS Complaint status",
-                          "example": "ASSIGNED",
-                          "enum": [
-                            "INITIALIZED",
-                            "ASSIGNED",
-                            "RE_ASSIGNED",
-                            "ASSIGNED_TO_BOU",
-                            "ASSIGNED_TO_COU",
-                            "ASSIGNED_TO_OU",
-                            "ESCALATED",
-                            "RESOLVED",
-                            "UNRESOLVED"
-                          ]
+                          "description": "The generated Reference ID for the request."
                         }
                       },
                       "x-go-name": "DisputeResponseData"
@@ -2751,6 +2805,12 @@
                             "COMPLAINT"
                           ],
                           "example": "DISPUTE"
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-20"
                         },
                         "assignedTo": {
                           "type": "string",
@@ -3023,6 +3083,12 @@
                             "COMPLAINT"
                           ],
                           "example": "DISPUTE"
+                        },
+                        "ticketTAT": {
+                          "type": "string",
+                          "format": "date",
+                          "nullable": true,
+                          "example": "2024-01-20"
                         },
                         "assignedTo": {
                           "type": "string",
