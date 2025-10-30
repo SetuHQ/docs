@@ -39,6 +39,20 @@ This step requires setting up and sharing a webhook URL to Setu which is capable
 
 The notification consists of body an authentication header as well as a body/payload. The authentication header will be sent as `X-BILL-WEBHOOK-API-KEY`. The value for the same shall be communicated over email.
 
+<hr class="tertiary" />
+
+##### Webhook Delivery & Retry Mechanism
+
+When Setu sends a user event webhook (for example, `bill_payment_success`, `bill_fetch_failure`, `bill_collection_failure`, `bill_payment_failure`, `bill_payment_refunded`, `bill_fetch_success`, `dispute_raised`, `dispute_status_change`) to your endpoint, a 2xx HTTP response is expected to acknowledge successful receipt. If the endpoint responds with a non-success status code (4xx or 5xx) or fails to respond, Setu retries delivery automatically:
+
+- **Retries:** 5 attempts  
+- **Delay between retries:** 100 milliseconds  
+- **Retry trigger:** Any response other than 2xx or a failed connection  
+
+After all retries fail, delivery is considered unsuccessful. To avoid unnecessary retries, ensure your endpoint returns proper 2xx status codes.  
+
+**Best practices:** process and acknowledge webhooks quickly to prevent timeouts and implement idempotency to safely handle potential duplicate deliveries caused by retries.
+
 <hr class="primary" />
 
 ### List of notifications
