@@ -96,6 +96,7 @@ If successful, you will get a JSON response. Two of the fields in the response w
 -   `BAV_REVERSE_PENNY_DROP_FAILED`, something went wrong. A payment should not be attempted with this request id.
 -   `BAV_REVERSE_PENNY_DROP_EXPIRED`, upon expiry of payment link for customer. No payments can be done with expired links. The expiry is triggered as per the specified `validUpto` field or within 24 hours, whichever comes first.
 -   `BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL`, when your user has successfully paid, and Setu’s banking partner has sent a credit alert with bank account details.
+-   `BAV_REVERSE_PENNY_DROP_PII_PURGED`, Indicates a successful transaction where all PII has been purged. Purge occurs automatically post successful webhook delivery or in batch within 1–2 days.
 -   `BAV_REVERSE_PENNY_DROP_PAYMENT_FAILED`, when an issue occurs during payment by your user or at Setu’s banking partner’s end. The payment, if made, will be auto-refunded.
 
 <Callout type="warning">
@@ -660,8 +661,8 @@ This is an optional API. This API lets you know the bank verification status.
                                 <h5>Response</h5>
                                 <CodeBlockWithCopy language="json">
                                     {`{
-    "status": "BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL", // or, BAV_REVERSE_PENNY_DROP_CREATED, BAV_REVERSE_PENNY_DROP_EXPIRED, BAV_REVERSE_PENNY_DROP_PAYMENT_FAILED
-    "data": { // null if status is BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL and data is not purged
+    "status": "BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL", // or, BAV_REVERSE_PENNY_DROP_CREATED, BAV_REVERSE_PENNY_DROP_EXPIRED, BAV_REVERSE_PENNY_DROP_PII_PURGED, BAV_REVERSE_PENNY_DROP_PAYMENT_FAILED
+    "data": { // null if status is BAV_REVERSE_PENNY_DROP_PII_PURGED and data is purged
         "accountType": "BANK_ACCOUNT",
         "bankAccountType":  "SAVINGS" // Optional, can be null
         "bankAccountIfsc": "SBIN0000539",
@@ -705,6 +706,44 @@ This is an optional API. This API lets you know the bank verification status.
                 },
                 {
                     key: "2",
+                    label: "200",
+                    content: (
+                        <>
+                            <>
+                                <p>
+                                    <Badge type="success">Success</Badge> Bank
+                                    verification status and bank details (if
+                                    available).
+                                </p>
+                                <hr className="tertiary" />
+                                <h5>Request</h5>
+                                <CodeBlockWithCopy language="json">
+                                    {`GET  /api/verify/ban/reverse/:requestId`}
+                                </CodeBlockWithCopy>
+                                <hr className="tertiary" />
+                                <h5>Response</h5>
+                                <CodeBlockWithCopy language="json">
+                                    {`{
+    "status": "BAV_REVERSE_PENNY_DROP_PII_PURGED",
+    "data": null,
+    "id": "1b740e7a-5a81-4b88-ad43-110a08935286",
+    "shortUrl": "https://sandbox.bills.pe/wh9kk4mwuktg",
+    "upiBillId": "1114053970646533628",
+    "upiLink": "upi://pay?pa=bauvatest@kaypay&pn=BauvaTest&am=1.00&tr=1114053970646533628&tn=Account%20Verification&cu=INR&mode=04",
+    "validUpto": "2023-03-13T13:20:52.277688"
+    "traceId": "1-640f228a-4dded97e470971343adae3da",
+    "additionalData": {
+        "key1": "value1"
+        "key2": "value2"
+    },
+}`}
+                                </CodeBlockWithCopy>
+                            </>
+                        </>
+                    ),
+                },
+                {
+                    key: "3",
                     label: "404",
                     content: (
                         <>
@@ -732,7 +771,7 @@ This is an optional API. This API lets you know the bank verification status.
                     ),
                 },
                 {
-                    key: "3",
+                    key: "4",
                     label: "500",
                     content: (
                         <>
