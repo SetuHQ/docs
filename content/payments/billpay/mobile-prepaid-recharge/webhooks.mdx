@@ -1,0 +1,341 @@
+---
+sidebar_title: Webhooks
+page_title: Mobile Prepaid Recharge Webhooks
+order: 3
+visible_in_sidebar: true
+---
+
+## Webhooks/Notifications
+
+This document describes the webhooks that are sent **to your configured webhook URL** when various events occur in the recharge system.
+
+<Callout type="tip">
+    This feature is opt-in and is configured only when a partner requests for it to be enabled. These webhooks enable real-time notifications for recharge transactions, wallet events, and status updates. 
+</Callout>
+
+<br />
+
+<hr class="primary" />
+
+### Pre-requisites
+You need to do the following to configure a Setu provided webhook—
+
+- Share the webhook URL. A URL that can accept `JSON` data over `POST`.
+- Take steps to handle the notification
+
+### Configuration
+
+To configure webhooks, share your webhook URL with Setu via email to <a href="mailto:support@setu.co">support@setu.co</a>.
+
+<hr class="primary" />
+
+
+## Webhook Endpoints
+
+The system appends specific routes to your base `webhook_url` based on the event type:
+
+### 1. Payment Status Webhook
+
+**Endpoint**: `{webhook_url}/payment/status`
+
+**Description**: Sent when a recharge transaction status is updated (successful, failed, or processing).
+
+**Request Body**:
+
+<CodeBlockWithCopy language="json">{`{
+  "transactionRefId": "string",
+  "trace_id": "string",
+  "operatorRefId": "string",
+  "status": "Successful | Processing | Failure",
+  "amount": "string",
+  "mobile_number": "string",
+  "provider": "string",
+  "failureReason": "string (optional, only present for failures)",
+  "timestamp": "ISO 8601 datetime string"
+}`}</CodeBlockWithCopy>
+
+**Field Descriptions**:
+
+| Field | Type | Description | Mandatory? |
+|-------|------|-------------|------------|
+| `transactionRefId` | string | Transaction reference ID from the original recharge request | Yes |
+| `trace_id` | string | System reference number (internal trace ID) | Yes |
+| `operatorRefId` | string | Operator transaction ID (if available) | No |
+| `status` | string | Transaction status - one of: `"Successful"`, `"Processing"`, `"Failure"` | Yes |
+| `amount` | string | Recharge amount | Yes |
+| `mobile_number` | string | Mobile number that was recharged | Yes |
+| `provider` | string | Service provider name | Yes |
+| `failureReason` | string | Reason for failure (only present when status is "Failure") | No |
+| `timestamp` | string | ISO 8601 formatted timestamp of the event | Yes |
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Payment status webhook example (Success)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+  "transactionRefId": "TXN123456789",
+  "trace_id": "SYS-ABC-123",
+  "operatorRefId": "OP-987654321",
+  "status": "Successful",
+  "amount": "99.00",
+  "mobile_number": "9876543210",
+  "provider": "Airtel",
+  "timestamp": "2025-11-13T10:30:00Z"
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Payment status webhook example (Failure)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+  "transactionRefId": "TXN123456790",
+  "trace_id": "SYS-ABC-124",
+  "status": "Failure",
+  "amount": "99.00",
+  "mobile_number": "9876543210",
+  "provider": "Airtel",
+  "failureReason": "Insufficient balance",
+  "timestamp": "2025-11-13T10:31:00Z"
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### 2. Payment Reversal Webhook
+
+**Endpoint**: `{webhook_url}/payment/reversal`
+
+**Description**: Sent when a recharge transaction is reversed by the operator.
+
+**Request Body**:
+
+<CodeBlockWithCopy language="json">{`{
+  "transactionRefId": "string",
+  "trace_id": "string",
+  "operatorRefId": "string (optional)",
+  "status": "REVERSED",
+  "amount": "string",
+  "mobile_number": "string",
+  "provider": "string",
+  "failureReason": "string (optional)",
+  "timestamp": "ISO 8601 datetime string"
+}`}</CodeBlockWithCopy>
+
+**Field Descriptions**:
+
+- Same fields as Payment Status Webhook, but `status` will always be `"REVERSED"`
+- `failureReason`: May contain reason for reversal if provided by operator
+
+| Field | Type | Description | Mandatory? |
+|-------|------|-------------|------------|
+| `transactionRefId` | string | Transaction reference ID from the original recharge request | Yes |
+| `trace_id` | string | System reference number (internal trace ID) | Yes |
+| `operatorRefId` | string | Operator transaction ID (if available) | No |
+| `status` | string | Transaction status - `"REVERSED"` | Yes |
+| `amount` | string | Recharge amount | Yes |
+| `mobile_number` | string | Mobile number that was recharged | Yes |
+| `provider` | string | Service provider name | Yes |
+| `failureReason` | string | Reason for reversal (if provided by operator) | No |
+| `timestamp` | string | ISO 8601 formatted timestamp of the event | Yes |
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Payment reversal webhook example
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+  "transactionRefId": "TXN123456789",
+  "trace_id": "SYS-ABC-123",
+  "operatorRefId": "OP-987654321",
+  "status": "REVERSED",
+  "amount": "99.00",
+  "mobile_number": "9876543210",
+  "provider": "Airtel",
+  "failureReason": "Transaction reversed by operator",
+  "timestamp": "2025-11-13T10:35:00Z"
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### 3. Wallet Low Balance Webhook
+
+**Endpoint**: `{webhook_url}/wallet/low_balance`
+
+**Description**: Sent when the wallet balance falls below the configured threshold or when a low balance alert is received from the vendor.
+
+**Request Body**:
+
+<CodeBlockWithCopy language="json">{`{
+  "event": "wallet.low_balance",
+  "balance": "string",
+  "message": "string",
+  "timestamp": "ISO 8601 datetime string",
+  "traceId": "string"
+}`}</CodeBlockWithCopy>
+
+**Field Descriptions**:
+
+| Field | Type | Description | Mandatory? |
+|-------|------|-------------|------------|
+| `event` | string | Always `"wallet.low_balance"` for this webhook type | Yes |
+| `balance` | string | Current wallet balance amount | Yes |
+| `message` | string | Alert message (typically "Low balance Alert") | Yes |
+| `timestamp` | string | ISO 8601 formatted timestamp (UTC) | Yes |
+| `traceId` | string | Unique trace ID for this notification | Yes |
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Wallet low balance webhook example
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+  "event": "wallet.low_balance",
+  "balance": "2450.00",
+  "message": "Low balance Alert",
+  "timestamp": "2025-11-13T09:15:00Z",
+  "traceId": "low-balance-webhook-demo-instance-a1b2c3d4"
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+### 4. Wallet Topup Webhook
+
+**Endpoint**: `{webhook_url}/wallet/top_up`
+
+**Description**: Sent when a wallet top-up is detected or when a top-up notification is received from the vendor.
+
+**Request Body**:
+
+<CodeBlockWithCopy language="json">{`{
+  "event": "wallet.credit",
+  "amount": "string",
+  "referenceNumber": "string",
+  "creditedFrom": "string",
+  "transactionDate": "ISO 8601 datetime string",
+  "message": "string",
+  "traceId": "string",
+  "currentBalance": "string"
+}`}</CodeBlockWithCopy>
+
+**Field Descriptions**:
+
+| Field | Type | Description | Mandatory? |
+|-------|------|-------------|------------|
+| `event` | string | Always `"wallet.credit"` for this webhook type | Yes |
+| `amount` | string | Top-up amount credited to wallet | Yes |
+| `referenceNumber` | string | User reference number for the top-up transaction (may be empty string) | No |
+| `creditedFrom` | string | Source of the credit (e.g., "Bank Transfer", may be empty string) | No |
+| `transactionDate` | string | ISO 8601 formatted timestamp of the transaction | Yes |
+| `message` | string | Transaction message (defaults to "Credit Successful" if not provided) | No |
+| `traceId` | string | Unique trace ID for this notification | Yes |
+| `currentBalance` | string | Current wallet balance after the top-up | Yes |
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Wallet topup webhook example
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+  "event": "wallet.credit",
+  "amount": "5000.00",
+  "referenceNumber": "TXN-9090",
+  "creditedFrom": "Bank Transfer",
+  "transactionDate": "2025-11-13T09:45:00Z",
+  "message": "Wallet topped up successfully",
+  "traceId": "topup-webhook-demo-instance-e5f6g7h8",
+  "currentBalance": "12450.00"
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<hr class="primary" />
+
+## Webhook Response
+
+Your webhook endpoint should respond with:
+
+- **HTTP Status Code**: `200-299` for successful receipt
+- **Response Body**: Any valid JSON (will be logged but not processed)
+
+**Example Response**:
+
+<CodeBlockWithCopy language="json">{`{
+  "received": true,
+  "message": "Webhook processed successfully"
+}`}</CodeBlockWithCopy>
+
+If your endpoint returns a non-2xx status code or times out, the system will automatically retry according to the retry policy for that webhook type (see [Retry Mechanism](#retry-mechanism) section).
+
+<Callout type="warning">
+    Ensure your webhook endpoint is idempotent and can handle duplicate notifications, as retries may result in the same notification being sent multiple times.
+</Callout>
+
+<hr class="primary" />
+
+### Retry Mechanism
+
+The system implements automatic retry mechanisms for webhook delivery with different policies based on webhook type:
+
+#### Payment Webhooks (Transaction Status & Reversal)
+
+- **Maximum Retries**: 5 attempts
+- **Initial Retry Interval**: 2 seconds
+- **Maximum Retry Interval**: 2 minutes
+- **Backoff Strategy**: Exponential backoff with coefficient of 2.0
+- **Retry Triggers**: 
+  - Non-2xx HTTP status codes
+  - Network timeouts
+  - Connection errors
+
+#### Wallet Webhooks (Low Balance & Topup)
+
+- **Maximum Retries**: 3 attempts
+- **Initial Retry Interval**: 5 seconds
+- **Maximum Retry Interval**: 1 minute
+- **Backoff Strategy**: Exponential backoff with coefficient of 2.0
+- **Retry Triggers**: 
+  - Non-2xx HTTP status codes
+  - Network timeouts
+  - Connection errors
+
+**Retry Timeline Example (Payment Webhooks)**:
+
+- Attempt 1: Immediate
+- Attempt 2: After 2 seconds
+- Attempt 3: After 4 seconds (2 × 2)
+- Attempt 4: After 8 seconds (4 × 2)
+- Attempt 5: After 16 seconds (8 × 2)
+- Attempt 6: After 32 seconds (16 × 2, capped at 2 minutes max)
+
+After all retries are exhausted, the webhook status is marked as "FAILED" in the system.
+
+<WasPageHelpful />
