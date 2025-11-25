@@ -50,23 +50,23 @@ The system appends specific routes to your base `webhook_url` based on the event
   "amount": "string",
   "mobile_number": "string",
   "provider": "string",
-  "failureReason": "string (optional, only present for failures/reversals)",
+  "failureReason": "string (optional, only present for failures)",
   "timestamp": "ISO 8601 datetime string"
 }`}</CodeBlockWithCopy>
 
 **Field Descriptions**:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `transactionRefId` | string | Transaction reference ID from the original recharge request |
-| `trace_id` | string | System reference number (internal trace ID) |
-| `operatorRefId` | string | Operator transaction ID (if available) |
-| `status` | string | Transaction status - one of: `"Successful"`, `"Processing"`, `"Failure"` |
-| `amount` | string | Recharge amount |
-| `mobile_number` | string | Mobile number that was recharged |
-| `provider` | string | Service provider name |
-| `failureReason` | string (optional) | Reason for failure (only present when status is "Failure") |
-| `timestamp` | string | ISO 8601 formatted timestamp of the event |
+| Field | Type | Description | Mandatory? |
+|-------|------|-------------|------------|
+| `transactionRefId` | string | Transaction reference ID from the original recharge request | Yes |
+| `trace_id` | string | System reference number (internal trace ID) | Yes |
+| `operatorRefId` | string | Operator transaction ID (if available) | No |
+| `status` | string | Transaction status - one of: `"Successful"`, `"Processing"`, `"Failure"` | Yes |
+| `amount` | string | Recharge amount | Yes |
+| `mobile_number` | string | Mobile number that was recharged | Yes |
+| `provider` | string | Service provider name | Yes |
+| `failureReason` | string | Reason for failure (only present when status is "Failure") | No |
+| `timestamp` | string | ISO 8601 formatted timestamp of the event | Yes |
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -139,6 +139,18 @@ The system appends specific routes to your base `webhook_url` based on the event
 - Same fields as Payment Status Webhook, but `status` will always be `"REVERSED"`
 - `failureReason`: May contain reason for reversal if provided by operator
 
+| Field | Type | Description | Mandatory? |
+|-------|------|-------------|------------|
+| `transactionRefId` | string | Transaction reference ID from the original recharge request | Yes |
+| `trace_id` | string | System reference number (internal trace ID) | Yes |
+| `operatorRefId` | string | Operator transaction ID (if available) | No |
+| `status` | string | Transaction status - `"REVERSED"` | Yes |
+| `amount` | string | Recharge amount | Yes |
+| `mobile_number` | string | Mobile number that was recharged | Yes |
+| `provider` | string | Service provider name | Yes |
+| `failureReason` | string | Reason for reversal (if provided by operator) | No |
+| `timestamp` | string | ISO 8601 formatted timestamp of the event | Yes |
+
 <Card padding="nano" shape="rounded">
     <details>
         <summary>
@@ -176,19 +188,19 @@ The system appends specific routes to your base `webhook_url` based on the event
   "event": "wallet.low_balance",
   "balance": "string",
   "message": "string",
-  "timestamp": "ISO 8601 datetime string (ending with Z)",
+  "timestamp": "ISO 8601 datetime string",
   "traceId": "string"
 }`}</CodeBlockWithCopy>
 
 **Field Descriptions**:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `event` | string | Always `"wallet.low_balance"` for this webhook type |
-| `balance` | string | Current wallet balance amount |
-| `message` | string | Alert message (typically "Low balance Alert") |
-| `timestamp` | string | ISO 8601 formatted timestamp ending with "Z" (UTC) |
-| `traceId` | string | Unique trace ID for this notification |
+| Field | Type | Description | Mandatory? |
+|-------|------|-------------|------------|
+| `event` | string | Always `"wallet.low_balance"` for this webhook type | Yes |
+| `balance` | string | Current wallet balance amount | Yes |
+| `message` | string | Alert message (typically "Low balance Alert") | Yes |
+| `timestamp` | string | ISO 8601 formatted timestamp (UTC) | Yes |
+| `traceId` | string | Unique trace ID for this notification | Yes |
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -224,7 +236,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "amount": "string",
   "referenceNumber": "string",
   "creditedFrom": "string",
-  "transactionDate": "ISO 8601 datetime string (ending with Z)",
+  "transactionDate": "ISO 8601 datetime string",
   "message": "string",
   "traceId": "string",
   "currentBalance": "string"
@@ -232,16 +244,16 @@ The system appends specific routes to your base `webhook_url` based on the event
 
 **Field Descriptions**:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `event` | string | Always `"wallet.credit"` for this webhook type |
-| `amount` | string | Top-up amount credited to wallet |
-| `referenceNumber` | string | User reference number for the top-up transaction (may be empty string) |
-| `creditedFrom` | string | Source of the credit (e.g., "Bank Transfer", may be empty string) |
-| `transactionDate` | string | ISO 8601 formatted timestamp of the transaction (ending with "Z") |
-| `message` | string | Transaction message (defaults to "Credit Successful" if not provided) |
-| `traceId` | string | Unique trace ID for this notification |
-| `currentBalance` | string | Current wallet balance after the top-up |
+| Field | Type | Description | Mandatory? |
+|-------|------|-------------|------------|
+| `event` | string | Always `"wallet.credit"` for this webhook type | Yes |
+| `amount` | string | Top-up amount credited to wallet | Yes |
+| `referenceNumber` | string | User reference number for the top-up transaction (may be empty string) | No |
+| `creditedFrom` | string | Source of the credit (e.g., "Bank Transfer", may be empty string) | No |
+| `transactionDate` | string | ISO 8601 formatted timestamp of the transaction | Yes |
+| `message` | string | Transaction message (defaults to "Credit Successful" if not provided) | No |
+| `traceId` | string | Unique trace ID for this notification | Yes |
+| `currentBalance` | string | Current wallet balance after the top-up | Yes |
 
 <Card padding="nano" shape="rounded">
     <details>
