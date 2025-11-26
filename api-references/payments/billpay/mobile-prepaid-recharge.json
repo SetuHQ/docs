@@ -1732,6 +1732,525 @@
         ]
       }
     },
+    "/recharge/validate": {
+      "post": {
+        "tags": [
+          "Recharge"
+        ],
+        "summary": "API to validate a prepaid recharge request for a mobile number",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "customer",
+                  "paymentDetails"
+                ],
+                "properties": {
+                  "customer": {
+                    "type": "object",
+                    "required": [
+                      "billParameters",
+                      "mobile"
+                    ],
+                    "properties": {
+                      "billParameters": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "value"
+                          ],
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "description": "The display name of the parameter. Must be one of: 'Mobile Number', 'Operator', or 'Location'.",
+                              "example": "Mobile Number"
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "The value for the parameter. For 'Mobile Number': 10-digit number. For 'Operator': lowercase operator name (e.g., 'jio', 'airtel', 'vi', 'bsnl', 'mtnl'). For 'Location': exact circle name."
+                            }
+                          }
+                        },
+                        "description": "Parameters for the recharge validation. This array should contain three objects with names: 'Mobile Number', 'Operator', and 'Location'."
+                      },
+                      "mobile": {
+                        "type": "string",
+                        "description": "The 10-digit mobile number of the user initiating the recharge. This may or may not be the same as the number being recharged."
+                      }
+                    },
+                    "description": "Details needed for identifying the customer and the recharge validation"
+                  },
+                  "paymentDetails": {
+                    "type": "object",
+                    "required": [
+                      "amount"
+                    ],
+                    "properties": {
+                      "amount": {
+                        "type": "number",
+                        "description": "Recharge amount in paise (1/100 of a rupee). For example, 1100 paise = 11 INR.",
+                        "example": 1100
+                      }
+                    },
+                    "description": "Details of the payment for the recharge validation"
+                  }
+                }
+              },
+              "example": {
+                "customer": {
+                  "billParameters": [
+                    {
+                      "name": "Mobile Number",
+                      "value": "7975766912"
+                    },
+                    {
+                      "name": "Operator",
+                      "value": "jio"
+                    },
+                    {
+                      "name": "Location",
+                      "value": "Himachal Pradesh"
+                    }
+                  ],
+                  "mobile": "7566628882"
+                },
+                "paymentDetails": {
+                  "amount": 1100
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "trace_id"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true,
+                      "description": "Status of API call"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "example": null,
+                          "description": "Error details if any, otherwise null"
+                        },
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "mobile_number": {
+                              "type": "string",
+                              "example": "7249649345",
+                              "description": "Mobile number associated with the validation"
+                            },
+                            "provider": {
+                              "type": "string",
+                              "example": "Airtel",
+                              "description": "Provider name(Airtel, Jio, Vi, BSNL, MTNL)"
+                            },
+                            "service_type": {
+                              "type": "string",
+                              "example": "M",
+                              "description": "Represents the service type. Always set to `M` for Mobile recharge."
+                            },
+                            "is_special": {
+                              "type": "boolean",
+                              "example": false,
+                              "description": "Indicates if this is a special service"
+                            }
+                          },
+                          "description": "Additional details about the recharge validation"
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "example": 2200,
+                          "description": "Recharge amount in paise"
+                        },
+                        "ValidationRefNo": {
+                          "type": "string",
+                          "example": "LXMREN493393852",
+                          "description": "Unique validation reference number for the transaction"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "Success",
+                          "description": "Status of the recharge validation. Possible values: `Success`, `Processing`, `Failure`"
+                        }
+                      },
+                      "description": "Details of the recharge validation"
+                    },
+                    "trace_id": {
+                      "type": "string",
+                      "example": "0466a81f4d4a1c336dcbc",
+                      "description": "Identifier associated with this response for debugging purposes"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "error": null,
+                    "details": {
+                      "mobile_number": "7249649345",
+                      "provider": "Airtel",
+                      "service_type": "M",
+                      "is_special": false
+                    },
+                    "amount": 2200,
+                    "ValidationRefNo": "LXMREN493393852",
+                    "status": "Success"
+                  },
+                  "trace_id": "0466a81f4d4a1c336dcbc",
+                  "success": true
+                }
+              }
+            },
+            "description": "Ok"
+          },
+          "400": {
+            "description": "Bad Request - Missing Required Parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "ERR011"
+                        },
+                        "failureReason": {
+                          "type": "string",
+                          "example": "input-params-missing"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Missing required parameters: ['Mobile Number', 'Operator', 'Location']"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "trace_id": {
+                      "type": "string",
+                      "example": "TRACE-1234567890"
+                    }
+                  }
+                },
+                "examples": {
+                  "missing-params": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR011",
+                        "message": "Missing required parameters: ['Mobile Number', 'Operator', 'Location']",
+                        "failureReason": "input-params-missing"
+                      },
+                      "trace_id": "TRACE-1234567890"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid Request Parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "ERR011"
+                        },
+                        "failureReason": {
+                          "type": "string",
+                          "example": "input-params-invalid"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Invalid operator name"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "trace_id": {
+                      "type": "string",
+                      "example": "ac14888e-d56d-46e1-83cc-a408c87d32d0"
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid-params": {
+                    "value": {
+                      "error": {
+                        "code": "ERR011",
+                        "failureReason": "input-params-invalid",
+                        "message": "Invalid operator name"
+                      },
+                      "success": false,
+                      "trace_id": "ac14888e-d56d-46e1-83cc-a408c87d32d0"
+                    }
+                  },
+                  "invalid-payment-mode": {
+                    "value": {
+                      "error": {
+                        "code": "ERR011",
+                        "message": "Value error, allowed payment modes : ['Internet Banking', 'UPI', 'Debit Card', 'Credit Card', 'Wallet']: paymentDetails.mode",
+                        "failureReason": "input-params-invalid"
+                      },
+                      "success": false,
+                      "trace_id": "ac14888e-d56d-46e1-83cc-a408c87d32d0"
+                    }
+                  },
+                  "invalid-instance-id": {
+                    "value": {
+                      "error": {
+                        "code": "ERR009",
+                        "message": "Invalid Product Instance ID: 91b09564-c250-4823-a262-7464c171974eaa",
+                        "failureReason": "invalid-instance-id"
+                      },
+                      "success": false,
+                      "trace_id": "8ed9fff1-19fb-4ce5-8072-22b02a314d1f"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Upstream API Connectivity Error",
+            "headers": {
+              "content-length": {
+                "schema": {
+                  "type": "string",
+                  "example": "183"
+                }
+              },
+              "date": {
+                "schema": {
+                  "type": "string",
+                  "example": "Mon, 14 Oct 2024 04:22:39 GMT"
+                }
+              },
+              "server": {
+                "schema": {
+                  "type": "string",
+                  "example": "uvicorn"
+                }
+              },
+              "x-trace-id": {
+                "schema": {
+                  "type": "string",
+                  "example": "45c7e24c-68c2-46ab-84fc-fb2b7fe5b02b"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "ERR999"
+                        },
+                        "failureReason": {
+                          "type": "string",
+                          "example": "upstream-connectivity-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Upstream API Connectivity Error"
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "trace_id": {
+                      "type": "string",
+                      "example": "45c7e24c-68c2-46ab-84fc-fb2b7fe5b02b"
+                    }
+                  }
+                },
+                "examples": {
+                  "upstream-connectivity-error": {
+                    "value": {
+                      "error": {
+                        "code": "ERR999",
+                        "failureReason": "upstream-connectivity-error",
+                        "message": "Upstream API Connectivity Error"
+                      },
+                      "success": false,
+                      "trace_id": "45c7e24c-68c2-46ab-84fc-fb2b7fe5b02b"
+                    }
+                  },
+                  "duplicate-payment-ref-id": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR005",
+                        "message": "Duplicate Payment Reference ID : TEST6291DD4004750702202402",
+                        "failureReason": "duplicate-payment-ref-id"
+                      },
+                      "trace_id": "3d7bfc34-0f80-43c2-b103-38633bb74f8b"
+                    }
+                  },
+                  "invalid-instance-id": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "ERR009",
+                        "message": "Invalid Product Instance ID: 91b09564-c250-4823-a262-7464c171974eaa",
+                        "failureReason": "invalid-instance-id"
+                      },
+                      "trace_id": "8ed9fff1-19fb-4ce5-8072-22b02a314d1f"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-PRODUCT-INSTANCE-ID",
+            "required": true,
+            "type": "string",
+            "description": "Unique identifier provided by Setu that represents your product instance.",
+            "example": "b7e2c9a1-5d4f-4c8e-9f3a-2a1b6c7d8e9f"
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "Bearer token for authorization. Format: 'Bearer {token}' where {token} is access token recieved from token API.",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "customer",
+                "paymentDetails"
+              ],
+              "properties": {
+                "customer": {
+                  "type": "object",
+                  "required": [
+                    "billParameters",
+                    "mobile"
+                  ],
+                  "properties": {
+                    "billParameters": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "name",
+                          "value"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "Mobile Number",
+                            "description": "The display name of the parameter."
+                          },
+                          "value": {
+                            "type": "string",
+                            "example": "7975766912",
+                            "description": "The value of the customer mobile number or related info like Operator and Location."
+                          }
+                        }
+                      },
+                      "description": "Parameters for the recharge validation, including Mobile Number, Operator, and Location.",
+                      "example": [
+                        {
+                          "name": "Mobile Number",
+                          "value": "7975766912"
+                        },
+                        {
+                          "name": "Operator",
+                          "value": "jio"
+                        },
+                        {
+                          "name": "Location",
+                          "value": "Himachal Pradesh"
+                        }
+                      ]
+                    },
+                    "mobile": {
+                      "type": "string",
+                      "example": "7566628882",
+                      "description": "The mobile number initiating the recharge"
+                    }
+                  },
+                  "description": "Details needed for identifying the customer and the recharge validation"
+                },
+                "paymentDetails": {
+                  "type": "object",
+                  "required": [
+                    "amount"
+                  ],
+                  "properties": {
+                    "amount": {
+                      "type": "number",
+                      "example": 1100,
+                      "description": "Recharge amount in paise (1/100 of a rupee). Must be a positive integer value representing the amount in paise."
+                    }
+                  },
+                  "description": "Details of the payment for the recharge validation"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
     "/wallet/balance": {
       "get": {
         "tags": [
@@ -1885,208 +2404,6 @@
             "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ]
-      }
-    },
-    "/transaction": {
-      "get": {
-        "tags": [
-          "Transaction"
-        ],
-        "summary": "API to fetch transaction details",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "type": "integer",
-            "example": 1,
-            "description": "Maximum number of transactions to return per page. Default is 100."
-          },
-          {
-            "in": "query",
-            "name": "page_number",
-            "required": false,
-            "type": "integer",
-            "example": 18,
-            "description": "Page number for pagination. Starts from 1. Default is 1 if not specified."
-          },
-          {
-            "in": "query",
-            "name": "operator",
-            "required": false,
-            "type": "string",
-            "example": "Jio",
-            "description": "Filter transactions by operator name. Must be one of: 'Jio', 'Airtel', 'Vi', 'BSNL', or 'MTNL'."
-          },
-          {
-            "in": "query",
-            "name": "start_date",
-            "required": false,
-            "type": "string",
-            "format": "date",
-            "example": "2024-10-07",
-            "description": "Start date for transaction history in YYYY-MM-DD format. Cannot be more than 90 days in the past."
-          },
-          {
-            "in": "query",
-            "name": "end_date",
-            "required": false,
-            "type": "string",
-            "format": "date",
-            "example": "2024-10-09",
-            "description": "End date for transaction history in YYYY-MM-DD format. Cannot be in the future or before start_date."
-          },
-          {
-            "in": "header",
-            "name": "X-PRODUCT-INSTANCE-ID",
-            "required": true,
-            "type": "string",
-            "description": "Unique identifier provided by Setu that represents your product instance.",
-            "example": "b7e2c9a1-5d4f-4c8e-9f3a-2a1b6c7d8e9f"
-          },
-          {
-            "in": "header",
-            "name": "Authorization",
-            "required": true,
-            "type": "string",
-            "description": "Bearer token for authorization. Format: 'Bearer {token}' where {token} is access token recieved from token API.",
-            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data",
-                    "trace_id"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true,
-                      "description": "Status of the API call"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "transaction_id": {
-                            "type": "string",
-                            "example": "TXN123456789",
-                            "description": "Unique identifier for the transaction"
-                          },
-                          "mobile_number": {
-                            "type": "string",
-                            "example": "7066573353",
-                            "description": "Mobile number involved in the transaction"
-                          },
-                          "operator": {
-                            "type": "string",
-                            "example": "Jio",
-                            "description": "Operator name"
-                          },
-                          "amount": {
-                            "type": "number",
-                            "example": 2900,
-                            "description": "Transaction amount in paise"
-                          },
-                          "status": {
-                            "type": "string",
-                            "example": "Successful",
-                            "description": "Status of the transaction. Possible values: `Successful`, `Processing`, `Failure`, `Reversed`."
-                          },
-                          "timestamp": {
-                            "type": "string",
-                            "format": "date-time",
-                            "example": "2024-10-07T13:54:00+05:30",
-                            "description": "Timestamp of when the transaction occurred"
-                          }
-                        }
-                      },
-                      "description": "List of transaction details"
-                    },
-                    "traceId": {
-                      "type": "string",
-                      "example": "dMXpKMx4TBKsu8ro1559WeYZS21Og5",
-                      "description": "Identifier associated with this response for debug purposes"
-                    }
-                  }
-                }
-              }
-            },
-            "description": "Response containing the list of transactions"
-          },
-          "422": {
-            "description": "Invalid Request Parameters",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": { "type": "boolean", "example": false },
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": { "type": "string", "example": "ERR009" },
-                        "message": { "type": "string", "example": "Invalid Product Instance ID: 71f05a38-7cb6-4907-b7cb-7521c28824d9" },
-                        "failureReason": { "type": "string", "example": "invalid-instance-id" }
-                      }
-                    },
-                    "trace_id": { "type": "string", "example": "d1m02ecd7qsdk10rlkn0" }
-                  }
-                },
-                "example": {
-                  "success": false,
-                  "error": {
-                    "code": "ERR009",
-                    "message": "Invalid Product Instance ID: 71f05a38-7cb6-4907-b7cb-7521c28824d9",
-                    "failureReason": "invalid-instance-id"
-                  },
-                  "trace_id": "d1m02ecd7qsdk10rlkn0"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": { "type": "boolean", "example": false },
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": { "type": "string", "example": "ERR100" },
-                        "message": { "type": "string", "example": "Internal Server Error" },
-                        "failureReason": { "type": "string", "example": "internal-server-error" }
-                      }
-                    },
-                    "trace_id": { "type": "string", "example": "d1m02ecd7qsdk10rlkn0" }
-                  }
-                },
-                "example": {
-                  "success": false,
-                  "error": {
-                    "code": "ERR100",
-                    "message": "Internal Server Error",
-                    "failureReason": "internal-server-error"
-                  },
-                  "trace_id": "d1m02ecd7qsdk10rlkn0"
-                }
-              }
-            }
-          }
-        }
       }
     }
   },
