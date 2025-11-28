@@ -1098,7 +1098,7 @@
                       "properties": {
                         "error": {
                           "type": [
-                            "string",
+                            "object",
                             "null"
                           ],
                           "example": null,
@@ -1853,11 +1853,8 @@
                       "type": "object",
                       "properties": {
                         "error": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "example": null,
+                          "$ref": "#/components/schemas/ValidationError",
+                          "nullable": true,
                           "description": "Error details if any, otherwise null"
                         },
                         "details": {
@@ -1899,7 +1896,7 @@
                         "status": {
                           "type": "string",
                           "example": "Success",
-                          "description": "Status of the recharge validation. Possible values: `Success`, `Processing`, `Failure`"
+                          "description": "Status of the recharge validation. Possible values: `Validation Successful`, `Validation Failed`"
                         }
                       },
                       "description": "Details of the recharge validation"
@@ -1911,21 +1908,113 @@
                     }
                   }
                 },
-                "example": {
-                  "data": {
-                    "error": null,
-                    "details": {
-                      "mobile_number": "7249649345",
-                      "provider": "Airtel",
-                      "service_type": "M",
-                      "is_special": false
-                    },
-                    "amount": 2200,
-                    "ValidationRefNo": "LXMREN493393852",
-                    "status": "Success"
+                "examples": {
+                  "validation-success": {
+                    "value": {
+                      "data": {
+                        "error": null,
+                        "details": {
+                          "mobile_number": "7249649345",
+                          "provider": "Airtel",
+                          "service_type": "M",
+                          "is_special": false
+                        },
+                        "amount": 2200,
+                        "ValidationRefNo": "LXMREN493393852",
+                        "status": "Validation Successful"
+                      },
+                      "trace_id": "0466a81f4d4a1c336dcbc",
+                      "success": true
+                    }
                   },
-                  "trace_id": "0466a81f4d4a1c336dcbc",
-                  "success": true
+                  "invalid-amount": {
+                    "value": {
+                      "data": {
+                        "error": {
+                          "code": "2",
+                          "message": "Invalid Amount.",
+                          "failureReason": "Invalid Amount"
+                        },
+                        "details": {
+                          "mobile_number": "7249649345",
+                          "provider": "Airtel",
+                          "service_type": "M",
+                          "is_special": false
+                        },
+                        "amount": 150,
+                        "ValidationRefNo": "LVSYAHFY389555848",
+                        "status": "Validation Failed"
+                      },
+                      "trace_id": "d4kll8d2vl64uj1778m0",
+                      "success": true
+                    }
+                  },
+                  "amount-zero-failure": {
+                    "value": {
+                      "data": {
+                        "error": {
+                          "code": "4",
+                          "message": "Amount Less Or Equalto Zero",
+                          "failureReason": "Amount Less Or Equalto Zero"
+                        },
+                        "details": {
+                          "mobile_number": "7249649345",
+                          "provider": "Airtel",
+                          "service_type": "M",
+                          "is_special": false
+                        },
+                        "amount": 0,
+                        "ValidationRefNo": "LVSYTNLY389512894",
+                        "status": "Validation Failed"
+                      },
+                      "trace_id": "d4klbe52vl649l2047sg",
+                      "success": true
+                    }
+                  },
+                  "operator-internal-processing-error": {
+                    "value": {
+                      "data": {
+                        "error": {
+                          "code": "2",
+                          "message": "Operator Internal processing error",
+                          "failureReason": "Operator Internal processing error"
+                        },
+                        "details": {
+                          "mobile_number": "7249649345",
+                          "provider": "Airtel",
+                          "service_type": "M",
+                          "is_special": false
+                        },
+                        "amount": 0,
+                        "ValidationRefNo": "LVSYTNLY389516789",
+                        "status": "Validation Failed"
+                      },
+                      "trace_id": "d4kll8d2vl64uj1778m0",
+                      "success": true
+                    }
+                  },
+                  "error-in-validation-api-call": {
+                    "value": {
+                      "data": {
+                        "error": {
+                          "code": "1",
+                          "message": "Error in Validation API call",
+                          "failureReason": "Error in Validation API call"
+                        },
+                        "details": {
+                          "mobile_number": "7249649345",
+                          "provider": "Airtel",
+                          "service_type": "M",
+                          "is_special": false
+                        },
+                        "amount": 0,
+                        "ValidationRefNo": "LVSYTNLY389516789",
+                        "status": "Validation Failed"
+                      },
+                      "trace_id": "d4kll8d2vl64uj1778m0",
+                      "success": true
+                    }
+                  }
                 }
               }
             },
@@ -2409,6 +2498,32 @@
   },
   "components": {
     "schemas": {
+      "ValidationError": {
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "failureReason"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "1",
+            "description": "Validation error code"
+          },
+          "message": {
+            "type": "string",
+            "example": "Error in Validation API call Please try again",
+            "description": "Human-readable explanation of the error"
+          },
+          "failureReason": {
+            "type": "string",
+            "example": "Error in Validation API call Please try again",
+            "description": "Specific failure reason returned by the provider"
+          }
+        },
+        "description": "Error payload returned by the validation API"
+      },
       "fetchTokenRequest": {
         "type": "object",
         "properties": {
