@@ -139,7 +139,12 @@ Note: The values are for illustration purposes only.
 
 ### 5.1 Detection Logic
 
-First, identify billers that charge CCF by looking for specific entries in the `interchangeFee` array which have `feeCode: "CCF1"` and `feeDirection: "C2B"`.
+Look for `CCF1` + `C2B` entries in the `interchangeFee` array. Zero CCF has two forms, **check for both**:
+
+1. **Missing** - No `CCF1`/`C2B` entry at all → Zero CCF
+2. **Present but inactive** - Entry exists with `flatFee: 0` AND `percentFee: 0` → Zero CCF
+
+If either is true, you may omit `custConvFee` from your payment request. If a `CCF1`/`C2B` entry exists with any non-zero fee, calculate the CCF using the formula in section 5.2.
 
 ### 5.2 CCF Calculation Formula
 
