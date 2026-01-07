@@ -1,0 +1,184 @@
+---
+sidebar_title: Quickstart
+page_title: Account Aggregator - Quickstart Guide
+order: 1
+visible_in_sidebar: true
+---
+
+## Getting Started
+
+### Prerequisites
+
+Before integrating with the Account Aggregator framework, ensure you have:
+
+- A registered FIU (Financial Information User) license from RBI
+- API credentials from Setu
+- A valid webhook endpoint for receiving consent notifications
+
+### Installation
+
+Install the Setu AA SDK using npm:
+
+```bash
+npm install @setu/account-aggregator
+```
+
+Or using yarn:
+
+```bash
+yarn add @setu/account-aggregator
+```
+
+### Authentication
+
+Initialize the SDK with your credentials:
+
+```javascript
+const { SetuAA } = require('@setu/account-aggregator');
+
+const client = new SetuAA({
+  clientId: 'your-client-id',
+  clientSecret: 'your-client-secret',
+  mode: 'sandbox' // or 'production'
+});
+```
+
+**Important**: Never commit your credentials to version control. Use environment variables:
+
+```javascript
+const client = new SetuAA({
+  clientId: process.env.SETU_CLIENT_ID,
+  clientSecret: process.env.SETU_CLIENT_SECRET,
+  mode: process.env.SETU_MODE || 'sandbox'
+});
+```
+
+## Creating a Consent Request
+
+### Step 1: Define Data Requirements
+
+Specify what financial data you need:
+
+```javascript
+const consentRequest = {
+  purpose: 'LOAN_APPROVAL',
+  fiTypes: ['DEPOSIT', 'TERM_DEPOSIT'],
+  dataRange: {
+    from: '2023-01-01',
+    to: '2023-12-31'
+  },
+  dataLife: {
+    unit: 'MONTH',
+    value: 6
+  },
+  frequency: {
+    unit: 'HOUR',
+    value: 1
+  }
+};
+```
+
+### Step 2: Create Consent
+
+Send the consent request to the user:
+
+```javascript
+try {
+  const consent = await client.createConsent({
+    ...consentRequest,
+    customer: {
+      id: 'customer@bank'
+    },
+    redirectUrl: 'https://yourapp.com/consent/callback'
+  });
+
+  console.log('Consent ID:', consent.consentId);
+  console.log('Redirect URL:', consent.redirectUrl);
+} catch (error) {
+  console.error('Failed to create consent:', error);
+}
+```
+
+The user will be redirected to their Consent Manager to approve the request.
+
+### Step 3: Handle Webhook
+
+Configure your webhook endpoint to receive consent status updates:
+
+```javascript
+app.post('/webhook/consent', (req, res) => {
+  const { consentId, status } = req.body;
+
+  if (status === 'ACTIVE') {
+    // Consent approved - fetch data
+    fetchFinancialData(consentId);
+  } else if (status === 'REJECTED') {
+    // Consent rejected - handle accordingly
+    handleRejection(consentId);
+  }
+
+  res.status(200).send('OK');
+});
+```
+
+## Fetching Financial Data
+
+Once consent is approved, fetch the data:
+
+```javascript
+async function fetchFinancialData(consentId) {
+  try {
+    // Create a data session
+    const session = await client.createDataSession({
+      consentId: consentId
+    });
+
+    // Fetch the actual financial information
+    const data = await client.fetchFI({
+      sessionId: session.id,
+      fipId: 'BANK_FIP_ID'
+    });
+
+    console.log('Financial Data:', data);
+
+    // Process the data
+    processData(data);
+  } catch (error) {
+    console.error('Failed to fetch data:', error);
+  }
+}
+```
+
+## Error Handling
+
+The SDK throws typed errors for different scenarios:
+
+```javascript
+try {
+  const consent = await client.createConsent(consentRequest);
+} catch (error) {
+  if (error.code === 'INVALID_CONSENT') {
+    // Handle invalid consent parameters
+  } else if (error.code === 'NETWORK_ERROR') {
+    // Handle network issues
+  } else {
+    // Handle other errors
+    console.error('Unexpected error:', error);
+  }
+}
+```
+
+## Next Steps
+
+- Explore advanced consent patterns
+- Learn about data validation
+- Implement retry logic
+- Set up monitoring and alerts
+
+<NextPage
+  info={{
+    description: "Learn about consent object structure",
+    slug: "/data/account-aggregator/consent-object",
+    title: "Consent Object"
+  }}
+/>
