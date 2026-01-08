@@ -1,0 +1,51 @@
+/**
+ * Embedding Pipeline CLI
+ */
+
+import * as path from 'path';
+import { EmbeddingSync } from './sync.js';
+import type { EmbeddingConfig } from './types.js';
+
+async function main() {
+  try {
+    // Load config from environment
+    const config: EmbeddingConfig = {
+      ingestionOutputPath: process.env.INGESTION_OUTPUT_PATH ||
+        path.join(process.cwd(), '..', 'docs-ingestion', 'output', 'chunks.json'),
+      stateFilePath: process.env.STATE_FILE_PATH ||
+        path.join(process.cwd(), 'state', 'indexed-hashes.json'),
+      awsRegion: process.env.AWS_REGION || 'us-east-1',
+      bedrockModelId: process.env.BEDROCK_MODEL_ID || 'amazon.titan-embed-text-v2:0',
+      pineconeApiKey: process.env.PINECONE_API_KEY || '',
+      pineconeIndex: process.env.PINECONE_INDEX || 'docs-embeddings',
+      batchSize: parseInt(process.env.BATCH_SIZE || '100', 10)
+    };
+
+    // Validate
+    if (!config.pineconeApiKey) {
+      throw new Error('PINECONE_API_KEY environment variable is required');
+    }
+
+    console.log('Configuration:');
+    console.log(`  Ingestion output: ${config.ingestionOutputPath}`);
+    console.log(`  State file: ${config.stateFilePath}`);
+    console.log(`  AWS region: ${config.awsRegion}`);
+    console.log(`  Bedrock model: ${config.bedrockModelId}`);
+    console.log(`  Pinecone index: ${config.pineconeIndex}`);
+    console.log(`  Batch size: ${config.batchSize}\n`);
+
+    // Run sync
+    const sync = new EmbeddingSync(config);
+    await sync.sync();
+
+    process.exit(0);
+  } catch (error) {
+    console.error('\n❌ Embedding sync failed:', error);
+    process.exit(1);
+  }
+}
+
+// Run if called directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
