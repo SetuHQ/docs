@@ -1,0 +1,131 @@
+---
+sidebar_title: API integration
+page_title: Bundled BAV API integration
+order: 2
+visible_in_sidebar: true
+---
+
+## API integration
+
+Integrating Bundled BAV into your application involves creating a verification request and handling the response flow.
+
+<hr class="tertiary" />
+
+### Integration flow
+
+#### Step 1: Create a Bundled BAV request
+
+Call the API to generate a verification URL for your customer.
+
+**Request**
+
+<CodeBlockWithCopy language="json">
+	{`POST /api/bundled-bav
+{
+  "mobileNumber": "9876543210"
+}`}
+</CodeBlockWithCopy>
+
+**Response**
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "url": "https://dg.setu.co/bav-ui?payload=1234",
+  "success": true,
+  "message": "Bundled BAV request created",
+  "traceId": "1-1234567890"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+#### Step 2: Open URL in webview
+
+Open the returned `url` in a webview within your application. The customer will see the Bundled BAV interface where they can choose their preferred verification method.
+
+<Callout type="tip">
+	Make sure to handle the webview lifecycle properly to provide a smooth user
+	experience.
+</Callout>
+
+<hr class="tertiary" />
+
+#### Step 3: Handle redirect
+
+Once the customer completes the verification process, they will be redirected to the `redirectUrl` configured in your product settings.
+
+Set up an event listener in your app to detect this redirect and close the webview accordingly.
+
+**Example event listener pattern**
+
+<CodeBlockWithCopy language="javascript">
+	{`// Detect when the webview navigates to your redirect URL
+webview.onNavigationStateChange = (navState) => {
+  if (navState.url.startsWith(YOUR_REDIRECT_URL)) {
+    // Close the webview
+    closeWebview();
+    // Continue with your app flow
+    navigateToNextScreen();
+  }
+};`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+#### Step 4: Receive webhook notification
+
+Once the verification is complete, Setu will send the bank account details to your configured webhook endpoint.
+
+**Webhook payload**
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "requestId": "f4ec6a99-a9a9-4f23-8dea-1da1b285a156",
+  "data": {
+    "accountHolderName": "JOHN DOE",
+    "bankAccountNumber": "1234567890",
+    "bankAccountIfsc": "ICIC0005573",
+    "bankName": "ICICI BANK",
+  },
+  "bavMethod": "PENNY_DROP",
+  "success": true,
+  "message": "Bank account verification successful",
+  "timestamp": "2026-01-08T12:27:50.697274+00:00",
+}`}
+</CodeBlockWithCopy>
+
+<Callout type="warning">
+	Ensure your webhook endpoint is configured to accept POST requests and can
+	handle the payload structure above.
+</Callout>
+
+<hr class="tertiary" />
+
+### Error handling
+
+The API may return error responses in the following scenarios:
+
+**Status Codes:**
+
+-   `400`: Bad request — Invalid product configuration or missing required parameters
+-   `500`: Failed to create request — Internal server error
+
+**Error response format**
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "success": false,
+  "message": "Error description",
+  "traceId": "1-1234567890"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+### Best practices
+
+1. **Handle webhook retries** — Make your webhook endpoint is idempotent as Setu may retry failed webhook deliveries
+2. **Store traceId** — Always store the `traceId` for debugging and support purposes
+3. **Handle timeouts** — Implement appropriate timeout handling for the webview
+
+<WasPageHelpful />

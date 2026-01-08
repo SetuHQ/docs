@@ -1,0 +1,301 @@
+---
+sidebar_title: API reference
+page_title: Bundled BAV API reference
+order: 3
+visible_in_sidebar: true
+---
+
+## API reference
+
+This document provides detailed API specifications for Bundled Bank Account Verification.
+
+<hr class="primary" />
+
+### Create Bundled BAV request
+
+Create a verification request to generate a URL for the bundled BAV flow.
+
+<table>
+	<tbody>
+		<tr>
+			<th>Method</th>
+			<td>
+				<code>POST</code>
+			</td>
+		</tr>
+		<tr>
+			<th>Path</th>
+			<td>
+				<code>/api/bundled-bav</code>
+			</td>
+		</tr>
+		<tr>
+			<th>Sandbox base URL</th>
+			<td>
+				<code>https://dg-sandbox.setu.co</code>
+			</td>
+		</tr>
+		<tr>
+			<th>Production base URL</th>
+			<td>
+				<code>https://dg.setu.co</code>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<hr class="tertiary" />
+
+#### Headers
+
+<table>
+	<thead>
+		<tr>
+			<th>Header</th>
+			<th>Type</th>
+			<th>Description</th>
+			<th>Required</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<code>x-client-id</code>
+			</td>
+			<td>String</td>
+			<td>Your client ID provided by Setu</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td>
+				<code>x-client-secret</code>
+			</td>
+			<td>String</td>
+			<td>Your client secret provided by Setu</td>
+			<td>Yes</td>
+		</tr>
+		<tr>
+			<td>
+				<code>x-product-instance-id</code>
+			</td>
+			<td>String</td>
+			<td>Your product instance ID for Bundled BAV</td>
+			<td>Yes</td>
+		</tr>
+	</tbody>
+</table>
+
+<hr class="tertiary" />
+
+#### Request body
+
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Type</th>
+			<th>Description</th>
+			<th>Required</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<code>mobileNumber</code>
+			</td>
+			<td>String</td>
+			<td>Customer's 10-digit mobile number</td>
+			<td>Yes</td>
+		</tr>
+	</tbody>
+</table>
+
+<br />
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "mobileNumber": "9876543210"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+#### Response
+
+##### Success Response (200)
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "url": "https://dg.setu.co/bundled-bav?payload=1234",
+  "success": true,
+  "message": "Bundled BAV request created",
+  "traceId": "1-1234567890"
+}`}
+</CodeBlockWithCopy>
+
+##### Error Response (400)
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "success": false,
+  "message": "Bad request - invalid product configuration",
+  "traceId": "1-1234567890"
+}`}
+</CodeBlockWithCopy>
+
+##### Error Response (500)
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "success": false,
+  "message": "Failed to create request - internal error",
+  "traceId": "1-1234567890"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="primary" />
+
+### Webhook notification
+
+After the customer completes the verification, Setu sends a webhook notification to your configured endpoint.
+
+<table>
+	<tbody>
+		<tr>
+			<th>Method</th>
+			<td>
+				<code>POST</code>
+			</td>
+		</tr>
+		<tr>
+			<th>Endpoint</th>
+			<td>Your configured webhook URL</td>
+		</tr>
+	</tbody>
+</table>
+
+<hr class="tertiary" />
+
+#### Webhook payload
+
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<code>requestId</code>
+			</td>
+			<td>String (UUID)</td>
+			<td>Unique identifier for this verification request</td>
+		</tr>
+		<tr>
+			<td>
+				<code>data</code>
+			</td>
+			<td>Object</td>
+			<td>Bank account details (see below)</td>
+		</tr>
+		<tr>
+			<td>
+				<code>bavMethod</code>
+			</td>
+			<td>String (Enum)</td>
+			<td>
+				BAV method used for verification. Values:{" "}
+				<code>PENNY_DROP</code>, <code>REVERSE_PENNY_DROP</code>,{" "}
+				<code>MOBILE_TO_BANK</code> or <code>VPA_TO_BANK</code>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>success</code>
+			</td>
+			<td>Boolean</td>
+			<td>Indicates if verification was successful</td>
+		</tr>
+		<tr>
+			<td>
+				<code>message</code>
+			</td>
+			<td>String</td>
+			<td>Descriptive message about the verification result</td>
+		</tr>
+		<tr>
+			<td>
+				<code>timestamp</code>
+			</td>
+			<td>String</td>
+			<td>UTC timestamp of verification</td>
+		</tr>
+	</tbody>
+</table>
+
+<hr class="tertiary" />
+
+#### Data object
+
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<code>accountHolderName</code>
+			</td>
+			<td>String</td>
+			<td>Name of the account holder</td>
+		</tr>
+		<tr>
+			<td>
+				<code>bankAccountNumber</code>
+			</td>
+			<td>String</td>
+			<td>Bank account number</td>
+		</tr>
+		<tr>
+			<td>
+				<code>bankAccountIfsc</code>
+			</td>
+			<td>String</td>
+			<td>IFSC code of the bank branch</td>
+		</tr>
+		<tr>
+			<td>
+				<code>bankName</code>
+			</td>
+			<td>String</td>
+			<td>Name of the bank</td>
+		</tr>
+	</tbody>
+</table>
+
+<br />
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "requestId": "f4ec6a99-a9a9-4f23-8dea-1da1b285a156",
+  "data": {
+    "accountHolderName": "JOHN DOE",
+    "bankAccountNumber": "1234567890",
+    "bankAccountIfsc": "ICIC0005573",
+    "bankName": "ICICI BANK",
+  },
+  "bavMethod": "PENNY_DROP",
+  "success": true,
+  "message": "Bank account verification successful",
+  "timestamp": "2026-01-08T12:27:50.697274+00:00",
+}`}
+</CodeBlockWithCopy>
+
+<WasPageHelpful />
