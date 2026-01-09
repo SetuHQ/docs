@@ -1,0 +1,463 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Data Gateway - Bundled Bank Account Verification",
+		"description": "**Bundled Bank Account Verification:**\nVerify a customer's bank account using multiple BAV modes via a single bundled flow.",
+		"contact": {},
+		"version": "1.0"
+	},
+	"servers": [
+		{
+			"url": "https://dg-sandbox.setu.co",
+			"description": "Sandbox"
+		},
+		{
+			"url": "https://dg.setu.co",
+			"description": "Production"
+		}
+	],
+	"paths": {
+		"/api/bundled-bav": {
+			"post": {
+				"tags": ["Bundled BAV"],
+				"summary": "Create Bundled BAV request",
+				"operationId": "CreateBundledBAV",
+				"parameters": [
+					{
+						"name": "x-client-id",
+						"in": "header",
+						"description": "",
+						"required": true,
+						"style": "simple",
+						"schema": {
+							"type": "string",
+							"example": "test-client"
+						}
+					},
+					{
+						"name": "x-client-secret",
+						"in": "header",
+						"description": "",
+						"required": true,
+						"style": "simple",
+						"schema": {
+							"type": "string",
+							"example": "891707ee-d6cd-4744-a28d-058829e30f12"
+						}
+					},
+					{
+						"name": "x-product-instance-id",
+						"in": "header",
+						"description": "",
+						"required": true,
+						"style": "simple",
+						"schema": {
+							"type": "string",
+							"example": "891707ee-d6cd-4744-a28d-058829e30f10"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Mobile number to verify",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BundledBAVCreateRequestBody"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"headers": {},
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BundledBAVCreateResponse"
+								},
+								"example": {
+									"requestId": "81f4d2dd-6d32-48b0-8060-4976ea7acffc",
+									"url": "https://dg.setu.co/bundled-bav?payload=ENCRYPTED_PAYLOAD",
+									"success": true,
+									"message": "Bundled BAV request created",
+									"traceId": "1-695ce461-2fb20b79433b798254230406"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"headers": {},
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BundledBAVErrorResponse"
+								},
+								"example": {
+									"success": false,
+									"message": "Bad request",
+									"traceId": "1-693a76aa-5080d58c3a3389f55d3ad019"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"headers": {},
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BundledBAVErrorResponse"
+								},
+								"example": {
+									"success": false,
+									"message": "Failed to create request",
+									"traceId": "1-693a76aa-5080d58c3a3389f55d3ad019"
+								}
+							}
+						}
+					}
+				},
+				"deprecated": false,
+				"security": [
+					{
+						"bearer": []
+					}
+				]
+			}
+		},
+		"/api/bundled-bav/{requestId}": {
+			"get": {
+				"tags": ["Bundled BAV"],
+				"summary": "Get Bundled BAV request status",
+				"operationId": "GetBundledBAVDetails",
+				"parameters": [
+					{
+						"name": "requestId",
+						"in": "path",
+						"description": "requestId of the Bundled BAV request",
+						"required": true,
+						"style": "simple",
+						"schema": {
+							"type": "string",
+							"example": "81f4d2dd-6d32-48b0-8060-4976ea7acffc"
+						}
+					},
+					{
+						"name": "x-client-id",
+						"in": "header",
+						"description": "Client id of your product, provided by Setu",
+						"required": true,
+						"style": "simple",
+						"schema": {
+							"type": "string",
+							"example": "test-client"
+						}
+					},
+					{
+						"name": "x-client-secret",
+						"in": "header",
+						"description": "Client secret of your product, provided by Setu",
+						"required": true,
+						"style": "simple",
+						"schema": {
+							"type": "string",
+							"example": "891707ee-d6cd-4744-a28d-058829e30f12"
+						}
+					},
+					{
+						"name": "x-product-instance-id",
+						"in": "header",
+						"description": "Instance id of your product, provided by Setu",
+						"required": true,
+						"style": "simple",
+						"schema": {
+							"type": "string",
+							"example": "891707ee-d6cd-4744-a28d-058829e30f10"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"headers": {},
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BundledBAVGetResponseCommon"
+								},
+								"example": {
+									"requestId": "81f4d2dd-6d32-48b0-8060-4976ea7acffc",
+									"data": {
+										"accountHolderName": "John Doe",
+										"bankAccountIfsc": "ICIC0005573",
+										"bankAccountNumber": "1234567890",
+										"bankName": "ICICI Bank"
+									},
+									"success": true,
+									"message": "",
+									"status": "BAV_SUCCESSFUL",
+									"traceId": "1-693a76aa-5080d58c3a3389f55d3ad019"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"headers": {},
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BundledBAVErrorResponse"
+								},
+								"example": {
+									"success": false,
+									"message": "Request not found",
+									"traceId": "71514389-efc2-4d2a-9b76-3afa8cd2f043"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"headers": {},
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BundledBAVErrorResponse"
+								},
+								"example": {
+									"success": false,
+									"message": "Failed to get request details",
+									"traceId": "0f805317-1ccf-4ed6-ad25-c457633ed590"
+								}
+							}
+						}
+					}
+				},
+				"deprecated": false,
+				"security": [
+					{
+						"bearer": []
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"BundledBAVCreateRequestBody": {
+				"title": "BundledBAVCreateRequestBody",
+				"type": "object",
+				"required": ["mobileNumber"],
+				"properties": {
+					"mobileNumber": {
+						"type": "string",
+						"description": "Mobile number to verify (10 digits)",
+						"example": "9876543210"
+					}
+				}
+			},
+			"BundledBAVCreateResponse": {
+				"title": "BundledBAVCreateResponse",
+				"type": "object",
+				"required": [
+					"requestId",
+					"url",
+					"success",
+					"message",
+					"traceId"
+				],
+				"properties": {
+					"requestId": {
+						"type": "string",
+						"description": "Bundled BAV request ID (UUID)"
+					},
+					"url": {
+						"type": "string",
+						"description": "URL to redirect user to for completing account verification"
+					},
+					"success": {
+						"type": "boolean",
+						"description": "Whether the request was successful"
+					},
+					"message": {
+						"type": "string",
+						"description": "Response message from the API"
+					},
+					"traceId": {
+						"type": "string",
+						"description": "Trace id for the request"
+					}
+				},
+				"example": {
+					"requestId": "81f4d2dd-6d32-48b0-8060-4976ea7acffc",
+					"url": "https://dg.setu.co/bundled-bav?payload=ENCRYPTED_PAYLOAD",
+					"success": true,
+					"message": "Bundled BAV request created",
+					"traceId": "1-695ce461-2fb20b79433b798254230406"
+				}
+			},
+			"BundledBAVGetResponseCommon": {
+				"title": "BundledBAVGetResponseCommon",
+				"description": "Common response shape for GET bundled BAV status and webhook notification. Only these 4 common fields are documented.",
+				"type": "object",
+				"required": [
+					"requestId",
+					"data",
+					"success",
+					"message",
+					"status",
+					"traceId"
+				],
+				"properties": {
+					"requestId": {
+						"type": "string",
+						"description": "Bundled BAV request ID (UUID)"
+					},
+					"data": {
+						"type": "object",
+						"description": "Verified bank account details",
+						"additionalProperties": true,
+						"example": {
+							"accountHolderName": "John Doe",
+							"bankAccountIfsc": "ICIC0005573",
+							"bankAccountNumber": "1234567890",
+							"bankName": "ICICI Bank"
+						}
+					},
+					"success": {
+						"type": "boolean",
+						"description": "Whether the operation was successful"
+					},
+					"message": {
+						"type": "string",
+						"description": "Human-readable message"
+					},
+					"status": {
+						"type": "string",
+						"enum": ["BAV_SUCCESSFUL", "BAV_FAILED", "BAV_PENDING"]
+					},
+					"traceId": {
+						"type": "string",
+						"description": "Trace id for the request"
+					}
+				},
+				"example": {
+					"requestId": "81f4d2dd-6d32-48b0-8060-4976ea7acffc",
+					"data": {
+						"accountHolderName": "John Doe",
+						"bankAccountIfsc": "ICIC0005573",
+						"bankAccountNumber": "1234567890",
+						"bankName": "ICICI Bank"
+					},
+					"success": true,
+					"message": "",
+					"status": "BAV_SUCCESSFUL",
+					"traceId": "1-693a76aa-5080d58c3a3389f55d3ad019"
+				}
+			},
+			"BundledBAVWebhookNotification": {
+				"title": "BundledBAVWebhookNotification",
+				"description": "Schema of the webhook notification that Setu sends to your configured webhook URL for bundled BAV.",
+				"type": "object",
+				"required": [
+					"requestId",
+					"data",
+					"bavMethod",
+					"success",
+					"message",
+					"timestamp"
+				],
+				"properties": {
+					"requestId": {
+						"type": "string",
+						"description": "Bundled BAV request ID (UUID) for which verification completed"
+					},
+					"data": {
+						"type": "object",
+						"description": "Verified bank account details",
+						"additionalProperties": true,
+						"example": {
+							"accountHolderName": "John Doe",
+							"bankAccountIfsc": "ICIC0005573",
+							"bankAccountNumber": "1234567890",
+							"bankName": "ICICI Bank"
+						}
+					},
+					"bavMethod": {
+						"type": "string",
+						"enum": [
+							"MOBILE_TO_BANK",
+							"VPA_TO_BANK",
+							"PENNY_DROP",
+							"REVERSE_PENNY_DROP"
+						],
+						"description": "Whether the bundled BAV verification was successful"
+					},
+					"success": {
+						"type": "boolean",
+						"description": "Whether the bundled BAV verification was successful"
+					},
+					"message": {
+						"type": "string",
+						"description": "Message describing the result"
+					},
+					"timestamp": {
+						"type": "string",
+						"description": "Timestamp of the bank account verification"
+					}
+				},
+				"example": {
+					"requestId": "81f4d2dd-6d32-48b0-8060-4976ea7acffc",
+					"data": {
+						"accountHolderName": "John Doe",
+						"bankAccountIfsc": "ICIC0005573",
+						"bankAccountNumber": "1234567890",
+						"bankName": "ICICI Bank"
+					},
+					"bavMethod": "MOBILE_TO_BANK",
+					"success": true,
+					"message": "Bank account verification successful using MOBILE_TO_BANK",
+					"timestamp": "2026-01-08T12:27:50.697274+00:00"
+				}
+			},
+			"BundledBAVErrorResponse": {
+				"title": "BundledBAVErrorResponse",
+				"type": "object",
+				"required": ["success", "message", "traceId"],
+				"properties": {
+					"success": {
+						"type": "boolean",
+						"description": "Always false for error responses"
+					},
+					"message": {
+						"type": "string",
+						"description": "Error message"
+					},
+					"traceId": {
+						"type": "string",
+						"description": "Trace id for the request"
+					}
+				},
+				"example": {
+					"success": false,
+					"message": "Bad request",
+					"traceId": "1-693a76aa-5080d58c3a3389f55d3ad019"
+				}
+			}
+		}
+	},
+	"security": [
+		{
+			"bearer": []
+		}
+	],
+	"tags": [
+		{
+			"name": "Bundled BAV"
+		}
+	]
+}
