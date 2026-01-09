@@ -1,0 +1,123 @@
+---
+sidebar_title: FX Retail flow
+page_title: BBPS COU — FX Retail flow (Forex category)
+order: 10
+visible_in_sidebar: true
+---
+
+## Overview
+
+**FX Retail** enables customers to buy (and in future, sell) foreign currency on the **FX Retail platform** via the **BBPS system**, directly from PSP apps that support BBPS (for example, CRED).
+
+In BBPS COU, FX Retail billers appear under the **`Forex`** category.
+
+This page describes the end-to-end **FX Retail flow** and how to integrate it correctly using COU APIs.
+
+## How to identify an FX Retail biller
+
+Use **List billers** and filter for billers in the **Forex** category:
+
+- **List billers**: `GET /api/v2/bbps/billers`
+
+For FX Retail billers, the biller object will also include FX Retail-related fields such as:
+
+- **`valAddFlag`**: whether value-added services are enabled for the biller
+- **`valAddCustParams`**: required customer params for value-added flows (scoped by requestType)
+- **`mandateRequirement`**: mandate requirement (e.g. `MANDATORY`)
+- **`pseudoBiller`**: whether the biller is a pseudo biller
+
+## End-to-end flow (buy flow)
+
+The FX Retail flow is driven by **Val Add** APIs for onboarding + pricing, followed by **Mandate** booking (order placement), and finally a **Pay bill** request for BBPS/NPCI reconciliation.
+
+### Step 1 — Check if customer is onboarded (GetCustomerId)
+
+Call Val Add request with `requestType=GetCustomerId` using the customer’s `mobileNumber`.
+
+- **Val Add request**: `POST /api/v2/bbps/valadd/{requestType}/request`
+- **Val Add response (poll)**: `POST /api/v2/bbps/valadd/{requestType}/response` (fallback for webhooks)
+
+If the customer is already registered on the FX Retail platform, the Val Add result includes the customer’s category/type and a `customerId`.
+
+### Step 2 — If not onboarded, generate OTP (GenerateOTP)
+
+If the customer is not registered, register them by generating OTP(s) using `requestType=GenerateOTP`.
+
+Send required details such as:
+
+- `mobileNumber`
+- `emailId`
+- bank account details (bankId/bankName/account number/IFSC/account type/account holder name)
+- `pan` and `panValidated`
+
+### Step 3 — Validate OTP + accept T&C (ValidateOTP)
+
+Validate the OTP(s) using `requestType=ValidateOTP`.
+
+Pass:
+
+- `mobileOTP` and `emailOTP`
+- `tcFlag` (terms and conditions acceptance)
+- along with the same context previously sent in GenerateOTP (as required by the biller)
+
+If OTP validation succeeds, the FX Retail platform registers the user and returns the `customerId`.
+
+### Step 4 — Get bank markup (GetBankMarkup)
+
+Call `requestType=GetBankMarkup` to fetch markup associated with the customer’s bank.
+
+If multiple banks are associated with the customer’s FX account, multiple markups can be returned.
+
+### Step 5 — Fetch best price (FetchBestPrice)
+
+Customer selects a bank/markup and then the PSP app calls `requestType=FetchBestPrice` to fetch the best currency price.
+
+The response includes the **best price** and a **total payable amount** which typically includes a **buffer** to account for price fluctuations.
+
+### Step 6 — Debit funds from the customer (PSP-managed)
+
+At this point, the PSP app is responsible for debiting the **total payable amount** from the customer’s account using its preferred rails (for example UPI / netbanking).
+
+This debit happens **outside** of BBPS COU APIs.
+
+### Step 7 — Place order by booking mandate (Mandate request/response)
+
+Initiate the mandate booking request. For FX Retail, this effectively places the order on the FX Retail platform.
+
+- **Mandate request**: `POST /api/v2/bbps/bills/mandate/request`
+- **Mandate response (poll)**: `POST /api/v2/bbps/bills/mandate/response` (fallback for webhooks)
+
+On success, the mandate result includes the **actual amount utilised** for the order.
+
+**Important**: the mandate/order can fail if the market price moves above the amount returned during FetchBestPrice.
+
+### Step 8 — Refund the difference (PSP-managed)
+
+If the customer was debited a buffered amount, the PSP app should:
+
+- compute the delta between (debited amount) and (amount utilised returned in mandate result)
+- refund the difference back to the customer
+
+This refund happens **outside** of BBPS COU APIs.
+
+### Step 9 — Send Pay bill request for reconciliation (Pay bill)
+
+Finally, call **Pay bill** to complete BBPS/NPCI reconciliation. For FX Retail mandate flows, the payment has already been collected in the earlier PSP debit + mandate placement, so this API is used for reconciliation and settlement workflows.
+
+- **Pay bill request**: `POST /api/v2/bbps/bills/payment/request`
+
+For FX Retail mandate-related payments, include:
+
+- `paymentType: "MANDATE_AND_PAY"`
+
+## Webhooks vs polling
+
+All Val Add and Mandate operations are asynchronous:
+
+- Prefer **webhooks** for final outcomes.
+- Use the corresponding `/response` endpoints with `refId` as a fallback for polling.
+
+Refer to:
+
+- **Webhooks**: `/payments/billpay/api-integration/webhooks`
+- **List of APIs**: `/payments/billpay/api-integration/apis`

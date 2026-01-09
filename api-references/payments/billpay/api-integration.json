@@ -3241,6 +3241,15 @@
                       "refId": {
                         "type": "string",
                         "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                      },
+                      "paymentType": {
+                        "type": "string",
+                        "description": "Indicates if the payment is being made for an FX mandate.",
+                        "enum": [
+                          "MANDATE_AND_PAY"
+                        ],
+                        "example": "MANDATE_AND_PAY",
+                        "x-omitempty": true
                       }
                     },
                     "x-omitempty": true
@@ -12769,6 +12778,1382 @@
                     "traceId": {
                       "type": "string",
                       "example": "C3SFG0O6N88R6UI7EQ"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Production": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "Sandbox": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "QA": [
+              "bbps:partner"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v2/bbps/valadd/{requestType}/request": {
+      "post": {
+        "tags": [
+          "Val Add APIs"
+        ],
+        "description": "Initiate a Val Add operation",
+        "parameters": [
+          {
+            "name": "requestType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "GetCustomerId",
+                "GenerateOTP",
+                "ValidateOTP",
+                "GetBankMarkup",
+                "FetchBestPrice"
+              ]
+            }
+          },
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "agent",
+                  "biller",
+                  "inputParams"
+                ],
+                "type": "object",
+                "properties": {
+                  "agent": {
+                    "required": [
+                      "channel",
+                      "id"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "AX01AX26INBU00000001"
+                      },
+                      "channel": {
+                        "type": "string",
+                        "example": "INTB"
+                      },
+                      "ip": {
+                        "type": "string",
+                        "example": "124.170.23.24"
+                      },
+                      "mac": {
+                        "type": "string",
+                        "example": "48-4D-7E-CB-DB-6F"
+                      }
+                    }
+                  },
+                  "biller": {
+                    "required": [
+                      "id"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "FXRE00000KER3U"
+                      }
+                    }
+                  },
+                  "inputParams": {
+                    "type": "array",
+                    "description": "Input parameters required by the biller for this request.",
+                    "items": {
+                      "required": [
+                        "name",
+                        "value"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "mobileNumber"
+                        },
+                        "value": {
+                          "type": "string",
+                          "example": "9812000000"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "getCustomerId": {
+                  "summary": "Get Customer ID",
+                  "value": {
+                    "agent": {
+                      "id": "AX01AX26INBU00000001",
+                      "channel": "INTB",
+                      "ip": "124.170.23.24",
+                      "mac": "48-4D-7E-CB-DB-6F"
+                    },
+                    "biller": {
+                      "id": "FXRE00000KER3U"
+                    },
+                    "inputParams": [
+                      {
+                        "name": "mobileNumber",
+                        "value": "9812000000"
+                      }
+                    ]
+                  }
+                },
+                "generateOtp": {
+                  "summary": "Generate OTP",
+                  "value": {
+                    "agent": {
+                      "id": "AX01AX26INBU00000001",
+                      "channel": "INTB",
+                      "ip": "124.170.23.24",
+                      "mac": "48-4D-7E-CB-DB-6F"
+                    },
+                    "biller": {
+                      "id": "FXRE00000KER3U"
+                    },
+                    "inputParams": [
+                      {
+                        "name": "mobileNumber",
+                        "value": "8838151414"
+                      },
+                      {
+                        "name": "emailId",
+                        "value": "jayasurya.s_tra@npci.org.in"
+                      },
+                      {
+                        "name": "bankId",
+                        "value": "10128"
+                      },
+                      {
+                        "name": "bankName",
+                        "value": "INDIA POST PAYMENTS BANK LIMITED"
+                      },
+                      {
+                        "name": "bankAccountNumber",
+                        "value": "150002000"
+                      },
+                      {
+                        "name": "customerAccountType",
+                        "value": "Savings"
+                      },
+                      {
+                        "name": "ifsc",
+                        "value": "ZSBL0000341"
+                      },
+                      {
+                        "name": "accountHolderName",
+                        "value": "jayasurya"
+                      },
+                      {
+                        "name": "customerType",
+                        "value": "ResidentIndividual"
+                      },
+                      {
+                        "name": "pan",
+                        "value": "JS00024252"
+                      },
+                      {
+                        "name": "panValidated",
+                        "value": "true"
+                      }
+                    ]
+                  }
+                },
+                "validateOtp": {
+                  "summary": "Validate OTP",
+                  "value": {
+                    "agent": {
+                      "id": "AX01AX26INBU00000001",
+                      "channel": "INTB",
+                      "ip": "124.170.23.24",
+                      "mac": "48-4D-7E-CB-DB-6F"
+                    },
+                    "biller": {
+                      "id": "FXRE00000KER3U"
+                    },
+                    "inputParams": [
+                      {
+                        "name": "mobileNumber",
+                        "value": "9182583612"
+                      },
+                      {
+                        "name": "emailId",
+                        "value": "pragna.n@npci.org.in"
+                      },
+                      {
+                        "name": "mobileOTP",
+                        "value": "870398"
+                      },
+                      {
+                        "name": "emailOTP",
+                        "value": "806963"
+                      },
+                      {
+                        "name": "bankId",
+                        "value": "10128"
+                      },
+                      {
+                        "name": "bankName",
+                        "value": "INDIA POST PAYMENTS BANK LIMITED"
+                      },
+                      {
+                        "name": "bankAccountNumber",
+                        "value": "150002000"
+                      },
+                      {
+                        "name": "customerAccountType",
+                        "value": "Savings"
+                      },
+                      {
+                        "name": "ifsc",
+                        "value": "ZSBL0000341"
+                      },
+                      {
+                        "name": "accountHolderName",
+                        "value": "Pragna"
+                      },
+                      {
+                        "name": "customerType",
+                        "value": "ResidentIndividual"
+                      },
+                      {
+                        "name": "pan",
+                        "value": "NP00024253"
+                      },
+                      {
+                        "name": "panValidated",
+                        "value": "true"
+                      },
+                      {
+                        "name": "tcFlag",
+                        "value": "true"
+                      }
+                    ]
+                  }
+                },
+                "getBankMarkup": {
+                  "summary": "Get Bank Markup",
+                  "value": {
+                    "agent": {
+                      "id": "AX01AX26INBU00000001",
+                      "channel": "INTB",
+                      "ip": "124.170.23.24",
+                      "mac": "48-4D-7E-CB-DB-6F"
+                    },
+                    "biller": {
+                      "id": "FXRE00000KER3U"
+                    },
+                    "inputParams": [
+                      {
+                        "name": "mobileNumber",
+                        "value": "7075465595"
+                      },
+                      {
+                        "name": "customerId",
+                        "value": "IN0025000217"
+                      },
+                      {
+                        "name": "pan",
+                        "value": "NB00024252"
+                      }
+                    ]
+                  }
+                },
+                "fetchBestPrice": {
+                  "summary": "Fetch Best Price",
+                  "value": {
+                    "agent": {
+                      "id": "AX01AX26INBU00000001",
+                      "channel": "INTB",
+                      "ip": "124.170.23.24",
+                      "mac": "48-4D-7E-CB-DB-6F"
+                    },
+                    "biller": {
+                      "id": "RBFX00000KARDG"
+                    },
+                    "inputParams": [
+                      {
+                        "name": "bankBranch",
+                        "value": "SHIVAJI NAGAR"
+                      },
+                      {
+                        "name": "bankId",
+                        "value": "10128"
+                      },
+                      {
+                        "name": "currency",
+                        "value": "USD"
+                      },
+                      {
+                        "name": "customerId",
+                        "value": "IN0025000213"
+                      },
+                      {
+                        "name": "deliveryMode",
+                        "value": "Currency"
+                      },
+                      {
+                        "name": "ifsc",
+                        "value": "ZSBL0000341"
+                      },
+                      {
+                        "name": "instrumentType",
+                        "value": "CASH"
+                      },
+                      {
+                        "name": "markup",
+                        "value": "0.5"
+                      },
+                      {
+                        "name": "mobileNumber",
+                        "value": "8838151414"
+                      },
+                      {
+                        "name": "orderQuantity",
+                        "value": "1000"
+                      },
+                      {
+                        "name": "pan",
+                        "value": "JS00024252"
+                      },
+                      {
+                        "name": "relationshipBank",
+                        "value": "INDIA POST PAYMENTS BANK LIMITED"
+                      },
+                      {
+                        "name": "tcFlag",
+                        "value": "true"
+                      },
+                      {
+                        "name": "transactionType",
+                        "value": "PURCHASE"
+                      },
+                      {
+                        "name": "units",
+                        "value": "fixed"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "data",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Processing"
+                    },
+                    "data": {
+                      "required": [
+                        "refId"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                        }
+                      }
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV4PE82LTNJE9O014OE1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "Production": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "Sandbox": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "QA": [
+              "bbps:partner"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v2/bbps/valadd/{requestType}/response": {
+      "post": {
+        "tags": [
+          "Val Add APIs"
+        ],
+        "description": "Poll for the result of a Val Add operation, as a fallback for webhooks.",
+        "parameters": [
+          {
+            "name": "requestType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "GetCustomerId",
+                "GenerateOTP",
+                "ValidateOTP",
+                "GetBankMarkup",
+                "FetchBestPrice"
+              ]
+            }
+          },
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "refId"
+                ],
+                "type": "object",
+                "properties": {
+                  "refId": {
+                    "type": "string",
+                    "description": "The COU-generated refId for the Val Add operation.",
+                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "refId",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Current state of the Val Add operation.",
+                      "example": "Success"
+                    },
+                    "refId": {
+                      "type": "string",
+                      "description": "COU-generated reference ID for the Val Add operation.",
+                      "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV4PE82LTNJE9O014OE0"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Val Add result payload (varies by requestType).",
+                      "properties": {
+                        "billerResponse": {
+                          "type": "array",
+                          "description": "Key-value pairs returned by the biller for the Val Add operation.",
+                          "items": {
+                            "required": [
+                              "name",
+                              "value"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "customerId"
+                              },
+                              "value": {
+                                "type": "string",
+                                "example": "IN0025000213"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                ,
+                "examples": {
+                  "exampleGetCustomerIdSuccess": {
+                    "summary": "Get Customer ID Success",
+                    "value": {
+                      "status": "Success",
+                      "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+                      "traceId": "CV4PE82LTNJE9O014OE0",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "customerId",
+                            "value": "IN0025000213"
+                          },
+                          {
+                            "name": "customerType",
+                            "value": "RESIDENTINDIVIDUAL"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "exampleGenerateOtpSuccess": {
+                    "summary": "Generate OTP Success",
+                    "value": {
+                      "status": "Success",
+                      "refId": "OTPGENREF1234567890ABCDEFGHIJKLMNOPQ",
+                      "traceId": "CV4PE82LTNJE9O014OTP",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "mobileNumber",
+                            "value": "9812000000"
+                          },
+                          {
+                            "name": "emailId",
+                            "value": "jane.doe@gmail.com"
+                          },
+                          {
+                            "name": "bankId",
+                            "value": "10128"
+                          },
+                          {
+                            "name": "bankName",
+                            "value": "INDIA POST PAYMENTS BANK LIMITED"
+                          },
+                          {
+                            "name": "bankAccountNumber",
+                            "value": "150002000"
+                          },
+                          {
+                            "name": "customerAccountType",
+                            "value": "Savings"
+                          },
+                          {
+                            "name": "ifsc",
+                            "value": "ICIC0006720"
+                          },
+                          {
+                            "name": "accountHolderName",
+                            "value": "jayasurya"
+                          },
+                          {
+                            "name": "customerType",
+                            "value": "Individual"
+                          },
+                          {
+                            "name": "pan",
+                            "value": "BPEPS55XXX"
+                          },
+                          {
+                            "name": "panValidated",
+                            "value": "true"
+                          },
+                          {
+                            "name": "authenticationMethod",
+                            "value": "OTP"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "exampleValidateOtpSuccess": {
+                    "summary": "Validate OTP Success",
+                    "value": {
+                      "status": "Success",
+                      "refId": "OTPVALREF1234567890RSTUVWXYZABCDEFG",
+                      "traceId": "CV4PE82LTNJE9O01VAL",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "customerId",
+                            "value": "IN0025000219"
+                          },
+                          {
+                            "name": "customerType",
+                            "value": "RESIDENTINDIVIDUAL"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "exampleGetBankMarkupSuccess": {
+                    "summary": "Get Bank Markup Success",
+                    "value": {
+                      "status": "Success",
+                      "refId": "MARKUPREF1234567890HIJKLMNOPQRSTUV",
+                      "traceId": "CV4PE82LTNJE9O0MARK",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "relationshipBank",
+                            "value": "INDIA POST PAYMENTS BANK LIMITED",
+                            "billerSpecificInfo": {
+                              "billerId": "BBPSRELATIONSHIPBANK1",
+                              "rate": "0.5",
+                              "units": "fixed",
+                              "indicativePrice": "8500",
+                              "bankId": "10128",
+                              "homeBranchIFSC": "ZSBL0000341"
+                            }
+                          },
+                          {
+                            "name": "relationshipBank",
+                            "value": "AXIS Bank",
+                            "billerSpecificInfo": {
+                              "billerId": "BBPSRELATIONSHIPBANK2",
+                              "rate": "10.12",
+                              "units": "fixed",
+                              "indicativePrice": "8515",
+                              "bankId": "AX01",
+                              "homeBranchIFSC": "AXIS00006720"
+                            }
+                          },
+                          {
+                            "name": "relationshipBank",
+                            "value": "ICICI Bank",
+                            "billerSpecificInfo": {
+                              "billerId": "BBPSRELATIONSHIPBANK3",
+                              "rate": "1.325",
+                              "units": "percentage",
+                              "indicativePrice": "8540",
+                              "bankId": "IC01",
+                              "homeBranchIFSC": "ICICI0006720"
+                            }
+                          }
+                        ],
+                        "additionalInfo": [
+                          {
+                            "name": "accountHolderName",
+                            "value": "Pragna"
+                          },
+                          {
+                            "name": "tcFlag",
+                            "value": "true"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "exampleFetchBestPriceSuccess": {
+                    "summary": "Fetch Best Price Success",
+                    "value": {
+                      "status": "Success",
+                      "refId": "BESTPRCREF123456789WXYZABCDEFGHIJKL",
+                      "traceId": "CV4PE82LTNJE9O0BEST",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "currency",
+                            "value": "USD"
+                          },
+                          {
+                            "name": "dateOfDelivery",
+                            "value": "2025-05-22"
+                          },
+                          {
+                            "name": "orderQuantity",
+                            "value": "1000"
+                          },
+                          {
+                            "name": "bestPrice",
+                            "value": "8505.5"
+                          },
+                          {
+                            "name": "markup",
+                            "value": "0.5"
+                          },
+                          {
+                            "name": "units",
+                            "value": "fixed"
+                          },
+                          {
+                            "name": "totalPayableAmount",
+                            "value": "8506000"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "exampleProcessing": {
+                    "summary": "Operation Still Processing",
+                    "value": {
+                      "status": "Processing",
+                      "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+                      "traceId": "CV4PE82LTNJE9O014OE3",
+                      "data": null
+                    }
+                  },
+                  "exampleFailureInvalidMobile": {
+                    "summary": "Failure (Generic)",
+                    "value": {
+                      "status": "Failure",
+                      "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+                      "traceId": "CV4PE82LTNJE9O014OE0",
+                      "data": {
+                        "errors": [
+                          {
+                            "code": "error-code",
+                            "message": "Error message"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Failed"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV4PE82LTNJE9O014OE0"
+                    },
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "validation-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Input is invalid"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Failed"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV4PE82LTNJE9O014OE0"
+                    },
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Resource not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Failed"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV4PE82LTNJE9O014OE0"
+                    },
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "internal-server-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Internal server error"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Production": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "Sandbox": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "QA": [
+              "bbps:partner"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v2/bbps/bills/mandate/request": {
+      "post": {
+        "tags": [
+          "Mandate API"
+        ],
+        "description": "Partner App requests COU to book an FX mandate after customer confirmation of the best price. For CASH transactions, this effectively means the mandate is placed.",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "agent",
+                  "biller",
+                  "customer",
+                  "mandate"
+                ],
+                "type": "object",
+                "properties": {
+                  "agent": {
+                    "required": [
+                      "channel",
+                      "id"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "AX01AX26INBU00000001"
+                      },
+                      "channel": {
+                        "type": "string",
+                        "example": "INTB"
+                      },
+                      "ip": {
+                        "type": "string",
+                        "example": "124.170.23.24"
+                      },
+                      "mac": {
+                        "type": "string",
+                        "example": "48-4D-7E-CB-DB-6F"
+                      }
+                    }
+                  },
+                  "biller": {
+                    "required": [
+                      "id"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "HD5140000NAT02"
+                      }
+                    }
+                  },
+                  "customer": {
+                    "required": [
+                      "customerParams"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "customerParams": {
+                        "type": "array",
+                        "items": {
+                          "required": [
+                            "name",
+                            "value"
+                          ],
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "example": "customerId"
+                            },
+                            "value": {
+                              "type": "string",
+                              "example": "IN0025000213"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "mandate": {
+                    "required": [
+                      "amount",
+                      "mandateRefId",
+                      "mode"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "example": "UPI"
+                      },
+                      "amount": {
+                        "type": "integer",
+                        "example": 8260000
+                      },
+                      "mandateRefId": {
+                        "type": "string",
+                        "example": "d30eb5d76250a2faa76c5a2a59c76cc3"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "FX Mandate booking request initiated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "data",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Processing"
+                    },
+                    "data": {
+                      "required": [
+                        "refId"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                        }
+                      }
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV6PG04MUNJG9P126QG3"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "Production": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "Sandbox": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "QA": [
+              "bbps:partner"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v2/bbps/bills/mandate/response": {
+      "post": {
+        "tags": [
+          "Mandate API"
+        ],
+        "description": "Partner App polls COU for the status and result of a previously initiated FX Mandate booking operation.",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "refId"
+                ],
+                "type": "object",
+                "properties": {
+                  "refId": {
+                    "type": "string",
+                    "description": "The COU-generated refId for the Mandate booking operation.",
+                    "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "refId",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Current state of the mandate booking operation.",
+                      "example": "Success"
+                    },
+                    "refId": {
+                      "type": "string",
+                      "description": "COU-generated reference ID for the mandate booking operation.",
+                      "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV6PG04MUNJG9P126QG3"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Mandate booking result payload.",
+                      "properties": {
+                        "billerRefId": {
+                          "type": "string",
+                          "description": "Biller reference ID (when available).",
+                          "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                        },
+                        "transactionId": {
+                          "type": "string",
+                          "description": "Transaction identifier (when available).",
+                          "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                        },
+                        "billerResponse": {
+                          "type": "object",
+                          "description": "Response object returned by the biller.",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Amount for the mandate (as returned by biller).",
+                              "example": "8260000"
+                            }
+                          }
+                        },
+                        "additionalInfo": {
+                          "type": "object",
+                          "description": "Additional biller-provided context (keys may vary).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "dateOfDelivery": {
+                              "type": "string",
+                              "example": "2025-05-22"
+                            },
+                            "orderQuantity": {
+                              "type": "string",
+                              "example": "1000"
+                            },
+                            "bestPrice": {
+                              "type": "string",
+                              "example": "8499.75"
+                            },
+                            "markup": {
+                              "type": "string",
+                              "example": "0.5"
+                            },
+                            "units": {
+                              "type": "string",
+                              "example": "fixed"
+                            },
+                            "deliveryMode": {
+                              "type": "string",
+                              "example": "Currency"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Failed"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV6PG04MUNJG9P126QG3"
+                    },
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Resource not found"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Failed"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV6PG04MUNJG9P126QG3"
+                    },
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "example": "internal-server-error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Internal server error"
+                        }
+                      }
                     }
                   }
                 }
