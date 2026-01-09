@@ -30,7 +30,9 @@ export class BedrockEmbedder {
         contentType: 'application/json',
         accept: 'application/json',
         body: JSON.stringify({
-          inputText: content
+          inputText: content,
+          normalize: true   
+
         })
       };
 

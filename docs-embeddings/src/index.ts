@@ -2,9 +2,14 @@
  * Embedding Pipeline CLI
  */
 
+import dotenv from 'dotenv';
 import * as path from 'path';
 import { EmbeddingSync } from './sync.js';
 import type { EmbeddingConfig } from './types.js';
+
+// Load environment variables from .env.local (priority) and .env
+dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env' });
 
 async function main() {
   try {
@@ -18,7 +23,7 @@ async function main() {
       bedrockModelId: process.env.BEDROCK_MODEL_ID || 'amazon.titan-embed-text-v2:0',
       pineconeApiKey: process.env.PINECONE_API_KEY || '',
       pineconeIndex: process.env.PINECONE_INDEX || 'docs-embeddings',
-      batchSize: parseInt(process.env.BATCH_SIZE || '100', 10)
+      batchSize: parseInt(process.env.BATCH_SIZE || '25', 10)
     };
 
     // Validate

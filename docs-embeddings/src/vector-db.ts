@@ -63,16 +63,24 @@ export class VectorDB {
    * Fetch vectors by IDs (returns embeddings + metadata)
    *
    * Used for metadata-only updates to avoid re-embedding
+   *
+   * Batches fetch requests to avoid 414 URI Too Large errors
    */
   async fetchVectors(ids: string[]): Promise<Map<string, number[]>> {
     if (ids.length === 0) return new Map();
 
-    const result = await this.index.fetch(ids);
     const embeddings = new Map<string, number[]>();
+    const FETCH_BATCH_SIZE = 100; // Max IDs per fetch request to avoid 414 errors
 
-    for (const id of ids) {
-      if (result.records[id]) {
-        embeddings.set(id, result.records[id].values);
+    // Batch fetch to avoid URI length limits
+    for (let i = 0; i < ids.length; i += FETCH_BATCH_SIZE) {
+      const batch = ids.slice(i, i + FETCH_BATCH_SIZE);
+      const result = await this.index.fetch(batch);
+
+      for (const id of batch) {
+        if (result.records[id]) {
+          embeddings.set(id, result.records[id].values);
+        }
       }
     }
 

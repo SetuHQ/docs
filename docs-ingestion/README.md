@@ -108,6 +108,181 @@ const result = await runIngestionPipeline(config);
 console.log(`Generated ${result.stats.totalChunks} chunks`);
 ```
 
+## Content Upload Pipeline
+
+After ingestion completes, document chunks must be uploaded to S3 for the retrieval layer to access.
+
+### Why S3 Upload?
+
+The RAG architecture has three isolated layers:
+1. **Retrieval layer** (Pinecone) - stores embeddings + metadata references
+2. **Content service** (S3) - stores actual document content by `content_hash`
+3. **Answer generation** (Claude) - fetches content via content service
+
+Content is NOT stored in Pinecone metadata. Instead, Pinecone returns `content_hash` references, which the retrieval layer resolves via S3.
+
+### S3 Contract
+
+```
+Bucket: CONTENT_BUCKET_NAME (e.g., setu-docs-content-dev)
+Key:    <content_hash>.txt
+Body:   Raw UTF-8 document content
+```
+
+Example:
+```
+s3://setu-docs-content-dev/7940b602f66342490123817dcf70e6ea488070d6958460f43c9a78ebfa1c77b0.txt
+```
+
+### Configuration
+
+Set these environment variables:
+
+```bash
+export CONTENT_BUCKET_NAME="setu-docs-content-dev"
+export AWS_REGION="us-east-1"
+export AWS_ACCESS_KEY_ID="your-access-key"       # Or use IAM role
+export AWS_SECRET_ACCESS_KEY="your-secret-key"   # Or use IAM role
+```
+
+### Running Content Upload
+
+```bash
+# After ingestion completes
+npm run upload-content
+```
+
+### Features
+
+**Idempotent**
+- Lists existing objects in S3
+- Only uploads chunks that don't exist
+- Safe to re-run multiple times
+- Never overwrites existing content
+
+**Batched**
+- Parallel uploads with concurrency control (default: 10)
+- Progress indicators
+- Comprehensive error handling
+
+**Production-Safe**
+- Hard fails if bucket doesn't exist
+- Hard fails if any uploads fail
+- Detailed error reporting
+
+### Example Output
+
+```
+📦 Preparing to upload 2158 chunks to S3...
+🔍 Checking existing objects in S3...
+   Found 1950 existing objects
+
+📊 Upload plan:
+   Total chunks:    2158
+   To upload (new): 208
+   To skip (exists):1950
+
+⬆️  Uploading new content to S3...
+   Progress: 100/208 chunks...
+   Progress: 200/208 chunks...
+   Uploaded: 208
+   Failed:   0
+
+📊 Content Upload Summary
+═══════════════════════════════════════
+Total chunks:     2158
+Uploaded (new):   208
+Skipped (exists): 1950
+Failed:           0
+Duration:         12.34s
+═══════════════════════════════════════
+
+✅ Successfully uploaded 208 new chunks to S3
+
+✨ Content upload complete!
+```
+
+### Integration with CI/CD
+
+The complete pipeline runs in three steps:
+
+```bash
+#!/bin/bash
+# 1. Ingest documentation
+cd docs-ingestion
+npm run ingest
+
+# 2. Upload content to S3
+npm run upload-content
+
+# 3. Generate and sync embeddings
+cd ../docs-embeddings
+npm run sync
+```
+
+### Programmatic Usage
+
+```typescript
+import { uploadChunksToS3 } from './services/content/uploader.js';
+import type { DocumentChunk } from './types.js';
+
+const chunks: DocumentChunk[] = loadChunksFromOutput();
+
+const result = await uploadChunksToS3(
+  chunks,
+  'setu-docs-content-dev',  // bucket name
+  'us-east-1'                // region
+);
+
+console.log(`Uploaded ${result.uploaded} new chunks`);
+console.log(`Skipped ${result.skipped} existing chunks`);
+```
+
+### Required IAM Permissions
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::setu-docs-content-dev",
+        "arn:aws:s3:::setu-docs-content-dev/*"
+      ]
+    }
+  ]
+}
+```
+
+### Troubleshooting
+
+**"S3 bucket does not exist"**
+```bash
+# Create the bucket first
+aws s3 mb s3://setu-docs-content-dev --region us-east-1
+```
+
+**"No AWS credentials found"**
+```bash
+# Set credentials via environment variables
+export AWS_ACCESS_KEY_ID="..."
+export AWS_SECRET_ACCESS_KEY="..."
+
+# Or configure AWS CLI
+aws configure
+```
+
+**"CONTENT_BUCKET_NAME environment variable is required"**
+```bash
+# Set the bucket name
+export CONTENT_BUCKET_NAME="setu-docs-content-dev"
+```
+
 ## Module Deep Dive
 
 ### 1. Scanner Module (`scanner.ts`)
