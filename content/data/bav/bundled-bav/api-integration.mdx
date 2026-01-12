@@ -1,0 +1,205 @@
+---
+sidebar_title: API integration
+page_title: Bundled BAV API integration
+order: 2
+visible_in_sidebar: true
+---
+
+## API integration
+
+Integrating Bundled BAV into your application involves creating a verification request and handling the response flow.
+
+<hr class="tertiary" />
+
+### Create a Bundled BAV request
+
+Call the API to generate a verification URL for your customer.
+
+<Row>
+	<Portion desktopSpan="whole">
+		<Tabs
+			tabs={[
+				{
+					key: "1",
+					label: "200",
+					content: (
+						<>
+							<p>
+								<Badge type="success">SUCCESS</Badge> Bundled
+								BAV request created successfully.
+							</p>
+							<hr className="tertiary" />
+							<h5>Request</h5>
+							<CodeBlockWithCopy language="json">
+								{`POST /api/bundled-bav
+{
+  "mobileNumber": "9876543210"
+}`}
+							</CodeBlockWithCopy>
+							<hr className="tertiary" />
+							<h5>Response</h5>
+							<CodeBlockWithCopy language="json">
+								{`{
+  "requestId": "f4ec6a99-a9a9-4f23-8dea-1da1b285a156",
+  "url": "https://dg.setu.co/bundled-bav?payload=1234",
+  "success": true,
+  "message": "Bundled BAV request created",
+  "traceId": "1-1234567890"
+}`}
+							</CodeBlockWithCopy>
+							<Callout type="tip">
+								Note: Store the <code>requestId</code> from this
+								response. You will receive the same{" "}
+								<code>requestId</code> in the webhook
+								notification when verification is complete,
+								allowing you to match the webhook to the
+								original request.
+							</Callout>
+						</>
+					),
+				},
+				{
+					key: "2",
+					label: "400",
+					content: (
+						<>
+							<p>
+								<Badge type="failure">BAD REQUEST</Badge>{" "}
+								Invalid product configuration or missing
+								required parameters.
+							</p>
+							<hr className="tertiary" />
+							<h5>Request</h5>
+							<CodeBlockWithCopy language="json">
+								{`POST /api/bundled-bav
+{
+  "mobileNumber": "9876543210"
+}`}
+							</CodeBlockWithCopy>
+							<hr className="tertiary" />
+							<h5>Response</h5>
+							<CodeBlockWithCopy language="json">
+								{`{
+  "success": false,
+  "message": "Bad request - invalid product configuration",
+  "traceId": "1-1234567890"
+}`}
+							</CodeBlockWithCopy>
+						</>
+					),
+				},
+				{
+					key: "3",
+					label: "500",
+					content: (
+						<>
+							<p>
+								<Badge type="failure">
+									INTERNAL SERVER ERROR
+								</Badge>{" "}
+								Failed to create request due to internal error.
+							</p>
+							<hr className="tertiary" />
+							<h5>Request</h5>
+							<CodeBlockWithCopy language="json">
+								{`POST /api/bundled-bav
+{
+  "mobileNumber": "9876543210"
+}`}
+							</CodeBlockWithCopy>
+							<hr className="tertiary" />
+							<h5>Response</h5>
+							<CodeBlockWithCopy language="json">
+								{`{
+  "success": false,
+  "message": "Failed to create request - internal error",
+  "traceId": "1-1234567890"
+}`}
+							</CodeBlockWithCopy>
+						</>
+					),
+				},
+			]}
+		></Tabs>
+	</Portion>
+</Row>
+
+<hr class="tertiary" />
+
+### Open URL in webview
+
+Open the returned `url` in a webview within your application. The customer will see the Bundled BAV interface where they can choose their preferred verification method.
+
+<Callout type="tip">
+	Make sure to handle the webview lifecycle properly to provide a smooth user
+	experience.
+</Callout>
+
+<hr class="tertiary" />
+
+### Handle redirect
+
+Once the customer completes the verification process, they will be redirected to the `redirectUrl` configured in your product settings.
+
+Set up an event listener in your app to detect this redirect and close the webview accordingly.
+
+**Example event listener pattern**
+
+<CodeBlockWithCopy language="javascript">
+	{`// Detect when the webview navigates to your redirect URL
+webview.onNavigationStateChange = (navState) => {
+  if (navState.url.startsWith(YOUR_REDIRECT_URL)) {
+    // Close the webview
+    closeWebview();
+    // Continue with your app flow
+    navigateToNextScreen();
+  }
+};`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+### Webhook notification
+
+Once the verification is complete, Setu will send the bank account details to your configured webhook endpoint.
+
+<Callout type="tip">
+	The webhook payload will contain the same <code>requestId</code> that you
+	received in the create request response. Use this to match the webhook
+	notification with the original verification request.
+</Callout>
+
+<br />
+
+**Webhook payload**
+
+<CodeBlockWithCopy language="json">
+	{`{
+  "requestId": "f4ec6a99-a9a9-4f23-8dea-1da1b285a156",
+  "data": {
+    "accountHolderName": "JOHN DOE",
+    "bankAccountNumber": "1234567890",
+    "bankAccountIfsc": "ICIC0005573",
+    "bankName": "ICICI BANK"
+  },
+  "bavMethod": "PENNY_DROP",
+  "success": true,
+  "message": "Bank account verification successful",
+  "timestamp": "2026-01-08T12:27:50.697274+00:00"
+}`}
+</CodeBlockWithCopy>
+
+<Callout type="warning">
+	Ensure your webhook endpoint is configured to accept POST requests and can
+	handle the payload structure above.
+</Callout>
+
+<hr class="tertiary" />
+
+### Best practices
+
+1. **Handle webhook retries** — Make your webhook endpoint idempotent as Setu may retry failed webhook deliveries
+2. **Store traceId** — Always store the `traceId` for debugging and support purposes
+3. **Handle timeouts** — Implement appropriate timeout handling for the webview
+
+<WasPageHelpful />
