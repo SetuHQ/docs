@@ -383,7 +383,7 @@ Setu provides webhook authentication. For more details, refer to <a href="/data/
 
 <hr className="tertiary" />
 
-##### 1. RPD_VERIFICATION_UPDATE Webhook
+##### RPD_VERIFICATION_UPDATE Webhook
 
 This webhook is sent when the end user makes a payments.
 
@@ -452,13 +452,17 @@ _The value can be `SAVINGS`, `CURRENT`, `NRO`, `NRE`_
                     "swift": "",
                     "upi": "true"
                 }
-            }
+            },
             "additionalData": { // if you have specified while creating RPD request 
             "key1" : "value1",
             "key2" : "value2"
-            }
+            },
+            "receiptId": "AXI75fc85a15ce6449491b79f8509c55a96",
+            "transactionId": "602185974626"
         }
-    }
+    },
+    "status": "BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL",
+    "productInstanceId": "abcdefgh-c1b5-4219-a64b-abcabc123456",
     "traceId"   : "7097e53a-baq9-4122-9d3d-8s8433b4f33e",
 }
   `}
@@ -469,6 +473,73 @@ _The value can be `SAVINGS`, `CURRENT`, `NRO`, `NRE`_
 
 <Text size="small" weight="600">
     Example 2
+</Text>
+
+<Card padding="nano" shape="rounded" marginBottom="micro">
+  <details>
+    <summary>
+        In case of successful bank verification, with add-on schema configured
+    </summary>
+    <hr className="tertiary" />
+    <CodeBlockWithCopy language="json">{`
+{
+    "event"     : "RPD_VERIFICATION_UPDATE", 	
+    "timeStamp" : "2021-11-12T00:12:29+05:30",
+    "data"        : {
+        "rpd" : {
+            "success"   : true,
+            "id"        : "7097e53a-ba29-48a2-983d-878433b4f33e", // the RPD request id
+            "upiBillId" : "907442106379798024",
+            "data"      : {
+                "bankAccountName"   : "Eve",
+                "bankAccountIfsc"   : "SBIN0000001",
+                "bankAccountNumber" : "48097036412",
+                "payerVpa"          : "test@upi",
+                "accountType"       : "BANK_ACCOUNT", // or UNKNOWN or PPI
+                "bankAccountType"   :  "SAVINGS", // Optional, can be null
+                "ifscCrossCheck"    : true,
+                "ifscDetails"       : {
+                    "address": "EXPRESS TOWERS,GROUND FLOOR,NARIMAN POINT,MUMBAI 400021",
+                    "branch": "Development Bank of Singapore IMPS",
+                    "center": "MUMBAI",
+                    "city": "MUMBAI",
+                    "contact": "+912266388888",
+                    "district": "MUMBAI",
+                    "imps": "true",
+                    "iso3166": "IN-MH",
+                    "micr": "400641002",
+                    "name": "Development Bank of Singapore",
+                    "neft": "true",
+                    "rtgs": "true",
+                    "state": "MAHARASHTRA",
+                    "swift": "",
+                    "upi": "true"
+                }
+            },
+            "additionalData": { // if you have specified while creating RPD request 
+            "key1" : "value1",
+            "key2" : "value2"
+            },
+            "receiptId": "AXI75fc85a15ce6449491b79f8509c55a96",
+            "transactionId": "602185974626",
+            "addOnFields": {
+                "psp_app": "PayApp"
+            }
+        }
+    },
+    "status": "BAV_REVERSE_PENNY_DROP_PAYMENT_SUCCESSFUL",
+    "traceId"   : "7097e53a-baq9-4122-9d3d-8s8433b4f33e",
+    "productInstanceId": "abcdefgh-c1b5-4219-a64b-abcabc123456",
+}
+  `}
+</CodeBlockWithCopy>
+
+  </details>
+</Card>
+
+
+<Text size="small" weight="600">
+    Example 3
 </Text>
 
 <Card padding="nano" shape="rounded" marginBottom="micro">
@@ -502,7 +573,7 @@ _The value can be `SAVINGS`, `CURRENT`, `NRO`, `NRE`_
 </Card>
 
 <Text size="small" weight="600">
-    Example 3
+    Example 4
 </Text>
 
 <Card padding="nano" shape="rounded" marginBottom="micro">
@@ -538,123 +609,6 @@ _The value can be `SAVINGS`, `CURRENT`, `NRO`, `NRE`_
 </CodeBlockWithCopy>
 
   </details>
-</Card>
-
-##### 2. RPD_DEBIT_ATTEMPT_FAILED Webhook
-
-This webhook is sent when the end user tries to make a payments but the debit fails due to some reason.
-
-<Card padding="nano" shape="rounded">
-    <details>
-        <summary>statusCode of this event can be one of the following:</summary>
-        <table>
-            <tr>
-                <th>statusCode</th>
-                <th>statusDescription</th>
-            </tr>
-            <tr>
-                <td>R01</td>
-                <td>The customer's debit attempt failed.</td>
-            </tr>
-            <tr>
-                <td>R02</td>
-                <td>Payment authorization took too long.</td>
-            </tr>
-            <tr>
-                <td>R03</td>
-                <td>The customer's bank is taking too long to respond.</td>
-            </tr>
-            <tr>
-                <td>R04</td>
-                <td>The debit process took too long.</td>
-            </tr>
-            <tr>
-                <td>R05</td>
-                <td>Connection timed out during the credit request process.</td>
-            </tr>
-            <tr>
-                <td>R06</td>
-                <td>The transaction exceeds the risk threshold.</td>
-            </tr>
-            <tr>
-                <td>R07</td>
-                <td>The customer's bank is unavailable.</td>
-            </tr>
-            <tr>
-                <td>R08</td>
-                <td>This transaction isn't permitted for the beneficiary.</td>
-            </tr>
-            <tr>
-                <td>R09</td>
-                <td>Connection timed out during the debit request process.</td>
-            </tr>
-            <tr>
-                <td>R12</td>
-                <td>Beneficiary bank response time is too high.</td>
-            </tr>
-            <tr>
-                <td>R13</td>
-                <td>The total debit amount exceeded the set limit.</td>
-            </tr>
-            <tr>
-                <td>R14</td>
-                <td>Transaction details mismatch.</td>
-            </tr>
-            <tr>
-                <td>R16</td>
-                <td>
-                    The requested function is not supported for the beneficiary.
-                </td>
-            </tr>
-            <tr>
-                <td>R20</td>
-                <td>
-                    Receiver/beneficiary is not available, causing a timeout.
-                </td>
-            </tr>
-            <tr>
-                <td>R22</td>
-                <td>The debit acknowledgement was not received.</td>
-            </tr>
-            <tr>
-                <td>R25</td>
-                <td>Duplicate transaction request.</td>
-            </tr>
-            <tr>
-                <td>R100</td>
-                <td>Any other upstream server error.</td>
-            </tr>
-        </table>
-    </details>
-</Card>
-
-###### Examples
-
-<Text size="small" weight="600">
-    Example 1
-</Text>
-
-<Card padding="nano" shape="rounded" marginBottom="micro">
-    <details>
-        <summary>In case of customer's debit attempt failed</summary>
-        <hr className="tertiary" />
-        <CodeBlockWithCopy language="json">
-            {`
-{
-  "data": {
-    "rpd": {
-      "id": "178ce32b-bf43-4797-9423-027d3722df08",
-      "additionalData": null, // customer's own data if they provided
-      "statusCode":  "R01",
-      "statusDescription": "The customer's debit attempt failed." 
-    }
-  },
-  "event": "RPD_DEBIT_ATTEMPT_FAILED",
-  "timeStamp": "2023-08-24T12:59:11.427233"
-}
-  `}
-        </CodeBlockWithCopy>
-    </details>
 </Card>
 
 <hr class="tertiary" />
