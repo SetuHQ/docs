@@ -6,18 +6,18 @@
  *   2. normalize-api-specs   → .api-reference-normalized/
  *   3. ingestion             → chunks.json
  *   4. validation            → fail-fast on bad data
- *   5. namespace safeguard   → require FORCE_EMBED if vectors exist
- *   6. backup                → export current Pinecone state
- *   7. embedding + S3 upload → real mode
+ *   5. namespace check        → log existing vector count
+ *   6. backup                 → export current Pinecone state
+ *   7. embedding + S3 upload  → real mode
  *
  * Usage:
- *   FORCE_EMBED=true npm run embed-all
+ *   npm run embed-all
  *
  * Required env vars (real mode):
  *   PINECONE_API_KEY, AWS_REGION, CONTENT_BUCKET_NAME
  *
  * Optional:
- *   PINECONE_INDEX, BEDROCK_MODEL_ID, BATCH_SIZE
+ *   PINECONE_INDEX, BEDROCK_MODEL_ID, BATCH_SIZE, EMBEDDING_CONCURRENCY
  */
 
 import { execSync } from 'child_process';
@@ -155,15 +155,9 @@ async function main(): Promise<void> {
   console.log(`  Index "${pineconeIndex}": ${stats.totalVectorCount} existing vectors`);
 
   if (stats.totalVectorCount > 0) {
-    if (process.env.FORCE_EMBED !== 'true') {
-      console.error(`\n  Namespace already contains ${stats.totalVectorCount} vectors.`);
-      console.error('  To proceed, set FORCE_EMBED=true');
-      console.error('  This will NOT delete existing vectors — new/changed chunks are upserted.\n');
-      fail('FORCE_EMBED=true required when namespace has existing vectors');
-    }
-    console.log('  [PASS] FORCE_EMBED=true — proceeding with upsert');
+    console.log('  [OK] Namespace has vectors — sync is idempotent, proceeding with upsert');
   } else {
-    console.log('  [PASS] Namespace empty — no confirmation needed');
+    console.log('  [OK] Namespace empty — first run');
   }
 
   // ────────────────────────────────────────────────────────────────
