@@ -13,6 +13,9 @@
  * 6. Handle incremental updates (skip unchanged files)
  * 7. Output JSON for downstream processing
  *
+ * Also ingests normalized API spec Markdown from
+ * .api-reference-normalized/ using the same chunking pipeline.
+ *
  * Design principles:
  * - Deterministic (same input = same output)
  * - Incremental (skip unchanged content)
@@ -31,7 +34,8 @@ import {
 import {
   parseMarkdownFile,
   extractSections,
-  flattenSections
+  flattenSections,
+  parseMarkdownFileAsPlainMd
 } from './parser.js';
 import {
   chunkDocument,
@@ -58,7 +62,10 @@ import type {
   PipelineConfig,
   IngestionResult,
   IngestionStats,
-  DocumentChunk
+  DocumentChunk,
+  DocumentFrontmatter,
+  GitInfo,
+  ChunkingConfig
 } from './types.js';
 
 /**
@@ -300,6 +307,158 @@ export function createDefaultConfig(
   };
 }
 
+// ============================================================================
+// API SPEC INGESTION (second input directory)
+// ============================================================================
+
+/**
+ * Parses the RAG Metadata footer block from a normalized API spec Markdown file.
+ *
+ * Expected footer format:
+ * ```
+ * ---
+ * ## RAG Metadata
+ * - source_type: api-spec
+ * - product: penny-drop
+ * - category: data
+ * - spec_version: openapi3
+ * ```
+ */
+export function parseRAGMetadata(content: string): Record<string, string> {
+  const metadata: Record<string, string> = {};
+  const metaStart = content.indexOf('## RAG Metadata');
+  if (metaStart === -1) return metadata;
+
+  const metaBlock = content.slice(metaStart);
+  const lines = metaBlock.split('\n');
+  for (const line of lines) {
+    const match = line.match(/^- ([a-z_]+):\s*(.+)$/);
+    if (match) {
+      metadata[match[1]] = match[2].trim();
+    }
+  }
+  return metadata;
+}
+
+/**
+ * Discovers all .md files in a directory recursively and returns relative paths.
+ */
+async function discoverMarkdownFiles(dir: string): Promise<string[]> {
+  const files: string[] = [];
+
+  async function walk(current: string): Promise<void> {
+    let entries;
+    try {
+      entries = await fs.readdir(current, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        await walk(full);
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        files.push(path.relative(dir, full));
+      }
+    }
+  }
+
+  await walk(dir);
+  return files.sort();
+}
+
+/**
+ * Ingests normalized API spec Markdown files from a directory.
+ *
+ * Uses the same chunking, enrichment, and validation pipeline as
+ * MDX docs. RAG metadata from the footer is injected into chunk metadata.
+ *
+ * @param apiSpecDir - Path to .api-reference-normalized/
+ * @param chunkingConfig - Chunking configuration (same as MDX)
+ * @param gitInfo - Git information
+ * @param baseUrl - Base URL for public URLs
+ * @returns Array of DocumentChunks from API spec files
+ */
+export async function ingestApiSpecDirectory(
+  apiSpecDir: string,
+  chunkingConfig: ChunkingConfig,
+  gitInfo: GitInfo,
+  baseUrl: string
+): Promise<DocumentChunk[]> {
+  // Check if directory exists
+  try {
+    await fs.access(apiSpecDir);
+  } catch {
+    console.log(`   API spec directory not found: ${apiSpecDir} — skipping`);
+    return [];
+  }
+
+  const files = await discoverMarkdownFiles(apiSpecDir);
+  if (files.length === 0) {
+    console.log('   No API spec files found — skipping');
+    return [];
+  }
+
+  console.log(`   Found ${files.length} API spec files`);
+
+  const allChunks: DocumentChunk[] = [];
+  let processedCount = 0;
+
+  for (const relativePath of files) {
+    const absolutePath = path.join(apiSpecDir, relativePath);
+
+    try {
+      // Use a prefixed doc_path so API spec chunks are distinguishable
+      const docPath = `api-reference/${relativePath}`;
+
+      // Parse as plain Markdown (not MDX — API spec files contain JSON
+      // code blocks with curly braces that break the MDX parser)
+      const parsedDoc = await parseMarkdownFileAsPlainMd(absolutePath, docPath);
+
+      // Extract RAG metadata from footer
+      const rawContent = await fs.readFile(absolutePath, 'utf-8');
+      const ragMeta = parseRAGMetadata(rawContent);
+
+      // Build a synthetic frontmatter that includes RAG metadata
+      const frontmatter: DocumentFrontmatter = {
+        ...parsedDoc.frontmatter,
+        page_title: ragMeta.product || relativePath.replace(/\.md$/, ''),
+        source_type: ragMeta.source_type || 'api-spec',
+        product: ragMeta.product || '',
+        category: ragMeta.category || '',
+        spec_version: ragMeta.spec_version || '',
+      };
+
+      // Extract sections and chunk
+      const sections = extractSections(parsedDoc.ast);
+      const flatSections = flattenSections(sections);
+
+      if (flatSections.length === 0) {
+        continue;
+      }
+
+      const textChunks = chunkDocument(flatSections, chunkingConfig);
+
+      // Enrich chunks with metadata
+      const documentChunks = textChunks.map(chunk =>
+        enrichChunk(chunk, docPath, frontmatter, gitInfo, baseUrl)
+      );
+
+      for (const chunk of documentChunks) {
+        validateChunk(chunk);
+      }
+
+      allChunks.push(...documentChunks);
+      processedCount++;
+    } catch (error) {
+      console.error(`   Error processing API spec ${relativePath}:`, error);
+    }
+  }
+
+  console.log(`   Processed ${processedCount} API spec files → ${allChunks.length} chunks`);
+  return allChunks;
+}
+
 /**
  * CLI entry point
  */
@@ -309,15 +468,57 @@ async function main() {
     // Default: ../content (assumes running from docs-ingestion/)
     const contentDir = process.argv[2] || path.join(process.cwd(), '..', 'content');
     const outputPath = process.argv[3] || path.join(process.cwd(), 'output', 'chunks.json');
+    const apiSpecDir = path.join(process.cwd(), '..', '.api-reference-normalized');
 
     console.log(`Content directory: ${contentDir}`);
+    console.log(`API spec directory: ${apiSpecDir}`);
     console.log(`Output path: ${outputPath}\n`);
 
     // Create configuration
     const config = createDefaultConfig(contentDir, outputPath);
 
-    // Run pipeline
-    await runIngestionPipeline(config);
+    // Run MDX ingestion pipeline first
+    const result = await runIngestionPipeline(config);
+
+    // Then ingest API spec files and combine
+    console.log('\n📄 Ingesting API spec files...');
+    const apiSpecChunks = await ingestApiSpecDirectory(
+      apiSpecDir,
+      config.chunking,
+      result.gitInfo,
+      config.baseUrl
+    );
+
+    if (apiSpecChunks.length > 0) {
+      // FIX: Remove any API spec chunks that leaked through mergeChunks
+      // from the previous run's chunks.json. The MDX pipeline's mergeChunks
+      // retains chunks from "unprocessed files", which includes API spec
+      // doc_paths. Without this filter, API spec chunks accumulate on every run.
+      const mdxOnlyChunks = result.chunks.filter(
+        c => !c.doc_path.startsWith('api-reference/')
+      );
+      const combinedChunks = [...mdxOnlyChunks, ...apiSpecChunks];
+      const combinedResult: IngestionResult = {
+        ...result,
+        chunks: combinedChunks,
+        stats: {
+          ...result.stats,
+          totalChunks: combinedChunks.length,
+        },
+      };
+
+      // Write combined output
+      const outputDir = path.dirname(outputPath);
+      await fs.mkdir(outputDir, { recursive: true });
+      await fs.writeFile(outputPath, JSON.stringify(combinedResult, null, 2), 'utf-8');
+
+      console.log(`   Combined output: ${mdxOnlyChunks.length} MDX + ${apiSpecChunks.length} API spec = ${combinedChunks.length} total chunks`);
+      console.log(`   Saved to ${outputPath}`);
+
+      // Re-analyze embedding readiness with combined chunks
+      const embeddingAnalysis = categorizeChunks(combinedChunks);
+      logEmbeddingStats(embeddingAnalysis.stats);
+    }
 
     process.exit(0);
   } catch (error) {

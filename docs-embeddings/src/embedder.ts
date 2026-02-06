@@ -18,40 +18,62 @@ export class BedrockEmbedder {
     this.modelId = modelId;
   }
 
+  private static readonly MAX_RETRIES = 4;
+
   /**
    * Generate embedding for a single chunk using Amazon Titan
    *
-   * Returns 1024-dimensional vector for titan-embed-text-v2
+   * Returns 1024-dimensional vector for titan-embed-text-v2.
+   * Retries with exponential backoff on throttling/transient errors.
    */
   async generateEmbedding(content: string): Promise<number[]> {
-    try {
-      const input: InvokeModelCommandInput = {
-        modelId: this.modelId,
-        contentType: 'application/json',
-        accept: 'application/json',
-        body: JSON.stringify({
-          inputText: content,
-          normalize: true   
+    let lastError: unknown;
 
-        })
-      };
+    for (let attempt = 0; attempt <= BedrockEmbedder.MAX_RETRIES; attempt++) {
+      try {
+        const input: InvokeModelCommandInput = {
+          modelId: this.modelId,
+          contentType: 'application/json',
+          accept: 'application/json',
+          body: JSON.stringify({
+            inputText: content,
+            normalize: true
+          })
+        };
 
-      const command = new InvokeModelCommand(input);
-      const response = await this.client.send(command);
+        const command = new InvokeModelCommand(input);
+        const response = await this.client.send(command);
 
-      // Decode response body
-      const responseBody = JSON.parse(
-        new TextDecoder().decode(response.body)
-      );
+        const responseBody = JSON.parse(
+          new TextDecoder().decode(response.body)
+        );
 
-      this.callCount++;
+        this.callCount++;
+        return responseBody.embedding;
+      } catch (error: any) {
+        lastError = error;
+        const isRetryable =
+          error?.name === 'ThrottlingException' ||
+          error?.name === 'ServiceUnavailableException' ||
+          error?.name === 'ModelTimeoutException' ||
+          error?.$metadata?.httpStatusCode === 429 ||
+          error?.$metadata?.httpStatusCode >= 500;
 
-      // Titan returns { embedding: number[], inputTextTokenCount: number }
-      return responseBody.embedding;
-    } catch (error) {
-      console.error('Error generating Bedrock embedding:', error);
-      throw error;
+        if (!isRetryable || attempt === BedrockEmbedder.MAX_RETRIES) {
+          console.error(`Bedrock embedding failed (attempt ${attempt + 1}/${BedrockEmbedder.MAX_RETRIES + 1}):`, error);
+          throw error;
+        }
+
+        // Full jitter: randomize within [50%, 100%] of exponential delay
+        // to prevent thundering herd when multiple concurrent calls retry
+        const maxDelay = Math.min(1000 * Math.pow(2, attempt), 16000);
+        const delay = Math.floor(maxDelay / 2 + Math.random() * maxDelay / 2);
+        console.warn(`   Bedrock throttled (attempt ${attempt + 1}), retrying in ${delay}ms...`);
+        await this.sleep(delay);
+      }
     }
+
+    throw lastError;
   }
 
   /**

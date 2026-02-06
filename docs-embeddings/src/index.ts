@@ -13,6 +13,8 @@ dotenv.config({ path: '.env' });
 
 async function main() {
   try {
+    const dryRun = process.argv.includes('--dry-run') || process.env.DRY_RUN === 'true';
+
     // Load config from environment
     const config: EmbeddingConfig = {
       ingestionOutputPath: process.env.INGESTION_OUTPUT_PATH ||
@@ -23,11 +25,14 @@ async function main() {
       bedrockModelId: process.env.BEDROCK_MODEL_ID || 'amazon.titan-embed-text-v2:0',
       pineconeApiKey: process.env.PINECONE_API_KEY || '',
       pineconeIndex: process.env.PINECONE_INDEX || 'docs-embeddings',
-      batchSize: parseInt(process.env.BATCH_SIZE || '25', 10)
+      batchSize: parseInt(process.env.BATCH_SIZE || '25', 10),
+      s3ContentBucket: process.env.CONTENT_BUCKET_NAME || undefined,
+      dryRun,
+      embeddingConcurrency: parseInt(process.env.EMBEDDING_CONCURRENCY || '5', 10),
     };
 
-    // Validate
-    if (!config.pineconeApiKey) {
+    // Validate (Pinecone key not required in dry-run)
+    if (!dryRun && !config.pineconeApiKey) {
       throw new Error('PINECONE_API_KEY environment variable is required');
     }
 
@@ -37,7 +42,10 @@ async function main() {
     console.log(`  AWS region: ${config.awsRegion}`);
     console.log(`  Bedrock model: ${config.bedrockModelId}`);
     console.log(`  Pinecone index: ${config.pineconeIndex}`);
-    console.log(`  Batch size: ${config.batchSize}\n`);
+    console.log(`  Batch size: ${config.batchSize}`);
+    console.log(`  S3 bucket: ${config.s3ContentBucket || '(not configured)'}`);
+    console.log(`  Embedding concurrency: ${config.embeddingConcurrency}`);
+    console.log(`  Dry run: ${dryRun}\n`);
 
     // Run sync
     const sync = new EmbeddingSync(config);

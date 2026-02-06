@@ -72,6 +72,37 @@ export async function parseMarkdownFile(
 }
 
 /**
+ * Parses a plain Markdown file (no MDX/JSX extensions).
+ *
+ * Used for API spec normalized files which contain JSON code blocks
+ * with curly braces that would be misinterpreted by the MDX parser.
+ */
+export async function parseMarkdownFileAsPlainMd(
+  filePath: string,
+  relativePath: string
+): Promise<ParsedDocument> {
+  const rawContent = await fs.readFile(filePath, 'utf-8');
+  const { data: frontmatter, content } = matter(rawContent);
+
+  let ast;
+  try {
+    // Parse as standard Markdown — no MDX extensions
+    ast = fromMarkdown(content);
+  } catch (error) {
+    throw new Error(
+      `Failed to parse ${relativePath}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+
+  return {
+    filePath: relativePath,
+    frontmatter,
+    ast,
+    content
+  };
+}
+
+/**
  * Extracts document sections based on heading hierarchy
  *
  * This creates a tree structure where each heading becomes a section

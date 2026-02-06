@@ -18,6 +18,7 @@ export interface DocumentChunk {
   metadata: {
     page_title?: string;
     sidebar_title?: string;
+    [key: string]: any;
   };
 }
 
@@ -35,6 +36,7 @@ export interface VectorRecord {
     is_oversized: boolean;
     token_count: number;
     url: string;
+    [key: string]: any;          // Forward all chunk metadata (source_type, product, etc.)
   };
 }
 
@@ -56,6 +58,8 @@ export interface SyncStats {
   vectors_updated: number;       // metadata-only updates
   vectors_deleted: number;
   embedding_api_calls: number;   // Should be 0 on re-run
+  s3_uploaded: number;
+  s3_skipped: number;
   sync_duration_ms: number;
 }
 
@@ -68,4 +72,7 @@ export interface EmbeddingConfig {
   pineconeApiKey: string;
   pineconeIndex: string;
   batchSize: number;              // 100 vectors per upsert
+  s3ContentBucket?: string;       // S3 bucket for content upload (optional)
+  dryRun?: boolean;               // Skip external calls, validate only
+  embeddingConcurrency?: number;  // Parallel Bedrock calls (default 5)
 }

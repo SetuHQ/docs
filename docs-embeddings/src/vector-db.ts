@@ -34,17 +34,7 @@ export class VectorDB {
     const vectors = records.map(record => ({
       id: record.id,
       values: record.embedding,
-      metadata: {
-        // FIX #2: content removed from metadata
-        doc_path: record.metadata.doc_path,
-        section_path: record.metadata.section_path,
-        page_context: record.metadata.page_context,
-        source_repo: record.metadata.source_repo,
-        commit_sha: record.metadata.commit_sha,
-        is_oversized: record.metadata.is_oversized,
-        token_count: record.metadata.token_count,
-        url: record.metadata.url
-      }
+      metadata: record.metadata
     }));
 
     await this.index.upsert(vectors);
@@ -95,5 +85,89 @@ export class VectorDB {
     return {
       totalVectorCount: stats.totalRecordCount || 0
     };
+  }
+
+  /**
+   * List all vector IDs in the index.
+   *
+   * Tries listPaginated first (serverless indexes), then falls back
+   * to a zero-vector query (pod-based indexes, capped at 10 000).
+   */
+  async listAllIds(): Promise<string[]> {
+    const allIds: string[] = [];
+
+    // Attempt 1: listPaginated (available on serverless indexes)
+    try {
+      let paginationToken: string | undefined;
+      do {
+        const response: any = await this.index.listPaginated({
+          limit: 100,
+          paginationToken
+        });
+
+        if (response.vectors) {
+          for (const v of response.vectors) {
+            if (v.id) allIds.push(v.id);
+          }
+        }
+
+        paginationToken = response.pagination?.next;
+      } while (paginationToken);
+
+      return allIds;
+    } catch {
+      // listPaginated not available — fall through
+    }
+
+    // Attempt 2: zero-vector query (works on all index types, max 10 000)
+    const stats = await this.getStats();
+    const topK = Math.min(stats.totalVectorCount, 10000);
+
+    if (topK === 0) return [];
+
+    const result = await this.index.query({
+      vector: new Array(1024).fill(0),
+      topK,
+      includeMetadata: false,
+      includeValues: false
+    });
+
+    if (result.matches) {
+      for (const match of result.matches) {
+        allIds.push(match.id);
+      }
+    }
+
+    return allIds;
+  }
+
+  /**
+   * Fetch vector metadata by IDs (drops embedding values).
+   *
+   * Used for backup — saves IDs + metadata without large embedding arrays.
+   */
+  async fetchVectorsWithMetadata(
+    ids: string[]
+  ): Promise<Array<{ id: string; metadata: Record<string, any> }>> {
+    if (ids.length === 0) return [];
+
+    const results: Array<{ id: string; metadata: Record<string, any> }> = [];
+    const BATCH = 100;
+
+    for (let i = 0; i < ids.length; i += BATCH) {
+      const batch = ids.slice(i, i + BATCH);
+      const response = await this.index.fetch(batch);
+
+      for (const id of batch) {
+        if (response.records[id]) {
+          results.push({
+            id,
+            metadata: response.records[id].metadata || {}
+          });
+        }
+      }
+    }
+
+    return results;
   }
 }
