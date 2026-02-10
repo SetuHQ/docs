@@ -1,7 +1,7 @@
 ---
-sidebar_title: FX Retail flow
-page_title: BBPS COU — FX Retail flow (Forex category)
-order: 10
+sidebar_title: FX Retail
+page_title: BBPS COU — FX Retail (Forex category)
+order: 8
 visible_in_sidebar: true
 ---
 
@@ -53,15 +53,13 @@ The master list of banks and their branches (used in fields like `bankId`, `bank
 
 All Val Add and Mandate calls are **asynchronous**. On 200 OK, the initial request returns immediately with a `refId`:
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "status": "Processing",
   "data": {
     "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
   },
   "traceId": "CV4PE82LTNJE9O014OE1"
-}
-```
+}`}</CodeBlockWithCopy>
 
 To get the final result, use either:
 
@@ -85,8 +83,7 @@ If the customer is registered, the response includes a `customerId` and `custome
 
 **Request body**
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "agent": {
     "id": "AX01AX26INBU00000001",
     "channel": "INTB",
@@ -102,13 +99,11 @@ If the customer is registered, the response includes a `customerId` and `custome
       "value": "9812000000"
     }
   ]
-}
-```
+}`}</CodeBlockWithCopy>
 
 **Success response** (from `/response` endpoint or webhook)
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "status": "Success",
   "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
   "traceId": "CV4PE82LTNJE9O014OE0",
@@ -124,8 +119,7 @@ If the customer is registered, the response includes a `customerId` and `custome
       }
     ]
   }
-}
-```
+}`}</CodeBlockWithCopy>
 
 > If the response is successful, you already have a `customerId` — skip to Step 4. Only proceed to Step 2 if the call fails with error code `CUS007` (customer does not exist).
 
@@ -145,8 +139,7 @@ Send required details such as:
 
 **Request body**
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "agent": {
     "id": "AX01AX26INBU00000001",
     "channel": "INTB",
@@ -202,15 +195,13 @@ Send required details such as:
       "value": "true"
     }
   ]
-}
-```
+}`}</CodeBlockWithCopy>
 
 **Success response** (from `/response` endpoint or webhook)
 
 On successful generation of OTP(s), the response will look like this:
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "status": "Success",
   "refId": "OTPGENREF1234567890ABCDEFGHIJKLMNOPQ",
   "traceId": "CV4PE82LTNJE9O014OTP",
@@ -266,8 +257,7 @@ On successful generation of OTP(s), the response will look like this:
       }
     ]
   }
-}
-```
+}`}</CodeBlockWithCopy>
 
 ### Step 3 — Validate OTP + accept T&C (ValidateOTP)
 
@@ -286,8 +276,7 @@ If OTP validation succeeds, the FX Retail platform registers the user and return
 
 **Request body**
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "agent": {
     "id": "AX01AX26INBU00000001",
     "channel": "INTB",
@@ -355,13 +344,11 @@ If OTP validation succeeds, the FX Retail platform registers the user and return
       "value": "true"
     }
   ]
-}
-```
+}`}</CodeBlockWithCopy>
 
 **Success response** (from `/response` endpoint or webhook)
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "status": "Success",
   "refId": "OTPVALREF1234567890RSTUVWXYZABCDEFG",
   "traceId": "CV4PE82LTNJE9O01VAL",
@@ -377,8 +364,7 @@ If OTP validation succeeds, the FX Retail platform registers the user and return
       }
     ]
   }
-}
-```
+}`}</CodeBlockWithCopy>
 
 > The `customerId` returned here is used in Steps 4 and 5.
 
@@ -393,8 +379,7 @@ If multiple banks are associated with the customer's FX account, multiple markup
 
 **Request body**
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "agent": {
     "id": "AX01AX26INBU00000001",
     "channel": "INTB",
@@ -418,13 +403,11 @@ If multiple banks are associated with the customer's FX account, multiple markup
       "value": "NB00024252"
     }
   ]
-}
-```
+}`}</CodeBlockWithCopy>
 
 **Success response** (from `/response` endpoint or webhook)
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "status": "Success",
   "refId": "MARKUPREF1234567890HIJKLMNOPQRSTUV",
   "traceId": "CV4PE82LTNJE9O0MARK",
@@ -478,8 +461,7 @@ If multiple banks are associated with the customer's FX account, multiple markup
       }
     ]
   }
-}
-```
+}`}</CodeBlockWithCopy>
 
 > Present these banks to the customer. The selected bank's `bankId`, `homeBranchIFSC`, `rate`, `units`, and `relationshipBank` name are needed for FetchBestPrice.
 
@@ -494,8 +476,15 @@ The response includes the **best price** and a **total payable amount** which ty
 
 **Request body**
 
-```json
-{
+The following fields are carried over from earlier steps:
+- `bankId` — from Step 4 `billerSpecificInfo.bankId`
+- `customerId` — from Step 1 or Step 3
+- `ifsc` — from Step 4 `billerSpecificInfo.homeBranchIFSC`
+- `markup` — from Step 4 `billerSpecificInfo.rate`
+- `relationshipBank` — from Step 4 `billerResponse[].value`
+- `units` — from Step 4 `billerSpecificInfo.units`
+
+<CodeBlockWithCopy language="json">{`{
   "agent": {
     "id": "AX01AX26INBU00000001",
     "channel": "INTB",
@@ -513,7 +502,6 @@ The response includes the **best price** and a **total payable amount** which ty
     {
       "name": "bankId",
       "value": "10128"
-      // ← from Step 4 billerSpecificInfo.bankId
     },
     {
       "name": "currency",
@@ -522,7 +510,6 @@ The response includes the **best price** and a **total payable amount** which ty
     {
       "name": "customerId",
       "value": "IN0025000213"
-      // ← from Step 1 or Step 3
     },
     {
       "name": "deliveryMode",
@@ -531,7 +518,6 @@ The response includes the **best price** and a **total payable amount** which ty
     {
       "name": "ifsc",
       "value": "ZSBL0000341"
-      // ← from Step 4 billerSpecificInfo.homeBranchIFSC
     },
     {
       "name": "instrumentType",
@@ -540,7 +526,6 @@ The response includes the **best price** and a **total payable amount** which ty
     {
       "name": "markup",
       "value": "0.5"
-      // ← from Step 4 billerSpecificInfo.rate
     },
     {
       "name": "mobileNumber",
@@ -557,7 +542,6 @@ The response includes the **best price** and a **total payable amount** which ty
     {
       "name": "relationshipBank",
       "value": "INDIA POST PAYMENTS BANK LIMITED"
-      // ← from Step 4 billerResponse[].value
     },
     {
       "name": "tcFlag",
@@ -570,16 +554,13 @@ The response includes the **best price** and a **total payable amount** which ty
     {
       "name": "units",
       "value": "fixed"
-      // ← from Step 4 billerSpecificInfo.units
     }
   ]
-}
-```
+}`}</CodeBlockWithCopy>
 
 **Success response** (from `/response` endpoint or webhook)
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "status": "Success",
   "refId": "BESTPRCREF123456789WXYZABCDEFGHIJKL",
   "traceId": "CV4PE82LTNJE9O0BEST",
@@ -615,8 +596,7 @@ The response includes the **best price** and a **total payable amount** which ty
       }
     ]
   }
-}
-```
+}`}</CodeBlockWithCopy>
 
 > `totalPayableAmount` is in paise and includes a buffer for price fluctuation. This is the amount the PSP should debit in Step 6.
 
@@ -637,8 +617,9 @@ On success, the mandate result includes the **actual amount utilised** for the o
 
 **Request body**
 
-```json
-{
+The `customerId` is from Step 1 or Step 3, and `amount` is the `totalPayableAmount` from Step 5 (in paise).
+
+<CodeBlockWithCopy language="json">{`{
   "agent": {
     "id": "AX01AX26INBU00000001",
     "channel": "INTB",
@@ -653,23 +634,19 @@ On success, the mandate result includes the **actual amount utilised** for the o
       {
         "name": "customerId",
         "value": "IN0025000213"
-        // ← from Step 1 or Step 3
       }
     ]
   },
   "mandate": {
     "mode": "UPI",
     "amount": 8506000,
-    // ← totalPayableAmount from Step 5 (in paise)
     "mandateRefId": "d30eb5d76250a2faa76c5a2a59c76cc3"
   }
-}
-```
+}`}</CodeBlockWithCopy>
 
 **Success response** (from `/response` endpoint or webhook)
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "status": "Success",
   "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
   "traceId": "CV6PG04MUNJG9P126QG3",
@@ -689,8 +666,7 @@ On success, the mandate result includes the **actual amount utilised** for the o
       "deliveryMode": "Currency"
     }
   }
-}
-```
+}`}</CodeBlockWithCopy>
 
 > The mandate can fail if the market price moves above the buffered amount.
 
@@ -717,8 +693,9 @@ For FX Retail mandate-related payments, include:
 
 **Request body**
 
-```json
-{
+The `refId` is the mandate's `refId` from Step 7.
+
+<CodeBlockWithCopy language="json">{`{
   "agent": {
     "id": "AX01AX26INBU00000001",
     "channel": "INTB",
@@ -749,19 +726,14 @@ For FX Retail mandate-related payments, include:
     "pan": "JS00024252"
   },
   "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
-  // ← refId from the mandate response (Step 7)
   "paymentType": "MANDATE_AND_PAY"
-}
-```
-
-> The `refId` here is the mandate's `refId` from Step 7.
+}`}</CodeBlockWithCopy>
 
 ## Error handling
 
 When an API call fails, the response follows this format:
 
-```json
-{
+<CodeBlockWithCopy language="json">{`{
   "status": "Failure",
   "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
   "traceId": "CV4PE82LTNJE9O014OE0",
@@ -773,8 +745,7 @@ When an API call fails, the response follows this format:
       }
     ]
   }
-}
-```
+}`}</CodeBlockWithCopy>
 
 Common failure scenarios:
 
@@ -790,3 +761,5 @@ Refer to:
 
 - **Webhooks**: `/payments/billpay/api-integration/webhooks`
 - **List of APIs**: `/payments/billpay/api-integration/apis`
+
+<WasPageHelpful />
