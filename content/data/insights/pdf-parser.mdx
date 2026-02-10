@@ -1,0 +1,345 @@
+---
+sidebar_title: PDF parser
+page_title: Setu Bank Statement Parser API
+order: 3
+visible_in_sidebar: true
+---
+
+## Overview
+
+The Setu Bank Statement Parser API enables extraction of structured financial data from bank statement PDFs. It supports 80+ Indian banks and returns parsed data in the Account Aggregator (AA) FI data format, making it directly compatible with the RBI Account Aggregator ecosystem.
+
+The API follows an asynchronous processing model: you upload a PDF, poll for completion (or receive a webhook), and then retrieve the structured output.
+
+### Key features
+
+- **Broad bank coverage**: Supports 80+ Indian banks (public, private, cooperative, small finance, and payments banks).
+- **AA-compatible output**: Returns parsed data in the RBI Account Aggregator (AA) FI schema format, ready to plug into AA-based workflows.
+- **Password-protected PDFs**: Handles password-protected bank statement PDFs.
+- **Asynchronous processing**: Uses an async model with polling or webhook-based completion notifications.
+- **Rich financial data extraction**: Extracts account profile, summary, and full transaction history.
+
+### Integration flow
+
+The integration follows four sequential steps:
+
+1. **Authenticate** — Include your credentials in every request header.
+2. **Upload PDF** — Submit the bank statement as a multipart form upload.
+3. **Poll status** — Check processing status using the returned `upload_id`.
+4. **Retrieve data** — Fetch the parsed AA-format data once processing succeeds.
+
+<WasPageHelpful />
+
+### Authentication
+
+All API requests must include the following three headers for authentication. These credentials are issued by Setu upon onboarding.
+
+| Field                   | Type   | Required | Description                                      |
+| ----------------------- | ------ | -------- | ------------------------------------------------ |
+| `x-client-id`           | string | Yes      | Your unique client identifier (UUID format)      |
+| `x-client-secret`       | string | Yes      | Your client secret key                           |
+| `x-product-instance-id` | string | Yes      | Product instance identifier (UUID format)        |
+
+**Example headers**
+
+```http
+x-client-id: <YOUR_CLIENT_ID>
+x-client-secret: <YOUR_CLIENT_SECRET>
+x-product-instance-id: <YOUR_PRODUCT_INSTANCE_ID>
+```
+
+<Callout type="warning">
+  Never expose your credentials in client-side code or public repositories. Always make API calls from your server.
+</Callout>
+
+### API endpoints
+
+#### 3.1 Get supported banks
+
+Returns the list of all bank names currently supported by the parser. Use the exact bank name from this response when uploading a PDF.
+
+- **Method & path**: `GET /alternate-fi-data/v3/pdfData/supported_banks`
+
+**Request**
+
+```bash
+curl --location \
+  'https://solutions-uat.setu.co/alternate-fi-data/v3/pdfData/supported_banks' \
+  --header 'x-client-id: <YOUR_CLIENT_ID>' \
+  --header 'x-client-secret: <YOUR_CLIENT_SECRET>' \
+  --header 'x-product-instance-id: <YOUR_PRODUCT_INSTANCE_ID>'
+```
+
+**Response schema**
+
+| Field      | Type     | Required | Description                                         |
+| ---------- | -------- | -------- | --------------------------------------------------- |
+| `status`   | string   | -        | `"Success"` if the request completed successfully   |
+| `trace_id` | string   | -        | Unique trace ID for the request (UUID)             |
+| `data`     | string[] | -        | Array of supported bank name strings                |
+
+**Example response**
+
+```json
+{
+  "status": "Success",
+  "trace_id": "97926c1f-5143-42f6-91f7-a5a3ce421d92",
+  "data": [
+    "Axis Bank",
+    "HDFC Bank",
+    "ICICI Bank",
+    "State Bank of India"
+  ]
+}
+```
+
+#### 3.2 Upload bank statement PDF
+
+Uploads a bank statement PDF for asynchronous parsing. The response includes an `upload_id` used to track processing status and retrieve results.
+
+- **Method & path**: `POST /alternate-fi-data/v3/pdfData/?refId={your_reference_id}`
+
+**Query parameters**
+
+| Field   | Type   | Required | Description                                                 |
+| ------- | ------ | -------- | ----------------------------------------------------------- |
+| `refId` | string | Yes      | Your custom reference ID for this upload (e.g. `"axis_state1234"`) |
+
+**Form data (multipart/form-data)**
+
+| Field      | Type   | Required | Description                                            |
+| ---------- | ------ | -------- | ------------------------------------------------------ |
+| `bankName` | string | Yes      | Exact bank name from the supported banks list         |
+| `password` | string | No       | PDF password (only if the PDF is password-protected)  |
+| `dataFile` | file   | Yes      | The bank statement PDF file                           |
+
+**Request**
+
+```bash
+curl --location \
+  'https://solutions-uat.setu.co/alternate-fi-data/v3/pdfData/?refId=axis_state1234' \
+  --header 'x-client-id: <YOUR_CLIENT_ID>' \
+  --header 'x-client-secret: <YOUR_CLIENT_SECRET>' \
+  --header 'x-product-instance-id: <YOUR_PRODUCT_INSTANCE_ID>' \
+  --form 'bankName="Axis Bank"' \
+  --form 'password="****"' \
+  --form 'dataFile=@"/path/to/statement.pdf"'
+```
+
+**Response schema**
+
+| Field       | Type   | Required | Description                                                       |
+| ----------- | ------ | -------- | ----------------------------------------------------------------- |
+| `status`    | string | -        | `"Accepted"` when upload is received                             |
+| `trace_id`  | string | -        | Unique trace ID (UUID) — same as `upload_id`                     |
+| `upload_id` | string | -        | Unique identifier for this upload; use for status/data retrieval |
+| `message`   | string | -        | Human-readable status message                                     |
+
+**Example response**
+
+```json
+{
+  "status": "Accepted",
+  "trace_id": "c9ecfeca-aad9-4392-b0b3-31c1f8b561bf",
+  "upload_id": "c9ecfeca-aad9-4392-b0b3-31c1f8b561bf",
+  "message": "Upload received. Processing started. Poll /status or wait for webhook."
+}
+```
+
+#### 3.3 Get processing status
+
+Poll this endpoint to check whether the uploaded PDF has been parsed. Continue polling until `status` is `"Success"` or an error is returned.
+
+- **Method & path**: `GET /alternate-fi-data/v3/pdfData/status/{upload_id}`
+
+**Path parameters**
+
+| Field       | Type   | Required | Description                                      |
+| ----------- | ------ | -------- | ------------------------------------------------ |
+| `upload_id` | string | Yes      | The `upload_id` returned from the Upload PDF endpoint |
+
+**Request**
+
+```bash
+curl --location \
+  'https://solutions-uat.setu.co/alternate-fi-data/v3/pdfData/status/{upload_id}' \
+  --header 'x-client-id: <YOUR_CLIENT_ID>' \
+  --header 'x-client-secret: <YOUR_CLIENT_SECRET>' \
+  --header 'x-product-instance-id: <YOUR_PRODUCT_INSTANCE_ID>'
+```
+
+**Response schema**
+
+| Field       | Type           | Required | Description                                                       |
+| ----------- | -------------- | -------- | ----------------------------------------------------------------- |
+| `status`    | string         | -        | `"Pending"` while processing, `"Success"` when complete          |
+| `parsed`    | boolean        | -        | `true` when parsing is complete, `false` otherwise               |
+| `auto_di`   | boolean        | -        | Whether auto data-ingestion is enabled                           |
+| `di_block_id` | string \| null | -      | The `refId` you provided (null while pending)                    |
+| `trace_id`  | string         | -        | Trace ID for this request (matches `upload_id`)                  |
+| `reason`    | string \| null | -        | Error reason if processing failed, null otherwise                |
+
+**Response — pending**
+
+```json
+{
+  "status": "Pending",
+  "parsed": false,
+  "auto_di": true,
+  "di_block_id": null,
+  "trace_id": "c9ecfeca-aad9-4392-b0b3-31c1f8b561bf",
+  "reason": null
+}
+```
+
+**Response — success**
+
+```json
+{
+  "status": "Success",
+  "parsed": true,
+  "auto_di": true,
+  "di_block_id": "axis_state1234",
+  "trace_id": "c9ecfeca-aad9-4392-b0b3-31c1f8b561bf",
+  "reason": null
+}
+```
+
+#### 3.4 Get parsed data
+
+Retrieves the fully parsed bank statement data in Account Aggregator (AA) FI schema format. Call this only after the status endpoint returns `"Success"`.
+
+- **Method & path**: `GET /alternate-fi-data/v3/pdfData/{upload_id}`
+
+**Path parameters**
+
+| Field       | Type   | Required | Description                                      |
+| ----------- | ------ | -------- | ------------------------------------------------ |
+| `upload_id` | string | Yes      | The `upload_id` returned from the Upload PDF endpoint |
+
+**Request**
+
+```bash
+curl --location \
+  'https://solutions-uat.setu.co/alternate-fi-data/v3/pdfData/{upload_id}' \
+  --header 'x-client-id: <YOUR_CLIENT_ID>' \
+  --header 'x-client-secret: <YOUR_CLIENT_SECRET>' \
+  --header 'x-product-instance-id: <YOUR_PRODUCT_INSTANCE_ID>'
+```
+
+### Parsed data response schema (AA FI format)
+
+The parsed data response conforms to the RBI Account Aggregator Financial Information (FI) schema. This makes the output directly compatible with any system consuming AA-format data.
+
+#### 4.1 Top-level response
+
+| Field        | Type   | Required | Description                                         |
+| ------------ | ------ | -------- | --------------------------------------------------- |
+| `trace_id`   | string | -        | Unique request trace ID (UUID)                     |
+| `parsed_data`| object | -        | Contains the `account` object with all parsed data |
+| `di_block_id`| string | -        | Your custom reference ID (`refId`)                 |
+
+#### 4.2 `parsed_data.account`
+
+| Field             | Type   | Required | Description                                         |
+| ----------------- | ------ | -------- | --------------------------------------------------- |
+| `type`            | string | -        | Account type: `"deposit"`                           |
+| `maskedAccNumber` | string | -        | Masked account number                               |
+| `version`         | string | -        | FI schema version (e.g. `"1.1"`)                    |
+| `linkedAccRef`    | string | -        | Linked account reference (UUID)                     |
+| `profile`         | object | -        | Account holder profile information                  |
+| `summary`         | object | -        | Account summary and branch details                  |
+| `transactions`    | object | -        | Transaction list with date range                    |
+
+#### 4.3 `profile.holders.holder[]`
+
+Array of account holders. Each holder contains:
+
+| Field            | Type          | Required | Description                                           |
+| ---------------- | ------------- | -------- | ----------------------------------------------------- |
+| `name`           | string        | -        | Full name of the account holder                       |
+| `dob`            | string \| null| -        | Date of birth (if available)                          |
+| `mobile`         | string        | -        | Masked mobile number (e.g. `"XXXXXX8883"`)           |
+| `nominee`        | string \| null| -        | Nominee name (if available)                           |
+| `landline`       | string \| null| -        | Landline number (if available)                        |
+| `address`        | string        | -        | Full postal address                                   |
+| `email`          | string        | -        | Partially masked email address                        |
+| `pan`            | string        | -        | PAN number                                            |
+| `ckycCompliance` | boolean       | -        | CKYC compliance status                                |
+
+#### 4.4 `summary`
+
+Account summary object with branch and balance information:
+
+| Field            | Type          | Required | Description                                           |
+| ---------------- | ------------- | -------- | ----------------------------------------------------- |
+| `pending`        | string \| null| -        | Pending amount (if any)                               |
+| `currentBalance` | string        | -        | Current account balance                               |
+| `currency`       | string \| null| -        | Currency code (e.g. `"INR"`)                         |
+| `exchgeRate`     | string \| null| -        | Exchange rate (if applicable)                         |
+| `balanceDateTime`| string \| null| -        | Timestamp of balance                                  |
+| `type`           | string \| null| -        | Account type (savings, current, etc.)                 |
+| `branch`         | string        | -        | Branch name                                           |
+| `facility`       | string \| null| -        | Facility type                                         |
+| `ifscCode`       | string        | -        | IFSC code of the branch                               |
+| `micrCode`       | string        | -        | MICR code of the branch                               |
+| `openingDate`    | string \| null| -        | Account opening date                                  |
+| `currentODLimit` | string        | -        | Current overdraft limit                               |
+| `drawingLimit`   | string \| null| -        | Drawing limit (if applicable)                         |
+| `status`         | string \| null| -        | Account status                                        |
+
+#### 4.5 `transactions`
+
+Contains the date range and array of individual transactions:
+
+| Field        | Type    | Required | Description                                     |
+| ------------ | ------- | -------- | ----------------------------------------------- |
+| `startDate`  | string  | -        | Statement start date (`YYYY-MM-DD`)            |
+| `endDate`    | string  | -        | Statement end date (`YYYY-MM-DD`)              |
+| `transaction`| array   | -        | Array of transaction objects                    |
+
+#### 4.6 `transactions.transaction[]`
+
+Each transaction in the array contains:
+
+| Field                 | Type          | Required | Description                                                           |
+| --------------------- | ------------- | -------- | --------------------------------------------------------------------- |
+| `type`                | string        | -        | `"CREDIT"` or `"DEBIT"`                                              |
+| `mode`                | string        | -        | Transaction mode (e.g. `"OTHERS"`, `"UPI"`, `"NEFT"`)                |
+| `amount`              | number        | -        | Transaction amount                                                    |
+| `currentBalance`      | string        | -        | Balance after this transaction                                       |
+| `transactionTimestamp`| string        | -        | ISO 8601 timestamp with timezone (e.g. `"2025-01-01T00:00:01+05:30"`)|
+| `valueDate`           | string \| null| -        | Value date of the transaction                                        |
+| `txnId`               | string        | -        | Transaction ID (may be empty)                                        |
+| `narration`           | string        | -        | Transaction narration/description                                    |
+| `reference`           | string \| null| -        | Reference number (if available)                                      |
+
+### About the AA data format
+
+The response schema follows the RBI Account Aggregator (AA) Financial Information (FI) standard. The Account Aggregator framework, established by RBI, defines a standardized format for sharing financial data between Financial Information Providers (FIPs) and Financial Information Users (FIUs).
+
+By returning data in this format, the Setu Bank Statement Parser enables seamless integration with any system already built to consume AA data, even when the data source is a PDF statement rather than a live AA connection. This is particularly useful for:
+
+- Lending platforms that accept both AA-fetched and manually uploaded statements
+- Underwriting systems with unified data pipelines
+- Financial analytics platforms requiring consistent schema across sources
+- Compliance and audit tools that work with AA-standard data
+
+### Best practices
+
+#### 6.1 Polling strategy
+
+When checking processing status, implement exponential backoff. Start with a 2-second interval and increase gradually. Typical processing time is 5–30 seconds depending on statement size.
+
+#### 6.2 Error handling
+
+Always check the `reason` field in the status response. If `status` is neither `"Pending"` nor `"Success"`, the `reason` field will contain a description of what went wrong (for example, unsupported bank, corrupt PDF, wrong password).
+
+#### 6.3 Bank name matching
+
+Always call the **Get supported banks** endpoint first and use the exact string from the response. Bank names are case-sensitive and must match exactly.
+
+#### 6.4 Reference IDs
+
+Use meaningful, unique reference IDs (`refId`) for each upload. This value is returned as `di_block_id` and helps you correlate uploads with your internal records.
+
