@@ -76,6 +76,8 @@ export interface DocumentChunk {
   is_oversized: boolean;
   /** Frontmatter metadata */
   metadata: {
+    product?: string;
+    category?: string;
     page_title?: string;
     sidebar_title?: string;
     order?: number;

@@ -131,6 +131,69 @@ export function hashContent(content: string): string {
 }
 
 /**
+ * Extracts the product name from a doc_path.
+ *
+ * Content paths:  "payments/umap/overview.mdx"           → "umap"
+ *                 "data/account-aggregator/v1/intro.mdx"  → "account-aggregator"
+ * API-ref paths:  "api-reference/data/account-aggregator.get-token.md" → "account-aggregator"
+ *                 "api-reference/data/bav/penny-drop.md"               → "bav"
+ * Fallback:       "README.md"                             → "general"
+ */
+export function extractProduct(docPath: string): string {
+  const segments = docPath.split('/').filter(Boolean);
+
+  // API-reference paths: api-reference/{category}/{product-or-file}
+  if (segments[0] === 'api-reference' && segments.length >= 3) {
+    // If there's a subdirectory under the category, that's the product
+    // e.g. api-reference/data/bav/penny-drop.md → "bav"
+    if (segments.length >= 4) {
+      return segments[2];
+    }
+    // Otherwise product is the filename prefix before the first dot
+    // e.g. api-reference/data/account-aggregator.get-token.md → "account-aggregator"
+    const filename = segments[2];
+    const dotIndex = filename.indexOf('.');
+    if (dotIndex > 0) {
+      return filename.substring(0, dotIndex);
+    }
+    return filename.replace(/\.(md|mdx)$/, '');
+  }
+
+  // Content paths: {category}/{product}/...
+  if (segments.length >= 2) {
+    return segments[1];
+  }
+
+  return 'general';
+}
+
+/**
+ * Extracts the top-level category from a doc_path.
+ *
+ * "payments/umap/overview.mdx"                         → "payments"
+ * "data/account-aggregator/v1/intro.mdx"               → "data"
+ * "api-reference/payments/umap.create-link.md"          → "payments"
+ * "dev-tools/bridge/quickstart.mdx"                     → "dev-tools"
+ * "README.md"                                           → "general"
+ */
+export function extractCategory(docPath: string): string {
+  const segments = docPath.split('/').filter(Boolean);
+
+  // API-reference paths: api-reference/{category}/...
+  if (segments[0] === 'api-reference' && segments.length >= 2) {
+    return segments[1];
+  }
+
+  // Content paths: {category}/...
+  const knownCategories = ['payments', 'data', 'dev-tools'];
+  if (segments.length >= 1 && knownCategories.includes(segments[0])) {
+    return segments[0];
+  }
+
+  return 'general';
+}
+
+/**
  * Creates a DocumentChunk from a TextChunk with metadata
  *
  * @param textChunk - Chunk from the chunker
@@ -173,6 +236,8 @@ export function enrichChunk(
     token_count: textChunk.tokenCount,
     is_oversized: isOversized,
     metadata: {
+      product: extractProduct(filePath),
+      category: extractCategory(filePath),
       page_title: frontmatter.page_title,
       sidebar_title: frontmatter.sidebar_title,
       order: frontmatter.order,

@@ -75,6 +75,7 @@ export function createDefaultChunkingConfig(): ChunkingConfig {
 const ABSOLUTE_MIN_CHUNK_SIZE = 80;  // Minimum viable chunk
 const SOFT_MAX_CHUNK_SIZE = 700;     // Target maximum (will try to stay under)
 const HARD_MAX_CHUNK_SIZE = 900;     // Absolute maximum (force split if exceeded)
+const MAX_EMBEDDABLE_TOKENS = 1500;  // Embedding model token limit - chunks above this are never embedded
 
 /**
  * Chunks a document based on its section hierarchy
@@ -624,7 +625,142 @@ function splitOversizedChunk(
     });
   }
 
-  return resultChunks.length > 0 ? resultChunks : [chunk];
+  const afterParagraphSplit = resultChunks.length > 0 ? resultChunks : [chunk];
+
+  // Second pass: sentence-level splitting for chunks still > MAX_EMBEDDABLE_TOKENS
+  const finalChunks: TextChunk[] = [];
+  for (const c of afterParagraphSplit) {
+    if (c.tokenCount <= MAX_EMBEDDABLE_TOKENS) {
+      finalChunks.push(c);
+      continue;
+    }
+
+    // Paragraph splitting wasn't enough — split at sentence boundaries
+    console.log(
+      `Sentence-splitting chunk in "${c.sectionPath}" (${c.tokenCount} tokens → target ~${config.targetChunkSize})`
+    );
+    const sentences = splitBySentence(c.content);
+    let accContent = '';
+    let accTokens = 0;
+
+    for (const sentence of sentences) {
+      const sentenceTokens = countTokens(sentence);
+
+      // If a single segment exceeds the limit, force-split it by token count
+      if (sentenceTokens > MAX_EMBEDDABLE_TOKENS) {
+        // Flush any accumulated content first
+        if (accContent.trim()) {
+          finalChunks.push({
+            content: accContent.trim(),
+            tokenCount: accTokens,
+            sectionPath: c.sectionPath,
+            sectionPathArray: c.sectionPathArray,
+            startLine: c.startLine,
+            endLine: c.endLine
+          });
+          accContent = '';
+          accTokens = 0;
+        }
+        // Hard-split this segment by words to fit under the limit
+        const words = sentence.split(/\s+/);
+        let segContent = '';
+        let segTokens = 0;
+        for (const word of words) {
+          const wordTokens = countTokens(word);
+          if (segTokens > 0 && segTokens + wordTokens > config.targetChunkSize) {
+            finalChunks.push({
+              content: segContent.trim(),
+              tokenCount: segTokens,
+              sectionPath: c.sectionPath,
+              sectionPathArray: c.sectionPathArray,
+              startLine: c.startLine,
+              endLine: c.endLine
+            });
+            segContent = '';
+            segTokens = 0;
+          }
+          segContent += (segContent ? ' ' : '') + word;
+          segTokens = countTokens(segContent);
+        }
+        if (segContent.trim()) {
+          accContent = segContent;
+          accTokens = segTokens;
+        }
+        continue;
+      }
+
+      if (accTokens > 0 && accTokens + sentenceTokens > config.targetChunkSize) {
+        finalChunks.push({
+          content: accContent.trim(),
+          tokenCount: accTokens,
+          sectionPath: c.sectionPath,
+          sectionPathArray: c.sectionPathArray,
+          startLine: c.startLine,
+          endLine: c.endLine
+        });
+        accContent = '';
+        accTokens = 0;
+      }
+
+      accContent += (accContent ? ' ' : '') + sentence;
+      accTokens = countTokens(accContent);
+    }
+
+    if (accContent.trim()) {
+      finalChunks.push({
+        content: accContent.trim(),
+        tokenCount: accTokens || countTokens(accContent),
+        sectionPath: c.sectionPath,
+        sectionPathArray: c.sectionPathArray,
+        startLine: c.startLine,
+        endLine: c.endLine
+      });
+    }
+  }
+
+  return finalChunks.length > 0 ? finalChunks : [chunk];
+}
+
+/**
+ * Splits text into sentences while preserving code blocks intact.
+ *
+ * Strategy:
+ * 1. Replace code blocks with placeholders
+ * 2. Split on sentence-ending punctuation (. ! ?)
+ * 3. Fallback to colon/semicolon, then comma boundaries
+ * 4. Restore code blocks
+ */
+function splitBySentence(text: string): string[] {
+  // Step 1: Protect code blocks with placeholders
+  const codeBlocks: string[] = [];
+  const protectedText = text.replace(/```[\s\S]*?```/g, (match) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${idx}__`;
+  });
+
+  // Step 2: Try splitting on sentence-ending punctuation
+  let sentences = protectedText.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+
+  // Step 3: If splitting produced only 1 segment, try colon/semicolon
+  if (sentences.length <= 1) {
+    sentences = protectedText.split(/(?<=[;:])\s+/).filter(s => s.trim());
+  }
+
+  // Step 4: If still only 1 segment, try comma boundaries
+  if (sentences.length <= 1) {
+    sentences = protectedText.split(/(?<=,)\s+/).filter(s => s.trim());
+  }
+
+  // Step 5: If still only 1 segment, try pipe boundaries (markdown tables)
+  if (sentences.length <= 1) {
+    sentences = protectedText.split(/\s*\|\s*/).filter(s => s.trim());
+  }
+
+  // Step 6: Restore code blocks in each sentence
+  return sentences.map(s =>
+    s.replace(/__CODE_BLOCK_(\d+)__/g, (_, idx) => codeBlocks[parseInt(idx)])
+  );
 }
 
 /**

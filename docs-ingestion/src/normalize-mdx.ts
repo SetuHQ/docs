@@ -231,9 +231,9 @@ function processRowPortion(content: string): string {
       const closeTagPos = result.indexOf(closeTag, openTagEnd);
 
       if (closeTagPos !== -1) {
-        // Extract inner content
+        // Extract inner content, add paragraph breaks around it
         const innerContent = result.substring(openTagEnd + 1, closeTagPos);
-        result = result.substring(0, openTagStart) + innerContent + result.substring(closeTagPos + closeTag.length);
+        result = result.substring(0, openTagStart) + '\n\n' + innerContent + '\n\n' + result.substring(closeTagPos + closeTag.length);
       } else {
         // No closing tag, just remove opening tag
         result = result.substring(0, openTagStart) + result.substring(openTagEnd + 1);
@@ -326,12 +326,21 @@ function convertHTMLToMarkdown(content: string): string {
   const htmlTags = ['p', 'div', 'span', 'u', 'pre', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'table', 'thead', 'tbody', 'tr', 'th', 'td', 'blockquote', 'details', 'summary'];
 
+  // Tags whose closing tag should produce a paragraph break (\n\n)
+  const paragraphBreakTags = new Set(['p', 'tr', 'table', 'div', 'blockquote', 'details']);
+
   for (const tag of htmlTags) {
     const openTagRegex = new RegExp(`<${tag}[^>]*>`, 'gi');
     content = content.replace(openTagRegex, tag === 'li' ? '- ' : '');
 
     const closeTagRegex = new RegExp(`</${tag}>`, 'gi');
-    content = content.replace(closeTagRegex, (tag === 'li' || tag === 'p') ? '\n' : '');
+    if (tag === 'li') {
+      content = content.replace(closeTagRegex, '\n');
+    } else if (paragraphBreakTags.has(tag)) {
+      content = content.replace(closeTagRegex, '\n\n');
+    } else {
+      content = content.replace(closeTagRegex, '');
+    }
   }
 
   return content;
