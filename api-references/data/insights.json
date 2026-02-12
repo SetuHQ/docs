@@ -39,8 +39,7 @@
                         "required": false,
                         "schema": {
                             "title": "Include metadata in the response",
-                            "type": "boolean",
-                            "default": false
+                            "type": "boolean"
                         },
                         "name": "includeMetadata",
                         "in": "query"
@@ -126,6 +125,173 @@
                                                                 "groupBy": "MONTH"
                                                             },
                                                             "insightId": "58564db1-60c6-450f-93ba-8ca8b642c936"
+                                                        }
+                                                    ],
+                                                    "categorisationMode": "INCLUSIVE",
+                                                    "keywordMaps": [],
+                                                    "isLineageRequired": false
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "TemplateGetResponseV3WithMetadata": {
+                                        "summary": "With metadata (includeMetadata=true)",
+                                        "value": {
+                                            "status": "Success",
+                                            "body": [
+                                                {
+                                                    "templateId": "b6418647-6397-47a8-8219-1bff5f7ddfe5",
+                                                    "fiuId": "1d2a3127-53f3-4ce7-bb53-663886d330cf",
+                                                    "name": "Mixed Analysis Template",
+                                                    "insights": [
+                                                        {
+                                                            "insight": "static_fraud_flags",
+                                                            "refKey": "fraud_flags",
+                                                            "title": "Fraud Flags",
+                                                            "description": "",
+                                                            "insightId": "43b410fd-a148-4c17-80fe-6c0278965173",
+                                                            "aggregatable": false,
+                                                            "indicatorTags": [
+                                                                "risk-triggers"
+                                                            ],
+                                                            "supportedParams": null,
+                                                            "example": {
+                                                                "value": {
+                                                                    "value": [
+                                                                        {
+                                                                            "title": "RAPID_BALANCE_DROP",
+                                                                            "description": "Account balance decreased by 90% within 24 hours",
+                                                                            "value": "95000.00"
+                                                                        },
+                                                                        {
+                                                                            "title": "FREQUENT_LATE_NIGHT_TXNS",
+                                                                            "description": "Multiple transactions between 1AM-4AM local time",
+                                                                            "value": 8
+                                                                        }
+                                                                    ],
+                                                                    "meta": {
+                                                                        "total_fraud_types": 2,
+                                                                        "triggered_fraud_titles": [
+                                                                            "RAPID_BALANCE_DROP",
+                                                                            "FREQUENT_LATE_NIGHT_TXNS"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "note": [
+                                                                    "- Runs all implemented fraud detection rules sequentially",
+                                                                    "- Silently logs and skips any detectors that raise exceptions",
+                                                                    "- Returns only flags where detectors returned non-empty values",
+                                                                    "- Empty list indicates either no fraud or insufficient data"
+                                                                ]
+                                                            },
+                                                            "returns": {
+                                                                "description": "Dict: Contains both detailed fraud flags and summary metadata",
+                                                                "return_format": {
+                                                                    "value": "List[FraudFlag]",
+                                                                    "meta": {
+                                                                        "total_fraud_types": "int",
+                                                                        "triggered_fraud_titles": "List[str]"
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "insight": "configurable_trend_on_balances",
+                                                            "refKey": "balance_analysis_monthly_max",
+                                                            "title": "Balance Trend Analysis",
+                                                            "description": "",
+                                                            "params": {
+                                                                "offsetMonths": 0,
+                                                                "aggregateFunction": "MAX",
+                                                                "groupBy": "MONTH"
+                                                            },
+                                                            "insightId": "58564db1-60c6-450f-93ba-8ca8b642c936",
+                                                            "aggregatable": true,
+                                                            "indicatorTags": [
+                                                                "cashflow"
+                                                            ],
+                                                            "supportedParams": [
+                                                                {
+                                                                    "description": "Number of months to analyze",
+                                                                    "minimum": 1,
+                                                                    "name": "last_n_months",
+                                                                    "type": "integer"
+                                                                },
+                                                                {
+                                                                    "default": 0,
+                                                                    "description": "Months to offset from the end date",
+                                                                    "minimum": 0,
+                                                                    "name": "offset_months",
+                                                                    "type": "integer"
+                                                                },
+                                                                {
+                                                                    "default": "MONTH",
+                                                                    "description": "Grouping period for time-based analysis",
+                                                                    "name": "group_by",
+                                                                    "options": [
+                                                                        "DAY",
+                                                                        "MONTH",
+                                                                        "QUARTER",
+                                                                        "HALF_YEAR",
+                                                                        "YEAR"
+                                                                    ],
+                                                                    "selection": "single-select",
+                                                                    "type": "string"
+                                                                },
+                                                                {
+                                                                    "description": "Function to apply for aggregation",
+                                                                    "name": "aggregate_function",
+                                                                    "options": [
+                                                                        "MIN",
+                                                                        "MAX",
+                                                                        "AVG",
+                                                                        "MEDIAN"
+                                                                    ],
+                                                                    "selection": "single-select",
+                                                                    "type": "string"
+                                                                },
+                                                                {
+                                                                    "description": "Specific day of month to report balance",
+                                                                    "maximum": 31,
+                                                                    "minimum": 1,
+                                                                    "name": "day",
+                                                                    "type": "integer"
+                                                                }
+                                                            ],
+                                                            "example": {
+                                                                "value": [
+                                                                    {
+                                                                        "year": "2022",
+                                                                        "month": "1",
+                                                                        "value": 25000.5
+                                                                    },
+                                                                    {
+                                                                        "year": "2022",
+                                                                        "month": "2",
+                                                                        "value": 32150.75
+                                                                    },
+                                                                    {
+                                                                        "year": "2022",
+                                                                        "month": "3",
+                                                                        "value": 28900.25
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "returns": {
+                                                                "description": "Dict: Contains 'value' list with formatted entries based on group_by",
+                                                                "return_format": {
+                                                                    "value": [
+                                                                        {
+                                                                            "year": "str",
+                                                                            "month": "str",
+                                                                            "day": "str",
+                                                                            "quarter": "str",
+                                                                            "half": "str",
+                                                                            "value": "float"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
                                                         }
                                                     ],
                                                     "categorisationMode": "INCLUSIVE",
