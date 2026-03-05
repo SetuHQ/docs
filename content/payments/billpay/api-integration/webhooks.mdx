@@ -254,6 +254,84 @@ After you initiate FX mandate booking using `/bbps/bills/mandate/request`, COU s
 
 <hr class="primary" />
 
+### Val Add webhooks
+
+Val Add APIs (Value Added Services) are asynchronous. After you initiate a Val Add request using `/bbps/valadd/{requestType}/request`, COU will send you a webhook with the final outcome for that operation.
+
+Common `event` values include:
+
+- `VAL_ADD_GET_CUSTOMER_ID`
+- `VAL_ADD_GENERATE_OTP`
+- `VAL_ADD_VALIDATE_OTP`
+- `VAL_ADD_GET_BANK_MARKUP`
+- `VAL_ADD_FETCH_BEST_PRICE`
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        Val Add sample webhook (success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`{
+  "event": "VAL_ADD_GET_CUSTOMER_ID",
+  "status": "Success",
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "data": {
+    "billerResponse": [
+      { "name": "customerId", "value": "IN0025000213" },
+      { "name": "customerType", "value": "RESIDENTINDIVIDUAL" }
+    ]
+  },
+  "timeStamp": "2025-03-10T17:40:38.163+05:30",
+  "traceId": "CV4PE82LTNJE9O014OE0"
+}`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+> **Fallback**: If you don’t receive a webhook, you can poll the result using `/bbps/valadd/{requestType}/response` with the `refId`.
+
+<hr class="primary" />
+
+### FX Mandate result webhook
+
+After you initiate FX mandate booking using `/bbps/bills/mandate/request`, COU sends the final result using a dedicated webhook.
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text weight="600" marginBottom="none">
+        FX mandate result webhook (success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`{
+  "event": "BILL_MANDATE",
+  "status": "Success",
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "timeStamp": "2025-06-15T10:10:00Z",
+  "traceId": "CV6PG04MUNJG9P126QG3",
+  "data": {
+    "billerRefId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+    "transactionId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+    "billerResponse": {
+      "amount": "8260000"
+    },
+    "additionalInfo": {
+      "currency": "USD",
+      "orderQuantity": "1000",
+      "bestPrice": "8499.75",
+      "markup": "0.5",
+      "deliveryMode": "Currency"
+    }
+  }
+}`}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+> **Fallback**: If you don’t receive a webhook, you can poll the booking status using `/bbps/bills/mandate/response` with the `refId`.
+
+<hr class="primary" />
+
 ### Bill payment webhook
 
 This informs you that NPCI has received the payment request for a particular bill. It will also pass on
@@ -274,7 +352,7 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     "event": "BILL_PAY",
     "data": {
         "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
-        "status": "SUCCESS",
+        "status": "Success",
         "billerRefId": "ABC1235",
         "transactionId": "AX01122999900001",
         "paymentDetails": {
@@ -302,7 +380,7 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     "event": "BILL_PAY",
     "data": {
         "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
-        "status": "FAILURE",
+        "status": "Failure",
         "billerRefId": "ABC1235",
         "transactionId": "AX01122999900001",
         "failureReason": {
@@ -372,7 +450,7 @@ URL    : To be provided by partner`}</CodeBlockWithCopy>
     "data": {
         "refId": "JPMRPBOGGDTP1EFRZVXVESQVQIS10461642",
         "disputeId": "OP0121046567755",
-        "status": "ASSIGNED/RESOLVED/REJECTED/DEFAULT_RESOLVED/REFUNDED/PENDING_REFUND",
+        "status": "ASSIGNED/RESOLVED/REJECTED/DEFAULT_RESOLVED/REFUNDED/PENDING_REFUND/FAILED",
         "assignedTo": "AX39",
         "remarks": "Resolved in favour of customer"
     }
