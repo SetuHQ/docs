@@ -1,0 +1,765 @@
+---
+sidebar_title: FX Retail
+page_title: BBPS COU — FX Retail (Forex category)
+order: 8
+visible_in_sidebar: true
+---
+
+## Overview
+
+**FX Retail** enables customers to buy (and in future, sell) foreign currency on the **FX Retail platform** via the **BBPS system**, directly from PSP apps that support BBPS (for example, CRED).
+
+In BBPS COU, FX Retail billers appear under the **`Forex`** category.
+
+This page describes the end-to-end **FX Retail flow** and how to integrate it correctly using COU APIs.
+
+## How to identify an FX Retail biller
+
+Use **List billers** (`GET /api/v2/bbps/billers`) with `categoryName=Forex` to fetch all FX Retail billers. There are two types:
+
+| Biller type        | Filter                                        | Description                                                       |
+| ------------------ | --------------------------------------------- | ----------------------------------------------------------------- |
+| Relationship banks | `categoryName=Forex`, `pseudoBiller=false`    | Actual bank billers that fulfil the forex order.                  |
+| CCIL               | `categoryName=Forex`, `pseudoBiller=true`     | The CCIL pseudo-biller used for onboarding and price discovery.   |
+
+FX Retail biller objects also include these fields:
+
+- **`valAddFlag`**: whether value-added services are enabled for the biller
+- **`valAddCustParams`**: required customer params for value-added flows (scoped by requestType)
+- **`mandateRequirement`**: mandate requirement (e.g. `MANDATORY`)
+- **`pseudoBiller`**: whether the biller is a pseudo biller
+
+## Common requirements
+
+### Headers
+
+All API calls require the following headers:
+
+| Header           | Description                          |
+| ---------------- | ------------------------------------ |
+| `X-PARTNER-ID`   | Your partner ID (integer)            |
+| `Authorization`  | `Bearer <token>` from the token API  |
+| `Content-Type`   | `application/json`                   |
+
+### Agent object
+
+Every Val Add and Mandate request includes an `agent` object. See [Agent](/payments/billpay/api-integration/objects#agent) object for the full schema and channel-specific requirements.
+
+### Bank and branch master list
+
+The master list of banks and their branches (used in fields like `bankId`, `bankName`, `bankBranch`, and `ifsc`) will be shared manually with AIs for now.
+
+### Async pattern
+
+All Val Add and Mandate calls are **asynchronous**. On 200 OK, the initial request returns immediately with a `refId`:
+
+<CodeBlockWithCopy language="json">{`{
+  "status": "Processing",
+  "data": {
+    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE1"
+}`}</CodeBlockWithCopy>
+
+To get the final result, use either:
+
+- **Webhooks** (preferred) — receive the outcome on your registered webhook endpoint. See [Webhooks](/payments/billpay/api-integration/webhooks).
+- **Polling** (fallback) — call the corresponding `/response` endpoint with the `refId` (each step below lists the exact poll URL).
+
+For the complete request/response schema and error codes, see the [Val Add API reference](/payments/billpay/api-integration/api-reference#/category~Val%20Add%20APIs) and [Mandate API reference](/payments/billpay/api-integration/api-reference#/category~Mandate%20API). The steps below cover the happy path with example payloads.
+
+## End-to-end flow (buy flow)
+
+The FX Retail flow is driven by **Val Add** APIs for onboarding + pricing, followed by **Mandate** booking (order placement), and finally a **Pay bill** request for BBPS/NPCI reconciliation.
+
+### Step 1 — Check if customer is onboarded (GetCustomerId)
+
+Check if the customer is already registered on the FX Retail platform using the customer's `mobileNumber`.
+
+- **Request**: `POST /api/v2/bbps/valadd/GetCustomerId/request`
+- **Poll**: `POST /api/v2/bbps/valadd/GetCustomerId/response`
+
+If the customer is registered, the response includes a `customerId` and `customerType`.
+
+**Request body**
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "inputParams": [
+    {
+      "name": "mobileNumber",
+      "value": "9812000000"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "status": "Success",
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "traceId": "CV4PE82LTNJE9O014OE0",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "customerId",
+        "value": "IN0025000213"
+      },
+      {
+        "name": "customerType",
+        "value": "RESIDENTINDIVIDUAL"
+      }
+    ]
+  }
+}`}</CodeBlockWithCopy>
+
+> If the response is successful, you already have a `customerId` — skip to Step 4. Only proceed to Step 2 if the call fails with error code `CUS007` (customer does not exist).
+
+### Step 2 — If not onboarded, generate OTP (GenerateOTP)
+
+If the customer is not registered, register them by generating OTP(s).
+
+- **Request**: `POST /api/v2/bbps/valadd/GenerateOTP/request`
+- **Poll**: `POST /api/v2/bbps/valadd/GenerateOTP/response`
+
+Send required details such as:
+
+- `mobileNumber`
+- `emailId`
+- bank account details (bankId/bankName/account number/IFSC/account type/account holder name)
+- `pan` and `panValidated`
+
+**Request body**
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "inputParams": [
+    {
+      "name": "mobileNumber",
+      "value": "8838151414"
+    },
+    {
+      "name": "emailId",
+      "value": "jayasurya.s_tra@npci.org.in"
+    },
+    {
+      "name": "bankId",
+      "value": "10128"
+    },
+    {
+      "name": "bankName",
+      "value": "INDIA POST PAYMENTS BANK LIMITED"
+    },
+    {
+      "name": "bankAccountNumber",
+      "value": "150002000"
+    },
+    {
+      "name": "customerAccountType",
+      "value": "Savings"
+    },
+    {
+      "name": "ifsc",
+      "value": "ZSBL0000341"
+    },
+    {
+      "name": "accountHolderName",
+      "value": "jayasurya"
+    },
+    {
+      "name": "customerType",
+      "value": "ResidentIndividual"
+    },
+    {
+      "name": "pan",
+      "value": "JS00024252"
+    },
+    {
+      "name": "panValidated",
+      "value": "true"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+On successful generation of OTP(s), the response will look like this:
+
+<CodeBlockWithCopy language="json">{`{
+  "status": "Success",
+  "refId": "OTPGENREF1234567890ABCDEFGHIJKLMNOPQ",
+  "traceId": "CV4PE82LTNJE9O014OTP",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "mobileNumber",
+        "value": "9812000000"
+      },
+      {
+        "name": "emailId",
+        "value": "jane.doe@gmail.com"
+      },
+      {
+        "name": "bankId",
+        "value": "10128"
+      },
+      {
+        "name": "bankName",
+        "value": "INDIA POST PAYMENTS BANK LIMITED"
+      },
+      {
+        "name": "bankAccountNumber",
+        "value": "150002000"
+      },
+      {
+        "name": "customerAccountType",
+        "value": "Savings"
+      },
+      {
+        "name": "ifsc",
+        "value": "ICIC0006720"
+      },
+      {
+        "name": "accountHolderName",
+        "value": "jayasurya"
+      },
+      {
+        "name": "customerType",
+        "value": "Individual"
+      },
+      {
+        "name": "pan",
+        "value": "BPEPS55XXX"
+      },
+      {
+        "name": "panValidated",
+        "value": "true"
+      },
+      {
+        "name": "authenticationMethod",
+        "value": "OTP"
+      }
+    ]
+  }
+}`}</CodeBlockWithCopy>
+
+### Step 3 — Validate OTP + accept T&C (ValidateOTP)
+
+Validate the OTP(s) received by the customer.
+
+- **Request**: `POST /api/v2/bbps/valadd/ValidateOTP/request`
+- **Poll**: `POST /api/v2/bbps/valadd/ValidateOTP/response`
+
+Pass:
+
+- `mobileOTP` and `emailOTP`
+- `tcFlag` (terms and conditions acceptance)
+- along with the same context previously sent in GenerateOTP (as required by the biller)
+
+If OTP validation succeeds, the FX Retail platform registers the user and returns the `customerId`.
+
+**Request body**
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "inputParams": [
+    {
+      "name": "mobileNumber",
+      "value": "9182583612"
+    },
+    {
+      "name": "emailId",
+      "value": "pragna.n@npci.org.in"
+    },
+    {
+      "name": "mobileOTP",
+      "value": "870398"
+    },
+    {
+      "name": "emailOTP",
+      "value": "806963"
+    },
+    {
+      "name": "bankId",
+      "value": "10128"
+    },
+    {
+      "name": "bankName",
+      "value": "INDIA POST PAYMENTS BANK LIMITED"
+    },
+    {
+      "name": "bankAccountNumber",
+      "value": "150002000"
+    },
+    {
+      "name": "customerAccountType",
+      "value": "Savings"
+    },
+    {
+      "name": "ifsc",
+      "value": "ZSBL0000341"
+    },
+    {
+      "name": "accountHolderName",
+      "value": "Pragna"
+    },
+    {
+      "name": "customerType",
+      "value": "ResidentIndividual"
+    },
+    {
+      "name": "pan",
+      "value": "NP00024253"
+    },
+    {
+      "name": "panValidated",
+      "value": "true"
+    },
+    {
+      "name": "tcFlag",
+      "value": "true"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "status": "Success",
+  "refId": "OTPVALREF1234567890RSTUVWXYZABCDEFG",
+  "traceId": "CV4PE82LTNJE9O01VAL",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "customerId",
+        "value": "IN0025000219"
+      },
+      {
+        "name": "customerType",
+        "value": "RESIDENTINDIVIDUAL"
+      }
+    ]
+  }
+}`}</CodeBlockWithCopy>
+
+> The `customerId` returned here is used in Steps 4 and 5.
+
+### Step 4 — Get bank markup (GetBankMarkup)
+
+Fetch markup associated with the customer's bank.
+
+- **Request**: `POST /api/v2/bbps/valadd/GetBankMarkup/request`
+- **Poll**: `POST /api/v2/bbps/valadd/GetBankMarkup/response`
+
+If multiple banks are associated with the customer's FX account, multiple markups can be returned.
+
+**Request body**
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "inputParams": [
+    {
+      "name": "mobileNumber",
+      "value": "7075465595"
+    },
+    {
+      "name": "customerId",
+      "value": "IN0025000217"
+    },
+    {
+      "name": "pan",
+      "value": "NB00024252"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "status": "Success",
+  "refId": "MARKUPREF1234567890HIJKLMNOPQRSTUV",
+  "traceId": "CV4PE82LTNJE9O0MARK",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "relationshipBank",
+        "value": "INDIA POST PAYMENTS BANK LIMITED",
+        "billerSpecificInfo": {
+          "billerId": "BBPSRELATIONSHIPBANK1",
+          "rate": "0.5",
+          "units": "fixed",
+          "indicativePrice": "8500",
+          "bankId": "10128",
+          "homeBranchIFSC": "ZSBL0000341"
+        }
+      },
+      {
+        "name": "relationshipBank",
+        "value": "AXIS Bank",
+        "billerSpecificInfo": {
+          "billerId": "BBPSRELATIONSHIPBANK2",
+          "rate": "10.12",
+          "units": "fixed",
+          "indicativePrice": "8515",
+          "bankId": "AX01",
+          "homeBranchIFSC": "AXIS00006720"
+        }
+      },
+      {
+        "name": "relationshipBank",
+        "value": "ICICI Bank",
+        "billerSpecificInfo": {
+          "billerId": "BBPSRELATIONSHIPBANK3",
+          "rate": "1.325",
+          "units": "percentage",
+          "indicativePrice": "8540",
+          "bankId": "IC01",
+          "homeBranchIFSC": "ICICI0006720"
+        }
+      }
+    ],
+    "additionalInfo": [
+      {
+        "name": "accountHolderName",
+        "value": "Pragna"
+      },
+      {
+        "name": "tcFlag",
+        "value": "true"
+      }
+    ]
+  }
+}`}</CodeBlockWithCopy>
+
+> Present these banks to the customer. The selected bank's `bankId`, `homeBranchIFSC`, `rate`, `units`, and `relationshipBank` name are needed for FetchBestPrice.
+
+### Step 5 — Fetch best price (FetchBestPrice)
+
+Customer selects a bank/markup and then the PSP app fetches the best currency price.
+
+- **Request**: `POST /api/v2/bbps/valadd/FetchBestPrice/request`
+- **Poll**: `POST /api/v2/bbps/valadd/FetchBestPrice/response`
+
+The response includes the **best price** and a **total payable amount** which typically includes a **buffer** to account for price fluctuations.
+
+**Request body**
+
+The following fields are carried over from earlier steps:
+- `bankId` — from Step 4 `billerSpecificInfo.bankId`
+- `customerId` — from Step 1 or Step 3
+- `ifsc` — from Step 4 `billerSpecificInfo.homeBranchIFSC`
+- `markup` — from Step 4 `billerSpecificInfo.rate`
+- `relationshipBank` — from Step 4 `billerResponse[].value`
+- `units` — from Step 4 `billerSpecificInfo.units`
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "RBFX00000KARDG"
+  },
+  "inputParams": [
+    {
+      "name": "bankBranch",
+      "value": "SHIVAJI NAGAR"
+    },
+    {
+      "name": "bankId",
+      "value": "10128"
+    },
+    {
+      "name": "currency",
+      "value": "USD"
+    },
+    {
+      "name": "customerId",
+      "value": "IN0025000213"
+    },
+    {
+      "name": "deliveryMode",
+      "value": "Currency"
+    },
+    {
+      "name": "ifsc",
+      "value": "ZSBL0000341"
+    },
+    {
+      "name": "instrumentType",
+      "value": "CASH"
+    },
+    {
+      "name": "markup",
+      "value": "0.5"
+    },
+    {
+      "name": "mobileNumber",
+      "value": "8838151414"
+    },
+    {
+      "name": "orderQuantity",
+      "value": "1000"
+    },
+    {
+      "name": "pan",
+      "value": "JS00024252"
+    },
+    {
+      "name": "relationshipBank",
+      "value": "INDIA POST PAYMENTS BANK LIMITED"
+    },
+    {
+      "name": "tcFlag",
+      "value": "true"
+    },
+    {
+      "name": "transactionType",
+      "value": "PURCHASE"
+    },
+    {
+      "name": "units",
+      "value": "fixed"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "status": "Success",
+  "refId": "BESTPRCREF123456789WXYZABCDEFGHIJKL",
+  "traceId": "CV4PE82LTNJE9O0BEST",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "currency",
+        "value": "USD"
+      },
+      {
+        "name": "dateOfDelivery",
+        "value": "2025-05-22"
+      },
+      {
+        "name": "orderQuantity",
+        "value": "1000"
+      },
+      {
+        "name": "bestPrice",
+        "value": "8505.5"
+      },
+      {
+        "name": "markup",
+        "value": "0.5"
+      },
+      {
+        "name": "units",
+        "value": "fixed"
+      },
+      {
+        "name": "totalPayableAmount",
+        "value": "8506000"
+      }
+    ]
+  }
+}`}</CodeBlockWithCopy>
+
+> `totalPayableAmount` is in paise and includes a buffer for price fluctuation. This is the amount the PSP should debit in Step 6.
+
+### Step 6 — Debit funds from the customer (PSP-managed)
+
+The PSP app debits the `totalPayableAmount` (from Step 5) from the customer's account — this happens **outside** of BBPS COU APIs.
+
+### Step 7 — Place order by booking mandate (Mandate request/response)
+
+Initiate the mandate booking request. For FX Retail, this effectively places the order on the FX Retail platform.
+
+- **Mandate request**: `POST /api/v2/bbps/bills/mandate/request`
+- **Mandate response (poll)**: `POST /api/v2/bbps/bills/mandate/response` (fallback for webhooks)
+
+On success, the mandate result includes the **actual amount utilised** for the order.
+
+**Important**: the mandate/order can fail if the market price moves above the amount returned during FetchBestPrice.
+
+**Request body**
+
+The `customerId` is from Step 1 or Step 3, and `amount` is the `totalPayableAmount` from Step 5 (in paise).
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "HD5140000NAT02"
+  },
+  "customer": {
+    "customerParams": [
+      {
+        "name": "customerId",
+        "value": "IN0025000213"
+      }
+    ]
+  },
+  "mandate": {
+    "mode": "UPI",
+    "amount": 8506000,
+    "mandateRefId": "d30eb5d76250a2faa76c5a2a59c76cc3"
+  }
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "status": "Success",
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "traceId": "CV6PG04MUNJG9P126QG3",
+  "data": {
+    "billerRefId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+    "transactionId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+    "billerResponse": {
+      "amount": "8260000"
+    },
+    "additionalInfo": {
+      "currency": "USD",
+      "dateOfDelivery": "2025-05-22",
+      "orderQuantity": "1000",
+      "bestPrice": "8499.75",
+      "markup": "0.5",
+      "units": "fixed",
+      "deliveryMode": "Currency"
+    }
+  }
+}`}</CodeBlockWithCopy>
+
+> The mandate can fail if the market price moves above the buffered amount.
+
+### Step 8 — Refund the difference (PSP-managed)
+
+If the customer was debited a buffered amount, the PSP app should:
+
+- compute the delta between (debited amount) and (amount utilised returned in mandate result)
+- refund the difference back to the customer
+
+Compute: `totalPayableAmount` (Step 5) minus `billerResponse.amount` (Step 7). Refund this delta to the customer.
+
+This refund happens **outside** of BBPS COU APIs.
+
+### Step 9 — Send Pay bill request for reconciliation (Pay bill)
+
+Finally, call **Pay bill** to complete BBPS/NPCI reconciliation. For FX Retail mandate flows, the payment has already been collected in the earlier PSP debit + mandate placement, so this API is used for reconciliation and settlement workflows.
+
+- **Pay bill request**: `POST /api/v2/bbps/bills/payment/request`
+
+For FX Retail mandate-related payments, include:
+
+- `paymentType: "MANDATE_AND_PAY"`
+
+**Request body**
+
+The `refId` is the mandate's `refId` from Step 7.
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "HD5140000NAT02"
+  },
+  "customer": {
+    "mobile": "9812000000",
+    "customerParams": [
+      {
+        "name": "customerId",
+        "value": "IN0025000213"
+      }
+    ]
+  },
+  "paymentDetails": {
+    "amount": 8260000,
+    "mode": "Internet Banking",
+    "paymentRefId": "BD019181220291",
+    "timestamp": "2020-12-12T13:12:00+05:30"
+  },
+  "remitter": {
+    "name": "jayasurya",
+    "email": "jayasurya.s_tra@npci.org.in",
+    "pan": "JS00024252"
+  },
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "paymentType": "MANDATE_AND_PAY"
+}`}</CodeBlockWithCopy>
+
+## Error handling
+
+When an API call fails, the response follows this format:
+
+<CodeBlockWithCopy language="json">{`{
+  "status": "Failure",
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "traceId": "CV4PE82LTNJE9O014OE0",
+  "data": {
+    "errors": [
+      {
+        "code": "error-code",
+        "message": "Error message"
+      }
+    ]
+  }
+}`}</CodeBlockWithCopy>
+
+Common failure scenarios:
+
+- **Invalid OTP**: The OTP provided in ValidateOTP is incorrect or expired. Retry GenerateOTP to request a new OTP.
+- **Price movement exceeding buffer**: The market price moved above the buffered `totalPayableAmount` between FetchBestPrice and the mandate request. Re-run FetchBestPrice to get updated pricing.
+- **Customer not found**: The `customerId` is invalid or does not exist on the FX Retail platform. Verify the customer is registered via GetCustomerId.
+
+## Webhooks vs polling
+
+For details on the async pattern, see the [Common requirements](#common-requirements) section above.
+
+Refer to:
+
+- **Webhooks**: `/payments/billpay/api-integration/webhooks`
+- **List of APIs**: `/payments/billpay/api-integration/apis`
+
+<WasPageHelpful />
