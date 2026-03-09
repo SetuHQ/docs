@@ -42,7 +42,7 @@ All images and assets for the documentation are stored in the `strapi-assets` bu
 
 1. **Bucket Name**: `strapi-assets`
 2. **Folder Structure**: Follow the same folder structure as the content layer in `/content`
-3. **URL Format**: `https://storage.googleapis.com/strapi-assets/latest/{path-to-asset}`
+3. **URL Format**: `https://docs-assets.setu.co/latest/{path-to-asset}`
 
 ### Example Asset Upload
 
@@ -50,7 +50,7 @@ If you have an image for the Account Aggregator consent object flow diagram:
 
 - **Content path**: `/content/data/account-aggregator/consent-object.mdx`
 - **Asset path**: `/data/account-aggregator/consent-object-flow.png`
-- **Final URL**: `https://storage.googleapis.com/strapi-assets/latest/data/account-aggregator/consent-object-flow.png`
+- **Final URL**: `https://docs-assets.setu.co/latest/data/account-aggregator/consent-object-flow.png`
 
 ### Using Assets in Content
 
@@ -58,7 +58,7 @@ Reference assets in your MDX files using the `MainImage` component:
 
 ```mdx
 <MainImage
-    src="https://storage.googleapis.com/strapi-assets/latest/data/account-aggregator/your-image.png"
+    src="https://docs-assets.setu.co/latest/data/account-aggregator/your-image.png"
     alt="Description of your image"
 />
 ```
