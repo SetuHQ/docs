@@ -36,11 +36,11 @@ Go through this [detailed guide](./content/README.md) on how to write content
 
 ## Asset Management
 
-### Strapi Assets Bucket
+### AWS s3 Assets Bucket
 
-All images and assets for the documentation are stored in the `strapi-assets` bucket. When uploading images or assets:
+All images and assets for the documentation are stored in the `docs-mdx-assets` bucket. When uploading images or assets:
 
-1. **Bucket Name**: `strapi-assets`
+1. **Bucket Name**: `docs-mdx-assets`
 2. **Folder Structure**: Follow the same folder structure as the content layer in `/content`
 3. **URL Format**: `https://docs-assets.setu.co/latest/{path-to-asset}`
 
