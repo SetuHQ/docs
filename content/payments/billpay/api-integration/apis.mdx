@@ -136,146 +136,515 @@ You may also use the `/bbps/bills/fetch/response` endpoint with above `refId` to
 
 In the response you either get the bill details, or "Processing" status if the bill fetch is still in progress.
 
+<hr class="primary" />
+
+### Val Add (Value Added Services)
+
+Some BBPS billers support **value added services** (Val Add) such as customer onboarding / OTP verification / markup & best-price discovery flows. COU exposes these flows as asynchronous APIs (request + response) — with webhooks as the primary mechanism and polling as fallback.
+
+- **Initiate Val Add operation**: <a href="/payments/billpay/api-integration/api-reference#/category~Val%20Add%20APIs/path~/api/v2/bbps/valadd/{requestType}/request/post">`/bbps/valadd/{requestType}/request`</a>
+- **Poll Val Add result**: <a href="/payments/billpay/api-integration/api-reference#/category~Val%20Add%20APIs/path~/api/v2/bbps/valadd/{requestType}/response/post">`/bbps/valadd/{requestType}/response`</a>
+
+`requestType` is one of:
+
+- `GetCustomerId`
+- `GenerateOTP`
+- `ValidateOTP`
+- `GetBankMarkup`
+- `FetchBestPrice`
+
 <Card padding="nano" shape="rounded">
-    <details>
-        <summary>
-            <Text as="h6" marginBottom="none" marginTop="none">
-                Sample response
-            </Text>
-        </summary>
-        <CodeBlockWithCopy language="json">{`
-		{
-			"data": {
-				"additionalInfo": [
-					{
-						"name": "Distributor Contact",
-						"value": "Cockatoojelly"
-					},
-					{
-						"name": "Distributor Name",
-						"value": "Frightstripe"
-					},
-					{
-						"name": "Consumer Number",
-						"value": "105"
-					},
-					{
-						"name": "Consumer Address",
-						"value": "Samuraipsychadelic"
-					}
-				],
-				"bills": [
-                    {
-                        "amount": 300000,
-                        "billDate": "2021-09-13",
-                        "billNumber": "8394852342371080869",
-                        "billPeriod": "Monthly",
-                        "customerName": "William Miller",
-                        "dueDate": "2021-09-26",
-						"paymentOptions": [
-							{
-								"name": "3 month EMI",
-								"amount": 900000,
-								"minAmount": 300000,
-								"maxAmount": 1500000,
-								"amountMultiple": 10000
-							},
-							{
-								"name": "6 month EMI",
-								"amount": 1800000,
-								"minAmount": 600000,
-								"maxAmount": 3000000,
-								"amountMultiple": 10000
-							}
-						]
-                    }
-                ],
-				"billerResponseType": "SINGLE", 
-				"billerRefId": "4047076513",
-				"exactness": "Exact",
-				"paymentLimits": [
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "Internet Banking",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "Debit Card",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "Credit Card",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "Prepaid Card",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "IMPS",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 4999900,
-						"minLimit": 100,
-						"paymentMode": "Cash",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "UPI",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "Wallet",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "NEFT",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "AEPS",
-						"supportsPendingStatus": false
-					},
-					{
-						"maxLimit": 20000000,
-						"minLimit": 100,
-						"paymentMode": "Account Transfer",
-						"supportsPendingStatus": false
-					}
-				],
-				"refId": "C51JQ9ED608P36RN28GGM9L63RN12591837",
-				"status": "Success"
-			},
-			"success": true,
-			"traceId": "C51JQCUD608P36RN28H0"
-		}
-		`}</CodeBlockWithCopy>
-    </details>
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — GetCustomerId
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "inputParams": [
+    {
+      "name": "mobileNumber",
+      "value": "9812000000"
+    }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
 </Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — GenerateOTP
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "inputParams": [
+    { "name": "mobileNumber", "value": "8838151414" },
+    { "name": "emailId", "value": "jayasurya.s_tra@npci.org.in" },
+    { "name": "bankId", "value": "10128" },
+    { "name": "bankName", "value": "INDIA POST PAYMENTS BANK LIMITED" },
+    { "name": "bankAccountNumber", "value": "150002000" },
+    { "name": "customerAccountType", "value": "Savings" },
+    { "name": "ifsc", "value": "ZSBL0000341" },
+    { "name": "accountHolderName", "value": "jayasurya" },
+    { "name": "customerType", "value": "ResidentIndividual" },
+    { "name": "pan", "value": "JS00024252" },
+    { "name": "panValidated", "value": "true" }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — ValidateOTP
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "inputParams": [
+    { "name": "mobileNumber", "value": "9182583612" },
+    { "name": "emailId", "value": "pragna.n@npci.org.in" },
+    { "name": "mobileOTP", "value": "870398" },
+    { "name": "emailOTP", "value": "806963" },
+    { "name": "bankId", "value": "10128" },
+    { "name": "bankName", "value": "INDIA POST PAYMENTS BANK LIMITED" },
+    { "name": "bankAccountNumber", "value": "150002000" },
+    { "name": "customerAccountType", "value": "Savings" },
+    { "name": "ifsc", "value": "ZSBL0000341" },
+    { "name": "accountHolderName", "value": "Pragna" },
+    { "name": "customerType", "value": "ResidentIndividual" },
+    { "name": "pan", "value": "NP00024253" },
+    { "name": "panValidated", "value": "true" },
+    { "name": "tcFlag", "value": "true" }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — GetBankMarkup
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "inputParams": [
+    { "name": "mobileNumber", "value": "7075465595" },
+    { "name": "customerId", "value": "IN0025000217" },
+    { "name": "pan", "value": "NB00024252" }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — FetchBestPrice
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "RBFX00000KARDG"
+  },
+  "inputParams": [
+    { "name": "bankBranch", "value": "SHIVAJI NAGAR" },
+    { "name": "bankId", "value": "10128" },
+    { "name": "currency", "value": "USD" },
+    { "name": "customerId", "value": "IN0025000213" },
+    { "name": "deliveryMode", "value": "Currency" },
+    { "name": "ifsc", "value": "ZSBL0000341" },
+    { "name": "instrumentType", "value": "CASH" },
+    { "name": "markup", "value": "0.5" },
+    { "name": "mobileNumber", "value": "8838151414" },
+    { "name": "orderQuantity", "value": "1000" },
+    { "name": "pan", "value": "JS00024252" },
+    { "name": "relationshipBank", "value": "INDIA POST PAYMENTS BANK LIMITED" },
+    { "name": "tcFlag", "value": "true" },
+    { "name": "transactionType", "value": "PURCHASE" },
+    { "name": "units", "value": "fixed" }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+The response will acknowledge the request and provide a `refId`. You’ll receive the final outcome via webhook; alternatively, you can poll using `/bbps/valadd/{requestType}/response`.
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "status": "Processing",
+  "data": {
+    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+  },
+  "traceId": "CV4PE82LTNJE9O014OE1"
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — GetCustomerId (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "status": "Success",
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "traceId": "CV4PE82LTNJE9O014OE0",
+  "data": {
+    "billerResponse": [
+      { "name": "customerId", "value": "IN0025000213" },
+      { "name": "customerType", "value": "RESIDENTINDIVIDUAL" }
+    ]
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — GenerateOTP (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "status": "Success",
+  "refId": "OTPGENREF1234567890ABCDEFGHIJKLMNOPQ",
+  "traceId": "CV4PE82LTNJE9O014OTP",
+  "data": {
+    "billerResponse": [
+      { "name": "mobileNumber", "value": "9812000000" },
+      { "name": "emailId", "value": "jane.doe@gmail.com" },
+      { "name": "bankId", "value": "10128" },
+      { "name": "bankName", "value": "INDIA POST PAYMENTS BANK LIMITED" },
+      { "name": "bankAccountNumber", "value": "150002000" },
+      { "name": "customerAccountType", "value": "Savings" },
+      { "name": "ifsc", "value": "ICIC0006720" },
+      { "name": "accountHolderName", "value": "jayasurya" },
+      { "name": "customerType", "value": "Individual" },
+      { "name": "pan", "value": "BPEPS55XXX" },
+      { "name": "panValidated", "value": "true" },
+      { "name": "authenticationMethod", "value": "OTP" }
+    ]
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — ValidateOTP (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "status": "Success",
+  "refId": "OTPVALREF1234567890RSTUVWXYZABCDEFG",
+  "traceId": "CV4PE82LTNJE9O01VAL",
+  "data": {
+    "billerResponse": [
+      { "name": "customerId", "value": "IN0025000219" },
+      { "name": "customerType", "value": "RESIDENTINDIVIDUAL" }
+    ]
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — GetBankMarkup (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "status": "Success",
+  "refId": "MARKUPREF1234567890HIJKLMNOPQRSTUV",
+  "traceId": "CV4PE82LTNJE9O0MARK",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "relationshipBank",
+        "value": "INDIA POST PAYMENTS BANK LIMITED",
+        "billerSpecificInfo": {
+          "billerId": "BBPSRELATIONSHIPBANK1",
+          "rate": "0.5",
+          "units": "fixed",
+          "indicativePrice": "8500",
+          "bankId": "10128",
+          "homeBranchIFSC": "ZSBL0000341"
+        }
+      }
+    ],
+    "additionalInfo": [
+      { "name": "accountHolderName", "value": "Pragna" },
+      { "name": "tcFlag", "value": "true" }
+    ]
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — FetchBestPrice (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "status": "Success",
+  "refId": "BESTPRCREF123456789WXYZABCDEFGHIJKL",
+  "traceId": "CV4PE82LTNJE9O0BEST",
+  "data": {
+    "billerResponse": [
+      { "name": "currency", "value": "USD" },
+      { "name": "dateOfDelivery", "value": "2025-05-22" },
+      { "name": "orderQuantity", "value": "1000" },
+      { "name": "bestPrice", "value": "8505.5" },
+      { "name": "markup", "value": "0.5" },
+      { "name": "units", "value": "fixed" },
+      { "name": "totalPayableAmount", "value": "8506000" }
+    ]
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — Failure (Generic)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "status": "Failure",
+  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "traceId": "CV4PE82LTNJE9O014OE0",
+  "data": {
+    "errors": [
+      { "code": "error-code", "message": "Error message" }
+    ]
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<hr class="primary" />
+
+### FX Mandate booking
+
+For the FX transaction flow, COU exposes APIs to **book an FX mandate** and to **poll the booking status** (fallback for webhooks).
+
+- **Book FX mandate**: <a href="/payments/billpay/api-integration/api-reference#/category~Transaction%20flow/path~/api/v2/bbps/bills/mandate/request/post">`/bbps/bills/mandate/request`</a>
+- **Poll FX mandate status**: <a href="/payments/billpay/api-integration/api-reference#/category~Transaction%20flow/path~/api/v2/bbps/bills/mandate/response/post">`/bbps/bills/mandate/response`</a>
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — Book FX mandate
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "HD5140000NAT02"
+  },
+  "customer": {
+    "customerParams": [
+      { "name": "mobileNumber", "value": "8838151414" },
+      { "name": "customerId", "value": "IN0025000213" },
+      { "name": "currency", "value": "USD" },
+      { "name": "instrumentType", "value": "CASH" },
+      { "name": "markup", "value": "0.5" },
+      { "name": "bestPrice", "value": "8505.5" }
+    ]
+  },
+  "mandate": {
+    "mode": "UPI",
+    "amount": 8260000,
+    "mandateRefId": "d30eb5d76250a2faa76c5a2a59c76cc3"
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+Similar to other async COU APIs, you get a `refId` in the response, and can poll status using `/bbps/bills/mandate/response` if needed.
+
+<details>
+  <summary>
+    <Text as="h6" marginBottom="none" marginTop="none">
+      Possible Mandate error codes (FX Retail)
+    </Text>
+  </summary>
+
+| Error Code | Description |
+| --- | --- |
+| `MOB001` | Mobile number should not be empty |
+| `MOB002` | Invalid mobile number |
+| `MOB004` | Mobile number does not exist for the customer |
+| `CUS002` | Customer status is not active. Current status is `<status>` (e.g., suspend, terminate) |
+| `CUS003` | Customer Id should not be empty |
+| `CUS004` | Invalid Customer Id |
+| `CUS005` | No active bank relationship for the customer |
+| `CST002` | Customer type should be `RESIDENTINDIVIDUAL`/`SOLEPROPRIETORSHIP` |
+| `CUR001` | Currency should not be empty |
+| `CUR002` | Invalid currency |
+| `TXN001` | Transaction Type should not be empty |
+| `TXN002` | Invalid transaction type |
+| `INT001` | Instrument Type should not be empty |
+| `INT002` | Invalid instrument type |
+| `BNK001` | Bank Name should not be empty |
+| `BNK002` | Invalid Bank Name |
+| `BNK003` | Bank does not exist |
+| `BNK004` | Bank status is not active. Current status is `<status>` (e.g., suspend, terminate) |
+| `MRK001` | Markup should not be empty |
+| `MRK002` | Invalid Markup |
+| `DLM001` | Delivery mode should not be empty |
+| `DLM002` | Delivery mode should only be `Currency`, `Forex Card Load`, `Remittance` |
+| `ORQ001` | Order Quantity should not be empty |
+| `ORQ002` | Order Quantity should be a positive value |
+| `ORQ003` | Order Quantity should be greater than zero |
+| `ORQ004` | Order Quantity should not be less than Minimum Order Quantity |
+| `ORQ005` | Order Quantity should contain only 2 decimals |
+| `ORQ006` | Maximum Order Quantity is breached. Allowed maximum value is `<maximum value defined in system>` |
+| `BRH001` | Bank Branch should not be empty |
+| `BRH002` | Invalid Bank Branch |
+| `BNK005` | Bank id should not be empty |
+| `AMT001` | Amount should not be empty |
+| `AMT002` | Invalid Amount |
+| `TXN003` | Txn Reference Id should not be empty |
+| `TXN004` | Invalid Txn Reference Id |
+| `TXN005` | Txn Reference Id should be unique |
+| `MRI001` | Mandate Ref Id should not be empty |
+| `MRI002` | Invalid Mandate Ref Id |
+| `CTS001` | Customer Transaction services are closed for today. Please try again tomorrow during business hours. |
+| `CUS007` | Customer does not exist |
+| `MAN001` | User level limit price hard check failure |
+| `internal-error` | Internal Server Error |
+</details>
 
 <hr class="primary" />
 
 ### Pay bill
 
 The <a href="/payments/billpay/api-integration/api-reference#/category~Pay/path~/api/v2/bbps/bills/payment/request/post" target="_blank">Pay bill API</a> is used to send details of a payment done by a user on your app/website to Setu. Setu uses this information to confirm a payment with the biller.
+
+> **FX Retail (Val Add + Mandate flows)**: When the payment is being initiated as part of the **FX mandate** journey, include `paymentType: "MANDATE_AND_PAY"` in the request body of the Pay bill API. The rest of the Pay bill payload remains the same.
 
 <hr class="primary" />
 
@@ -307,6 +676,14 @@ For your convenience, Setu also provides actions to list data in bulk, that can 
             List billers
         </a>
         —lists all billers on BBPS.
+        <br />
+        <strong>FX Retail fields (present on every biller)</strong>:
+        <ul>
+            <li><code>valAddFlag</code> (<code>boolean</code>) — indicates if value-added services are enabled for the biller.</li>
+            <li><code>valAddCustParams</code> (<code>ValAddCustParamSpec[]</code>) — customer parameters required for value-added service flows. Each entry includes <code>requestType</code> (e.g. <code>MANDATE_AND_PAY</code> for FX Retail mandate+pay) and the corresponding <code>customerParams</code> specs.</li>
+            <li><code>mandateRequirement</code> (<code>string</code>) — mandate requirement for the biller (e.g. <code>MANDATORY</code>). For FX Retail billers, use this to decide whether mandate+pay flow is required.</li>
+            <li><code>pseudoBiller</code> (<code>boolean</code>) — indicates if the biller is a pseudo biller.</li>
+        </ul>
     </li>
     <li>
         <a
