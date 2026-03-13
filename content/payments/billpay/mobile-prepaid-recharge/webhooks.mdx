@@ -182,7 +182,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 
 ### 3. Wallet Low Balance Webhook
 
-**Endpoint**: `{webhook_url}/wallet/low_balance`
+**Endpoint**: `{webhook_url}/wallet/low-balance`
 
 **Description**: Sent when the wallet balance falls below the configured threshold or when a low balance alert is received from the vendor.
 
@@ -229,7 +229,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 
 ### 4. Wallet Topup Webhook
 
-**Endpoint**: `{webhook_url}/wallet/top_up`
+**Endpoint**: `{webhook_url}/wallet/topup`
 
 **Description**: Sent when a wallet top-up is detected or when a top-up notification is received from the vendor.
 
@@ -312,33 +312,53 @@ The system implements automatic retry mechanisms for webhook delivery with diffe
 #### Payment Webhooks (Transaction Status & Reversal)
 
 - **Maximum Retries**: 5 attempts
+
 - **Initial Retry Interval**: 2 seconds
+
 - **Maximum Retry Interval**: 2 minutes
+
 - **Backoff Strategy**: Exponential backoff with coefficient of 2.0
+
 - **Retry Triggers**: 
+
   - Non-2xx HTTP status codes
+
   - Network timeouts
+
   - Connection errors
 
 #### Wallet Webhooks (Low Balance & Topup)
 
 - **Maximum Retries**: 3 attempts
+
 - **Initial Retry Interval**: 5 seconds
+
 - **Maximum Retry Interval**: 1 minute
+
 - **Backoff Strategy**: Exponential backoff with coefficient of 2.0
+
 - **Retry Triggers**: 
+
   - Non-2xx HTTP status codes
+
   - Network timeouts
+
   - Connection errors
 
 **Retry Timeline Example (Payment Webhooks)**:
 
 - Attempt 1: Immediate
+
 - Attempt 2: After 2 seconds
+
 - Attempt 3: After 4 seconds (2 × 2)
+
 - Attempt 4: After 8 seconds (4 × 2)
+
 - Attempt 5: After 16 seconds (8 × 2)
+
 - Attempt 6: After 32 seconds (16 × 2, capped at 2 minutes max)
+
 
 <Callout type="warning">
     After all retries are exhausted, the webhook status is marked as "FAILED" in the system.
