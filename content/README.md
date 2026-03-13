@@ -118,6 +118,68 @@ Create a similar `mdx` file inside `test-product-2` and we are done!
 <br />
 <br />
 
+# Hiding pages from the sidebar
+
+You can hide pages, products, or entire categories from the sidebar navigation while keeping them accessible via direct URL. This is useful for:
+
+- Deprecated pages that shouldn't be discoverable but need to remain accessible for existing links
+- Internal or partner-specific documentation
+- Draft content not yet ready for public visibility
+- Sample/template content
+
+Use the `visible_in_sidebar` property and set it to `false`.
+
+---
+
+### Hide a specific page
+
+In the MDX file's frontmatter, set `visible_in_sidebar: false`:
+
+```
+---
+sidebar_title: Hidden Page
+page_title: Hidden Page — Setu Docs
+order: 0
+visible_in_sidebar: false
+---
+```
+
+The page will not appear in the sidebar but can still be accessed via its direct URL.
+
+---
+
+### Hide an entire product
+
+In `endpoints.json`, set `visible_in_sidebar: false` on the product:
+
+```
+{
+  "name": "Hidden Product",
+  "path": "hidden-product",
+  "order": 0,
+  "visible_in_sidebar": false
+}
+```
+
+---
+
+### Hide an entire category
+
+In `endpoints.json`, set `visible_in_sidebar: false` on the category:
+
+```
+{
+  "name": "Hidden Category",
+  "path": "hidden-category",
+  "order": 4,
+  "visible_in_sidebar": false,
+  "children": [...]
+}
+```
+
+<br />
+<br />
+
 # Using React components in MDX files
 
 List of all components and their usage can be found by visiting https://docs.setu.co/sample-category/sample-product/sample-page
