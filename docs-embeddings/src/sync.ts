@@ -33,13 +33,24 @@ const EMBEDDING_DIM = 1024;
 
 export class EmbeddingSync {
   private embedder: BedrockEmbedder;
-  private vectorDB: VectorDB;
+  private vectorDB: VectorDB | null = null;
   private config: EmbeddingConfig;
 
   constructor(config: EmbeddingConfig) {
     this.config = config;
     this.embedder = new BedrockEmbedder(config.awsRegion, config.bedrockModelId);
-    this.vectorDB = new VectorDB(config.pineconeApiKey, config.pineconeIndex);
+    // Defer VectorDB construction — Pinecone validates apiKey eagerly,
+    // and dry-run mode doesn't need a real key.
+    if (!config.dryRun) {
+      this.vectorDB = new VectorDB(config.pineconeApiKey, config.pineconeIndex);
+    }
+  }
+
+  private getVectorDB(): VectorDB {
+    if (!this.vectorDB) {
+      throw new Error('VectorDB not initialized (are you in dry-run mode?)');
+    }
+    return this.vectorDB;
   }
 
   /**
@@ -57,7 +68,7 @@ export class EmbeddingSync {
 
     // Connect to vector DB (skip in dry-run)
     if (!dryRun) {
-      await this.vectorDB.connect();
+      await this.getVectorDB().connect();
     }
 
     // Load ingestion output
@@ -466,7 +477,7 @@ export class EmbeddingSync {
 
     // Fetch existing embeddings from vector DB
     console.log(`   Fetching ${contentHashes.length} existing embeddings from DB...`);
-    const existingEmbeddings = await this.vectorDB.fetchVectors(contentHashes);
+    const existingEmbeddings = await this.getVectorDB().fetchVectors(contentHashes);
 
     const records: VectorRecord[] = [];
 
@@ -498,7 +509,7 @@ export class EmbeddingSync {
 
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);
-      await this.vectorDB.upsertVectors(batch);
+      await this.getVectorDB().upsertVectors(batch);
 
       // Progress indicator
       if ((i + batchSize) % 500 === 0 && i + batchSize < records.length) {
@@ -515,7 +526,7 @@ export class EmbeddingSync {
 
     for (let i = 0; i < ids.length; i += batchSize) {
       const batch = ids.slice(i, i + batchSize);
-      await this.vectorDB.deleteVectors(batch);
+      await this.getVectorDB().deleteVectors(batch);
     }
   }
 
