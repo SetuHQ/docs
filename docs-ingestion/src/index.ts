@@ -147,8 +147,9 @@ export async function runIngestionPipeline(
     const absolutePath = path.join(config.scan.rootDir, relativePath);
 
     try {
-      // Parse the markdown file
-      const parsedDoc = await parseMarkdownFile(absolutePath, relativePath);
+      // Parse as plain Markdown — normalized files have JSX stripped,
+      // and residual HTML fragments break the MDX parser.
+      const parsedDoc = await parseMarkdownFileAsPlainMd(absolutePath, relativePath);
 
       // Extract sections
       const sections = extractSections(parsedDoc.ast);
