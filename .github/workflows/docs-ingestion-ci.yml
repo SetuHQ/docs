@@ -2,14 +2,14 @@ name: Docs Ingestion CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, staging]
     paths:
       - 'docs-ingestion/**'
       - 'docs-embeddings/**'
       - 'api-references/**'
       - 'content/**'
   push:
-    branches: [main]
+    branches: [main, staging]
     paths:
       - 'docs-ingestion/**'
       - 'docs-embeddings/**'
@@ -29,18 +29,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: docs-ingestion/package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: docs-ingestion/yarn.lock
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Build
-        run: npm run build
+        run: yarn build
 
       # ── E. Test suite ──
       - name: Run tests
-        run: npm test
+        run: yarn test
 
   normalize-api-specs:
     name: API Spec Normalization
@@ -55,15 +55,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: docs-ingestion/package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: docs-ingestion/yarn.lock
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --immutable
 
       # ── A. Normalization run ──
       - name: Run API spec normalization
-        run: npm run normalize-api-specs
+        run: yarn normalize-api-specs
 
       - name: Verify output directory exists
         run: |
@@ -88,7 +88,7 @@ jobs:
         run: cp -r ../.api-reference-normalized /tmp/api-ref-norm-run1
 
       - name: Run normalization again
-        run: npm run normalize-api-specs
+        run: yarn normalize-api-specs
 
       - name: Verify determinism
         run: |
@@ -102,7 +102,7 @@ jobs:
 
       # ── C. Token limit compliance ──
       - name: Check token limits
-        run: npm run check-token-limits
+        run: yarn check-token-limits
 
       # ── F. Git ignored state check ──
       - name: Verify .api-reference-normalized is gitignored
@@ -137,31 +137,31 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: docs-ingestion/package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: docs-ingestion/yarn.lock
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Build
-        run: npm run build
+        run: yarn build
 
       # Generate the normalized API specs (required for smoke test)
       - name: Normalize API specs
-        run: npm run normalize-api-specs
+        run: yarn normalize-api-specs
 
       # Normalize MDX if content/ exists
       - name: Normalize MDX (if content exists)
         run: |
           if [ -d "../content" ]; then
-            npm run normalize-mdx
+            yarn normalize-mdx
           else
             echo "No content/ directory — skipping MDX normalization"
           fi
 
       # ── D. Ingestion smoke test ──
       - name: Run ingestion smoke test
-        run: npm run smoke-test-ingestion
+        run: yarn smoke-test-ingestion
 
   embedding-dry-run:
     name: Embedding Dry Run
@@ -174,27 +174,27 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: docs-ingestion/package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: docs-ingestion/yarn.lock
 
       # Build ingestion pipeline and produce chunks.json
       - name: Install ingestion dependencies
         working-directory: docs-ingestion
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Build ingestion
         working-directory: docs-ingestion
-        run: npm run build
+        run: yarn build
 
       - name: Normalize API specs
         working-directory: docs-ingestion
-        run: npm run normalize-api-specs
+        run: yarn normalize-api-specs
 
       - name: Normalize MDX (if content exists)
         working-directory: docs-ingestion
         run: |
           if [ -d "../content" ]; then
-            npm run normalize-mdx
+            yarn normalize-mdx
           else
             echo "No content/ directory — skipping MDX normalization"
           fi
@@ -214,11 +214,11 @@ jobs:
       # Build embeddings pipeline and run dry-run
       - name: Install embedding dependencies
         working-directory: docs-embeddings
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Build embeddings
         working-directory: docs-embeddings
-        run: npm run build
+        run: yarn build
 
       # ── E. Embedding dry run ──
       - name: Run embedding dry run
