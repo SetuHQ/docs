@@ -5,15 +5,15 @@
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
-  InvokeModelCommandInput
-} from '@aws-sdk/client-bedrock-runtime';
+  InvokeModelCommandInput,
+} from "@aws-sdk/client-bedrock-runtime";
 
 export class BedrockEmbedder {
   private client: BedrockRuntimeClient;
   private modelId: string;
   private callCount: number = 0;
 
-  constructor(region: string = 'ap-south-1', modelId: string = 'amazon.titan-embed-text-v2:0') {
+  constructor(region: string, modelId: string) {
     this.client = new BedrockRuntimeClient({ region });
     this.modelId = modelId;
   }
@@ -33,19 +33,19 @@ export class BedrockEmbedder {
       try {
         const input: InvokeModelCommandInput = {
           modelId: this.modelId,
-          contentType: 'application/json',
-          accept: 'application/json',
+          contentType: "application/json",
+          accept: "application/json",
           body: JSON.stringify({
             inputText: content,
-            normalize: true
-          })
+            normalize: true,
+          }),
         };
 
         const command = new InvokeModelCommand(input);
         const response = await this.client.send(command);
 
         const responseBody = JSON.parse(
-          new TextDecoder().decode(response.body)
+          new TextDecoder().decode(response.body),
         );
 
         this.callCount++;
@@ -53,22 +53,27 @@ export class BedrockEmbedder {
       } catch (error: any) {
         lastError = error;
         const isRetryable =
-          error?.name === 'ThrottlingException' ||
-          error?.name === 'ServiceUnavailableException' ||
-          error?.name === 'ModelTimeoutException' ||
+          error?.name === "ThrottlingException" ||
+          error?.name === "ServiceUnavailableException" ||
+          error?.name === "ModelTimeoutException" ||
           error?.$metadata?.httpStatusCode === 429 ||
           error?.$metadata?.httpStatusCode >= 500;
 
         if (!isRetryable || attempt === BedrockEmbedder.MAX_RETRIES) {
-          console.error(`Bedrock embedding failed (attempt ${attempt + 1}/${BedrockEmbedder.MAX_RETRIES + 1}):`, error);
+          console.error(
+            `Bedrock embedding failed (attempt ${attempt + 1}/${BedrockEmbedder.MAX_RETRIES + 1}):`,
+            error,
+          );
           throw error;
         }
 
         // Full jitter: randomize within [50%, 100%] of exponential delay
         // to prevent thundering herd when multiple concurrent calls retry
         const maxDelay = Math.min(1000 * Math.pow(2, attempt), 16000);
-        const delay = Math.floor(maxDelay / 2 + Math.random() * maxDelay / 2);
-        console.warn(`   Bedrock throttled (attempt ${attempt + 1}), retrying in ${delay}ms...`);
+        const delay = Math.floor(maxDelay / 2 + (Math.random() * maxDelay) / 2);
+        console.warn(
+          `   Bedrock throttled (attempt ${attempt + 1}), retrying in ${delay}ms...`,
+        );
         await this.sleep(delay);
       }
     }
@@ -113,6 +118,6 @@ export class BedrockEmbedder {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

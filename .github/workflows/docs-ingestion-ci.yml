@@ -247,6 +247,11 @@ jobs:
         working-directory: docs-embeddings
         env:
           DRY_RUN: 'true'
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          BEDROCK_MODEL_ID: ${{ vars.BEDROCK_MODEL_ID }}
+          PINECONE_INDEX: ${{ vars.PINECONE_INDEX }}
+          BATCH_SIZE: ${{ vars.BATCH_SIZE }}
+          EMBEDDING_CONCURRENCY: ${{ vars.EMBEDDING_CONCURRENCY }}
           INGESTION_OUTPUT_PATH: ${{ github.workspace }}/docs-ingestion/output/chunks.json
         run: node dist/index.js --dry-run
 
@@ -278,7 +283,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c # v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ap-south-1
+          aws-region: ${{ vars.AWS_REGION }}
 
       # ── Build ingestion pipeline ──
       - name: Install ingestion dependencies
@@ -305,7 +310,8 @@ jobs:
       - name: Upload content to S3
         working-directory: docs-ingestion
         env:
-          CONTENT_BUCKET_NAME: ${{ secrets.CONTENT_BUCKET_NAME }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          CONTENT_BUCKET_NAME: ${{ vars.CONTENT_BUCKET_NAME }}
         run: node dist/upload-content.js
 
       # ── Build and run embedding sync ──
@@ -320,8 +326,12 @@ jobs:
       - name: Run embedding sync
         working-directory: docs-embeddings
         env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          BEDROCK_MODEL_ID: ${{ vars.BEDROCK_MODEL_ID }}
           PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
-          PINECONE_INDEX: ${{ secrets.PINECONE_INDEX }}
-          CONTENT_BUCKET_NAME: ${{ secrets.CONTENT_BUCKET_NAME }}
+          PINECONE_INDEX: ${{ vars.PINECONE_INDEX }}
+          CONTENT_BUCKET_NAME: ${{ vars.CONTENT_BUCKET_NAME }}
+          BATCH_SIZE: ${{ vars.BATCH_SIZE }}
+          EMBEDDING_CONCURRENCY: ${{ vars.EMBEDDING_CONCURRENCY }}
           INGESTION_OUTPUT_PATH: ${{ github.workspace }}/docs-ingestion/output/chunks.json
         run: node dist/index.js
