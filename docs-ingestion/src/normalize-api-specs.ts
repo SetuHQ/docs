@@ -138,7 +138,9 @@ export function safeParseJSON(raw: string, filePath: string): any {
     // Fix unescaped newlines inside JSON string values
     cleaned = fixNewlinesInStrings(cleaned);
     try {
-      return JSON.parse(cleaned);
+      const result = JSON.parse(cleaned);
+      console.warn(`Warning: ${filePath} required lenient JSON parsing (trailing commas, single quotes, or unescaped newlines were fixed)`);
+      return result;
     } catch (e) {
       throw new Error(`Failed to parse JSON in ${filePath}: ${e}`);
     }

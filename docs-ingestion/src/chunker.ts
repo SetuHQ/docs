@@ -75,7 +75,8 @@ export function createDefaultChunkingConfig(): ChunkingConfig {
 const ABSOLUTE_MIN_CHUNK_SIZE = 80;  // Minimum viable chunk
 const SOFT_MAX_CHUNK_SIZE = 700;     // Target maximum (will try to stay under)
 const HARD_MAX_CHUNK_SIZE = 900;     // Absolute maximum (force split if exceeded)
-const MAX_EMBEDDABLE_TOKENS = 1500;  // Embedding model token limit - chunks above this are never embedded
+const MERGE_MAX_CHUNK_SIZE = 800;    // Maximum size after merging a micro-chunk with its neighbor
+const MAX_EMBEDDABLE_TOKENS = 1500;  // Sentence-split trigger — chunks above this get split at sentence boundaries
 
 /**
  * Chunks a document based on its section hierarchy
@@ -181,39 +182,42 @@ function mergeMicroChunks(chunks: TextChunk[]): TextChunk[] {
     const previousChunk = merged[merged.length - 1];
     const nextChunk = chunks[i + 1];
 
-    // Try merging with previous chunk first
-    if (previousChunk && previousChunk.sectionPath === currentChunk.sectionPath) {
+    // Try merging with previous chunk (same section preferred, cross-section allowed)
+    if (previousChunk) {
+      const isSameSection = previousChunk.sectionPath === currentChunk.sectionPath;
+      const mergeLimit = isSameSection ? MERGE_MAX_CHUNK_SIZE : MERGE_MAX_CHUNK_SIZE - 100;
       const mergedContent = `${previousChunk.content}\n\n${currentChunk.content}`;
       const mergedTokenCount = countTokens(mergedContent);
 
-      // Only merge if it doesn't make the previous chunk too large (< 800 tokens)
-      if (mergedTokenCount <= 800) {
+      if (mergedTokenCount <= mergeLimit) {
         previousChunk.content = mergedContent;
         previousChunk.tokenCount = mergedTokenCount;
         previousChunk.endLine = currentChunk.endLine;
+        // Keep previous chunk's sectionPath (micro-chunk is absorbed)
         i++;
         continue;
       }
     }
 
-    // Try merging with next chunk
+    // Try merging with next chunk (with size guard)
     if (nextChunk) {
+      const isSameSection = currentChunk.sectionPath === nextChunk.sectionPath;
+      const mergeLimit = isSameSection ? MERGE_MAX_CHUNK_SIZE : MERGE_MAX_CHUNK_SIZE - 100;
       const mergedContent = `${currentChunk.content}\n\n${nextChunk.content}`;
       const mergedTokenCount = countTokens(mergedContent);
 
-      // Merge current with next (skip next in next iteration)
-      const mergedChunk: TextChunk = {
-        content: mergedContent,
-        tokenCount: mergedTokenCount,
-        sectionPath: currentChunk.sectionPath,
-        sectionPathArray: currentChunk.sectionPathArray,
-        startLine: currentChunk.startLine,
-        endLine: nextChunk.endLine
-      };
-
-      merged.push(mergedChunk);
-      i += 2; // Skip next chunk
-      continue;
+      if (mergedTokenCount <= mergeLimit) {
+        merged.push({
+          content: mergedContent,
+          tokenCount: mergedTokenCount,
+          sectionPath: currentChunk.sectionPath,
+          sectionPathArray: currentChunk.sectionPathArray,
+          startLine: currentChunk.startLine,
+          endLine: nextChunk.endLine
+        });
+        i += 2; // Skip next chunk
+        continue;
+      }
     }
 
     // No merging possible - keep as-is (edge case: last chunk of last section)
@@ -761,8 +765,9 @@ function splitBySentence(text: string): string[] {
     sentences = protectedText.split(/(?<=,)\s+/).filter(s => s.trim());
   }
 
-  // Step 5: If still only 1 segment, try pipe boundaries (markdown tables)
-  if (sentences.length <= 1) {
+  // Step 5: If still only 1 segment, try pipe boundaries (but skip if text contains markdown tables)
+  const containsMarkdownTable = /\|[\s-]*---[\s-]*\|/.test(protectedText) || /\|---\|/.test(protectedText);
+  if (sentences.length <= 1 && !containsMarkdownTable) {
     sentences = protectedText.split(/\s*\|\s*/).filter(s => s.trim());
   }
 

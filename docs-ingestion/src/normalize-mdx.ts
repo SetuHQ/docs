@@ -572,7 +572,7 @@ async function main(): Promise<void> {
 }
 
 // Only run if called directly (not imported)
-const isMainModule = process.argv[1]?.includes('normalize-mdx');
+const isMainModule = import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('normalize-mdx.ts');
 if (isMainModule) {
   main().catch(console.error);
 }

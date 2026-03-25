@@ -11,6 +11,7 @@ export class VectorDB {
   private index: any;
 
   constructor(apiKey: string, indexName: string) {
+    if (!apiKey) throw new Error('Pinecone API key is required');
     this.client = new Pinecone({ apiKey });
     this.indexName = indexName;
   }
