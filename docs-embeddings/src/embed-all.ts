@@ -75,7 +75,7 @@ async function main(): Promise<void> {
   const contentDir = path.resolve(process.cwd(), "..", "content");
   try {
     await fs.access(contentDir);
-    runStep("Normalize MDX", "npm run normalize-mdx", ingestionDir);
+    runStep("Normalize MDX", "yarn normalize-mdx", ingestionDir);
   } catch {
     console.log("\nNo content/ directory — skipping MDX normalization");
   }
@@ -83,7 +83,7 @@ async function main(): Promise<void> {
   // ────────────────────────────────────────────────────────────────
   // Step 2: Normalize API specs
   // ────────────────────────────────────────────────────────────────
-  runStep("Normalize API specs", "npm run normalize-api-specs", ingestionDir);
+  runStep("Normalize API specs", "yarn normalize-api-specs", ingestionDir);
 
   // ────────────────────────────────────────────────────────────────
   // Step 3: Run ingestion
@@ -267,7 +267,7 @@ async function main(): Promise<void> {
     console.log(`  S3 skipped:        ${syncStats.s3_skipped}`);
     console.log(`  Bedrock API calls: ${syncStats.embedding_api_calls}`);
     console.log(
-      '\nNext: run "npm run verify-embed" to confirm everything landed correctly.\n',
+      '\nNext: run "yarn verify-embed" to confirm everything landed correctly.\n',
     );
   } catch (error) {
     console.error("\n❌ Embedding failed mid-way!\n");

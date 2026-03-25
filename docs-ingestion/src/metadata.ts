@@ -15,7 +15,7 @@
 
 import * as crypto from "crypto";
 import simpleGit from "simple-git";
-import type { TextChunk } from "./chunker.js";
+import { countTokens, type TextChunk } from "./chunker.js";
 import { cleanChunkContent } from "./text-cleaner.js";
 import type { DocumentChunk, DocumentFrontmatter, GitInfo } from "./types.js";
 
@@ -218,12 +218,12 @@ export function enrichChunk(
   // Generate page context for better retrieval
   const pageContext = generatePageContext(frontmatter);
 
-  // Note: We keep the original token count from the chunker
-  // The text cleaner may reduce actual tokens, but we maintain
-  // consistency with the chunking algorithm's measurements
+  // Recompute token count on cleaned content so downstream filters
+  // (80-1400 embeddable range) use an accurate value.
+  const actualTokenCount = countTokens(cleanedContent);
 
   // Flag oversized chunks for embedding pipeline awareness
-  const isOversized = textChunk.tokenCount > 1200;
+  const isOversized = actualTokenCount > 1200;
 
   return {
     content: cleanedContent,
@@ -235,7 +235,7 @@ export function enrichChunk(
     content_hash: hashContent(cleanedContent),
     source_repo: gitInfo.repoName,
     commit_sha: gitInfo.commitSha,
-    token_count: textChunk.tokenCount,
+    token_count: actualTokenCount,
     is_oversized: isOversized,
     metadata: {
       product: extractProduct(filePath),

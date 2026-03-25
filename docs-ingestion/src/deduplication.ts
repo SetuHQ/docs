@@ -113,13 +113,12 @@ export function determineFilesToProcess(
   const toSkip: string[] = [];
 
   for (const file of allFiles) {
-    // If file wasn't in previous ingestion, process it
     if (!incrementalState.chunksByFile.has(file)) {
+      // New file — must process
       toProcess.push(file);
     } else {
-      // File was previously processed - could skip
-      // For now, we'll check content hash during processing
-      toProcess.push(file);
+      // File was previously processed with same commit — skip
+      toSkip.push(file);
     }
   }
 

@@ -260,14 +260,19 @@ function splitLargeSection(
   let currentChunk = '';
   let currentTokens = 0;
   let hasCode = false;
+  let searchOffset = 0;
 
   for (let i = 0; i < paragraphs.length; i++) {
     const paragraph = paragraphs[i];
     const paragraphTokens = countTokens(paragraph);
 
+    // Track the actual position of this paragraph in the original content
+    const paragraphStart = content.indexOf(paragraph, searchOffset);
+    // Advance offset past this paragraph (+ separator) for next iteration
+    searchOffset = paragraphStart + paragraph.length;
+
     // Check if this paragraph contains a code block
     const containsCodeBlock = codeBlocks.some(cb => {
-      const paragraphStart = content.indexOf(paragraph);
       const paragraphEnd = paragraphStart + paragraph.length;
       return cb.start >= paragraphStart && cb.end <= paragraphEnd;
     });
@@ -541,13 +546,17 @@ function splitOversizedChunk(
   const resultChunks: TextChunk[] = [];
   let currentContent = '';
   let currentTokens = 0;
+  let searchOffset = 0;
 
   for (const paragraph of paragraphs) {
     const paragraphTokens = countTokens(paragraph);
 
+    // Track the actual position of this paragraph in the original content
+    const paragraphStart = content.indexOf(paragraph, searchOffset);
+    searchOffset = paragraphStart + paragraph.length;
+
     // Check if this paragraph contains a code block
     const containsCodeBlock = codeBlocks.some(cb => {
-      const paragraphStart = content.indexOf(paragraph);
       const paragraphEnd = paragraphStart + paragraph.length;
       return cb.start >= paragraphStart && cb.end <= paragraphEnd;
     });

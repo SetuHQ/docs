@@ -127,6 +127,7 @@ export class ContentUploader {
 
   /**
    * Upload a single chunk. Key format: {content_hash}.txt
+   * Retries up to 3 times with exponential backoff for transient errors.
    */
   private async uploadChunk(chunk: DocumentChunk): Promise<void> {
     const command = new PutObjectCommand({
@@ -141,6 +142,19 @@ export class ContentUploader {
       }
     });
 
-    await this.s3Client.send(command);
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await this.s3Client.send(command);
+        return;
+      } catch (error: any) {
+        if (attempt < 3) {
+          const backoffMs = 500 * Math.pow(2, attempt - 1);
+          console.warn(`  S3 upload retry ${attempt}/3 for ${chunk.content_hash}: ${error?.message}`);
+          await new Promise(resolve => setTimeout(resolve, backoffMs));
+        } else {
+          throw error;
+        }
+      }
+    }
   }
 }

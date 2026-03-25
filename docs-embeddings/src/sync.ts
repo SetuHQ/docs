@@ -31,6 +31,10 @@ const REQUIRED_CHUNK_FIELDS: (keyof DocumentChunk)[] = [
 // Titan v2 embedding dimension
 const EMBEDDING_DIM = 1024;
 
+// Embedding token thresholds (must match embedding-helpers.ts in docs-ingestion)
+const MIN_EMBEDDABLE_TOKENS = 80;
+const MAX_EMBEDDABLE_TOKENS = 1400;
+
 export class EmbeddingSync {
   private embedder: BedrockEmbedder;
   private vectorDB: VectorDB | null = null;
@@ -196,8 +200,12 @@ export class EmbeddingSync {
             embeddedHashes.add(record.id);
           }
 
-          // Save state BEFORE upsert — Pinecone upsert is idempotent by ID,
-          // so re-upserting on retry is safe; losing state is not.
+          // Upsert FIRST — Pinecone upsert is idempotent by ID, so
+          // re-upserting on retry is safe. State is saved AFTER upsert
+          // so we never record a hash that isn't actually in Pinecone.
+          await this.batchUpsert(stageRecords);
+
+          // Save state AFTER successful upsert
           const intermediateHashes = new Set([
             ...previousState.indexed_hashes,
             ...embeddedHashes,
@@ -209,10 +217,7 @@ export class EmbeddingSync {
             last_synced: new Date().toISOString(),
           };
           await this.saveState(intermediateState);
-
-          // Upsert
-          await this.batchUpsert(stageRecords);
-          console.log(`   Stage ${stageNum}/${stages}: embedded + state saved + upserted (${inserted}/${operations.toInsert.length})\n`);
+          console.log(`   Stage ${stageNum}/${stages}: embedded + upserted + state saved (${inserted}/${operations.toInsert.length})\n`);
         }
       }
 
@@ -294,9 +299,9 @@ export class EmbeddingSync {
     const tooLarge: DocumentChunk[] = [];
 
     for (const chunk of chunks) {
-      if (chunk.token_count < 80) {
+      if (chunk.token_count < MIN_EMBEDDABLE_TOKENS) {
         tooSmall.push(chunk);
-      } else if (chunk.token_count > 1500) {
+      } else if (chunk.token_count > MAX_EMBEDDABLE_TOKENS) {
         tooLarge.push(chunk);
       } else {
         embeddable.push(chunk);
@@ -635,8 +640,8 @@ export class EmbeddingSync {
     console.log(`Total chunks:          ${stats.total_chunks}`);
     console.log(`Embeddable chunks:     ${stats.embeddable_chunks}`);
     console.log('');
-    console.log(`Skipped (< 80 tok):    ${stats.skipped_too_small}`);
-    console.log(`Skipped (> 1500 tok):  ${stats.skipped_too_large}`);
+    console.log(`Skipped (< ${MIN_EMBEDDABLE_TOKENS} tok):    ${stats.skipped_too_small}`);
+    console.log(`Skipped (> ${MAX_EMBEDDABLE_TOKENS} tok):  ${stats.skipped_too_large}`);
     console.log('');
     if (dryRun) {
       console.log(`Would insert:          ${stats.vectors_inserted}`);
