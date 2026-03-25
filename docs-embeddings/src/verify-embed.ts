@@ -73,7 +73,10 @@ async function main(): Promise<void> {
 
   // ── Connect to Pinecone ──────────────────────────────────────
   const pineconeApiKey = process.env.PINECONE_API_KEY;
-  const pineconeIndex = process.env.PINECONE_INDEX || "docs-embeddings";
+  const pineconeIndex = process.env.PINECONE_INDEX;
+  if (!pineconeIndex) {
+    fail("PINECONE_INDEX environment variable is required");
+  }
 
   if (!pineconeApiKey) {
     fail("PINECONE_API_KEY environment variable is required");
@@ -105,7 +108,7 @@ async function main(): Promise<void> {
     console.log("  CONTENT_BUCKET_NAME not set — skipping S3 check\n");
   } else {
     const s3 = new S3Client({
-      region: process.env.AWS_REGION || "ap-south-1",
+      region: (() => { const r = process.env.AWS_REGION; if (!r) fail("AWS_REGION environment variable is required"); return r; })(),
     });
 
     // Deterministic sample: pick every Nth chunk instead of random

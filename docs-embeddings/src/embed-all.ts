@@ -52,6 +52,12 @@ function fail(msg: string): never {
   process.exit(1);
 }
 
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) fail(`${name} environment variable is required`);
+  return value;
+}
+
 function runStep(label: string, cmd: string, cwd: string): void {
   console.log(`\n── ${label} ──`);
   try {
@@ -144,7 +150,10 @@ async function main(): Promise<void> {
   console.log("\n── Pinecone namespace check ──");
 
   const pineconeApiKey = process.env.PINECONE_API_KEY;
-  const pineconeIndex = process.env.PINECONE_INDEX || "docs-embeddings";
+  const pineconeIndex = process.env.PINECONE_INDEX;
+  if (!pineconeIndex) {
+    fail("PINECONE_INDEX environment variable is required");
+  }
 
   if (!pineconeApiKey) {
     fail("PINECONE_API_KEY environment variable is required");
@@ -241,18 +250,14 @@ async function main(): Promise<void> {
   const config: EmbeddingConfig = {
     ingestionOutputPath: chunksPath,
     stateFilePath: path.join(process.cwd(), "state", "indexed-hashes.json"),
-    awsRegion: process.env.AWS_REGION || "ap-south-1",
-    bedrockModelId:
-      process.env.BEDROCK_MODEL_ID || "amazon.titan-embed-text-v2:0",
+    awsRegion: requireEnv("AWS_REGION"),
+    bedrockModelId: requireEnv("BEDROCK_MODEL_ID"),
     pineconeApiKey: pineconeApiKey!,
-    pineconeIndex,
-    batchSize: parseInt(process.env.BATCH_SIZE || "25", 10),
+    pineconeIndex: pineconeIndex!,
+    batchSize: parseInt(requireEnv("BATCH_SIZE"), 10),
     s3ContentBucket: process.env.CONTENT_BUCKET_NAME || undefined,
     dryRun: false,
-    embeddingConcurrency: parseInt(
-      process.env.EMBEDDING_CONCURRENCY || "5",
-      10,
-    ),
+    embeddingConcurrency: parseInt(requireEnv("EMBEDDING_CONCURRENCY"), 10),
   };
 
   try {

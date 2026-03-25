@@ -11,6 +11,12 @@ import type { EmbeddingConfig } from './types.js';
 dotenv.config({ path: '.env.local' });
 dotenv.config({ path: '.env' });
 
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} environment variable is required`);
+  return value;
+}
+
 async function main() {
   try {
     const dryRun = process.argv.includes('--dry-run') || process.env.DRY_RUN === 'true';
@@ -21,14 +27,14 @@ async function main() {
         path.join(process.cwd(), '..', 'docs-ingestion', 'output', 'chunks.json'),
       stateFilePath: process.env.STATE_FILE_PATH ||
         path.join(process.cwd(), 'state', 'indexed-hashes.json'),
-      awsRegion: process.env.AWS_REGION || 'ap-south-1',
-      bedrockModelId: process.env.BEDROCK_MODEL_ID || 'amazon.titan-embed-text-v2:0',
+      awsRegion: requireEnv('AWS_REGION'),
+      bedrockModelId: requireEnv('BEDROCK_MODEL_ID'),
       pineconeApiKey: process.env.PINECONE_API_KEY || '',
-      pineconeIndex: process.env.PINECONE_INDEX || 'docs-embeddings',
-      batchSize: parseInt(process.env.BATCH_SIZE || '25', 10),
+      pineconeIndex: requireEnv('PINECONE_INDEX'),
+      batchSize: parseInt(requireEnv('BATCH_SIZE'), 10),
       s3ContentBucket: process.env.CONTENT_BUCKET_NAME || undefined,
       dryRun,
-      embeddingConcurrency: parseInt(process.env.EMBEDDING_CONCURRENCY || '3', 10),
+      embeddingConcurrency: parseInt(requireEnv('EMBEDDING_CONCURRENCY'), 10),
     };
 
     // Validate (Pinecone key not required in dry-run)

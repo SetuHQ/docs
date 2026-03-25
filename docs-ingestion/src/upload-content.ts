@@ -19,7 +19,10 @@ async function main() {
   try {
     // Load config from environment
     const bucketName = process.env.CONTENT_BUCKET_NAME;
-    const awsRegion = process.env.AWS_REGION || "ap-south-1";
+    const awsRegion = process.env.AWS_REGION;
+    if (!awsRegion) {
+      throw new Error("AWS_REGION environment variable is required");
+    }
     const outputPath =
       process.env.OUTPUT_PATH ||
       path.join(process.cwd(), "output", "chunks.json");
