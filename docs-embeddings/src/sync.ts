@@ -60,6 +60,8 @@ export class EmbeddingSync {
     const startTime = Date.now();
     const dryRun = this.config.dryRun ?? false;
 
+    console.log(`Memory: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`);
+
     if (dryRun) {
       console.log('🔄 Starting embedding sync (DRY RUN — no external calls)\n');
     } else {
@@ -74,7 +76,8 @@ export class EmbeddingSync {
     // Load ingestion output
     console.log('📥 Loading ingestion output...');
     const chunks = await this.loadChunks();
-    console.log(`   Loaded ${chunks.length} chunks\n`);
+    console.log(`   Loaded ${chunks.length} chunks`);
+    console.log(`Memory: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB\n`);
 
     // Validate required fields on all chunks
     if (dryRun) {
@@ -177,6 +180,7 @@ export class EmbeddingSync {
       if (operations.toInsert.length > 0) {
         const STAGE_SIZE = 100;
         const stages = Math.ceil(operations.toInsert.length / STAGE_SIZE);
+        const embeddedHashes = new Set<string>();
         console.log(`🤖 Generating ${operations.toInsert.length} NEW embeddings (${stages} stages of up to ${STAGE_SIZE})...\n`);
 
         for (let s = 0; s < operations.toInsert.length; s += STAGE_SIZE) {
@@ -185,16 +189,18 @@ export class EmbeddingSync {
 
           // Embed
           const stageRecords = await this.generateVectorRecords(stage);
+          inserted += stageRecords.length;
 
-          // Upsert
-          await this.batchUpsert(stageRecords);
-          inserted += stage.length;
+          // Track only successfully embedded hashes
+          for (const record of stageRecords) {
+            embeddedHashes.add(record.id);
+          }
 
-          // Save state — record all hashes inserted so far
-          const insertedSoFar = operations.toInsert.slice(0, s + stage.length);
+          // Save state BEFORE upsert — Pinecone upsert is idempotent by ID,
+          // so re-upserting on retry is safe; losing state is not.
           const intermediateHashes = new Set([
             ...previousState.indexed_hashes,
-            ...insertedSoFar.map(c => c.content_hash),
+            ...embeddedHashes,
           ]);
           const intermediateState: SyncState = {
             commit_sha: chunks[0]?.commit_sha || previousState.commit_sha,
@@ -203,7 +209,10 @@ export class EmbeddingSync {
             last_synced: new Date().toISOString(),
           };
           await this.saveState(intermediateState);
-          console.log(`   Stage ${stageNum}/${stages}: embedded + upserted + state saved (${inserted}/${operations.toInsert.length})\n`);
+
+          // Upsert
+          await this.batchUpsert(stageRecords);
+          console.log(`   Stage ${stageNum}/${stages}: embedded + state saved + upserted (${inserted}/${operations.toInsert.length})\n`);
         }
       }
 
@@ -226,6 +235,9 @@ export class EmbeddingSync {
       // Delete removed chunks
       if (operations.toDelete.length > 0) {
         console.log(`🗑️  Deleting ${operations.toDelete.length} stale vectors...`);
+        for (const hash of operations.toDelete) {
+          console.log(`  Deleted: ${hash}`);
+        }
         await this.batchDelete(operations.toDelete);
         console.log('   Done\n');
       }
@@ -258,6 +270,8 @@ export class EmbeddingSync {
     };
 
     this.printSummary(stats, dryRun);
+
+    console.log(`Memory: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`);
 
     return stats;
   }
@@ -296,8 +310,25 @@ export class EmbeddingSync {
    * Load previous sync state
    */
   private async loadState(): Promise<SyncState> {
+    const emptyState: SyncState = {
+      commit_sha: '',
+      indexed_hashes: new Set(),
+      total_vectors: 0,
+      last_synced: new Date().toISOString()
+    };
+
+    let content: string;
     try {
-      const content = await fs.readFile(this.config.stateFilePath, 'utf-8');
+      content = await fs.readFile(this.config.stateFilePath, 'utf-8');
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        // No previous state file — first run
+        return emptyState;
+      }
+      throw error;
+    }
+
+    try {
       const data = JSON.parse(content);
       return {
         commit_sha: data.commit_sha,
@@ -306,13 +337,13 @@ export class EmbeddingSync {
         last_synced: data.last_synced
       };
     } catch (error) {
-      // No previous state - first run
-      return {
-        commit_sha: '',
-        indexed_hashes: new Set(),
-        total_vectors: 0,
-        last_synced: new Date().toISOString()
-      };
+      if (error instanceof SyntaxError) {
+        const backupPath = `${this.config.stateFilePath}.corrupt.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`;
+        console.warn(`  Warning: State file is corrupt, backing up to ${backupPath} and starting fresh`);
+        await fs.rename(this.config.stateFilePath, backupPath);
+        return emptyState;
+      }
+      throw error;
     }
   }
 
@@ -327,11 +358,9 @@ export class EmbeddingSync {
       last_synced: state.last_synced
     };
 
-    await fs.writeFile(
-      this.config.stateFilePath,
-      JSON.stringify(data, null, 2),
-      'utf-8'
-    );
+    const tmpPath = `${this.config.stateFilePath}.tmp`;
+    await fs.writeFile(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
+    await fs.rename(tmpPath, this.config.stateFilePath);
   }
 
   /**
@@ -431,7 +460,8 @@ export class EmbeddingSync {
     chunks: DocumentChunk[]
   ): Promise<VectorRecord[]> {
     const concurrency = this.config.embeddingConcurrency ?? 5;
-    const results: VectorRecord[] = new Array(chunks.length);
+    const results: (VectorRecord | undefined)[] = new Array(chunks.length);
+    const errors: { hash: string; message: string }[] = [];
     let completed = 0;
     let nextIdx = 0;
 
@@ -443,12 +473,20 @@ export class EmbeddingSync {
       while (nextIdx < chunks.length) {
         const i = nextIdx++;  // atomic in single-threaded JS
         const chunk = chunks[i];
-        const embedding = await this.embedder.generateEmbedding(chunk.content);
-        results[i] = {
-          id: chunk.content_hash,
-          embedding,
-          metadata: this.buildVectorMetadata(chunk),
-        };
+        try {
+          const embedding = await this.embedder.generateEmbedding(chunk.content);
+          results[i] = {
+            id: chunk.content_hash,
+            embedding,
+            metadata: this.buildVectorMetadata(chunk),
+          };
+        } catch (error: any) {
+          const hash = chunk.content_hash;
+          const message = error?.message || String(error);
+          console.error(`  Embedding failed for chunk ${hash}: ${message}`);
+          errors.push({ hash, message });
+          results[i] = undefined;
+        }
         completed++;
         if (completed % 50 === 0 || completed === chunks.length) {
           console.log(`   Generated ${completed}/${chunks.length} embeddings...`);
@@ -459,7 +497,15 @@ export class EmbeddingSync {
     const workerCount = Math.min(concurrency, chunks.length);
     await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
-    return results;
+    const validResults = results.filter((r): r is VectorRecord => r !== undefined);
+
+    if (errors.length > validResults.length * 0.02) {
+      throw new Error(
+        `Too many embedding failures: ${errors.length} failed out of ${chunks.length} chunks (${errors.slice(0, 5).map(e => e.hash).join(', ')}${errors.length > 5 ? '...' : ''})`
+      );
+    }
+
+    return validResults;
   }
 
   /**
@@ -506,15 +552,46 @@ export class EmbeddingSync {
    */
   private async batchUpsert(records: VectorRecord[]): Promise<void> {
     const batchSize = this.config.batchSize;
+    const failedBatches: number[] = [];
+    let consecutiveFailures = 0;
 
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);
-      await this.getVectorDB().upsertVectors(batch);
+      const batchIndex = Math.floor(i / batchSize);
+      let success = false;
 
-      // Progress indicator
-      if ((i + batchSize) % 500 === 0 && i + batchSize < records.length) {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await this.getVectorDB().upsertVectors(batch);
+          success = true;
+          consecutiveFailures = 0;
+          break;
+        } catch (error: any) {
+          const message = error?.message || String(error);
+          if (attempt < 3) {
+            const backoffMs = 1000 * Math.pow(2, attempt - 1);
+            console.warn(`  Retry ${attempt}/3 for batch ${batchIndex}: ${message}`);
+            await new Promise(resolve => setTimeout(resolve, backoffMs));
+          } else {
+            console.error(`  Batch ${batchIndex} failed permanently after 3 attempts: ${message}`);
+            failedBatches.push(batchIndex);
+            consecutiveFailures++;
+          }
+        }
+      }
+
+      // Circuit breaker: stop if 3 consecutive batches fail
+      if (consecutiveFailures >= 3) {
+        throw new Error(`Circuit breaker triggered: ${consecutiveFailures} consecutive batch failures. Halting upsert to prevent further damage.`);
+      }
+
+      if (success && (i + batchSize) % 500 === 0 && i + batchSize < records.length) {
         console.log(`   Upserted ${Math.min(i + batchSize, records.length)}/${records.length} vectors...`);
       }
+    }
+
+    if (failedBatches.length > 0) {
+      console.error(`  ${failedBatches.length} batch(es) failed permanently: [${failedBatches.join(', ')}]`);
     }
   }
 
@@ -526,7 +603,25 @@ export class EmbeddingSync {
 
     for (let i = 0; i < ids.length; i += batchSize) {
       const batch = ids.slice(i, i + batchSize);
-      await this.getVectorDB().deleteVectors(batch);
+      let success = false;
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await this.getVectorDB().deleteVectors(batch);
+          success = true;
+          break;
+        } catch (error: any) {
+          const message = error?.message || String(error);
+          if (attempt < 3) {
+            const backoffMs = 1000 * Math.pow(2, attempt - 1);
+            console.warn(`  Delete retry ${attempt}/3: ${message}`);
+            await new Promise(resolve => setTimeout(resolve, backoffMs));
+          } else {
+            console.error(`  Delete batch failed permanently after 3 attempts: ${message}`);
+            throw error;
+          }
+        }
+      }
     }
   }
 

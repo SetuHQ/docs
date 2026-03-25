@@ -47,7 +47,7 @@ Set these environment variables:
 # AWS Credentials (if not using IAM role)
 export AWS_ACCESS_KEY_ID="your-access-key"
 export AWS_SECRET_ACCESS_KEY="your-secret-key"
-export AWS_REGION="us-east-1"
+export AWS_REGION="ap-south-1"
 
 # Bedrock Model
 export BEDROCK_MODEL_ID="amazon.titan-embed-text-v2:0"
@@ -171,7 +171,7 @@ Required IAM permissions for Bedrock:
         "bedrock:InvokeModel"
       ],
       "Resource": [
-        "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"
+        "arn:aws:bedrock:ap-south-1::foundation-model/amazon.titan-embed-text-v2:0"
       ]
     }
   ]
@@ -206,7 +206,7 @@ Create a Pinecone index with these settings:
 pinecone create-index docs-embeddings \
   --dimension 1024 \
   --metric cosine \
-  --region us-east-1
+  --region ap-south-1
 ```
 
 ## Troubleshooting

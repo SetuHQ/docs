@@ -140,7 +140,7 @@ Set these environment variables:
 
 ```bash
 export CONTENT_BUCKET_NAME="setu-docs-content-dev"
-export AWS_REGION="us-east-1"
+export AWS_REGION="ap-south-1"
 export AWS_ACCESS_KEY_ID="your-access-key"       # Or use IAM role
 export AWS_SECRET_ACCESS_KEY="your-secret-key"   # Or use IAM role
 ```
@@ -231,7 +231,7 @@ const chunks: DocumentChunk[] = loadChunksFromOutput();
 const result = await uploadChunksToS3(
   chunks,
   'setu-docs-content-dev',  // bucket name
-  'us-east-1'                // region
+  'ap-south-1'                // region
 );
 
 console.log(`Uploaded ${result.uploaded} new chunks`);
@@ -264,7 +264,7 @@ console.log(`Skipped ${result.skipped} existing chunks`);
 **"S3 bucket does not exist"**
 ```bash
 # Create the bucket first
-aws s3 mb s3://setu-docs-content-dev --region us-east-1
+aws s3 mb s3://setu-docs-content-dev --region ap-south-1
 ```
 
 **"No AWS credentials found"**

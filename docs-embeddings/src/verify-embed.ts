@@ -16,17 +16,22 @@
  *   PINECONE_INDEX, CONTENT_BUCKET_NAME, AWS_REGION, INGESTION_OUTPUT_PATH
  */
 
-import dotenv from 'dotenv';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { VectorDB } from './vector-db.js';
-import type { DocumentChunk } from './types.js';
+import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import dotenv from "dotenv";
+import * as fs from "fs/promises";
+import * as path from "path";
+import type { DocumentChunk } from "./types.js";
+import { VectorDB } from "./vector-db.js";
 
-dotenv.config({ path: '.env.local' });
-dotenv.config({ path: '.env' });
+dotenv.config({ path: ".env.local" });
+dotenv.config({ path: ".env" });
 
-const API_SPEC_META_FIELDS = ['source_type', 'product', 'category', 'spec_version'];
+const API_SPEC_META_FIELDS = [
+  "source_type",
+  "product",
+  "category",
+  "spec_version",
+];
 
 function fail(msg: string): never {
   console.error(`\nFAIL: ${msg}`);
@@ -34,15 +39,16 @@ function fail(msg: string): never {
 }
 
 async function main(): Promise<void> {
-  console.log('=== Post-Embed Verification ===\n');
+  console.log("=== Post-Embed Verification ===\n");
 
   // ── Load chunks.json ─────────────────────────────────────────
-  const chunksPath = process.env.INGESTION_OUTPUT_PATH ||
-    path.join(process.cwd(), '..', 'docs-ingestion', 'output', 'chunks.json');
+  const chunksPath =
+    process.env.INGESTION_OUTPUT_PATH ||
+    path.join(process.cwd(), "..", "docs-ingestion", "output", "chunks.json");
 
   let raw: string;
   try {
-    raw = await fs.readFile(chunksPath, 'utf-8');
+    raw = await fs.readFile(chunksPath, "utf-8");
   } catch {
     fail(`Cannot read chunks.json at ${chunksPath}`);
   }
@@ -52,22 +58,24 @@ async function main(): Promise<void> {
   console.log(`Loaded ${chunks.length} chunks from ${chunksPath}`);
 
   // Same thresholds as sync.ts filterChunks
-  const embeddable = chunks.filter(c => c.token_count >= 80 && c.token_count <= 1500);
+  const embeddable = chunks.filter(
+    (c) => c.token_count >= 80 && c.token_count <= 1500,
+  );
   console.log(`Embeddable chunks: ${embeddable.length}\n`);
 
   // ── Connect to Pinecone ──────────────────────────────────────
   const pineconeApiKey = process.env.PINECONE_API_KEY;
-  const pineconeIndex = process.env.PINECONE_INDEX || 'docs-embeddings';
+  const pineconeIndex = process.env.PINECONE_INDEX || "docs-embeddings";
 
   if (!pineconeApiKey) {
-    fail('PINECONE_API_KEY environment variable is required');
+    fail("PINECONE_API_KEY environment variable is required");
   }
 
   const vectorDB = new VectorDB(pineconeApiKey!, pineconeIndex);
   await vectorDB.connect();
 
   // ── Check 1: Pinecone vector count ───────────────────────────
-  console.log('── Check 1: Pinecone vector count ──');
+  console.log("── Check 1: Pinecone vector count ──");
 
   const stats = await vectorDB.getStats();
   console.log(`  Pinecone vectors:     ${stats.totalVectorCount}`);
@@ -76,25 +84,31 @@ async function main(): Promise<void> {
   if (stats.totalVectorCount < embeddable.length * 0.9) {
     fail(
       `Vector count ${stats.totalVectorCount} is less than 90% ` +
-      `of expected ${embeddable.length}`
+        `of expected ${embeddable.length}`,
     );
   }
-  console.log('  [PASS] Vector count within expected range\n');
+  console.log("  [PASS] Vector count within expected range\n");
 
   // ── Check 2: S3 content existence (spot check) ──────────────
-  console.log('── Check 2: S3 content existence ──');
+  console.log("── Check 2: S3 content existence ──");
 
   const bucketName = process.env.CONTENT_BUCKET_NAME;
   if (!bucketName) {
-    console.log('  CONTENT_BUCKET_NAME not set — skipping S3 check\n');
+    console.log("  CONTENT_BUCKET_NAME not set — skipping S3 check\n");
   } else {
-    const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+    const s3 = new S3Client({
+      region: process.env.AWS_REGION || "ap-south-1",
+    });
 
     // Deterministic sample: pick every Nth chunk instead of random
     const sampleSize = Math.min(50, chunks.length);
     const step = Math.max(1, Math.floor(chunks.length / sampleSize));
     const sample: DocumentChunk[] = [];
-    for (let i = 0; i < chunks.length && sample.length < sampleSize; i += step) {
+    for (
+      let i = 0;
+      i < chunks.length && sample.length < sampleSize;
+      i += step
+    ) {
       sample.push(chunks[i]);
     }
 
@@ -103,10 +117,12 @@ async function main(): Promise<void> {
 
     for (const chunk of sample) {
       try {
-        await s3.send(new HeadObjectCommand({
-          Bucket: bucketName,
-          Key: `${chunk.content_hash}.txt`
-        }));
+        await s3.send(
+          new HeadObjectCommand({
+            Bucket: bucketName,
+            Key: `${chunk.content_hash}.txt`,
+          }),
+        );
         found++;
       } catch {
         missing++;
@@ -116,22 +132,26 @@ async function main(): Promise<void> {
       }
     }
 
-    console.log(`  Checked ${sample.length} chunks: ${found} found, ${missing} missing`);
+    console.log(
+      `  Checked ${sample.length} chunks: ${found} found, ${missing} missing`,
+    );
 
     if (missing > sampleSize * 0.1) {
       fail(`${missing}/${sample.length} sampled chunks missing from S3`);
     }
-    console.log('  [PASS] S3 content exists for sampled chunks\n');
+    console.log("  [PASS] S3 content exists for sampled chunks\n");
   }
 
   // ── Check 3: API-spec chunk metadata ─────────────────────────
-  console.log('── Check 3: API-spec chunk metadata ──');
+  console.log("── Check 3: API-spec chunk metadata ──");
 
-  const apiSpecChunks = chunks.filter(c => c.doc_path.startsWith('api-reference/'));
+  const apiSpecChunks = chunks.filter((c) =>
+    c.doc_path.startsWith("api-reference/"),
+  );
   console.log(`  API-spec chunks in chunks.json: ${apiSpecChunks.length}`);
 
   if (apiSpecChunks.length === 0) {
-    console.log('  No API-spec chunks found — skipping\n');
+    console.log("  No API-spec chunks found — skipping\n");
   } else {
     const metaErrors: string[] = [];
     for (const chunk of apiSpecChunks) {
@@ -146,20 +166,22 @@ async function main(): Promise<void> {
       for (const e of metaErrors.slice(0, 10)) console.error(`  ${e}`);
       fail(`${metaErrors.length} API-spec chunks have missing metadata`);
     }
-    console.log(`  [PASS] All ${apiSpecChunks.length} API-spec chunks have required metadata\n`);
+    console.log(
+      `  [PASS] All ${apiSpecChunks.length} API-spec chunks have required metadata\n`,
+    );
   }
 
   // ── Check 4: Pinecone metadata spot check (API-spec vectors) ─
-  console.log('── Check 4: Pinecone metadata spot check ──');
+  console.log("── Check 4: Pinecone metadata spot check ──");
 
   const apiEmbeddable = apiSpecChunks.filter(
-    c => c.token_count >= 80 && c.token_count <= 1500
+    (c) => c.token_count >= 80 && c.token_count <= 1500,
   );
 
   if (apiEmbeddable.length === 0) {
-    console.log('  No embeddable API-spec chunks — skipping\n');
+    console.log("  No embeddable API-spec chunks — skipping\n");
   } else {
-    const spotIds = apiEmbeddable.slice(0, 10).map(c => c.content_hash);
+    const spotIds = apiEmbeddable.slice(0, 10).map((c) => c.content_hash);
     const fetched = await vectorDB.fetchVectorsWithMetadata(spotIds);
 
     let metaOk = 0;
@@ -173,15 +195,15 @@ async function main(): Promise<void> {
     console.log(`  With source_type + product: ${metaOk}/${fetched.length}`);
 
     if (fetched.length > 0 && metaOk < fetched.length * 0.9) {
-      fail('API-spec metadata not properly stored in Pinecone');
+      fail("API-spec metadata not properly stored in Pinecone");
     }
-    console.log('  [PASS] Pinecone vectors have API-spec metadata\n');
+    console.log("  [PASS] Pinecone vectors have API-spec metadata\n");
   }
 
-  console.log('=== All verification checks PASSED ===\n');
+  console.log("=== All verification checks PASSED ===\n");
 }
 
 main().catch((err) => {
-  console.error('Unexpected error:', err);
+  console.error("Unexpected error:", err);
   process.exit(1);
 });

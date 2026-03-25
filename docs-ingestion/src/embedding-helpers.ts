@@ -14,7 +14,7 @@ import type { DocumentChunk } from './types.js';
  * Embedding thresholds
  */
 const MIN_EMBEDDABLE_TOKENS = 80;    // Below this: too little semantic content
-const MAX_EMBEDDABLE_TOKENS = 1500;  // Above this: dominates vector search
+const MAX_EMBEDDABLE_TOKENS = 1400;  // Above this: dominates vector search (includes safety margin)
 const OVERSIZED_THRESHOLD = 1200;    // Flag for special handling
 
 /**
@@ -42,6 +42,11 @@ export function shouldEmbed(chunk: DocumentChunk): boolean {
   // Too small - insufficient semantic content for meaningful embedding
   if (tokenCount < MIN_EMBEDDABLE_TOKENS) {
     return false;
+  }
+
+  // Warn about near-minimum chunks that may have low retrieval quality
+  if (tokenCount >= MIN_EMBEDDABLE_TOKENS && tokenCount <= 100) {
+    console.warn(`Warning: near-minimum chunk (${tokenCount} tokens) in "${chunk.doc_path}" — may have low retrieval quality`);
   }
 
   // Too large - will dominate vector search and hurt retrieval precision
@@ -122,7 +127,7 @@ export function logEmbeddingStats(stats: ReturnType<typeof categorizeChunks>['st
   console.log('');
   console.log('Skipped chunks:');
   console.log(`  - Too small (<80 tok):   ${stats.tooSmall} (${((stats.tooSmall / stats.total) * 100).toFixed(1)}%)`);
-  console.log(`  - Too large (>1500 tok): ${stats.tooLarge} (${((stats.tooLarge / stats.total) * 100).toFixed(1)}%)`);
+  console.log(`  - Too large (>${MAX_EMBEDDABLE_TOKENS} tok): ${stats.tooLarge} (${((stats.tooLarge / stats.total) * 100).toFixed(1)}%)`);
   console.log('');
   console.log(`Oversized (>1200 tok):     ${stats.oversized} (${((stats.oversized / stats.total) * 100).toFixed(1)}%)`);
   console.log('  ↳ These chunks are embeddable but may need special handling');

@@ -58,6 +58,7 @@ import {
   categorizeChunks,
   logEmbeddingStats
 } from './embedding-helpers.js';
+import { detectPromptInjection } from './text-cleaner.js';
 import type {
   PipelineConfig,
   IngestionResult,
@@ -179,6 +180,14 @@ export async function runIngestionPipeline(
       // Validate chunks
       for (const chunk of documentChunks) {
         validateChunk(chunk);
+      }
+
+      // Check for potential prompt injection in chunk content
+      for (const chunk of documentChunks) {
+        const injections = detectPromptInjection(chunk.content);
+        if (injections.length > 0) {
+          console.warn(`⚠️  Potential prompt injection in ${chunk.doc_path}: [${injections.join(', ')}]`);
+        }
       }
 
       allChunks.push(...documentChunks);
@@ -449,6 +458,14 @@ export async function ingestApiSpecDirectory(
         validateChunk(chunk);
       }
 
+      // Check for potential prompt injection in chunk content
+      for (const chunk of documentChunks) {
+        const injections = detectPromptInjection(chunk.content);
+        if (injections.length > 0) {
+          console.warn(`⚠️  Potential prompt injection in ${chunk.doc_path}: [${injections.join(', ')}]`);
+        }
+      }
+
       allChunks.push(...documentChunks);
       processedCount++;
     } catch (error) {
@@ -490,11 +507,10 @@ async function main() {
       config.baseUrl
     );
 
-    if (apiSpecChunks.length > 0) {
-      // FIX: Remove any API spec chunks that leaked through mergeChunks
-      // from the previous run's chunks.json. The MDX pipeline's mergeChunks
-      // retains chunks from "unprocessed files", which includes API spec
-      // doc_paths. Without this filter, API spec chunks accumulate on every run.
+    {
+      // Always strip API spec chunks from MDX result — mergeChunks retains
+      // chunks from "unprocessed files", which includes API spec doc_paths.
+      // Replace with freshly generated API spec chunks (may be empty if none exist).
       const mdxOnlyChunks = result.chunks.filter(
         c => !c.doc_path.startsWith('api-reference/')
       );

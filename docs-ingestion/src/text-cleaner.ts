@@ -182,3 +182,23 @@ export function cleanChunkContent(content: string): string {
 
   return cleaned;
 }
+
+const INJECTION_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
+  { pattern: /ignore\s+(all\s+)?(previous|prior|above|earlier)\s+instructions/i, label: 'ignore-instructions' },
+  { pattern: /(disregard|forget|overlook)\s+(all\s+)?(previous|prior|earlier)\s+(instructions|guidance|rules)/i, label: 'ignore-instructions' },
+  { pattern: /you\s+are\s+now/i, label: 'role-override' },
+  { pattern: /(you'?re|you\s+will)\s+(now\s+)?(operating|acting|functioning)\s+as/i, label: 'role-override' },
+  { pattern: /(pretend|act|behave)\s+(you\s+are|as\s+(if|though))/i, label: 'role-override' },
+  { pattern: /system\s*prompt/i, label: 'system-prompt-reference' },
+  { pattern: /(core|original|underlying)\s+(instructions|directive|rules)/i, label: 'system-prompt-reference' },
+  { pattern: /<\|im_start\|>/i, label: 'chat-template-injection' },
+  { pattern: /<\|(system|user|assistant)\|>/i, label: 'chat-template-injection' },
+  { pattern: /\[INST\]/i, label: 'instruction-template-injection' },
+  { pattern: /Human:\s*.{0,500}?\s*Assistant:/is, label: 'conversation-injection' },
+];
+
+export function detectPromptInjection(content: string): string[] {
+  return INJECTION_PATTERNS
+    .filter(({ pattern }) => pattern.test(content))
+    .map(({ label }) => label);
+}

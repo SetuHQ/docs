@@ -13,6 +13,10 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { ScanConfig } from './types.js';
+import { retryAsync } from './utils.js';
+
+// Re-export for backward compatibility
+export { retryAsync } from './utils.js';
 
 /**
  * Scans a directory tree for documentation files
@@ -43,7 +47,7 @@ export async function scanDocumentationFiles(
     let entries;
 
     try {
-      entries = await fs.readdir(dir, { withFileTypes: true });
+      entries = await retryAsync(() => fs.readdir(dir, { withFileTypes: true }));
     } catch (error) {
       console.warn(`Warning: Cannot read directory ${dir}:`, error);
       return;
@@ -161,7 +165,7 @@ export function validateScanConfig(config: ScanConfig): void {
  */
 export async function getFileStats(filePath: string) {
   try {
-    return await fs.stat(filePath);
+    return await retryAsync(() => fs.stat(filePath));
   } catch (error) {
     throw new Error(`Cannot access file ${filePath}: ${error}`);
   }

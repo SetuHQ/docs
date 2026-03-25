@@ -13,16 +13,11 @@
  * - URL generation from file paths
  */
 
-import * as crypto from 'crypto';
-import * as path from 'path';
-import simpleGit from 'simple-git';
-import type {
-  DocumentChunk,
-  DocumentFrontmatter,
-  GitInfo
-} from './types.js';
-import type { TextChunk } from './chunker.js';
-import { cleanChunkContent } from './text-cleaner.js';
+import * as crypto from "crypto";
+import simpleGit from "simple-git";
+import type { TextChunk } from "./chunker.js";
+import { cleanChunkContent } from "./text-cleaner.js";
+import type { DocumentChunk, DocumentFrontmatter, GitInfo } from "./types.js";
 
 /**
  * Gets Git repository information
@@ -31,35 +26,45 @@ import { cleanChunkContent } from './text-cleaner.js';
  * @returns Git information including commit SHA and remote URL
  */
 export async function getGitInfo(repoPath: string): Promise<GitInfo> {
-  const git = simpleGit(repoPath);
+  try {
+    const git = simpleGit(repoPath);
 
-  // Check if it's a git repository
-  const isRepo = await git.checkIsRepo();
-  if (!isRepo) {
-    throw new Error(`${repoPath} is not a git repository`);
+    // Check if it's a git repository
+    const isRepo = await git.checkIsRepo();
+    if (!isRepo) {
+      throw new Error(`${repoPath} is not a git repository`);
+    }
+
+    // Get current commit SHA
+    const log = await git.log({ maxCount: 1 });
+    const commitSha = log.latest?.hash || "unknown";
+
+    // Get remote URL
+    const remotes = await git.getRemotes(true);
+    const originRemote = remotes.find((r) => r.name === "origin");
+    const remoteUrl = originRemote?.refs?.fetch || "";
+
+    // Extract repo name from remote URL
+    const repoName = extractRepoName(remoteUrl);
+
+    // Get current branch
+    const branch = await git.revparse(["--abbrev-ref", "HEAD"]);
+
+    return {
+      commitSha,
+      remoteUrl,
+      repoName,
+      branch: branch.trim(),
+    };
+  } catch (error: any) {
+    console.warn("Git info unavailable, using defaults:", error.message);
+    return {
+      commitSha: "unknown",
+      remoteUrl: "",
+      repoName: "unknown",
+      branch: "unknown",
+    };
   }
-
-  // Get current commit SHA
-  const log = await git.log({ maxCount: 1 });
-  const commitSha = log.latest?.hash || 'unknown';
-
-  // Get remote URL
-  const remotes = await git.getRemotes(true);
-  const originRemote = remotes.find(r => r.name === 'origin');
-  const remoteUrl = originRemote?.refs?.fetch || '';
-
-  // Extract repo name from remote URL
-  const repoName = extractRepoName(remoteUrl);
-
-  // Get current branch
-  const branch = await git.revparse(['--abbrev-ref', 'HEAD']);
-
-  return {
-    commitSha,
-    remoteUrl,
-    repoName,
-    branch: branch.trim()
-  };
 }
 
 /**
@@ -70,24 +75,24 @@ export async function getGitInfo(repoPath: string): Promise<GitInfo> {
  * - git@github.com:SetuHQ/docs.git -> SetuHQ/docs
  */
 function extractRepoName(remoteUrl: string): string {
-  if (!remoteUrl) return 'unknown';
+  if (!remoteUrl) return "unknown";
 
   // Remove .git suffix
-  let url = remoteUrl.replace(/\.git$/, '');
+  let url = remoteUrl.replace(/\.git$/, "");
 
   // Handle SSH URLs (git@github.com:owner/repo)
-  if (url.startsWith('git@')) {
+  if (url.startsWith("git@")) {
     const match = url.match(/git@[^:]+:(.+)/);
-    return match ? match[1] : 'unknown';
+    return match ? match[1] : "unknown";
   }
 
   // Handle HTTPS URLs (https://github.com/owner/repo)
-  if (url.startsWith('http')) {
+  if (url.startsWith("http")) {
     const match = url.match(/\/([^\/]+\/[^\/]+)$/);
-    return match ? match[1] : 'unknown';
+    return match ? match[1] : "unknown";
   }
 
-  return 'unknown';
+  return "unknown";
 }
 
 /**
@@ -103,13 +108,13 @@ function extractRepoName(remoteUrl: string): string {
  */
 export function generatePublicUrl(filePath: string, baseUrl: string): string {
   // Remove 'content/' prefix if present
-  let urlPath = filePath.replace(/^content\//, '');
+  let urlPath = filePath.replace(/^content\//, "");
 
   // Remove file extension
-  urlPath = urlPath.replace(/\.(md|mdx)$/, '');
+  urlPath = urlPath.replace(/\.(md|mdx)$/, "");
 
   // Ensure baseUrl doesn't end with /
-  const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+  const cleanBaseUrl = baseUrl.replace(/\/$/, "");
 
   return `${cleanBaseUrl}/${urlPath}`;
 }
@@ -124,10 +129,7 @@ export function generatePublicUrl(filePath: string, baseUrl: string): string {
  * @returns Hex-encoded SHA256 hash
  */
 export function hashContent(content: string): string {
-  return crypto
-    .createHash('sha256')
-    .update(content, 'utf-8')
-    .digest('hex');
+  return crypto.createHash("sha256").update(content, "utf-8").digest("hex");
 }
 
 /**
@@ -140,10 +142,10 @@ export function hashContent(content: string): string {
  * Fallback:       "README.md"                             → "general"
  */
 export function extractProduct(docPath: string): string {
-  const segments = docPath.split('/').filter(Boolean);
+  const segments = docPath.split("/").filter(Boolean);
 
   // API-reference paths: api-reference/{category}/{product-or-file}
-  if (segments[0] === 'api-reference' && segments.length >= 3) {
+  if (segments[0] === "api-reference" && segments.length >= 3) {
     // If there's a subdirectory under the category, that's the product
     // e.g. api-reference/data/bav/penny-drop.md → "bav"
     if (segments.length >= 4) {
@@ -152,11 +154,11 @@ export function extractProduct(docPath: string): string {
     // Otherwise product is the filename prefix before the first dot
     // e.g. api-reference/data/account-aggregator.get-token.md → "account-aggregator"
     const filename = segments[2];
-    const dotIndex = filename.indexOf('.');
+    const dotIndex = filename.indexOf(".");
     if (dotIndex > 0) {
       return filename.substring(0, dotIndex);
     }
-    return filename.replace(/\.(md|mdx)$/, '');
+    return filename.replace(/\.(md|mdx)$/, "");
   }
 
   // Content paths: {category}/{product}/...
@@ -164,7 +166,7 @@ export function extractProduct(docPath: string): string {
     return segments[1];
   }
 
-  return 'general';
+  return "general";
 }
 
 /**
@@ -177,20 +179,20 @@ export function extractProduct(docPath: string): string {
  * "README.md"                                           → "general"
  */
 export function extractCategory(docPath: string): string {
-  const segments = docPath.split('/').filter(Boolean);
+  const segments = docPath.split("/").filter(Boolean);
 
   // API-reference paths: api-reference/{category}/...
-  if (segments[0] === 'api-reference' && segments.length >= 2) {
+  if (segments[0] === "api-reference" && segments.length >= 2) {
     return segments[1];
   }
 
   // Content paths: {category}/...
-  const knownCategories = ['payments', 'data', 'dev-tools'];
+  const knownCategories = ["payments", "data", "dev-tools"];
   if (segments.length >= 1 && knownCategories.includes(segments[0])) {
     return segments[0];
   }
 
-  return 'general';
+  return "general";
 }
 
 /**
@@ -208,7 +210,7 @@ export function enrichChunk(
   filePath: string,
   frontmatter: DocumentFrontmatter,
   gitInfo: GitInfo,
-  baseUrl: string
+  baseUrl: string,
 ): DocumentChunk {
   // Clean chunk content (remove duplicates, normalize whitespace)
   const cleanedContent = cleanChunkContent(textChunk.content);
@@ -241,8 +243,8 @@ export function enrichChunk(
       page_title: frontmatter.page_title,
       sidebar_title: frontmatter.sidebar_title,
       order: frontmatter.order,
-      ...frontmatter
-    }
+      ...frontmatter,
+    },
   };
 }
 
@@ -262,11 +264,14 @@ function generatePageContext(frontmatter: DocumentFrontmatter): string {
     parts.push(frontmatter.page_title);
   }
 
-  if (frontmatter.sidebar_title && frontmatter.sidebar_title !== frontmatter.page_title) {
+  if (
+    frontmatter.sidebar_title &&
+    frontmatter.sidebar_title !== frontmatter.page_title
+  ) {
     parts.push(frontmatter.sidebar_title);
   }
 
-  return parts.length > 0 ? parts.join(' | ') : 'Documentation';
+  return parts.length > 0 ? parts.join(" | ") : "Documentation";
 }
 
 /**
@@ -274,27 +279,30 @@ function generatePageContext(frontmatter: DocumentFrontmatter): string {
  */
 export function validateChunk(chunk: DocumentChunk): void {
   const requiredFields = [
-    'content',
-    'doc_path',
-    'section',
-    'url',
-    'content_hash',
-    'source_repo',
-    'commit_sha'
+    "content",
+    "doc_path",
+    "section",
+    "url",
+    "content_hash",
+    "source_repo",
+    "commit_sha",
   ];
 
   for (const field of requiredFields) {
-    if (!(field in chunk) || chunk[field as keyof DocumentChunk] === undefined) {
+    if (
+      !(field in chunk) ||
+      chunk[field as keyof DocumentChunk] === undefined
+    ) {
       throw new Error(`Chunk is missing required field: ${field}`);
     }
   }
 
   if (chunk.content.trim().length === 0) {
-    throw new Error('Chunk content cannot be empty');
+    throw new Error("Chunk content cannot be empty");
   }
 
   if (chunk.content_hash.length !== 64) {
-    throw new Error('Invalid content_hash (should be SHA256)');
+    throw new Error("Invalid content_hash (should be SHA256)");
   }
 }
 
@@ -307,11 +315,13 @@ export function validateChunk(chunk: DocumentChunk): void {
  */
 export function chunksAreEqual(
   chunk1: DocumentChunk,
-  chunk2: DocumentChunk
+  chunk2: DocumentChunk,
 ): boolean {
-  return chunk1.content_hash === chunk2.content_hash &&
-         chunk1.doc_path === chunk2.doc_path &&
-         chunk1.section === chunk2.section;
+  return (
+    chunk1.content_hash === chunk2.content_hash &&
+    chunk1.doc_path === chunk2.doc_path &&
+    chunk1.section === chunk2.section
+  );
 }
 
 /**

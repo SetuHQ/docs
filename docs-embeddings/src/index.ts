@@ -21,14 +21,14 @@ async function main() {
         path.join(process.cwd(), '..', 'docs-ingestion', 'output', 'chunks.json'),
       stateFilePath: process.env.STATE_FILE_PATH ||
         path.join(process.cwd(), 'state', 'indexed-hashes.json'),
-      awsRegion: process.env.AWS_REGION || 'us-east-1',
+      awsRegion: process.env.AWS_REGION || 'ap-south-1',
       bedrockModelId: process.env.BEDROCK_MODEL_ID || 'amazon.titan-embed-text-v2:0',
       pineconeApiKey: process.env.PINECONE_API_KEY || '',
       pineconeIndex: process.env.PINECONE_INDEX || 'docs-embeddings',
       batchSize: parseInt(process.env.BATCH_SIZE || '25', 10),
       s3ContentBucket: process.env.CONTENT_BUCKET_NAME || undefined,
       dryRun,
-      embeddingConcurrency: parseInt(process.env.EMBEDDING_CONCURRENCY || '5', 10),
+      embeddingConcurrency: parseInt(process.env.EMBEDDING_CONCURRENCY || '3', 10),
     };
 
     // Validate (Pinecone key not required in dry-run)

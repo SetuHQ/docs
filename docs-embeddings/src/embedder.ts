@@ -13,7 +13,7 @@ export class BedrockEmbedder {
   private modelId: string;
   private callCount: number = 0;
 
-  constructor(region: string = 'us-east-1', modelId: string = 'amazon.titan-embed-text-v2:0') {
+  constructor(region: string = 'ap-south-1', modelId: string = 'amazon.titan-embed-text-v2:0') {
     this.client = new BedrockRuntimeClient({ region });
     this.modelId = modelId;
   }

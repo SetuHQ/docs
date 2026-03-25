@@ -60,12 +60,12 @@ export function countTokens(text: string): number {
  */
 export function createDefaultChunkingConfig(): ChunkingConfig {
   return {
-    targetChunkSize: 600,
+    targetChunkSize: 700,
     minChunkSize: 500,
     maxChunkSize: 700,
-    overlapSize: 125,
-    minOverlapSize: 100,
-    maxOverlapSize: 150
+    overlapSize: 80,
+    minOverlapSize: 60,
+    maxOverlapSize: 100
   };
 }
 

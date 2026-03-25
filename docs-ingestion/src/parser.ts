@@ -25,6 +25,7 @@ import { visit } from 'unist-util-visit';
 import { toString } from 'mdast-util-to-string';
 import * as crypto from 'crypto';
 import type { ParsedDocument, DocumentSection } from './types.js';
+import { retryAsync } from './utils.js';
 
 /**
  * Context for tracking seen code blocks to prevent duplication
@@ -45,7 +46,7 @@ export async function parseMarkdownFile(
   relativePath: string
 ): Promise<ParsedDocument> {
   // Read file content
-  const rawContent = await fs.readFile(filePath, 'utf-8');
+  const rawContent = await retryAsync(() => fs.readFile(filePath, 'utf-8'));
 
   // Parse frontmatter
   const { data: frontmatter, content } = matter(rawContent);
@@ -81,7 +82,7 @@ export async function parseMarkdownFileAsPlainMd(
   filePath: string,
   relativePath: string
 ): Promise<ParsedDocument> {
-  const rawContent = await fs.readFile(filePath, 'utf-8');
+  const rawContent = await retryAsync(() => fs.readFile(filePath, 'utf-8'));
   const { data: frontmatter, content } = matter(rawContent);
 
   let ast;

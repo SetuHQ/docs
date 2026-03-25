@@ -138,6 +138,10 @@ export class VectorDB {
       }
     }
 
+    if (allIds.length === topK) {
+      console.warn(`Warning: Pinecone returned exactly ${topK} results — index may contain more vectors. Consider paginated listing.`);
+    }
+
     return allIds;
   }
 
