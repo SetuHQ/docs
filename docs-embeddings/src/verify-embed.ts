@@ -23,6 +23,14 @@ import * as path from "path";
 import type { DocumentChunk } from "./types.js";
 import { VectorDB } from "./vector-db.js";
 
+const FORCE_EMBED_PATTERNS: string[] = [
+  'api-reference/payments/umap',
+];
+
+function isForceEmbeddable(chunk: DocumentChunk): boolean {
+  return FORCE_EMBED_PATTERNS.some(p => chunk.doc_path.startsWith(p));
+}
+
 dotenv.config({ path: ".env.local" });
 dotenv.config({ path: ".env" });
 
@@ -59,7 +67,7 @@ async function main(): Promise<void> {
 
   // Same thresholds as sync.ts filterChunks
   const embeddable = chunks.filter(
-    (c) => c.token_count >= 80 && c.token_count <= 1500,
+    (c) => c.token_count >= 50 && (c.token_count <= 1600 || isForceEmbeddable(c)),
   );
   console.log(`Embeddable chunks: ${embeddable.length}\n`);
 
@@ -175,7 +183,7 @@ async function main(): Promise<void> {
   console.log("── Check 4: Pinecone metadata spot check ──");
 
   const apiEmbeddable = apiSpecChunks.filter(
-    (c) => c.token_count >= 80 && c.token_count <= 1500,
+    (c) => c.token_count >= 50 && (c.token_count <= 1600 || isForceEmbeddable(c)),
   );
 
   if (apiEmbeddable.length === 0) {

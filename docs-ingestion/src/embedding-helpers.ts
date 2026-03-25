@@ -13,44 +13,47 @@ import type { DocumentChunk } from './types.js';
 /**
  * Embedding thresholds
  */
-const MIN_EMBEDDABLE_TOKENS = 80;    // Below this: too little semantic content
-const MAX_EMBEDDABLE_TOKENS = 1400;  // Above this: dominates vector search (includes safety margin)
+const MIN_EMBEDDABLE_TOKENS = 50;    // Below this: too little semantic content
+const MAX_EMBEDDABLE_TOKENS = 1600;  // Above this: dominates vector search (Titan v2 supports 8192)
 const OVERSIZED_THRESHOLD = 1200;    // Flag for special handling
 
 /**
- * Determines if a chunk should be embedded
- *
- * Rules:
- * - Skip if < 80 tokens (micro-chunks with no semantic value)
- * - Skip if > 1500 tokens (oversized chunks that dominate retrieval)
- * - Embed everything else
- *
- * This function is called by the embedding pipeline, NOT during ingestion.
- * Chunks are never deleted, only filtered for embedding.
- *
- * @param chunk - Document chunk to evaluate
- * @returns true if chunk should be embedded, false otherwise
- *
- * Example:
- * ```typescript
- * const chunksToEmbed = allChunks.filter(shouldEmbed);
- * ```
+ * Doc path prefixes that bypass MAX_EMBEDDABLE_TOKENS.
+ * Critical content that MUST be embedded regardless of token count.
+ * Titan v2 supports up to 8192 tokens so this is safe.
+ */
+export const FORCE_EMBED_PATTERNS: string[] = [
+  'api-reference/payments/umap',  // UMAP mandate responses are critical business content
+];
+
+/**
+ * Checks if a chunk matches a force-embed pattern (critical content
+ * that must be embedded regardless of token limits).
+ */
+export function isForceEmbeddable(chunk: DocumentChunk): boolean {
+  return FORCE_EMBED_PATTERNS.some(p => chunk.doc_path.startsWith(p));
+}
+
+/**
+ * Determines if a chunk should be embedded based on token thresholds
+ * and force-embed overrides.
  */
 export function shouldEmbed(chunk: DocumentChunk): boolean {
   const tokenCount = chunk.token_count;
 
-  // Too small - insufficient semantic content for meaningful embedding
   if (tokenCount < MIN_EMBEDDABLE_TOKENS) {
     return false;
   }
 
-  // Warn about near-minimum chunks that may have low retrieval quality
-  if (tokenCount >= MIN_EMBEDDABLE_TOKENS && tokenCount <= 100) {
+  if (tokenCount >= MIN_EMBEDDABLE_TOKENS && tokenCount <= 70) {
     console.warn(`Warning: near-minimum chunk (${tokenCount} tokens) in "${chunk.doc_path}" — may have low retrieval quality`);
   }
 
-  // Too large - will dominate vector search and hurt retrieval precision
   if (tokenCount > MAX_EMBEDDABLE_TOKENS) {
+    if (isForceEmbeddable(chunk)) {
+      console.warn(`Force-embedding oversized chunk (${tokenCount} tokens) for critical path: ${chunk.doc_path}`);
+      return true;
+    }
     return false;
   }
 
@@ -88,7 +91,11 @@ export function categorizeChunks(chunks: DocumentChunk[]): {
     if (tokenCount < MIN_EMBEDDABLE_TOKENS) {
       tooSmall.push(chunk);
     } else if (tokenCount > MAX_EMBEDDABLE_TOKENS) {
-      tooLarge.push(chunk);
+      if (isForceEmbeddable(chunk)) {
+        embeddable.push(chunk);
+      } else {
+        tooLarge.push(chunk);
+      }
     } else {
       embeddable.push(chunk);
     }
@@ -126,7 +133,7 @@ export function logEmbeddingStats(stats: ReturnType<typeof categorizeChunks>['st
   console.log(`Embeddable chunks:         ${stats.embeddable} (${((stats.embeddable / stats.total) * 100).toFixed(1)}%)`);
   console.log('');
   console.log('Skipped chunks:');
-  console.log(`  - Too small (<80 tok):   ${stats.tooSmall} (${((stats.tooSmall / stats.total) * 100).toFixed(1)}%)`);
+  console.log(`  - Too small (<${MIN_EMBEDDABLE_TOKENS} tok):   ${stats.tooSmall} (${((stats.tooSmall / stats.total) * 100).toFixed(1)}%)`);
   console.log(`  - Too large (>${MAX_EMBEDDABLE_TOKENS} tok): ${stats.tooLarge} (${((stats.tooLarge / stats.total) * 100).toFixed(1)}%)`);
   console.log('');
   console.log(`Oversized (>1200 tok):     ${stats.oversized} (${((stats.oversized / stats.total) * 100).toFixed(1)}%)`);

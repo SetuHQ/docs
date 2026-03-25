@@ -32,8 +32,18 @@ const REQUIRED_CHUNK_FIELDS: (keyof DocumentChunk)[] = [
 const EMBEDDING_DIM = 1024;
 
 // Embedding token thresholds (must match embedding-helpers.ts in docs-ingestion)
-const MIN_EMBEDDABLE_TOKENS = 80;
-const MAX_EMBEDDABLE_TOKENS = 1400;
+const MIN_EMBEDDABLE_TOKENS = 50;
+const MAX_EMBEDDABLE_TOKENS = 1600;
+
+// Force-embed: doc path prefixes that bypass MAX_EMBEDDABLE_TOKENS
+// Must match FORCE_EMBED_PATTERNS in embedding-helpers.ts (docs-ingestion)
+const FORCE_EMBED_PATTERNS: string[] = [
+  'api-reference/payments/umap',
+];
+
+function isForceEmbeddable(chunk: DocumentChunk): boolean {
+  return FORCE_EMBED_PATTERNS.some(p => chunk.doc_path.startsWith(p));
+}
 
 export class EmbeddingSync {
   private embedder: BedrockEmbedder;
@@ -302,7 +312,11 @@ export class EmbeddingSync {
       if (chunk.token_count < MIN_EMBEDDABLE_TOKENS) {
         tooSmall.push(chunk);
       } else if (chunk.token_count > MAX_EMBEDDABLE_TOKENS) {
-        tooLarge.push(chunk);
+        if (isForceEmbeddable(chunk)) {
+          embeddable.push(chunk);
+        } else {
+          tooLarge.push(chunk);
+        }
       } else {
         embeddable.push(chunk);
       }

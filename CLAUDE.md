@@ -81,7 +81,7 @@ content/*.mdx + api-references/*.json
 - `metadata.ts` — Enriches chunks with SHA256 hashes, URLs, git info, product/category
 - `deduplication.ts` — Incremental updates via content hash comparison
 - `text-cleaner.ts` — Deduplicates paragraphs/sentences, normalizes whitespace
-- `embedding-helpers.ts` — Filters chunks by embeddability (80-1400 tokens)
+- `embedding-helpers.ts` — Filters chunks by embeddability (50-1600 tokens, with force-embed overrides for critical content)
 - `normalize-mdx.ts` — Strips JSX/HTML from MDX, produces clean markdown
 - `normalize-api-specs.ts` — Converts OpenAPI 3.x/Swagger 2.0 specs to markdown with RAG metadata
 - `types.ts` — Core interfaces: `DocumentChunk`, `PipelineConfig`, `ChunkingConfig`
@@ -128,8 +128,9 @@ Stored in S3 bucket `docs-mdx-assets`. URL format: `https://docs-assets.setu.co/
 | Target chunk size | 700 tokens | chunker.ts |
 | Min/Max chunk | 500/700 tokens | chunker.ts |
 | Hard max chunk | 900 tokens | chunker.ts |
-| Min embeddable | 80 tokens | embedding-helpers.ts |
-| Max embeddable | 1400 tokens | embedding-helpers.ts (safety margin) |
+| Min embeddable | 50 tokens | embedding-helpers.ts |
+| Max embeddable | 1600 tokens | embedding-helpers.ts (Titan v2 supports 8192) |
+| Force-embed patterns | `api-reference/payments/umap` | embedding-helpers.ts (bypasses max) |
 | Sentence-split trigger | 1500 tokens | chunker.ts (splits chunks above this) |
 | Overlap | 60-100 tokens | chunker.ts |
 | Embedding dimensions | 1024 | embedder.ts (Titan v2) |
