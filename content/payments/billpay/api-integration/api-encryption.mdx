@@ -5,7 +5,7 @@ order: 9
 visible_in_sidebar: true
 ---
 
-# API payload encryption (Dynamic IV)
+## API payload encryption (Dynamic IV)
 
 This page describes the **encryption contract** for **Axis FX Retail** integrations when **Dynamic IV** is enabled for your partner. Use it to implement compatible clients and webhook handlers.
 
@@ -17,7 +17,7 @@ This page describes the **encryption contract** for **Axis FX Retail** integrati
 
 You cannot mix encrypted and plaintext modes **per API** for the same partner; behavior is uniform once enabled.
 
-## Cryptographic specification
+### Cryptographic specification
 
 | Parameter         | Value                                                                 |
 | ----------------- | --------------------------------------------------------------------- |
@@ -32,9 +32,9 @@ You cannot mix encrypted and plaintext modes **per API** for the same partner; b
 
 The **`data`** field in JSON carries the **IV concatenated with ciphertext**, then **encoded** using your configured `payloadEncoding` (`hex` or `base64`). Plaintext is always UTF-8 JSON before encryption.
 
-## Partner configuration (enablement) {#partner-configuration-enablement}
+### Partner configuration (enablement)
 
-### Prerequisites
+#### Prerequisites
 
 **Partner ↔ COU over the BBPS HTTP API:** Encrypted request and response bodies on these endpoints require **both** to be on: service-level **API payload encryption** (`APIEncryption`, COU HTTP API layer) **and** partner **`webhookEncryptionConfig`** (including `isEnabled` and Dynamic IV as applicable). If either is missing for that path, those API calls are not processed through the encrypted envelope. Your integration contact confirms when `APIEncryption` is active for staging/production.
 
@@ -62,9 +62,9 @@ Example shape (for reference):
 | `isHex`           | If `true`, `key` and `iv` strings are **hex-encoded**; if `false`, they are treated as raw byte strings.                                    |
 | `payloadEncoding` | How the **combined** IV+ciphertext bytes are represented in JSON: **`hex`** or **`base64`**. Default if omitted: **`hex`**.                  |
 
-## HTTP headers
+### HTTP headers
 
-### Request headers
+#### Request headers
 
 | Header          | Required                         | Notes                                                                 |
 | --------------- | -------------------------------- | --------------------------------------------------------------------- |
@@ -78,7 +78,7 @@ Example shape (for reference):
 > If you send **both** `X-PARTNER-ID` and `X-SESSION-ID` on the same request, COU may treat the request as a **whitelabel / session-authenticated** path and **will not** decrypt the body as an encrypted envelope.  
 > For **standard encrypted** partner API calls, send **`X-PARTNER-ID`** and **`X-ENC-KEY-ID`** only (plus any other headers required by the specific API).
 
-### Response headers
+#### Response headers
 
 When response encryption is active, COU includes:
 
@@ -86,7 +86,7 @@ When response encryption is active, COU includes:
 
 **About `X-ENC-KEY-ID` on responses:** COU echoes the header on responses (typically `v1`, or the value you sent). Today this header is a **contract placeholder** for future **key rotation**; cryptographic material still comes from your configured partner key until multi-key support is announced.
 
-## Encrypted JSON envelope (Dynamic IV)
+### Encrypted JSON envelope (Dynamic IV)
 
 Request and response bodies use:
 
@@ -118,15 +118,15 @@ Example (`payloadEncoding` = `base64`):
   "data": "Y2I2SUx2T2h4Wk1IQWlQb0RrWWxQb1Bmb0hYdWxEcE5IWVQ5R2hLSDRkcVh2NWVpS0xNQW9Kdk5YN1k="
 }`}</CodeBlockWithCopy>
 
-## Integration flows
+### Integration flows
 
-### Encrypted API request (Partner → COU)
+#### Encrypted API request (Partner → COU)
 
 1. Construct the normal JSON body for the API.
 2. Encrypt with Dynamic IV as described under [Encrypted JSON envelope (Dynamic IV)](#encrypted-json-envelope-dynamic-iv).
 3. Send \{ "data": "..." \} with `Content-Type: application/json` and required headers (`X-PARTNER-ID`, `X-ENC-KEY-ID`, …).
 
-### Encrypted API response (COU → Partner)
+#### Encrypted API response (COU → Partner)
 
 1. Read `data` from the JSON envelope.
 2. Decode with your `payloadEncoding`.
@@ -142,11 +142,11 @@ Example decrypted business payload (illustrative):
   "traceId": "D6KL9AI5HV4HRLESG8QG"
 }`}</CodeBlockWithCopy>
 
-### Encrypted webhooks (COU → Partner)
+#### Encrypted webhooks (COU → Partner)
 
-Webhook POST bodies use the **same** \{ "data": "..." \} envelope. Decrypt using the same steps as for [Encrypted API response (COU → Partner)](#encrypted-api-response-cou--partner).
+Webhook POST bodies use the **same** \{ "data": "..." \} envelope. Decrypt using the same steps as for [Encrypted API response (COU → Partner)](#encrypted-api-response--cou---partner-).
 
-## Pseudocode
+### Pseudocode
 
 **Encrypt (Partner → COU)**
 
@@ -168,7 +168,7 @@ Webhook POST bodies use the **same** \{ "data": "..." \} envelope. Decrypt using
   plain = PKCS5_UNPAD(plainPadded)
   return PARSE_JSON(plain)`}</CodeBlockWithCopy>
 
-## Reference implementation (Kotlin)
+### Reference implementation (Kotlin)
 
 Below is a **reference** pattern (shared by Axis). Align **key format** and **line encoding** with your `isHex` / `payloadEncoding` settings—the sample uses Base64 for the key and Base64 for the combined payload; if your partner uses `payloadEncoding: "hex"`, encode/decode the **`data`** field as **hex** instead.
 
@@ -218,7 +218,7 @@ Below is a **reference** pattern (shared by Axis). Align **key format** and **li
   ].join("\n")}
 </CodeBlockWithCopy>
 
-## Error handling
+### Error handling
 
 If COU cannot decrypt your request, you may receive a **plaintext** error body such as:
 
@@ -240,13 +240,13 @@ If COU cannot decrypt your request, you may receive a **plaintext** error body s
 - Sending `X-PARTNER-ID` **and** `X-SESSION-ID` when encryption was expected (see [HTTP headers](#http-headers))
 - Partner config updated but **cache** not yet reflecting changes (coordinate with Setu if errors persist after config changes)
 
-## Integration checklist
+### Integration checklist
 
-- [ ] Confirm **API payload encryption** (`APIEncryption`) is enabled for the **COU HTTP API** environment you use for Partner ↔ COU calls (coordinate with Setu). This flag applies to the HTTP API path, not to webhook delivery.
-- [ ] Confirm `webhookEncryptionConfig` is enabled with `useDynamicIV: true` for your partner (covers partner-level encryption settings used for API envelopes together with `APIEncryption`, and for outbound webhooks per configuration).
-- [ ] Confirm `payloadEncoding` (`hex` or `base64`) matches your implementation.
-- [ ] Exchange and store the shared key securely.
-- [ ] Send requests as \{ "data": "…" \} (body is encoded IV+ciphertext) with `X-PARTNER-ID` and `X-ENC-KEY-ID`.
-- [ ] Do **not** send `X-SESSION-ID` on encrypted partner calls unless the API explicitly requires it.
-- [ ] Decrypt responses and webhooks by decoding `data`, splitting IV, then decrypting.
-- [ ] Test against **staging** before production cutover.
+1. Confirm **API payload encryption** (`APIEncryption`) is enabled for the **COU HTTP API** environment you use for Partner ↔ COU calls (coordinate with Setu). This applies to the HTTP API path, not webhook delivery.
+2. Confirm `webhookEncryptionConfig` is enabled with `useDynamicIV: true` for your partner (partner-level settings for API envelopes with `APIEncryption`, and for outbound webhooks per configuration).
+3. Confirm `payloadEncoding` (`hex` or `base64`) matches your implementation.
+4. Exchange and store the shared key securely.
+5. Send requests using the encrypted envelope with `X-PARTNER-ID` and `X-ENC-KEY-ID` (body shape: \{ "data": "…" \} with encoded IV+ciphertext).
+6. Do **not** send `X-SESSION-ID` on encrypted partner calls unless the API explicitly requires it.
+7. Decrypt responses and webhooks by decoding `data`, splitting IV, then decrypting.
+8. Test against **staging** before production cutover.
