@@ -28,7 +28,7 @@ You cannot mix encrypted and plaintext modes **per API** for the same partner; b
 | Key size          | 128, 192, or 256 bits (16, 24, or 32 bytes)                           |
 | IV (dynamic mode) | 128 bits (16 bytes), **random for each message**                      |
 | Padding           | PKCS5 / PKCS7                                                         |
-| Payload encoding  | Configurable: **`hex`** or **`base64`** (see [Partner configuration](#partner-configuration-enablement)) |
+| Payload encoding  | Configurable: **`hex`** or **`base64`** (see [Partner configuration](/payments/billpay/api-integration/api-encryption#partner-configuration--enablement)) |
 
 The **`data`** field in JSON carries the **IV concatenated with ciphertext**, then **encoded** using your configured `payloadEncoding` (`hex` or `base64`). Plaintext is always UTF-8 JSON before encryption.
 
@@ -123,7 +123,7 @@ Example (`payloadEncoding` = `base64`):
 #### Encrypted API request (Partner → COU)
 
 1. Construct the normal JSON body for the API.
-2. Encrypt with Dynamic IV as described under [Encrypted JSON envelope (Dynamic IV)](#encrypted-json-envelope-dynamic-iv).
+2. Encrypt with Dynamic IV as described under [Encrypted JSON envelope (Dynamic IV)](/payments/billpay/api-integration/api-encryption#encrypted-json-envelope--dynamic-iv).
 3. Send \{ "data": "..." \} with `Content-Type: application/json` and required headers (`X-PARTNER-ID`, `X-ENC-KEY-ID`, …).
 
 #### Encrypted API response (COU → Partner)
@@ -144,7 +144,7 @@ Example decrypted business payload (illustrative):
 
 #### Encrypted webhooks (COU → Partner)
 
-Webhook POST bodies use the **same** \{ "data": "..." \} envelope. Decrypt using the same steps as for [Encrypted API response (COU → Partner)](#encrypted-api-response--cou---partner-).
+Webhook POST bodies use the **same** \{ "data": "..." \} envelope. Decrypt using the same steps as for [Encrypted API response (COU → Partner)](/payments/billpay/api-integration/api-encryption#encrypted-api-response--cou---partner-).
 
 ### Pseudocode
 
@@ -237,7 +237,7 @@ If COU cannot decrypt your request, you may receive a **plaintext** error body s
 - Wrong `payloadEncoding` when decoding `data` (hex vs base64)
 - Envelope missing `data` or malformed encoding
 - Dynamic IV: combined length too short (must include at least 16-byte IV + ciphertext)
-- Sending `X-PARTNER-ID` **and** `X-SESSION-ID` when encryption was expected (see [HTTP headers](#http-headers))
+- Sending `X-PARTNER-ID` **and** `X-SESSION-ID` when encryption was expected (see [HTTP headers](/payments/billpay/api-integration/api-encryption#http-headers))
 - Partner config updated but **cache** not yet reflecting changes (coordinate with Setu if errors persist after config changes)
 
 ### Integration checklist
@@ -249,4 +249,4 @@ If COU cannot decrypt your request, you may receive a **plaintext** error body s
 5. Send requests using the encrypted envelope with `X-PARTNER-ID` and `X-ENC-KEY-ID` (body shape: \{ "data": "…" \} with encoded IV+ciphertext).
 6. Do **not** send `X-SESSION-ID` on encrypted partner calls unless the API explicitly requires it.
 7. Decrypt responses and webhooks by decoding `data`, splitting IV, then decrypting.
-8. Test against **staging** before production cutover.
+8. Test against **staging/sandbox** before production cutover.
