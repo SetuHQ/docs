@@ -11,7 +11,11 @@ visible_in_sidebar: true
 
 Customer Convenience Fee (CCF) is an additional charge some billers impose on top of the bill amount—essentially a fee your users pay for the convenience of digital bill payment through BBPS.
 
-You'll discover CCF when calling the <a href="/payments/billpay/api-integration/api-reference#/category~List/operation~getBillers" target="_blank">List Billers API</a>, where it appears in the biller's metadata. Here's what CCF looks like in biller responses:
+You'll discover CCF when calling the <a href="/payments/billpay/api-integration/api-reference#/category~List/operation~getBillers" target="_blank">List Billers API</a>, where it appears in the biller's metadata. Every fee entry includes both **`interchangeFeeDetails`** (a single object) and **`interchangeFeeDetailsV2`** (an array of objects with the same fields per element).
+
+For CCF calculation, use **`interchangeFeeDetailsV2`**: find the slab where the bill amount in paise falls between **`tranAmtRangeMin`** and **`tranAmtRangeMax`** (inclusive), then use that slab's `flatFee` and `percentFee`. Legacy **`interchangeFeeDetails`** should be replaced with **`interchangeFeeDetailsV2`** for multi slab support.
+
+Here's what CCF looks like when a single flat fee applies across all amounts:
 
 <CodeBlockWithCopy language="json">{`
 {
@@ -29,7 +33,53 @@ You'll discover CCF when calling the <a href="/payments/billpay/api-integration/
         "percentFee": 0,       // No percentage component
         "tranAmtRangeMax": 999999999999,
         "tranAmtRangeMin": 1
-      }
+      },
+      "interchangeFeeDetailsV2": [
+        {
+          "effctvFrom": "2023-07-28",
+          "effctvTo": "",
+          "flatFee": 100,
+          "percentFee": 0,
+          "tranAmtRangeMax": 999999999999,
+          "tranAmtRangeMin": 1
+        }
+      ]
+    }
+  ]
+}
+`}</CodeBlockWithCopy>
+
+When **tiered** CCF applies, `interchangeFeeDetailsV2` contains multiple ranges—example (values illustrative):
+
+<CodeBlockWithCopy language="json">{`
+{
+  "feeCode": "CCF1",
+  "feeDesc": "Customer_Convenience_Fee",
+  "feeDirection": "C2B",
+  "interchangeFeeDetails": {
+    "effctvFrom": "2025-11-07",
+    "effctvTo": "",
+    "flatFee": 590,
+    "percentFee": 0,
+    "tranAmtRangeMax": 200000,
+    "tranAmtRangeMin": 1
+  },
+  "interchangeFeeDetailsV2": [
+    {
+      "effctvFrom": "2025-11-07",
+      "effctvTo": "",
+      "flatFee": 590,
+      "percentFee": 0,
+      "tranAmtRangeMax": 200000,
+      "tranAmtRangeMin": 1
+    },
+    {
+      "effctvFrom": "2025-11-07",
+      "effctvTo": "",
+      "flatFee": 1180,
+      "percentFee": 0,
+      "tranAmtRangeMax": 500000,
+      "tranAmtRangeMin": 200001
     }
   ]
 }
@@ -55,7 +105,15 @@ Before diving into complex calculations, understand that most billers on the BBP
     "percentFee": 0,        // No percentage fee
     "tranAmtRangeMax": 9999999999,
     "tranAmtRangeMin": 1
-  }
+  },
+  "interchangeFeeDetailsV2": [
+    {
+      "flatFee": 0,
+      "percentFee": 0,
+      "tranAmtRangeMax": 9999999999,
+      "tranAmtRangeMin": 1
+    }
+  ]
 }
 `}</CodeBlockWithCopy>
 
@@ -83,7 +141,17 @@ Note: The values are for illustration purposes only.
         "percentFee": 0,        // No percentage component
         "tranAmtRangeMax": 999999999999,
         "tranAmtRangeMin": 1
-      }
+      },
+      "interchangeFeeDetailsV2": [
+        {
+          "effctvFrom": "2024-08-05",
+          "effctvTo": "",
+          "flatFee": 50,
+          "percentFee": 0,
+          "tranAmtRangeMax": 999999999999,
+          "tranAmtRangeMin": 1
+        }
+      ]
     }
   ]
 }
@@ -106,7 +174,17 @@ Note: The values are for illustration purposes only.
         "percentFee": 0,        // No percentage component
         "tranAmtRangeMax": 999999999999,
         "tranAmtRangeMin": 1
-      }
+      },
+      "interchangeFeeDetailsV2": [
+        {
+          "effctvFrom": "2023-07-28",
+          "effctvTo": "",
+          "flatFee": 100,
+          "percentFee": 0,
+          "tranAmtRangeMax": 999999999999,
+          "tranAmtRangeMin": 1
+        }
+      ]
     }
   ]
 }
@@ -129,7 +207,17 @@ Note: The values are for illustration purposes only.
         "percentFee": 0,        // No percentage component
         "tranAmtRangeMax": 9999999999,
         "tranAmtRangeMin": 1
-      }
+      },
+      "interchangeFeeDetailsV2": [
+        {
+          "effctvFrom": "2024-01-01",
+          "effctvTo": "",
+          "flatFee": 0,
+          "percentFee": 0,
+          "tranAmtRangeMax": 9999999999,
+          "tranAmtRangeMin": 1
+        }
+      ]
     }
   ]
 }
@@ -139,12 +227,14 @@ Note: The values are for illustration purposes only.
 
 ### 5.1 Detection Logic
 
-Look for `CCF1` + `C2B` entries in the `interchangeFee` array. Zero CCF has two forms, **check for both**:
+Look for `CCF1` + `C2B` entries in the `interchangeFee` array. For the matching entry, **`interchangeFeeDetailsV2`** is present: find the object whose range contains the bill amount in paise (`tranAmtRangeMin ≤ billAmount ≤ tranAmtRangeMax`) and use that slab's `flatFee` and `percentFee` for CCF (not the legacy `interchangeFeeDetails` object alone).
+
+Zero CCF has two forms, **check for both**:
 
 1. **Missing** - No `CCF1`/`C2B` entry at all → Zero CCF
-2. **Present but inactive** - Entry exists with `flatFee: 0` AND `percentFee: 0` → Zero CCF
+2. **Present but inactive** - After resolving the slab as above, `flatFee: 0` AND `percentFee: 0` → Zero CCF
 
-If either is true, you may omit `custConvFee` from your payment request. If a `CCF1`/`C2B` entry exists with any non-zero fee, calculate the CCF using the formula in section 5.2.
+If either is true, you may omit `custConvFee` from your payment request. If a `CCF1`/`C2B` entry exists with any non-zero fee for the resolved slab, calculate the CCF using the formula in section 5.2.
 
 ### 5.2 CCF Calculation Formula
 
@@ -173,6 +263,13 @@ When CCF applies, use this formula to calculate the fee in paise:
 - CCF: flatFee = 0, percentFee = 0
 - Calculation: CCF = 0
 - Total debit: ₹1500 (omit custConvFee field)
+
+**Example 4: Tiered CCF (`interchangeFeeDetailsV2`)**
+- Bill amount: ₹2500 (250000 paise)
+- From `interchangeFeeDetailsV2`, the slab where `tranAmtRangeMin` ≤ 250000 ≤ `tranAmtRangeMax` applies (for example 200001–500000 paise when that tier exists)
+- CCF base: flatFee = 1180, percentFee = 0
+- Calculation: `(1180 + (250000 × 0/100)) × (1 + 18/100) = 1392.4` → **1392** paise after rounding (₹13.92)
+- Total debit: 250000 + 1392 = 251392 paise
 
 ## 6. Building Your Payment Request
 
@@ -234,7 +331,7 @@ When using payment options (alternative amounts), calculate CCF on the final sel
 
 ## 8. Complete Implementation Checklist
 
-- **Detect CCF**: Look for `CCF1` entries with `C2B` direction in biller metadata
+- **Detect CCF**: Look for `CCF1` entries with `C2B` direction in biller metadata; resolve CCF from `interchangeFeeDetailsV2` slabs
 - **Calculate properly**: Use the complete formula including 18% GST
 - **Handle zero CCF**: Omit `custConvFee` field when CCF is zero
 - **Separate from bill amount**: Never add CCF to `paymentDetails.amount`
