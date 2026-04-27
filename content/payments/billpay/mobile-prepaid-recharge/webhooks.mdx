@@ -38,7 +38,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 
 **Endpoint**: `{webhook_url}/payment/status`
 
-**Description**: Sent when a recharge transaction status is updated (successful, failed, or processing).
+**Description**: Sent when a recharge transaction status is updated (successful or failure).
 
 **Request Body**:
 
@@ -46,12 +46,12 @@ The system appends specific routes to your base `webhook_url` based on the event
   "transactionRefId": "string",
   "trace_id": "string",
   "operatorRefId": "string",
-  "status": "Successful | Processing | Failure",
+  "status": "Successful | Failure",
   "amount": "string",
   "mobile_number": "string",
   "provider": "string",
   "failureReason": "string (optional, only present for failures)",
-  "timestamp": "ISO 8601 datetime string"
+  "timestamp": "ISO 8601 datetime string (IST, +05:30)"
 }`}</CodeBlockWithCopy>
 
 **Field Descriptions**:
@@ -61,12 +61,12 @@ The system appends specific routes to your base `webhook_url` based on the event
 | `transactionRefId` | string | Transaction reference ID from the original recharge request | Yes |
 | `trace_id` | string | System reference number (internal trace ID) | Yes |
 | `operatorRefId` | string | Operator transaction ID (if available) | No |
-| `status` | string | Transaction status - one of: `"Successful"`, `"Processing"`, `"Failure"` | Yes |
+| `status` | string | Transaction status - one of: `"Successful"`, `"Failure"` | Yes |
 | `amount` | string | Recharge amount (in rupees) | Yes |
 | `mobile_number` | string | Mobile number that was recharged | Yes |
 | `provider` | string | Service provider name | Yes |
 | `failureReason` | string | Reason for failure (only present when status is "Failure") | No |
-| `timestamp` | string | ISO 8601 formatted timestamp of the event | Yes |
+| `timestamp` | string | ISO 8601 formatted timestamp of the event (IST, `+05:30`) | Yes |
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -84,7 +84,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "amount": "99.00",
   "mobile_number": "9876543210",
   "provider": "Airtel",
-  "timestamp": "2025-11-13T10:30:00Z"
+  "timestamp": "2026-01-09T11:56:26+05:30"
 }`}
         </CodeBlockWithCopy>
     </details>
@@ -106,7 +106,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "mobile_number": "9876543210",
   "provider": "Airtel",
   "failureReason": "Insufficient balance",
-  "timestamp": "2025-11-13T10:31:00Z"
+  "timestamp": "2026-01-09T11:56:26+05:30"
 }`}
         </CodeBlockWithCopy>
     </details>
@@ -131,7 +131,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "mobile_number": "string",
   "provider": "string",
   "failureReason": "string (optional)",
-  "timestamp": "ISO 8601 datetime string"
+  "timestamp": "ISO 8601 datetime string (IST, +05:30)"
 }`}</CodeBlockWithCopy>
 
 **Field Descriptions**:
@@ -149,7 +149,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 | `mobile_number` | string | Mobile number that was recharged | Yes |
 | `provider` | string | Service provider name | Yes |
 | `failureReason` | string | Reason for reversal (if provided by operator) | No |
-| `timestamp` | string | ISO 8601 formatted timestamp of the event | Yes |
+| `timestamp` | string | ISO 8601 formatted timestamp of the event (IST, `+05:30`) | Yes |
 
 <Card padding="nano" shape="rounded">
     <details>
@@ -168,7 +168,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "mobile_number": "9876543210",
   "provider": "Airtel",
   "failureReason": "Transaction reversed by operator",
-  "timestamp": "2025-11-13T10:35:00Z"
+  "timestamp": "2026-01-09T11:56:26+05:30"
 }`}
         </CodeBlockWithCopy>
     </details>
@@ -178,7 +178,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 
 ### 3. Wallet Low Balance Webhook
 
-**Endpoint**: `{webhook_url}/wallet/low_balance`
+**Endpoint**: `{webhook_url}/wallet/low-balance`
 
 **Description**: Sent when the wallet balance falls below the configured threshold or when a low balance alert is received from the vendor.
 
@@ -188,7 +188,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "event": "wallet.low_balance",
   "balance": "string",
   "message": "string",
-  "timestamp": "ISO 8601 datetime string",
+  "timestamp": "ISO 8601 datetime string (IST, +05:30)",
   "traceId": "string"
 }`}</CodeBlockWithCopy>
 
@@ -199,7 +199,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 | `event` | string | Always `"wallet.low_balance"` for this webhook type | Yes |
 | `balance` | string | Current wallet balance amount (in rupees) | Yes |
 | `message` | string | Alert message (typically "Low balance Alert") | Yes |
-| `timestamp` | string | ISO 8601 formatted timestamp (UTC) | Yes |
+| `timestamp` | string | ISO 8601 formatted timestamp (IST, `+05:30`) | Yes |
 | `traceId` | string | Unique trace ID for this notification | Yes |
 
 <Card padding="nano" shape="rounded">
@@ -214,7 +214,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "event": "wallet.low_balance",
   "balance": "2450.00",
   "message": "Low balance Alert",
-  "timestamp": "2025-11-13T09:15:00Z",
+  "timestamp": "2026-01-09T11:56:26+05:30",
   "traceId": "low-balance-webhook-demo-instance-a1b2c3d4"
 }`}
         </CodeBlockWithCopy>
@@ -225,7 +225,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 
 ### 4. Wallet Topup Webhook
 
-**Endpoint**: `{webhook_url}/wallet/top_up`
+**Endpoint**: `{webhook_url}/wallet/topup`
 
 **Description**: Sent when a wallet top-up is detected or when a top-up notification is received from the vendor.
 
@@ -236,7 +236,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "amount": "string",
   "referenceNumber": "string",
   "creditedFrom": "string",
-  "transactionDate": "ISO 8601 datetime string",
+  "transactionDate": "ISO 8601 datetime string (IST, +05:30)",
   "message": "string",
   "traceId": "string",
   "currentBalance": "string"
@@ -250,7 +250,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 | `amount` | string | Top-up amount credited to wallet (in rupees) | Yes |
 | `referenceNumber` | string | User reference number for the top-up transaction (may be empty string) | No |
 | `creditedFrom` | string | Source of the credit (e.g., "Bank Transfer", may be empty string) | No |
-| `transactionDate` | string | ISO 8601 formatted timestamp of the transaction | Yes |
+| `transactionDate` | string | ISO 8601 formatted timestamp of the transaction (IST, `+05:30`) | Yes |
 | `message` | string | Transaction message (defaults to "Credit Successful" if not provided) | No |
 | `traceId` | string | Unique trace ID for this notification | Yes |
 | `currentBalance` | string | Current wallet balance after the top-up (in rupees) | Yes |
@@ -268,7 +268,7 @@ The system appends specific routes to your base `webhook_url` based on the event
   "amount": "5000.00",
   "referenceNumber": "TXN-9090",
   "creditedFrom": "Bank Transfer",
-  "transactionDate": "2025-11-13T09:45:00Z",
+  "transactionDate": "2026-01-09T11:56:26+05:30",
   "message": "Wallet topped up successfully",
   "traceId": "topup-webhook-demo-instance-e5f6g7h8",
   "currentBalance": "12450.00"
@@ -308,32 +308,51 @@ The system implements automatic retry mechanisms for webhook delivery with diffe
 #### Payment Webhooks (Transaction Status & Reversal)
 
 - **Maximum Retries**: 5 attempts
+
 - **Initial Retry Interval**: 2 seconds
+
 - **Maximum Retry Interval**: 2 minutes
+
 - **Backoff Strategy**: Exponential backoff with coefficient of 2.0
+
 - **Retry Triggers**: 
+
   - Non-2xx HTTP status codes
+
   - Network timeouts
+
   - Connection errors
 
 #### Wallet Webhooks (Low Balance & Topup)
 
 - **Maximum Retries**: 3 attempts
+
 - **Initial Retry Interval**: 5 seconds
+
 - **Maximum Retry Interval**: 1 minute
+
 - **Backoff Strategy**: Exponential backoff with coefficient of 2.0
+
 - **Retry Triggers**: 
+
   - Non-2xx HTTP status codes
+
   - Network timeouts
+
   - Connection errors
 
 **Retry Timeline Example (Payment Webhooks)**:
 
 - Attempt 1: Immediate
+
 - Attempt 2: After 2 seconds
+
 - Attempt 3: After 4 seconds (2 × 2)
+
 - Attempt 4: After 8 seconds (4 × 2)
+
 - Attempt 5: After 16 seconds (8 × 2)
+
 - Attempt 6: After 32 seconds (16 × 2, capped at 2 minutes max)
 
 After all retries are exhausted, the webhook status is marked as "FAILED" in the system.
