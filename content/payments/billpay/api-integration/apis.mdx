@@ -140,7 +140,7 @@ In the response you either get the bill details, or "Processing" status if the b
 
 ### Val Add (Value Added Services)
 
-Some BBPS billers support **value added services** (Val Add) such as customer onboarding / OTP verification / markup & best-price discovery flows. COU exposes these flows as asynchronous APIs (request + response) — with webhooks as the primary mechanism and polling as fallback.
+Some BBPS billers support **value added services** (Val Add) such as customer onboarding, OTP verification, markup discovery, best-price discovery, and FX Retail in-app validation flows. COU exposes these flows as asynchronous APIs (request + response), with webhooks as the primary mechanism and polling as fallback.
 
 - **Initiate Val Add operation**: <a href="/payments/billpay/api-integration/api-reference#/category~Val%20Add%20APIs/path~/api/v2/bbps/valadd/{requestType}/request/post">`/bbps/valadd/{requestType}/request`</a>
 - **Poll Val Add result**: <a href="/payments/billpay/api-integration/api-reference#/category~Val%20Add%20APIs/path~/api/v2/bbps/valadd/{requestType}/response/post">`/bbps/valadd/{requestType}/response`</a>
@@ -151,7 +151,19 @@ Some BBPS billers support **value added services** (Val Add) such as customer on
 - `GenerateOTP`
 - `ValidateOTP`
 - `GetBankMarkup`
+- `ValidateCardOrAccount` (FX Retail in-app flow only)
+- `ShareDetails` (FX Retail in-app flow only)
 - `FetchBestPrice`
+- `FetchAmountBreakup` (FX Retail in-app flow only)
+
+For FX Retail in-app flows, call the existing `GetBankMarkup` API first, then call `ValidateCardOrAccount`, `ShareDetails`, optional `DocumentUpload`, existing `FetchBestPrice`, and finally `FetchAmountBreakup`.
+
+For FX Retail in-app customer-param mapping, biller MDM uses separate customer-param specs for `ValidateCard`, `ValidateAccount`, `ShareDetailsForCardReload`, and `ShareDetailsForCardIssuance`. The API route names remain `ValidateCardOrAccount` and `ShareDetails`; use `journeyType` to select the card reload or card issuance path.
+
+`DocumentUpload` is also FX Retail in-app only, but it uses a dedicated multipart endpoint instead of the `{requestType}` route:
+
+- **Upload documents**: <a href="/payments/billpay/api-integration/api-reference#/category~Val%20Add%20APIs">`/bbps/valadd/documentUpload/request`</a>
+- **Poll document upload**: <a href="/payments/billpay/api-integration/api-reference#/category~Val%20Add%20APIs">`/bbps/valadd/documentUpload/response`</a>
 
 <Card padding="nano" shape="rounded">
   <details>
@@ -297,6 +309,114 @@ Some BBPS billers support **value added services** (Val Add) such as customer on
   <details>
     <summary>
       <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — ValidateCardOrAccount (FX Retail in-app only)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "journeyType": "Reload",
+  "inputParams": [
+    { "name": "deliveryMode", "value": "Forex Card Load" },
+    { "name": "mobileNumber", "value": "9182583612" },
+    { "name": "customerId", "value": "IN0025000213" },
+    { "name": "pan", "value": "JS221234A" },
+    { "name": "passportNumber", "value": "A1234567" },
+    { "name": "forexCardLast4", "value": "0345" }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — ShareDetails (FX Retail in-app only)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "CCILFOREXNAT01"
+  },
+  "journeyType": "Issuance",
+  "inputParams": [
+    { "name": "mobileNumber", "value": "8838151414" },
+    { "name": "customerId", "value": "IN057983074" },
+    { "name": "deliveryMode", "value": "Forex Card Issuance" },
+    { "name": "pan", "value": "JS00024252" },
+    { "name": "passportNumber", "value": "A2345678" },
+    { "name": "ifsc", "value": "ZSBL0000341" },
+    { "name": "bankBranch", "value": "DELHI" }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — DocumentUpload metadata (FX Retail in-app only)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "origRefId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB"
+  },
+  "biller": {
+    "id": "CCILFOREXNAT01"
+  },
+  "inputParams": [
+    { "name": "mobileNumber", "value": "8838151414" },
+    { "name": "customerId", "value": "IN057983074" },
+    { "name": "deliveryMode", "value": "Forex Card Issuance" },
+    { "name": "pan", "value": "JS00024252" },
+    { "name": "passportNumber", "value": "A2345678" },
+    { "name": "ifsc", "value": "ZSBL0000341" },
+    { "name": "bankBranch", "value": "DELHI" }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+`DocumentUpload` must be sent as `multipart/form-data` with `metadata` as the JSON part above and `file` as a ZIP file. `origRefId` must be the successful `ShareDetails` `refId`. Each ZIP file must be less than `5 MB`; make multiple `DocumentUpload` requests for the same `origRefId` if the documents cannot be sent in a single ZIP under `5 MB`.
+
+The files inside the ZIP must be named exactly as the comma-separated values returned in the `ShareDetails` `documentList`. For example, if `documentList` is `Passport, PAN, VISA, TICKETS, Aadhaar`, the ZIP should contain five files named `Passport`, `PAN`, `VISA`, `TICKETS`, and `Aadhaar`.
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
         Sample Request — FetchBestPrice
       </Text>
     </summary>
@@ -335,7 +455,38 @@ Some BBPS billers support **value added services** (Val Add) such as customer on
 
 <br />
 
-The response will acknowledge the request and provide a `refId`. You’ll receive the final outcome via webhook; alternatively, you can poll using `/bbps/valadd/{requestType}/response`.
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Request — FetchAmountBreakup (FX Retail in-app only)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "CCILFOREXNAT01"
+  },
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+  "inputParams": [
+    { "name": "mobileNumber", "value": "8838151414" },
+    { "name": "customerId", "value": "IN057983074" },
+    { "name": "deliveryMode", "value": "Forex Card Issuance" }
+  ]
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+The response will acknowledge the request and provide a `refId`. You’ll receive the final outcome via webhook; alternatively, you can poll using `/bbps/valadd/{requestType}/response`. For FX Retail in-app flows, `ShareDetails` returns the sticky journey `refId`; `FetchAmountBreakup` must reuse that `refId`.
 
 <Card padding="nano" shape="rounded">
   <details>
@@ -486,6 +637,88 @@ The response will acknowledge the request and provide a `refId`. You’ll receiv
   <details>
     <summary>
       <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — ValidateCardOrAccount (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "KRQQESSWEAPQAHVHFQSNGBGZCZS51421211",
+  "status": "Success",
+  "traceId": "CV4PE82LTNJE9O014OE1",
+  "data": {
+    "billerResponse": [
+      { "name": "validationStatus", "value": "Successful" },
+      { "name": "description", "value": "Card is Active" },
+      { "name": "customerName", "value": "Jane Doe" }
+    ],
+    "additionalInfo": [],
+    "errors": []
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — ShareDetails (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+  "status": "Success",
+  "traceId": "CV4PE82LTNJE9O014OE2",
+  "data": {
+    "billerResponse": [
+      { "name": "customerId", "value": "IN057983074" },
+      { "name": "customerType", "value": "RESIDENTINDIVIDUAL" },
+      { "name": "documentList", "value": "Passport, PAN, VISA" }
+    ],
+    "additionalInfo": [],
+    "errors": []
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — DocumentUpload (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "DOCUMENTUPLOADREFID123456789012345",
+  "status": "Success",
+  "traceId": "CV4PE82LTNJE9O014OE3",
+  "data": {
+    "billerResponse": [
+      { "name": "Document Submission", "value": "Successful" }
+    ],
+    "additionalInfo": [],
+    "errors": []
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
         Sample Response — FetchBestPrice (Success)
       </Text>
     </summary>
@@ -504,6 +737,35 @@ The response will acknowledge the request and provide a `refId`. You’ll receiv
       { "name": "units", "value": "fixed" },
       { "name": "totalPayableAmount", "value": "8506000" }
     ]
+  }
+}
+    `}</CodeBlockWithCopy>
+  </details>
+</Card>
+
+<br />
+
+<Card padding="nano" shape="rounded">
+  <details>
+    <summary>
+      <Text as="h6" marginBottom="none" marginTop="none">
+        Sample Response — FetchAmountBreakup (Success)
+      </Text>
+    </summary>
+    <CodeBlockWithCopy language="json">{`
+{
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+  "status": "Success",
+  "traceId": "CV4PE82LTNJE9O014OE4",
+  "data": {
+    "billerResponse": [
+      { "name": "baseAmount", "value": "109999.00" },
+      { "name": "charges", "value": "100.00" },
+      { "name": "tax", "value": "30.00" },
+      { "name": "totalPayableAmount", "value": "110129.00" }
+    ],
+    "additionalInfo": [],
+    "errors": []
   }
 }
     `}</CodeBlockWithCopy>
@@ -538,7 +800,7 @@ The response will acknowledge the request and provide a `refId`. You’ll receiv
 
 ### FX Mandate booking
 
-For the FX transaction flow, COU exposes APIs to **book an FX mandate** and to **poll the booking status** (fallback for webhooks).
+For the FX transaction flow, COU exposes APIs to **book an FX mandate** and to **poll the booking status** (fallback for webhooks). For FX Retail in-app flows, include `customer.customerParams.inApp = true` and send the top-level `refId` from the successful `FetchAmountBreakup` flow.
 
 - **Book FX mandate**: <a href="/payments/billpay/api-integration/api-reference#/category~Transaction%20flow/path~/api/v2/bbps/bills/mandate/request/post">`/bbps/bills/mandate/request`</a>
 - **Poll FX mandate status**: <a href="/payments/billpay/api-integration/api-reference#/category~Transaction%20flow/path~/api/v2/bbps/bills/mandate/response/post">`/bbps/bills/mandate/response`</a>
@@ -563,17 +825,18 @@ For the FX transaction flow, COU exposes APIs to **book an FX mandate** and to *
   },
   "customer": {
     "customerParams": [
-      { "name": "mobileNumber", "value": "8838151414" },
       { "name": "customerId", "value": "IN0025000213" },
       { "name": "currency", "value": "USD" },
       { "name": "instrumentType", "value": "CASH" },
       { "name": "markup", "value": "0.5" },
-      { "name": "bestPrice", "value": "8505.5" }
+      { "name": "bestPrice", "value": "8505.5" },
+      { "name": "inApp", "value": "true" }
     ]
   },
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
   "mandate": {
     "mode": "UPI",
-    "amount": 8260000,
+    "amount": 110129,
     "mandateRefId": "d30eb5d76250a2faa76c5a2a59c76cc3"
   }
 }
@@ -646,10 +909,6 @@ The <a href="/payments/billpay/api-integration/api-reference#/category~Pay/opera
 
 > **FX Retail (Val Add + Mandate flows)**: When the payment is being initiated as part of the **FX mandate** journey, include `paymentType: "MANDATE_AND_PAY"` in the request body of the Pay bill API. The rest of the Pay bill payload remains the same.
 
-> **FX Retail (Val Add + Mandate flows)**: When the payment is being initiated as part of the **FX mandate** journey, include `paymentType: "MANDATE_AND_PAY"` in the request body of the Pay bill API. The rest of the Pay bill payload remains the same.
-
-> **FX Retail (Val Add + Mandate flows)**: When the payment is being initiated as part of the **FX mandate** journey, include `paymentType: "MANDATE_AND_PAY"` in the request body of the Pay bill API. The rest of the Pay bill payload remains the same.
-
 <hr class="primary" />
 
 ### Raise dispute
@@ -684,9 +943,10 @@ For your convenience, Setu also provides actions to list data in bulk, that can 
         <strong>FX Retail fields (present on every biller)</strong>:
         <ul>
             <li><code>valAddFlag</code> (<code>boolean</code>) — indicates if value-added services are enabled for the biller.</li>
-            <li><code>valAddCustParams</code> (<code>ValAddCustParamSpec[]</code>) — customer parameters required for value-added service flows. Each entry includes <code>requestType</code> (e.g. <code>MANDATE_AND_PAY</code> for FX Retail mandate+pay) and the corresponding <code>customerParams</code> specs.</li>
+            <li><code>valAddCustParams</code> (<code>ValAddCustParamSpec[]</code>) — customer parameters required for value-added service flows. For FX Retail in-app flows, biller MDM provides separate customer-param specs for <code>ValidateCard</code>, <code>ValidateAccount</code>, <code>ShareDetailsForCardReload</code>, and <code>ShareDetailsForCardIssuance</code>; these map to the <code>ValidateCardOrAccount</code> and <code>ShareDetails</code> API steps through <code>journeyType</code>. Other FX Retail request types include <code>GetBankMarkup</code>, <code>FetchBestPrice</code>, and <code>FetchAmountBreakup</code>.</li>
             <li><code>mandateRequirement</code> (<code>string</code>) — mandate requirement for the biller (e.g. <code>MANDATORY</code>). For FX Retail billers, use this to decide whether mandate+pay flow is required.</li>
             <li><code>pseudoBiller</code> (<code>boolean</code>) — indicates if the biller is a pseudo biller.</li>
+            <li><code>supportDocumentUpload</code> (<code>boolean</code>) — indicates if the biller supports document upload.</li>
         </ul>
     </li>
     <li>

@@ -178,7 +178,9 @@ If this field is absent or null, the callback corresponds to a manual bill fetch
 
 ### Val Add webhooks
 
-Val Add APIs (Value Added Services) are asynchronous. After you initiate a Val Add request using `/bbps/valadd/{requestType}/request`, COU will send you a webhook with the final outcome for that operation.
+Val Add APIs (Value Added Services) are asynchronous. After you initiate a Val Add request using `/bbps/valadd/{requestType}/request`, COU will send you a webhook with the final outcome for that operation. `DocumentUpload` uses the dedicated `/bbps/valadd/documentUpload/request` endpoint, but its final outcome is still delivered as a Val Add webhook.
+
+For FX Retail in-app flows, the Val Add APIs reuse this callback surface. The in-app flow uses the existing `GetBankMarkup` event first, then `ValidateCardOrAccount`, `ShareDetails`, optional `DocumentUpload`, existing `FetchBestPrice`, and finally `FetchAmountBreakup`.
 
 Common `event` values include:
 
@@ -186,7 +188,22 @@ Common `event` values include:
 - `VAL_ADD_GENERATE_OTP`
 - `VAL_ADD_VALIDATE_OTP`
 - `VAL_ADD_GET_BANK_MARKUP`
+- `VAL_ADD_VALIDATE_CARD_OR_ACCOUNT`
+- `VAL_ADD_SHARE_DETAILS`
 - `VAL_ADD_FETCH_BEST_PRICE`
+- `VAL_ADD_FETCH_AMOUNT_BREAKUP`
+- `VAL_ADD_DOCUMENT_UPLOAD`
+
+>FX Retail in-app `refId` behavior:
+
+| API | Webhook event | `refId` behavior |
+| --- | --- | --- |
+| `ValidateCardOrAccount` | `VAL_ADD_VALIDATE_CARD_OR_ACCOUNT` | COU returns a unique validation `refId`. It is not reused later. |
+| `ShareDetails` | `VAL_ADD_SHARE_DETAILS` | COU returns the sticky FX journey `refId`. Reuse it for `FetchAmountBreakup`; use it as `origRefId` for document upload. |
+| `DocumentUpload` | `VAL_ADD_DOCUMENT_UPLOAD` | COU returns a document upload `refId` for upload tracking. The upload request metadata must carry the `ShareDetails` `refId` as `origRefId`. |
+| `FetchAmountBreakup` | `VAL_ADD_FETCH_AMOUNT_BREAKUP` | The callback uses the sticky `ShareDetails` `refId`, which is also used by the in-app mandate flow. |
+
+>
 
 <Card padding="nano" shape="rounded">
   <details>
@@ -211,7 +228,7 @@ Common `event` values include:
   </details>
 </Card>
 
-> **Fallback**: If you don’t receive a webhook, you can poll the result using `/bbps/valadd/{requestType}/response` with the `refId`.
+> **Fallback**: If you don’t receive a webhook, you can poll the result using `/bbps/valadd/{requestType}/response` with the `refId`. For `DocumentUpload`, you can poll the response using `/bbps/valadd/documentUpload/response`
 
 <hr class="primary" />
 
