@@ -28,6 +28,16 @@ FX Retail biller objects also include these fields:
 - **`valAddCustParams`**: required customer params for value-added flows (scoped by requestType)
 - **`mandateRequirement`**: mandate requirement (e.g. `MANDATORY`)
 - **`pseudoBiller`**: whether the biller is a pseudo biller
+- **`supportDocumentUpload`**: whether the biller supports document upload
+
+For the in-app flow, the biller MDM customer-param mapping is split more granularly than the API route names:
+
+| Biller MDM request type | API step |
+| --- | --- |
+| `ValidateCard` | `ValidateCardOrAccount` with `journeyType: "Reload"` |
+| `ValidateAccount` | `ValidateCardOrAccount` with `journeyType: "Issuance"` |
+| `ShareDetailsForCardReload` | `ShareDetails` with `journeyType: "Reload"` |
+| `ShareDetailsForCardIssuance` | `ShareDetails` with `journeyType: "Issuance"` |
 
 ## Common requirements
 
@@ -40,6 +50,8 @@ All API calls require the following headers:
 | `X-PARTNER-ID`   | Your partner ID (integer)            |
 | `Authorization`  | `Bearer <token>` from the token API  |
 | `Content-Type`   | `application/json`                   |
+
+Use `multipart/form-data` instead of JSON only for the in-app `DocumentUpload` API.
 
 ### Agent object
 
@@ -68,9 +80,20 @@ To get the final result, use either:
 
 For the complete request/response schema and error codes, see the [Val Add API reference](/payments/billpay/api-integration/api-reference#/category~Val%20Add%20APIs) and [Mandate API reference](/payments/billpay/api-integration/api-reference#/category~Mandate%20API). The steps below cover the happy path with example payloads.
 
+The new Phase II FX Retail APIs are only for the **in-app flow**. In that flow, call the existing **GetBankMarkup** API first, then call the in-app APIs in this order: **ValidateCardOrAccount**, **ShareDetails**, optional **DocumentUpload**, existing **FetchBestPrice**, and finally **FetchAmountBreakup** before mandate creation.
+
 ## End-to-end flow (buy flow)
 
 The FX Retail flow is driven by **Val Add** APIs for onboarding + pricing, followed by **Mandate** booking (order placement), and finally a **Pay bill** request for BBPS/NPCI reconciliation.
+
+For in-app purchases, the pricing and validation sequence after customer onboarding is:
+
+1. `GetBankMarkup` (existing API)
+2. `ValidateCardOrAccount` (in-app only)
+3. `ShareDetails` (in-app only)
+4. `DocumentUpload`, if `ShareDetails` returns a required `documentList` (in-app only)
+5. `FetchBestPrice` (existing API)
+6. `FetchAmountBreakup` (in-app only)
 
 ### Step 1 — Check if customer is onboarded (GetCustomerId)
 
@@ -366,7 +389,7 @@ If OTP validation succeeds, the FX Retail platform registers the user and return
   }
 }`}</CodeBlockWithCopy>
 
-> The `customerId` returned here is used in Steps 4 and 5.
+> The `customerId` returned here is used in the later steps.
 
 ### Step 4 — Get bank markup (GetBankMarkup)
 
@@ -463,9 +486,275 @@ If multiple banks are associated with the customer's FX account, multiple markup
   }
 }`}</CodeBlockWithCopy>
 
-> Present these banks to the customer. The selected bank's `bankId`, `homeBranchIFSC`, `rate`, `units`, and `relationshipBank` name are needed for FetchBestPrice.
+> Present these banks to the customer. The selected bank's `bankId`, `homeBranchIFSC`, `rate`, `units`, and `relationshipBank` name are needed for the steps for in-app flow and FetchBestPrice.
 
-### Step 5 — Fetch best price (FetchBestPrice)
+### Step 5 — Validate card or account (ValidateCardOrAccount, in-app only)
+
+For the in-app flow, validate the customer against the selected journey before sharing transaction details.
+
+- **Request**: `POST /api/v2/bbps/valadd/ValidateCardOrAccount/request`
+- **Poll**: `POST /api/v2/bbps/valadd/ValidateCardOrAccount/response`
+
+Use `journeyType` to select the downstream validation path:
+
+| `journeyType` | Meaning |
+| --- | --- |
+| `Reload` | Forex card reload journey. COU validates the forex-card path. |
+| `Issuance` | Forex card issuance journey. COU validates the account path. |
+
+**Request body**
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "FXRE00000KER3U"
+  },
+  "journeyType": "Reload",
+  "inputParams": [
+    {
+      "name": "deliveryMode",
+      "value": "Forex Card Load"
+    },
+    {
+      "name": "mobileNumber",
+      "value": "9182583612"
+    },
+    {
+      "name": "customerId",
+      "value": "IN0025000213"
+    },
+    {
+      "name": "pan",
+      "value": "JS221234A"
+    },
+    {
+      "name": "passportNumber",
+      "value": "A1234567"
+    },
+    {
+      "name": "forexCardLast4",
+      "value": "0345"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "refId": "KRQQESSWEAPQAHVHFQSNGBGZCZS51421211",
+  "status": "Success",
+  "traceId": "CV4PE82LTNJE9O014OE1",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "validationStatus",
+        "value": "Successful"
+      },
+      {
+        "name": "description",
+        "value": "Card is Active"
+      },
+      {
+        "name": "customerName",
+        "value": "Jane Doe"
+      }
+    ],
+    "additionalInfo": [],
+    "errors": []
+  }
+}`}</CodeBlockWithCopy>
+
+### Step 6 — Share details (ShareDetails, in-app only)
+
+Share the customer's FX journey details with the biller. This step returns the sticky FX journey `refId` used by later in-app APIs.
+
+- **Request**: `POST /api/v2/bbps/valadd/ShareDetails/request`
+- **Poll**: `POST /api/v2/bbps/valadd/ShareDetails/response`
+
+`journeyType` is required. Retain the returned `refId`; it is reused by `FetchAmountBreakup` and `Mandate` apis and becomes `origRefId` if document upload is required.
+
+**Request body**
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "CCILFOREXNAT01"
+  },
+  "journeyType": "Issuance",
+  "inputParams": [
+    {
+      "name": "mobileNumber",
+      "value": "8838151414"
+    },
+    {
+      "name": "customerId",
+      "value": "IN057983074"
+    },
+    {
+      "name": "deliveryMode",
+      "value": "Forex Card Issuance"
+    },
+    {
+      "name": "pan",
+      "value": "JS00024252"
+    },
+    {
+      "name": "passportNumber",
+      "value": "A2345678"
+    },
+    {
+      "name": "ifsc",
+      "value": "ZSBL0000341"
+    },
+    {
+      "name": "bankBranch",
+      "value": "DELHI"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+  "status": "Success",
+  "traceId": "CV4PE82LTNJE9O014OE2",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "customerId",
+        "value": "IN057983074"
+      },
+      {
+        "name": "customerType",
+        "value": "RESIDENTINDIVIDUAL"
+      },
+      {
+        "name": "documentList",
+        "value": "Passport, PAN, VISA"
+      }
+    ],
+    "additionalInfo": [],
+    "errors": []
+  }
+}`}</CodeBlockWithCopy>
+
+Inspect `data.billerResponse` for `documentList`.
+
+| `documentList` value | Meaning | Next step |
+| --- | --- | --- |
+| Actual document names, for example `Passport, PAN, VISA` | Document upload is required | Call `DocumentUpload` before `FetchBestPrice` |
+| `Not Applicable` | No document upload is required | Skip `DocumentUpload` |
+| Empty or absent | No upload requirement is inferred by COU | Continue to `FetchBestPrice` |
+
+### Step 7 — Upload documents (DocumentUpload, in-app only and conditional)
+
+Upload documents only when `ShareDetails` returns an actual `documentList`.
+
+- **Request**: `POST /api/v2/bbps/valadd/documentUpload/request`
+- **Poll**: `POST /api/v2/bbps/valadd/documentUpload/response`
+
+This is a dedicated multipart endpoint. Send `multipart/form-data` with exactly two form parts:
+
+- `metadata`: JSON metadata
+- `file`: ZIP file, less than `5 MB`
+
+The `metadata.origRefId` must be the successful `ShareDetails` `refId`.
+
+The ZIP contents must match the `documentList` returned by `ShareDetails`:
+
+- create one file for each comma-separated document name in `documentList`
+- name each file exactly the same as the corresponding `documentList` value
+- keep each ZIP file under `5 MB`
+- make multiple `DocumentUpload` requests for the same `origRefId` if the documents cannot be sent in a single ZIP under `5 MB`
+
+For example, if `ShareDetails` returns:
+
+<CodeBlockWithCopy language="json">{`{
+  "name": "documentList",
+  "value": "Passport, PAN, VISA, TICKETS, Aadhaar"
+}`}</CodeBlockWithCopy>
+
+then the ZIP should contain five files named:
+
+1. `Passport`
+2. `PAN`
+3. `VISA`
+4. `TICKETS`
+5. `Aadhaar`
+
+**Metadata JSON**
+
+<CodeBlockWithCopy language="json">{`{
+  "origRefId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB"
+  },
+  "biller": {
+    "id": "CCILFOREXNAT01"
+  },
+  "inputParams": [
+    {
+      "name": "mobileNumber",
+      "value": "8838151414"
+    },
+    {
+      "name": "customerId",
+      "value": "IN057983074"
+    },
+    {
+      "name": "deliveryMode",
+      "value": "Forex Card Issuance"
+    },
+    {
+      "name": "pan",
+      "value": "JS00024252"
+    },
+    {
+      "name": "passportNumber",
+      "value": "A2345678"
+    },
+    {
+      "name": "ifsc",
+      "value": "ZSBL0000341"
+    },
+    {
+      "name": "bankBranch",
+      "value": "DELHI"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "refId": "DOCUMENTUPLOADREFID123456789012345",
+  "status": "Success",
+  "traceId": "CV4PE82LTNJE9O014OE3",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "Document Submission",
+        "value": "Successful"
+      }
+    ],
+    "additionalInfo": [],
+    "errors": []
+  }
+}`}</CodeBlockWithCopy>
+
+### Step 8 — Fetch best price (FetchBestPrice)
 
 Customer selects a bank/markup and then the PSP app fetches the best currency price.
 
@@ -598,13 +887,87 @@ The following fields are carried over from earlier steps:
   }
 }`}</CodeBlockWithCopy>
 
-> `totalPayableAmount` is in paise and includes a buffer for price fluctuation. This is the amount the PSP should debit in Step 6.
+> `totalPayableAmount` is in paise and includes a buffer for price fluctuation. This is the amount the PSP should debit in Step 10.
 
-### Step 6 — Debit funds from the customer (PSP-managed)
+### Step 9 — Fetch amount breakup (FetchAmountBreakup, in-app only)
 
-The PSP app debits the `totalPayableAmount` (from Step 5) from the customer's account — this happens **outside** of BBPS COU APIs.
+For the in-app flow, fetch the amount breakup after FetchBestPrice and before mandate creation. This returns the final payable amount for the in-app mandate flow.
 
-### Step 7 — Place order by booking mandate (Mandate request/response)
+- **Request**: `POST /api/v2/bbps/valadd/FetchAmountBreakup/request`
+- **Poll**: `POST /api/v2/bbps/valadd/FetchAmountBreakup/response`
+
+Request rules:
+
+- send a top-level `refId`
+- the `refId` must be the successful sticky `ShareDetails` `refId`
+- if document upload was required by `ShareDetails`, complete `DocumentUpload` successfully before this request
+
+**Request body**
+
+<CodeBlockWithCopy language="json">{`{
+  "agent": {
+    "id": "AX01AX26INBU00000001",
+    "channel": "INTB",
+    "ip": "124.170.23.24",
+    "mac": "48-4D-7E-CB-DB-6F"
+  },
+  "biller": {
+    "id": "CCILFOREXNAT01"
+  },
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+  "inputParams": [
+    {
+      "name": "mobileNumber",
+      "value": "8838151414"
+    },
+    {
+      "name": "customerId",
+      "value": "IN057983074"
+    },
+    {
+      "name": "deliveryMode",
+      "value": "Forex Card Issuance"
+    }
+  ]
+}`}</CodeBlockWithCopy>
+
+**Success response** (from `/response` endpoint or webhook)
+
+<CodeBlockWithCopy language="json">{`{
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+  "status": "Success",
+  "traceId": "CV4PE82LTNJE9O014OE4",
+  "data": {
+    "billerResponse": [
+      {
+        "name": "baseAmount",
+        "value": "109999.00"
+      },
+      {
+        "name": "charges",
+        "value": "100.00"
+      },
+      {
+        "name": "tax",
+        "value": "30.00"
+      },
+      {
+        "name": "totalPayableAmount",
+        "value": "110129.00"
+      }
+    ],
+    "additionalInfo": [],
+    "errors": []
+  }
+}`}</CodeBlockWithCopy>
+
+For in-app flows, retain this same sticky `refId` for the Mandate request. `mandate.amount` must still be sent as an integer amount in paise.
+
+### Step 10 — Debit funds from the customer (PSP-managed)
+
+The PSP app debits the `totalPayableAmount` from the customer's account. For in-app flows, use Step 9. For non-in-app flows, use Step 8. This debit happens **outside** of BBPS COU APIs.
+
+### Step 11 — Place order by booking mandate (Mandate request/response)
 
 Initiate the mandate booking request. For FX Retail, this effectively places the order on the FX Retail platform.
 
@@ -617,7 +980,7 @@ On success, the mandate result includes the **actual amount utilised** for the o
 
 **Request body**
 
-The `customerId` is from Step 1 or Step 3, and `amount` is the `totalPayableAmount` from Step 5 (in paise).
+The `customerId` is from Step 1 or Step 3. For in-app flows, include `customer.customerParams.inApp = true` as per the biller mdm customer params, send the top-level sticky `refId` from Step 9, and send `mandate.amount` as an integer amount in paise.
 
 <CodeBlockWithCopy language="json">{`{
   "agent": {
@@ -634,9 +997,14 @@ The `customerId` is from Step 1 or Step 3, and `amount` is the `totalPayableAmou
       {
         "name": "customerId",
         "value": "IN0025000213"
+      },
+      {
+        "name": "inApp",
+        "value": "true"
       }
     ]
   },
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
   "mandate": {
     "mode": "UPI",
     "amount": 8506000,
@@ -648,11 +1016,11 @@ The `customerId` is from Step 1 or Step 3, and `amount` is the `totalPayableAmou
 
 <CodeBlockWithCopy language="json">{`{
   "status": "Success",
-  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
   "traceId": "CV6PG04MUNJG9P126QG3",
   "data": {
-    "billerRefId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
-    "transactionId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+    "billerRefId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+    "transactionId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
     "billerResponse": {
       "amount": "8260000"
     },
@@ -670,18 +1038,18 @@ The `customerId` is from Step 1 or Step 3, and `amount` is the `totalPayableAmou
 
 > The mandate can fail if the market price moves above the buffered amount.
 
-### Step 8 — Refund the difference (PSP-managed)
+### Step 12 — Refund the difference (PSP-managed)
 
 If the customer was debited a buffered amount, the PSP app should:
 
 - compute the delta between (debited amount) and (amount utilised returned in mandate result)
 - refund the difference back to the customer
 
-Compute: `totalPayableAmount` (Step 5) minus `billerResponse.amount` (Step 7). Refund this delta to the customer.
+Compute: `totalPayableAmount` (Step 8) minus `billerResponse.amount` (Step 11). Refund this delta to the customer.
 
 This refund happens **outside** of BBPS COU APIs.
 
-### Step 9 — Send Pay bill request for reconciliation (Pay bill)
+### Step 13 — Send Pay bill request for reconciliation (Pay bill)
 
 Finally, call **Pay bill** to complete BBPS/NPCI reconciliation. For FX Retail mandate flows, the payment has already been collected in the earlier PSP debit + mandate placement, so this API is used for reconciliation and settlement workflows.
 
@@ -693,7 +1061,7 @@ For FX Retail mandate-related payments, include:
 
 **Request body**
 
-The `refId` is the mandate's `refId` from Step 7.
+The `refId` is the mandate's `refId` from Step 11.
 
 <CodeBlockWithCopy language="json">{`{
   "agent": {
@@ -715,7 +1083,7 @@ The `refId` is the mandate's `refId` from Step 7.
     ]
   },
   "paymentDetails": {
-    "amount": 8260000,
+    "amount": 110129,
     "mode": "Internet Banking",
     "paymentRefId": "BD019181220291",
     "timestamp": "2020-12-12T13:12:00+05:30"
@@ -725,7 +1093,7 @@ The `refId` is the mandate's `refId` from Step 7.
     "email": "jayasurya.s_tra@npci.org.in",
     "pan": "JS00024252"
   },
-  "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+  "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
   "paymentType": "MANDATE_AND_PAY"
 }`}</CodeBlockWithCopy>
 
@@ -750,7 +1118,8 @@ When an API call fails, the response follows this format:
 Common failure scenarios:
 
 - **Invalid OTP**: The OTP provided in ValidateOTP is incorrect or expired. Retry GenerateOTP to request a new OTP.
-- **Price movement exceeding buffer**: The market price moved above the buffered `totalPayableAmount` between FetchBestPrice and the mandate request. Re-run FetchBestPrice to get updated pricing.
+- **Price movement exceeding buffer**: The market price moved above the buffered `totalPayableAmount` before mandate placement. Re-run FetchBestPrice, and for in-app flows re-run FetchAmountBreakup, to get updated pricing.
+- **Invalid sticky reference**: The in-app `refId` is missing, stale, or not linked to a successful ShareDetails/FetchAmountBreakup flow. Restart the in-app sequence from ShareDetails.
 - **Customer not found**: The `customerId` is invalid or does not exist on the FX Retail platform. Verify the customer is registered via GetCustomerId.
 
 ## Webhooks vs polling

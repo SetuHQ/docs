@@ -9714,6 +9714,12 @@
                                 "type": "boolean",
                                 "description": "Flag indicating if the Biller accepts adhoc payment",
                                 "example": true
+                              },
+                              "supportDocumentUpload": {
+                                "type": "boolean",
+                                "description": "Flag indicating if the FX Retail biller supports document upload.",
+                                "example": true,
+                                "x-omitempty": true
                               }
                             },
                             "x-go-name": "CouBillerDetails"
@@ -13053,7 +13059,7 @@
         "tags": [
           "Val Add APIs"
         ],
-        "description": "Initiate a Val Add operation",
+        "description": "Initiate a Val Add operation. For FX Retail in-app flows, call GetBankMarkup first, then ValidateCardOrAccount, ShareDetails, optional DocumentUpload, FetchBestPrice, and FetchAmountBreakup.",
         "parameters": [
           {
             "name": "requestType",
@@ -13066,7 +13072,10 @@
                 "GenerateOTP",
                 "ValidateOTP",
                 "GetBankMarkup",
-                "FetchBestPrice"
+                "ValidateCardOrAccount",
+                "ShareDetails",
+                "FetchBestPrice",
+                "FetchAmountBreakup"
               ]
             }
           },
@@ -13142,7 +13151,7 @@
                   },
                   "inputParams": {
                     "type": "array",
-                    "description": "Input parameters required by the biller for this request.",
+                    "description": "Input parameters required by the biller for this request. For FX Retail in-app customer-param mapping, biller MDM uses ValidateCard, ValidateAccount, ShareDetailsForCardReload, and ShareDetailsForCardIssuance; these map to ValidateCardOrAccount and ShareDetails through journeyType.",
                     "items": {
                       "required": [
                         "name",
@@ -13160,6 +13169,22 @@
                         }
                       }
                     }
+                  },
+                  "journeyType": {
+                    "type": "string",
+                    "description": "Required for FX Retail in-app ValidateCardOrAccount and ShareDetails requests. Use Reload for forex card reload and Issuance for forex card issuance.",
+                    "enum": [
+                      "Reload",
+                      "Issuance"
+                    ],
+                    "example": "Reload",
+                    "x-omitempty": true
+                  },
+                  "refId": {
+                    "type": "string",
+                    "description": "Required for FX Retail in-app FetchAmountBreakup. Must be the successful sticky ShareDetails refId.",
+                    "example": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+                    "x-omitempty": true
                   }
                 }
               },
@@ -13344,6 +13369,92 @@
                     ]
                   }
                 },
+                "validateCardOrAccount": {
+                  "summary": "Validate Card or Account (FX Retail in-app only)",
+                  "value": {
+                    "agent": {
+                      "id": "AX01AX26INBU00000001",
+                      "channel": "INTB",
+                      "ip": "124.170.23.24",
+                      "mac": "48-4D-7E-CB-DB-6F"
+                    },
+                    "biller": {
+                      "id": "FXRE00000KER3U"
+                    },
+                    "journeyType": "Reload",
+                    "inputParams": [
+                      {
+                        "name": "deliveryMode",
+                        "value": "Forex Card Load"
+                      },
+                      {
+                        "name": "mobileNumber",
+                        "value": "9182583612"
+                      },
+                      {
+                        "name": "customerId",
+                        "value": "IN0025000213"
+                      },
+                      {
+                        "name": "pan",
+                        "value": "JS221234A"
+                      },
+                      {
+                        "name": "passportNumber",
+                        "value": "A1234567"
+                      },
+                      {
+                        "name": "forexCardLast4",
+                        "value": "0345"
+                      }
+                    ]
+                  }
+                },
+                "shareDetails": {
+                  "summary": "Share Details (FX Retail in-app only)",
+                  "value": {
+                    "agent": {
+                      "id": "AX01AX26INBU00000001",
+                      "channel": "INTB",
+                      "ip": "124.170.23.24",
+                      "mac": "48-4D-7E-CB-DB-6F"
+                    },
+                    "biller": {
+                      "id": "CCILFOREXNAT01"
+                    },
+                    "journeyType": "Issuance",
+                    "inputParams": [
+                      {
+                        "name": "mobileNumber",
+                        "value": "8838151414"
+                      },
+                      {
+                        "name": "customerId",
+                        "value": "IN057983074"
+                      },
+                      {
+                        "name": "deliveryMode",
+                        "value": "Forex Card Issuance"
+                      },
+                      {
+                        "name": "pan",
+                        "value": "JS00024252"
+                      },
+                      {
+                        "name": "passportNumber",
+                        "value": "A2345678"
+                      },
+                      {
+                        "name": "ifsc",
+                        "value": "ZSBL0000341"
+                      },
+                      {
+                        "name": "bankBranch",
+                        "value": "DELHI"
+                      }
+                    ]
+                  }
+                },
                 "fetchBestPrice": {
                   "summary": "Fetch Best Price",
                   "value": {
@@ -13416,6 +13527,35 @@
                       {
                         "name": "units",
                         "value": "fixed"
+                      }
+                    ]
+                  }
+                },
+                "fetchAmountBreakup": {
+                  "summary": "Fetch Amount Breakup (FX Retail in-app only)",
+                  "value": {
+                    "agent": {
+                      "id": "AX01AX26INBU00000001",
+                      "channel": "INTB",
+                      "ip": "124.170.23.24",
+                      "mac": "48-4D-7E-CB-DB-6F"
+                    },
+                    "biller": {
+                      "id": "CCILFOREXNAT01"
+                    },
+                    "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+                    "inputParams": [
+                      {
+                        "name": "mobileNumber",
+                        "value": "8838151414"
+                      },
+                      {
+                        "name": "customerId",
+                        "value": "IN057983074"
+                      },
+                      {
+                        "name": "deliveryMode",
+                        "value": "Forex Card Issuance"
                       }
                     ]
                   }
@@ -13493,7 +13633,7 @@
         "tags": [
           "Val Add APIs"
         ],
-        "description": "Poll for the result of a Val Add operation, as a fallback for webhooks.",
+        "description": "Poll for the result of a Val Add operation, as a fallback for webhooks. For FX Retail in-app flows, ShareDetails returns the sticky journey refId and FetchAmountBreakup reuses that refId.",
         "parameters": [
           {
             "name": "requestType",
@@ -13506,7 +13646,10 @@
                 "GenerateOTP",
                 "ValidateOTP",
                 "GetBankMarkup",
-                "FetchBestPrice"
+                "ValidateCardOrAccount",
+                "ShareDetails",
+                "FetchBestPrice",
+                "FetchAmountBreakup"
               ]
             }
           },
@@ -13625,12 +13768,32 @@
                               }
                             }
                           }
+                        },
+                        "additionalInfo": {
+                          "type": "array",
+                          "description": "Additional key-value pairs returned by the biller for the Val Add operation, when available.",
+                          "items": {
+                            "required": [
+                              "name",
+                              "value"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "customerId"
+                              },
+                              "value": {
+                                "type": "string",
+                                "example": "IN0025000213"
+                              }
+                            }
+                          }
                         }
                       }
                     }
                   }
-                }
-                ,
+                },
                 "examples": {
                   "exampleGetCustomerIdSuccess": {
                     "summary": "Get Customer ID Success",
@@ -13790,6 +13953,58 @@
                       }
                     }
                   },
+                  "exampleValidateCardOrAccountSuccess": {
+                    "summary": "Validate Card or Account Success",
+                    "value": {
+                      "refId": "KRQQESSWEAPQAHVHFQSNGBGZCZS51421211",
+                      "status": "Success",
+                      "traceId": "CV4PE82LTNJE9O014OE1",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "validationStatus",
+                            "value": "Successful"
+                          },
+                          {
+                            "name": "description",
+                            "value": "Card is Active"
+                          },
+                          {
+                            "name": "customerName",
+                            "value": "Jane Doe"
+                          }
+                        ],
+                        "additionalInfo": [],
+                        "errors": []
+                      }
+                    }
+                  },
+                  "exampleShareDetailsSuccess": {
+                    "summary": "Share Details Success",
+                    "value": {
+                      "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+                      "status": "Success",
+                      "traceId": "CV4PE82LTNJE9O014OE2",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "customerId",
+                            "value": "IN057983074"
+                          },
+                          {
+                            "name": "customerType",
+                            "value": "RESIDENTINDIVIDUAL"
+                          },
+                          {
+                            "name": "documentList",
+                            "value": "Passport, PAN, VISA, TICKETS, Aadhaar"
+                          }
+                        ],
+                        "additionalInfo": [],
+                        "errors": []
+                      }
+                    }
+                  },
                   "exampleFetchBestPriceSuccess": {
                     "summary": "Fetch Best Price Success",
                     "value": {
@@ -13827,6 +14042,36 @@
                             "value": "8506000"
                           }
                         ]
+                      }
+                    }
+                  },
+                  "exampleFetchAmountBreakupSuccess": {
+                    "summary": "Fetch Amount Breakup Success",
+                    "value": {
+                      "refId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+                      "status": "Success",
+                      "traceId": "CV4PE82LTNJE9O014OE4",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "baseAmount",
+                            "value": "109999.00"
+                          },
+                          {
+                            "name": "charges",
+                            "value": "100.00"
+                          },
+                          {
+                            "name": "tax",
+                            "value": "30.00"
+                          },
+                          {
+                            "name": "totalPayableAmount",
+                            "value": "110129.00"
+                          }
+                        ],
+                        "additionalInfo": [],
+                        "errors": []
                       }
                     }
                   },
@@ -14005,12 +14250,376 @@
         ]
       }
     },
+    "/api/v2/bbps/valadd/documentUpload/request": {
+      "post": {
+        "tags": [
+          "Val Add APIs"
+        ],
+        "description": "Upload documents for an FX Retail in-app ShareDetails flow when documentList indicates that documents are required. Send multipart/form-data with metadata and a ZIP file less than 5 MB. Files inside the ZIP must be named exactly as the comma-separated values returned in ShareDetails documentList. Multiple DocumentUpload requests can be made for the same origRefId when all documents cannot fit into a single ZIP under 5 MB.",
+        "operationId": "documentUploadRequest",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "metadata",
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "type": "string",
+                    "description": "JSON metadata for the upload. origRefId must be the successful sticky ShareDetails refId.",
+                    "example": "{\"origRefId\":\"D7O85FFK9A5CO0ODBA9GnYjOnkC61181519\",\"agent\":{\"id\":\"AX01AX26INBU00000001\",\"channel\":\"INTB\"},\"biller\":{\"id\":\"CCILFOREXNAT01\"},\"inputParams\":[{\"name\":\"mobileNumber\",\"value\":\"8838151414\"},{\"name\":\"customerId\",\"value\":\"IN057983074\"},{\"name\":\"deliveryMode\",\"value\":\"Forex Card Issuance\"}]}"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "ZIP file less than 5 MB. File names inside the ZIP must exactly match the ShareDetails documentList values, for example Passport, PAN, VISA, TICKETS, and Aadhaar."
+                  }
+                }
+              },
+              "encoding": {
+                "metadata": {
+                  "contentType": "application/json"
+                },
+                "file": {
+                  "contentType": "application/zip"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document upload request acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "data",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Processing"
+                    },
+                    "data": {
+                      "required": [
+                        "refId",
+                        "origRefId"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "description": "COU-generated document upload refId used for polling this upload.",
+                          "example": "DOCUMENTUPLOADREFID123456789012345"
+                        },
+                        "origRefId": {
+                          "type": "string",
+                          "description": "The successful sticky ShareDetails refId to which these documents belong.",
+                          "example": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519"
+                        }
+                      }
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV4PE82LTNJE9O014OE3"
+                    }
+                  }
+                },
+                "examples": {
+                  "ack": {
+                    "summary": "DocumentUpload ACK",
+                    "value": {
+                      "status": "Processing",
+                      "traceId": "CV4PE82LTNJE9O014OE3",
+                      "data": {
+                        "refId": "DOCUMENTUPLOADREFID123456789012345",
+                        "origRefId": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "Production": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "Sandbox": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "QA": [
+              "bbps:partner"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v2/bbps/valadd/documentUpload/response": {
+      "post": {
+        "tags": [
+          "Val Add APIs"
+        ],
+        "description": "Poll for the result of a DocumentUpload operation, as a fallback for webhooks.",
+        "operationId": "documentUploadResponse",
+        "parameters": [
+          {
+            "name": "X-PARTNER-ID",
+            "in": "header",
+            "description": "Partner ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^Bearer [a-zA-Z0-9\\-\\._~\\+\\/]+=*$"
+            },
+            "description": "Bearer token for authentication. Format: `Bearer <token>`",
+            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "refId"
+                ],
+                "type": "object",
+                "properties": {
+                  "refId": {
+                    "type": "string",
+                    "description": "The document upload refId returned by documentUpload/request.",
+                    "example": "DOCUMENTUPLOADREFID123456789012345"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document upload result retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "refId",
+                    "status",
+                    "traceId"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Current state of the Val Add operation.",
+                      "example": "Success"
+                    },
+                    "refId": {
+                      "type": "string",
+                      "description": "COU-generated reference ID for the Val Add operation.",
+                      "example": "HENSVVR4QOS7X1UGPY7JGUV444P10102202"
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "example": "CV4PE82LTNJE9O014OE0"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Val Add result payload (varies by requestType). On success, contains `billerResponse`. On failure, contains `errors`.",
+                      "properties": {
+                        "billerResponse": {
+                          "type": "array",
+                          "description": "Key-value pairs returned by the biller for the Val Add operation. Present when status is `Success`.",
+                          "items": {
+                            "required": [
+                              "name",
+                              "value"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "customerId"
+                              },
+                              "value": {
+                                "type": "string",
+                                "example": "IN0025000213"
+                              }
+                            }
+                          }
+                        },
+                        "errors": {
+                          "type": "array",
+                          "description": "Error details. Present when status is `Failure`.",
+                          "items": {
+                            "required": [
+                              "code",
+                              "message"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string",
+                                "description": "Error code identifying the failure reason.",
+                                "example": "CUS007"
+                              },
+                              "message": {
+                                "type": "string",
+                                "description": "Human-readable error description.",
+                                "example": "Customer does not exist"
+                              }
+                            }
+                          }
+                        },
+                        "additionalInfo": {
+                          "type": "array",
+                          "description": "Additional key-value pairs returned by the biller for the Val Add operation, when available.",
+                          "items": {
+                            "required": [
+                              "name",
+                              "value"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "customerId"
+                              },
+                              "value": {
+                                "type": "string",
+                                "example": "IN0025000213"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "DocumentUpload Success",
+                    "value": {
+                      "refId": "DOCUMENTUPLOADREFID123456789012345",
+                      "status": "Success",
+                      "traceId": "CV4PE82LTNJE9O014OE3",
+                      "data": {
+                        "billerResponse": [
+                          {
+                            "name": "Document Submission",
+                            "value": "Successful"
+                          }
+                        ],
+                        "additionalInfo": [],
+                        "errors": []
+                      }
+                    }
+                  },
+                  "processing": {
+                    "status": "Processing",
+                    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+                    "traceId": "CV4PE82LTNJE9O014OE3",
+                    "data": null
+                  },
+                  "failure": {
+                    "status": "Failure",
+                    "refId": "HENSVVR4QOS7X1UGPY7JGUV444P10102202",
+                    "traceId": "CV4PE82LTNJE9O014OE0",
+                    "data": {
+                      "errors": [
+                        {
+                          "code": "error-code",
+                          "message": "Error message"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "Production": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "Sandbox": [
+              "bbps:partner"
+            ]
+          },
+          {
+            "QA": [
+              "bbps:partner"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v2/bbps/bills/mandate/request": {
       "post": {
         "tags": [
           "Mandate API"
         ],
-        "description": "Partner App requests COU to book an FX mandate after customer confirmation of the best price. For CASH transactions, this effectively means the mandate is placed.",
+        "description": "Partner App requests COU to book an FX manx`date after customer confirmation of the best price. For FX Retail in-app flows, send customer.customerParams.inApp = true and the top-level refId from the successful FetchAmountBreakup flow.",
         "parameters": [
           {
             "name": "X-PARTNER-ID",
@@ -14107,7 +14716,9 @@
                               "example": "IN0025000213"
                             }
                           }
-                        }
+                        },
+                        "description": "Customer parameters for mandate booking. For FX Retail in-app flows, include { name: \"inApp\", value: \"true\" } as per biller MDM customer params."
+                      }
                       }
                     }
                   },
@@ -14125,13 +14736,20 @@
                       },
                       "amount": {
                         "type": "integer",
-                        "example": 8260000
+                        "example": 110129,
+                        "description": "Amount in paise. Continue sending this as an integer; do not send decimal JSON values such as 110129.00."
                       },
                       "mandateRefId": {
                         "type": "string",
                         "example": "d30eb5d76250a2faa76c5a2a59c76cc3"
                       }
                     }
+                  },
+                  "refId": {
+                    "type": "string",
+                    "description": "Required for FX Retail in-app sticky mandate flows. Must be the successful FetchAmountBreakup refId, which is the same sticky ShareDetails refId.",
+                    "example": "D7O85FFK9A5CO0ODBA9GnYjOnkC61181519",
+                    "x-omitempty": true
                   }
                 }
               }
@@ -14200,7 +14818,6 @@
             ]
           }
         ]
-      }
     },
     "/api/v2/bbps/bills/mandate/response": {
       "post": {
@@ -14447,6 +15064,7 @@
         ]
       }
     }
+    
   },
   "components": {
     "schemas": {},
