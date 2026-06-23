@@ -43,7 +43,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 **Request Body**:
 
 <CodeBlockWithCopy language="json">{`{
-  "transactionRefId": "string",
+  "transactionRefId": "string (may be empty for timeout failures)",
   "trace_id": "string",
   "operatorRefId": "string",
   "status": "Successful | Failure",
@@ -58,7 +58,7 @@ The system appends specific routes to your base `webhook_url` based on the event
 
 | Field | Type | Description | Mandatory? |
 |-------|------|-------------|------------|
-| `transactionRefId` | string | Transaction reference ID from the original recharge request | Yes |
+| `transactionRefId` | string | Transaction reference ID from the original recharge request | Yes (may be empty) |
 | `trace_id` | string | System reference number (internal trace ID) | Yes |
 | `operatorRefId` | string | Operator transaction ID (if available) | No |
 | `status` | string | Transaction status - one of: `"Successful"`, `"Failure"` | Yes |
@@ -106,6 +106,28 @@ The system appends specific routes to your base `webhook_url` based on the event
   "mobile_number": "9876543210",
   "provider": "Airtel",
   "failureReason": "Insufficient balance",
+  "timestamp": "2026-01-09T11:56:26+05:30"
+}`}
+        </CodeBlockWithCopy>
+    </details>
+</Card>
+
+<Card padding="nano" shape="rounded">
+    <details>
+        <summary>
+            <Text weight="600" marginBottom="none">
+                Payment status webhook example (Timeout failure)
+            </Text>
+        </summary>
+        <CodeBlockWithCopy language="json">
+            {`{
+  "transactionRefId": "",
+  "trace_id": "SYS-ABC-125",
+  "status": "Failure",
+  "amount": "99.00",
+  "mobile_number": "9876543210",
+  "provider": "Airtel",
+  "failureReason": "Transaction timed out",
   "timestamp": "2026-01-09T11:56:26+05:30"
 }`}
         </CodeBlockWithCopy>
