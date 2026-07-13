@@ -1,0 +1,49 @@
+---
+sidebar_title: User Onboarding
+page_title: UPI Issuance User Onboarding
+order: 3
+visible_in_sidebar: true
+---
+
+## User Onboarding
+
+Onboarding gets a user ready to transact on UPI. It runs in three steps.
+
+**1. Device binding.** The TPAP / Issuing App requests a binding token from Setu, which generates one and returns it with a Virtual Mobile Number (VMN). The token is sent as a silent SMS from the user's SIM to the VMN. The telecom then notifies Setu of the VMN, the sending mobile, and the SMS body, and Setu checks all three to bind the device to the user.
+
+**2. VPA creation.** The TPAP / Issuing App creates a VPA — the user's UPI address — over the user's account.
+
+**3. OTP verification.** The TPAP / Issuing App requests an OTP from Setu, Setu delivers it to the user's mobile by SMS, and the TPAP / Issuing App submits it back to Setu to activate the VPA. Today this is **required on Android** and **not needed on iOS**.
+
+<img src="/upi-issuance/onboarding-flow.png" alt="New user onboarding and VPA creation: device binding, VPA creation, and the OTP that activates the new VPA (Android)" />
+
+<p style={{ textAlign: "center", fontStyle: "italic", opacity: 0.75 }}>New user onboarding / VPA creation for an existing user</p>
+
+Once onboarded, the user has an active VPA and can transact on UPI.
+
+On a **device change**, only device binding is repeated — a device change does not require VPA creation. As at onboarding, an OTP is required on Android and not on iOS.
+
+On **iOS**, a successful SIM binding moves the user status straight to `active`.
+
+On **Android**, a successful SIM binding moves the user status to `device-bound`. Requesting an OTP then moves the user to `otp-pending`. A successful OTP verification moves the user status to `active`.
+
+<img src="/upi-issuance/device-change-flow.png" alt="Device change: device binding on the new device, with an OTP on Android moving the user from device-bound to active and iOS activating directly, no VPA creation" />
+
+<p style={{ textAlign: "center", fontStyle: "italic", opacity: 0.75 }}>Device change — OTP verification, no VPA creation</p>
+
+<Callout type="tip">
+  NPCI is not involved in onboarding for PPI Issuing Apps: the account provider is
+  already set, and PPI accounts do not need a UPI PIN to be set up.
+</Callout>
+
+### In this section
+
+- **[Onboarding states](/payments/upi-issuance/onboarding/onboarding-states)** — the user and VPA state machines, and what moves them.
+- **[API integration](/payments/upi-issuance/onboarding/api-integration)** — a step-by-step walkthrough of each onboarding operation.
+
+### Next
+
+- **[Payee blocklist](/payments/upi-issuance/payee-blocklist)** — block, unblock, and list blocked payee VPAs.
+- **[Testing on QA env](/payments/upi-issuance/qa-testing)** — reproduce every scenario.
+
+<WasPageHelpful />

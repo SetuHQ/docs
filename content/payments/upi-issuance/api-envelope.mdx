@@ -1,0 +1,89 @@
+---
+sidebar_title: The API envelope
+page_title: UPI Issuance API envelope
+order: 2
+visible_in_sidebar: true
+---
+
+## The API envelope
+
+Every request and response body is encrypted, keeping PII (`deviceId`, `mobile`, account details) out of plain text on the wire. The scheme is a standard hybrid encryption envelope.
+
+### What travels where
+
+- **PII in the body.** `deviceId` and `mobile` are in the encrypted body, never in headers or the URL.
+- **`idempotencyKey` in a header.** It stays a plain header, outside the encrypted body.
+- **Reads are POSTs.** Even pure reads (`binding-status`, `list-vpas`) are `POST` so their PII body can be encrypted.
+
+<hr class="tertiary" />
+
+### Request format
+
+The TPAP / Issuing App encrypts the request body into an envelope object with three base64 fields:
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "ct": "<base64: AES-256-CBC(PKCS#7) of the JSON body, under a random session key + IV>",
+  "sk": "<base64: RSA-OAEP(SHA-1) wrap of the 32-byte session key, under Setu's public key>",
+  "iv": "<base64: the 16-byte AES IV>"
+}`}
+</CodeBlockWithCopy>
+
+For each request, the TPAP / Issuing App generates a random **32-byte AES-256 key** and **16-byte IV**, encrypts the JSON body with **AES-256-CBC** and PKCS#7 padding, and wraps the session key with **RSA-OAEP (SHA-1)** under Setu's public key. The TPAP / Issuing App keeps the session key and IV to decrypt the response.
+
+### Response format
+
+The response is encrypted under the same session key and IV the TPAP / Issuing App generated:
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "ct": "<base64: AES-256-CBC(PKCS#7) of the JSON response>",
+  "oha": "<hex: SHA-256 of the plaintext response, for integrity>"
+}`}
+</CodeBlockWithCopy>
+
+The TPAP / Issuing App decrypts `ct` with the session key and IV, then verifies `oha` matches the SHA-256 of the decrypted plaintext.
+
+<Callout type="tip">
+  The wire suite is fixed: RSA-OAEP-SHA1 for the key wrap, AES-256-CBC with PKCS#7
+  for the body, SHA-256 for the response integrity hash.
+</Callout>
+
+<hr class="tertiary" />
+
+### Reference implementation (Python)
+
+<CodeBlockWithCopy language="python">
+    {`import os, json, base64, hashlib
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes, serialization
+def _pad(b, k=16): n = k - len(b) % k; return b + bytes([n]) * n
+def _unpad(b): return b[:-b[-1]]
+def encrypt(pub_pem: str, body: dict):
+    pub = serialization.load_pem_public_key(pub_pem.encode())
+    key, iv = os.urandom(32), os.urandom(16)
+    sk = pub.encrypt(key, padding.OAEP(mgf=padding.MGF1(hashes.SHA1()),
+                                       algorithm=hashes.SHA1(), label=None))
+    enc = Cipher(algorithms.AES(key), modes.CBC(iv)).encryptor()
+    ct = enc.update(_pad(json.dumps(body).encode())) + enc.finalize()
+    env = {"ct": base64.b64encode(ct).decode(),
+           "sk": base64.b64encode(sk).decode(),
+           "iv": base64.b64encode(iv).decode()}
+    return env, key, iv
+def decrypt_response(key, iv, enc: dict):
+    ct = base64.b64decode(enc["ct"])
+    dec = Cipher(algorithms.AES(key), modes.CBC(iv)).decryptor()
+    plain = _unpad(dec.update(ct) + dec.finalize())
+    assert enc["oha"] == hashlib.sha256(plain).hexdigest(), "integrity mismatch"
+    return json.loads(plain)`}
+</CodeBlockWithCopy>
+
+`encrypt()` returns the request envelope `env` — the `{ct, sk, iv}` object — along with the session `key` and `iv`. The TPAP / Issuing App sends `env` as the request body with `Content-Type: application/json`, and passes the same `key` and `iv` to `decrypt_response()` to read the response.
+
+### Next
+
+- **[User Onboarding](/payments/upi-issuance/onboarding)** — bind a device, create a VPA, and verify OTPs.
+- **[Testing on QA env](/payments/upi-issuance/qa-testing)** — reproduce every scenario.
+
+<WasPageHelpful />

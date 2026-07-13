@@ -1,0 +1,156 @@
+---
+sidebar_title: Device binding
+page_title: UPI Issuance device binding
+order: 0
+visible_in_sidebar: true
+---
+
+## Device binding
+
+Device binding proves that the user's SIM, mobile number, and device belong together. It is the entry point on any device — a fresh install, a new phone, or a re-login.
+
+<img src="/upi-issuance/device-binding.png" alt="Device binding sequence: binding token, silent SMS from the SIM to the VMN, and the binding-status poll to active" />
+
+### 1. Generate a binding token
+
+`POST /api/v1/onboarding/binding-token` (enveloped)
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `os` | string | yes | `android` or `ios`. |
+| `otpRequired` | boolean | yes | Whether a successful SIM binding fully activates the user. `false` — the user goes straight to `active`. `true` — the user stops at `device-bound` until an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) is verified. |
+
+<br />
+
+`idempotencyKey` is an optional request header.
+
+**When OTP verification happens is controlled by the TPAP / Issuing App, and Setu respects it.** There are two options:
+
+- To verify OTP **after SIM binding and before VPA creation**, generate the binding token with `otpRequired: true`. The user stays at `device-bound` until an OTP is verified. This is the **device change** case, where no new VPA is created.
+- To verify OTP **after VPA creation**, generate the binding token with `otpRequired: false` and set `otpRequired: true` on [`create-vpa`](/payments/upi-issuance/onboarding/api-integration/vpa-management) instead. The new VPA stays `pending-verification` until an OTP is verified. This is the **new onboarding / new VPA** case.
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "os": "android",
+  "otpRequired": false
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `vmn` | string | The Virtual Mobile Number to send the SMS to. |
+| `smsBody` | string | The ready-to-send silent-SMS body. The token is embedded here and is never returned separately. |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vmn": "919900000001",
+  "smsBody": "VERIFY SETqxf8aemkxxdrhbifd4n4zldq7guvxb2k"
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | A required field is missing (`deviceId`, `mobile`, `os`, `otpRequired`) or the request body is malformed. |
+| 429 | `device-binding-cap-exceeded` | Too many binding attempts for this device today. |
+| 429 | `mobile-binding-cap-exceeded` | Too many binding attempts for this mobile today. |
+| 500 | `internal-error` | Something went wrong on Setu's side. Retry with the same `idempotencyKey`. |
+
+### 2. Send the silent SMS
+
+`vmn` is a **Virtual Mobile Number** — a receive-only number that the binding SMS is sent to. The TPAP / Issuing App sends `smsBody` as a silent SMS from the user's SIM to `vmn`. The telecom provider then calls a webhook to Setu, indicating the VMN that received the SMS, the mobile it was sent from, and the SMS body. Setu checks all three — the SMS body must carry a token for a live binding, the VMN must be the one that binding was issued for, and the sending mobile must match the claimed `mobile`. When all three match, the SIM is proven and the binding advances. The TPAP / Issuing App does not call anything for this step.
+
+The binding token is short-lived — it expires **45 seconds** after it is generated. The silent SMS (and the telecom's webhook back to Setu) must complete within that window; if it lapses, generate a fresh binding token.
+
+<Callout type="tip">
+  On the QA env there is no telecom. Drive the outcome with a
+  <code>sim.bind-*</code> directive in the <code>idempotencyKey</code> of the
+  generate binding token call — see
+  <a href="/payments/upi-issuance/qa-testing"> Testing on QA env</a>.
+</Callout>
+
+### 3. Poll the binding status
+
+`POST /api/v1/onboarding/binding-status` (enveloped)
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+
+<br />
+
+`idempotencyKey` is an optional request header.
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999"
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `user` | object | The user in its current state (see [The user object](#the-user-object)). |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "user": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "status": "active",
+    "deviceId": "device-abc-123",
+    "mobile": "919999999999"
+  }
+}`}
+</CodeBlockWithCopy>
+
+Poll until the status settles. With `otpRequired: false` a successful SIM binding lands the user on `active`, and the TPAP / Issuing App can [create a VPA](/payments/upi-issuance/onboarding/api-integration/vpa-management). With `otpRequired: true` the user settles at `device-bound` and needs an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) to reach `active` — the OTP is valid for **60 seconds** after it is requested.
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | A required field is missing (`deviceId`, `mobile`) or the request body is malformed. |
+| 404 | `binding-not-found` | No binding for this device — polled before generating a binding token, or from a device that is not the bound one. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+### The user object
+
+The [binding status](#3-poll-the-binding-status) and a device-change [OTP verification](/payments/upi-issuance/onboarding/api-integration/user-otp) return the user in this shape:
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `id` | string | The user's id (ULID). |
+| `status` | string | `binding-pending`, `device-bound`, `otp-pending`, or `active`. |
+| `deviceId` | string | The user's device id. |
+| `mobile` | string | The user's mobile number, with country code (e.g. `919999999999`). |
+
+<hr class="primary" />
+
+### On a device change
+
+When the user moves to a new phone or re-installs, only device binding is repeated — the three steps above, against the new `deviceId`. A device change does not require VPA creation. The OTP is OS-driven, just as at onboarding. On **iOS** (`otpRequired: false`) a successful SIM binding moves the user to `active`. On **Android** (`otpRequired: true`) a successful SIM binding moves the user to `device-bound`, and an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) then moves the user to `active` before the account is usable on the new device.
+
+### Next
+
+- **[OTP verification](/payments/upi-issuance/onboarding/api-integration/user-otp)** — request and verify OTPs.
+- **[VPA management](/payments/upi-issuance/onboarding/api-integration/vpa-management)** — create and manage VPAs.
+
+<WasPageHelpful />

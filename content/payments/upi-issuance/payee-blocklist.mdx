@@ -1,0 +1,187 @@
+---
+sidebar_title: Payee blocklist
+page_title: UPI Issuance payee blocklist
+order: 4
+visible_in_sidebar: true
+---
+
+## Payee blocklist
+
+Let a user block payee VPAs they never want to transact with. All routes are enveloped, under `/api/v1`, and require an `active` user. `idempotencyKey` is an optional request header on every call.
+
+### The blocklist entry object
+
+`block-vpa` and `unblock-vpa` return the entry (under `blockedPayee`) in this shape:
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `id` | string | The blocklist entry id (ULID). |
+| `payeeVpa` | string | The payee VPA, `prefix@handle`. |
+| `status` | string | `blocked` or `unblocked`. |
+| `blockedAt` | string | When the payee was most recently blocked (RFC3339). |
+| `unblockedAt` | string | When the payee was unblocked (RFC3339); absent while blocked. |
+
+<hr class="primary" />
+
+### Block a payee
+
+`POST /api/v1/onboarding/block-vpa` (enveloped) — idempotent; blocking an already-blocked payee is a no-op.
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `payeeVpa` | string | yes | The external payee VPA to block (`prefix@handle`; any handle). |
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "payeeVpa": "merchant@otherbank"
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `blockedPayee` | object | The blocklist entry, now `blocked` (see [the entry object](#the-blocklist-entry-object)). |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "blockedPayee": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "payeeVpa": "merchant@otherbank",
+    "status": "blocked",
+    "blockedAt": "2026-07-09T12:00:00Z"
+  }
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
+| 400 | `missing-parameter` | `payeeVpa` is missing. |
+| 400 | `invalid-vpa` | `payeeVpa` is not a valid VPA of the form `prefix@handle`. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 409 | `invalid-user-state` | The user is not `active`. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<hr class="tertiary" />
+
+### Unblock a payee
+
+`POST /api/v1/onboarding/unblock-vpa` (enveloped) — a soft flip to `unblocked`; the entry is preserved for audit. Idempotent for an already-unblocked payee. The request shape matches [Block a payee](#block-a-payee).
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "payeeVpa": "merchant@otherbank"
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `blockedPayee` | object | The blocklist entry, now `unblocked` (see [the entry object](#the-blocklist-entry-object)). |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "blockedPayee": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "payeeVpa": "merchant@otherbank",
+    "status": "unblocked",
+    "blockedAt": "2026-07-09T12:00:00Z",
+    "unblockedAt": "2026-07-09T12:30:00Z"
+  }
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
+| 400 | `missing-parameter` | `payeeVpa` is missing. |
+| 400 | `invalid-vpa` | `payeeVpa` is not a valid VPA of the form `prefix@handle`. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 404 | `payee-not-blocked` | That payee VPA is not on the user's blocklist. |
+| 409 | `invalid-user-state` | The user is not `active`. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<hr class="tertiary" />
+
+### List blocked payees
+
+`POST /api/v1/onboarding/list-blocked-vpas` (enveloped) — the user's currently-blocked payees, newest-first, keyset-paginated.
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `limit` | integer | no | Max entries this page. Omitted or non-positive defaults to `20`, clamped to `100`. |
+| `cursor` | string | no | The `nextCursor` from the previous page. Omit for the first page. |
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "limit": 20
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `blockedPayees` | array | This page of currently-blocked payees (see [the entry object](#the-blocklist-entry-object)); empty when none. |
+| `nextCursor` | string | Cursor for the next page; absent on the last page. |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "blockedPayees": [
+    {
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "payeeVpa": "merchant@otherbank",
+      "status": "blocked",
+      "blockedAt": "2026-07-09T12:00:00Z"
+    }
+  ],
+  "nextCursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, the request body is malformed, or `cursor` is malformed. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 409 | `invalid-user-state` | The user is not `active`. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+### Next
+
+- **[Testing on QA env](/payments/upi-issuance/qa-testing)** — reproduce every scenario.
+- **[API reference](/payments/upi-issuance/api-reference)** — the full endpoint reference.
+
+<WasPageHelpful />

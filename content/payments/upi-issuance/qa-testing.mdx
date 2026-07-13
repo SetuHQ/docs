@@ -1,0 +1,91 @@
+---
+sidebar_title: Testing on QA env
+page_title: UPI Issuance QA env testing
+order: 5
+visible_in_sidebar: true
+---
+
+## Testing on QA env
+
+The TPAP / Issuing App can reproduce every onboarding scenario — success, and every error and precondition — against the **real QA env endpoints**.
+
+A few outcomes depend on an external event the TPAP / Issuing App cannot trigger on the QA env (the SIM-proof callback from the telecom, and the OTP SMS). For those, put a **directive in the `idempotencyKey`** of the initiating call.
+
+<br />
+
+<Callout type="warning">
+  Simulation directives work on the <b>QA env only</b>. In production a
+  <code>sim.*</code> value is treated as an ordinary idempotency key and changes
+  nothing.
+</Callout>
+
+<hr class="primary" />
+
+### Simulated scenarios
+
+Only two things need a directive, because the TPAP / Issuing App cannot otherwise produce them on the QA env.
+
+#### Device binding
+
+On production, binding completes when the telecom delivers the silent SMS. On the QA env, set the `idempotencyKey` on `POST /onboarding/binding-token` to drive the outcome — no webhook, no real SMS:
+
+| `idempotencyKey` | Result |
+| :--- | :--- |
+| `sim.bind-ok` | The SIM proof succeeds and the user advances to `active`. |
+| `sim.bind-fail-mobile` | The proven SIM does not match the claimed mobile. Binding does not complete. |
+| `sim.bind-fail-vmn` | The callback carries a token that does not match a live binding. Binding does not complete. |
+
+After the call, poll `binding-status` as usual to observe the result. To test **reclaim** (the same mobile on a new device), just call `sim.bind-ok` again with a different `deviceId` — no special directive needed.
+
+#### OTP verification
+
+On the QA env there is no telecom, so no OTP SMS is sent. To pass verification, set the `idempotencyKey` on `POST /onboarding/otp/verify`:
+
+| `idempotencyKey` | Result |
+| :--- | :--- |
+| `sim.otp-ok` | The OTP verifies regardless of the code submitted, activating what it was requested for — the user, or a VPA. |
+
+<Callout type="tip">
+  Use <code>sim.otp-ok</code> for the success path. To see a <b>failure</b>,
+  request the OTP and submit a wrong code (no directive) while it is live — that
+  returns <code>401 invalid-otp</code>.
+</Callout>
+
+<hr class="primary" />
+
+### Natural scenarios
+
+Everything else is reproduced with ordinary requests. A sampling:
+
+| To see this | Do this |
+| :--- | :--- |
+| `device-binding-cap-exceeded` (429) | Generate binding tokens past the per-device daily cap. |
+| `otp-cap-exceeded` (429) | Call `otp/request` past the cap. |
+| `invalid-otp` (401) | `otp/request`, then `otp/verify` with a wrong code (no directive) while the OTP is live. |
+| `otp-expired-or-exhausted` (410) | `otp/verify` with no live OTP (never requested, or the window passed). |
+| `device-not-linked` (401) | Call a VPA operation from a device not bound to the user. |
+| `user-not-found` (404) | Use a mobile that was never onboarded. |
+| `invalid-user-state` (409) | Call `create-vpa` before the user is `active`. |
+| `invalid-vpa` (400) | Use a prefix not scoped to the caller's mobile (incl. another user's VPA). |
+| `binding-not-found` (404) | Poll `binding-status` before generating a binding token. |
+| `invalid-request` (400) | Send a malformed or incomplete body. |
+| An abandoned binding | Request a token and never complete it — it expires on its own. |
+
+<hr class="primary" />
+
+### A full QA env run
+
+| # | Call | Key inputs | Result |
+| :--- | :--- | :--- | :--- |
+| 1 | `binding-token` | `idempotencyKey: sim.bind-ok`, `otpRequired: false` | User → `active` |
+| 2 | `binding-status` | — | `active` |
+| 3 | `vpa/check` | — | Available |
+| 4 | `create-vpa` | `otpRequired: true` (the Android path) | VPA → `pending-verification` |
+| 5 | `otp/request` | With the VPA | `202` accepted |
+| 6 | `otp/verify` | `idempotencyKey: sim.otp-ok`, with the VPA | VPA → `active` |
+
+### Next
+
+- **[API reference](/payments/upi-issuance/api-reference)** — the full endpoint reference.
+
+<WasPageHelpful />

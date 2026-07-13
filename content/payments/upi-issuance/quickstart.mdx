@@ -1,0 +1,65 @@
+---
+sidebar_title: Quickstart
+page_title: UPI Issuance Quickstart
+order: 1
+visible_in_sidebar: true
+---
+
+## Quickstart
+
+This guide covers the one-time setup the TPAP / Issuing App needs before it can call the APIs. Once these are in place, head to [User Onboarding](/payments/upi-issuance/onboarding) for the full API journey.
+
+<hr class="primary" />
+
+### Base URL
+
+- QA env — `https://upi-issuance-qa.setu.co/api/v1`
+
+<hr class="tertiary" />
+
+### The envelope public key
+
+Every request and response body is encrypted with the **API envelope**.
+
+The TPAP / Issuing App can reach out to Setu to provide the **envelope public key**. With this key, the TPAP / Issuing App is supposed to encrypt each request and decrypt each response.
+
+The [API envelope](/payments/upi-issuance/api-envelope) page has the full wire format and a copy-paste reference implementation.
+
+For example, a generate binding token request and its response look like this on the wire — the encrypted body (`ct`), the request's one-time key encrypted under Setu's public key (`sk`), and the IV (`iv`):
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+    "ct": "HBAHaU47cY2pu9+9AkzlAYKr8s4CEDhz…Bn1uIfe9ufHgu1",
+    "sk": "hLGbHiL+TbnjYJhCgWtZM8m/yoWb0bHO…DOENEuzVbdFrX4a70A==",
+    "iv": "OTLfPjWZQhMRCIoAsEBAtg=="
+}`}
+</CodeBlockWithCopy>
+
+The response comes back encrypted under the same key — the encrypted body (`ct`) and an integrity hash (`oha`):
+
+##### Sample response
+
+<CodeBlockWithCopy language="json">
+    {`{
+    "ct": "VbtoxGJjpmPaj40Fo4rhGCxCvN246N7Y…7UZvM24sM0+Q=",
+    "oha": "7c2eae6a112e43f2b99f16ee9b5a2cd910b88c5463dca683b5a5ad053dbe7c30"
+}`}
+</CodeBlockWithCopy>
+
+<hr class="tertiary" />
+
+### Authentication
+
+The TPAP / Issuing App can share its outbound IP address with Setu, and Setu would whitelist that IP. This is how the TPAP / Issuing App is authenticated, so requests must be server-to-server.
+
+<hr class="primary" />
+
+### Next
+
+- **[The API envelope](/payments/upi-issuance/api-envelope)** — encrypt requests and decrypt responses.
+- **[User Onboarding](/payments/upi-issuance/onboarding)** — bind a device, create a VPA, and verify OTPs.
+- **[Testing on QA env](/payments/upi-issuance/qa-testing)** — reproduce every scenario on the QA env.
+
+<WasPageHelpful />

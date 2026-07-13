@@ -1,0 +1,359 @@
+---
+sidebar_title: VPA management
+page_title: UPI Issuance VPA management
+order: 2
+visible_in_sidebar: true
+---
+
+## VPA management
+
+Once a user is `active`, the TPAP / Issuing App creates and manages their VPAs. All routes are enveloped and under `/api/v1`. `idempotencyKey` is an optional request header on every call.
+
+### The VPA object
+
+`create-vpa`, `get-vpa`, `list-vpas`, and `vpa/deregister` return the VPA in this shape:
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `id` | string | The VPA id (ULID). |
+| `vpa` | string | The full VPA, `prefix@handle`. |
+| `status` | string | `active`, `pending-verification`, or `deregistered`. |
+| `programId` | string | The program the VPA belongs to (ULID). |
+| `accountNo` | string | The wallet / pool account number. |
+| `accountProviderId` | string | The account-provider id. |
+| `ifsc` | string | The IFSC of the account. |
+| `accountType` | string | The account type (e.g. `PPIWALLET`). |
+| `accountName` | string | The account-holder name. |
+| `mobile` | string | The owner's mobile number, with country code (e.g. `919999999999`). |
+
+<hr class="primary" />
+
+### Check availability
+
+`POST /api/v1/onboarding/vpa/check` (enveloped) — is a chosen VPA free?
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `vpa` | string | yes | The VPA to check — the full VPA `prefix@handle` (e.g. `919999999999-alice@setu`). Its VPA prefix must start with the subscriber's mobile. |
+| `programId` | string | no | ULID. Validated for existence only. |
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "vpa": "919999999999-alice@setu"
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `vpa` | string | The full VPA that was checked (`prefix@handle`). |
+| `available` | boolean | `false` means the VPA is already taken by another user's active VPA. A taken VPA is not an error. |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vpa": "919999999999-alice@setu",
+  "available": true
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
+| 400 | `missing-parameter` | `vpa` is missing. |
+| 400 | `invalid-program` | Unknown or inactive `programId`. |
+| 400 | `invalid-vpa` | The VPA prefix does not start with the subscriber's mobile number. |
+| 400 | `invalid-handle` | The VPA carries a handle that is not the one configured for this TPAP. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 409 | `invalid-user-state` | The user is not `active`. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<hr class="tertiary" />
+
+### Create a VPA
+
+`POST /api/v1/onboarding/create-vpa` (enveloped)
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `vpa` | string | yes | The VPA to create — the full VPA `prefix@handle` (e.g. `919999999999-alice@setu`). Its VPA prefix must start with the subscriber's mobile. |
+| `accountNo` | string | yes | The wallet / pool account number. |
+| `accountName` | string | yes | The account-holder name. |
+| `otpRequired` | boolean | no | `true` (Android) — the VPA is created `pending-verification` and an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) activates it. `false` (iOS, default) — the VPA is created `active`. |
+| `ifsc` | string | no | The IFSC of the account. Optional when a TPAP default is configured. |
+| `accountProviderId` | string | no | The account-provider id. Optional when a TPAP default is configured. |
+| `programId` | string | no | ULID. Validated for existence when supplied. |
+| `defaultDebit` | boolean | no | Make this the user's default debit account. |
+| `defaultCredit` | boolean | no | Make this the user's default credit account. |
+
+The account details are taken from the request. There is no bank round-trip at onboarding.
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vpa": "919999999999-alice@setu",
+  "accountNo": "99887766554433",
+  "accountName": "Alice Doe",
+  "otpRequired": false
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+Returns the created VPA; its `status` is `active` or `pending-verification`.
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `vpa` | object | The created VPA (see [The VPA object](#the-vpa-object)). |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vpa": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "vpa": "919999999999-alice@setu",
+    "status": "active",
+    "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "accountNo": "99887766554433",
+    "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "ifsc": "SETU0000001",
+    "accountType": "PPIWALLET",
+    "accountName": "Alice Doe",
+    "mobile": "919999999999"
+  }
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
+| 400 | `missing-parameter` | `vpa`, `accountNo`, or `accountName` is empty, or `ifsc` / `accountProviderId` is required (no TPAP default configured) and was not supplied. |
+| 400 | `invalid-program` | Unknown or inactive `programId`. |
+| 400 | `invalid-vpa` | The VPA prefix does not start with the subscriber's mobile number. |
+| 400 | `invalid-handle` | The VPA carries a handle that is not the one configured for this TPAP. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 409 | `invalid-user-state` | The user is not `active`. |
+| 409 | `vpa-taken` | That VPA is already in use. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<br />
+
+<Callout type="tip">
+  A VPA prefix is scoped to the owner's mobile, so a caller cannot collide
+  with another user's VPA (that request is rejected as <code>invalid-vpa</code>),
+  and re-creating the caller's own VPA is idempotent (returns <code>200</code>).
+</Callout>
+
+<hr class="tertiary" />
+
+### Get a VPA
+
+`POST /api/v1/onboarding/get-vpa` (enveloped) — fetch one of the user's VPAs by its VPA string.
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `vpa` | string | yes | The VPA to fetch — the full VPA `prefix@handle` (e.g. `919999999999-alice@setu`). Its VPA prefix must start with the subscriber's mobile. |
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "vpa": "919999999999-alice@setu"
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+Returns the VPA under `vpa`.
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `vpa` | object | The requested VPA (see [The VPA object](#the-vpa-object)). |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vpa": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "vpa": "919999999999-alice@setu",
+    "status": "active",
+    "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "accountNo": "99887766554433",
+    "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "ifsc": "SETU0000001",
+    "accountType": "PPIWALLET",
+    "accountName": "Alice Doe",
+    "mobile": "919999999999"
+  }
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId`, `mobile`, or `vpa` is missing, or the request body is malformed. |
+| 400 | `invalid-vpa` | The VPA prefix does not start with the subscriber's mobile number. |
+| 400 | `invalid-handle` | The VPA carries a handle that is not the one configured for this TPAP. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 404 | `vpa-not-found` | The user does not own a VPA with that string. |
+| 409 | `invalid-user-state` | The user is not `active`. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<hr class="tertiary" />
+
+### List VPAs
+
+`POST /api/v1/onboarding/list-vpas` (enveloped) — the user's live VPAs (`active` + `pending-verification`), newest-added first, keyset-paginated.
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `limit` | integer | no | Max entries this page. Omitted or non-positive defaults to `20`, clamped to `100`. |
+| `cursor` | string | no | The `nextCursor` from the previous page. Omit for the first page. |
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "limit": 20
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `vpas` | array | This page of the user's live VPAs (see [The VPA object](#the-vpa-object)); empty when none. |
+| `nextCursor` | string | Cursor for the next page; absent on the last page. |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vpas": [
+    {
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "vpa": "919999999999-alice@setu",
+      "status": "active",
+      "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "accountNo": "99887766554433",
+      "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "ifsc": "SETU0000001",
+      "accountType": "PPIWALLET",
+      "accountName": "Alice Doe",
+      "mobile": "919999999999"
+    }
+  ],
+  "nextCursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, the request body is malformed, or `cursor` is malformed. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 409 | `invalid-user-state` | The user is not `active`. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<hr class="tertiary" />
+
+### Deregister a VPA
+
+`POST /api/v1/onboarding/vpa/deregister` (enveloped) — soft-delete a VPA. The row is preserved for audit and re-registration, and the prefix becomes reusable. Idempotent for an already-deregistered VPA.
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `vpa` | string | yes | The VPA to deregister — the full VPA `prefix@handle` (e.g. `919999999999-alice@setu`). Its VPA prefix must start with the subscriber's mobile. |
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "vpa": "919999999999-alice@setu"
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+Returns the deregistered VPA; its `status` is `deregistered`.
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `vpa` | object | The deregistered VPA (see [The VPA object](#the-vpa-object)). |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vpa": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "vpa": "919999999999-alice@setu",
+    "status": "deregistered",
+    "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "accountNo": "99887766554433",
+    "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "ifsc": "SETU0000001",
+    "accountType": "PPIWALLET",
+    "accountName": "Alice Doe",
+    "mobile": "919999999999"
+  }
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
+| 400 | `missing-parameter` | `vpa` is missing. |
+| 400 | `invalid-vpa` | The VPA prefix does not start with the subscriber's mobile number. |
+| 400 | `invalid-handle` | The VPA carries a handle that is not the one configured for this TPAP. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 404 | `vpa-not-found` | The user does not own a VPA with that string. |
+| 409 | `invalid-user-state` | The user is not `active`. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+### Next
+
+- **[Programs](/payments/upi-issuance/onboarding/api-integration/programs)** — provision and manage engagement channels that VPAs are created under.
+
+<WasPageHelpful />
