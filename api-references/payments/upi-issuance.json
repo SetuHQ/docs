@@ -1,0 +1,4427 @@
+{
+ "openapi": "3.0.3",
+ "info": {
+  "title": "Setu UPI Issuance — TPAP API",
+  "description": "TPAP-facing APIs for the Setu UPI Issuance switch (closed-stack PPI issuer). Phase 1: onboarding / device binding.",
+  "version": "1.0"
+ },
+ "servers": [
+  {
+   "url": "https://upi-issuance-qa.setu.co"
+  }
+ ],
+ "paths": {
+  "/api/v1/onboarding/binding-token": {
+   "post": {
+    "tags": [
+     "Device binding"
+    ],
+    "summary": "Generate a binding token",
+    "description": "Generate a device-binding token: returns the VMN and the ready-to-send silent-SMS body, and starts onboarding for the user's mobile number.",
+    "operationId": "onboarding#requestBindingToken",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RequestBindingTokenRequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999",
+        "os": "android",
+        "otpRequired": true
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BindingTokenResponse"
+        },
+        "example": {
+         "smsBody": "VERIFY SETqxf8aemkxxdrhbifd4n4zldq7guvxb2k",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "vmn": "919900000001"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "429": {
+      "description": "Too many requests: Too Many Requests response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-binding-cap-exceeded",
+            "mobile-binding-cap-exceeded"
+           ],
+           "example": "device-binding-cap-exceeded"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-binding-cap-exceeded",
+         "message": "Too many binding attempts for this device.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/binding-status": {
+   "post": {
+    "tags": [
+     "Device binding"
+    ],
+    "summary": "Poll binding status",
+    "description": "Poll a user's device-binding status. Returns the user object in its current state.",
+    "operationId": "onboarding#pollBindingStatus",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PollBindingStatusRequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BindingStatusResponse"
+        },
+        "example": {
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "user": {
+          "deviceId": "device-abc-123",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "mobile": "919999999999",
+          "status": "active"
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "binding-not-found"
+           ],
+           "example": "binding-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "binding-not-found",
+         "message": "No binding for this device.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/otp/request": {
+   "post": {
+    "tags": [
+     "OTP verification"
+    ],
+    "summary": "Request an OTP",
+    "description": "Request the user-presence OTP SMS — include the vpa to verify a new VPA (new onboarding / new VPA); omit the vpa for a device change (SIM re-binding). Asynchronous: returns 202; the OTP SMS is sent shortly after.",
+    "operationId": "onboarding#requestOTP",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RequestOTPRequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999",
+        "vpa": "919999999999-alice@setu"
+       }
+      }
+     }
+    },
+    "responses": {
+     "202": {
+      "description": "Accepted response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/OTPRequestResponse"
+        },
+        "example": {
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found",
+            "vpa-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "429": {
+      "description": "Too many requests: Too Many Requests response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "otp-cap-exceeded"
+           ],
+           "example": "otp-cap-exceeded"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "otp-cap-exceeded",
+         "message": "Too many OTP requests.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/otp/verify": {
+   "post": {
+    "tags": [
+     "OTP verification"
+    ],
+    "summary": "Verify an OTP",
+    "description": "Verify the OTP the user entered. Activates what it was requested for — a new VPA (new onboarding / new VPA, vpa in the body) or the user (a device change, no vpa).",
+    "operationId": "onboarding#verifyOTP",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/VerifyOTPRequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999",
+        "otp": "123456",
+        "vpa": "919999999999-alice@setu"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/OTPVerifyResponse"
+        },
+        "example": {
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "user": {
+          "deviceId": "device-abc-123",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "mobile": "919999999999",
+          "status": "active"
+         },
+         "vpa": {
+          "accountName": "Alice Doe",
+          "accountNo": "99887766554433",
+          "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "accountType": "PPIWALLET",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "ifsc": "SETU0000001",
+          "mobile": "919999999999",
+          "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "status": "active",
+          "vpa": "919999999999-alice@setu"
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "missing-parameter"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked",
+            "invalid-otp"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "410": {
+      "description": "Gone: Gone response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "otp-expired-or-exhausted"
+           ],
+           "example": "otp-expired-or-exhausted"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "otp-expired-or-exhausted",
+         "message": "No live OTP to verify.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/vpa/check": {
+   "post": {
+    "tags": [
+     "VPA management"
+    ],
+    "summary": "Check VPA availability",
+    "description": "Check whether a chosen VPA prefix is available. A taken prefix is not an error.",
+    "operationId": "onboarding#checkVPA",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CheckVPARequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999",
+        "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "vpa": "919999999999-alice@setu"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VpaCheckResponse"
+        },
+        "example": {
+         "available": true,
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "vpa": "919999999999-alice@setu"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "invalid-program",
+            "missing-parameter",
+            "invalid-vpa",
+            "invalid-handle"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/create-vpa": {
+   "post": {
+    "tags": [
+     "VPA management"
+    ],
+    "summary": "Create a VPA",
+    "description": "Create a VPA over the user's chosen account. Requires an active user. With otpRequired, the VPA is created pending-verification until an OTP activates it.",
+    "operationId": "onboarding#createVPA",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CreateVPARequestBody"
+       },
+       "example": {
+        "accountName": "Alice Doe",
+        "accountNo": "99887766554433",
+        "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "defaultCredit": true,
+        "defaultDebit": true,
+        "deviceId": "device-abc-123",
+        "ifsc": "SETU0000001",
+        "mobile": "919999999999",
+        "otpRequired": false,
+        "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "vpa": "919999999999-alice@setu"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CreateVPAResponse"
+        },
+        "example": {
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "vpa": {
+          "accountName": "Alice Doe",
+          "accountNo": "99887766554433",
+          "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "accountType": "PPIWALLET",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "ifsc": "SETU0000001",
+          "mobile": "919999999999",
+          "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "status": "active",
+          "vpa": "919999999999-alice@setu"
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "invalid-program",
+            "missing-parameter",
+            "invalid-vpa",
+            "invalid-handle"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state",
+            "vpa-taken"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/get-vpa": {
+   "post": {
+    "tags": [
+     "VPA management"
+    ],
+    "summary": "Get a VPA",
+    "description": "Fetch one of the user's VPAs by its VPA string.",
+    "operationId": "onboarding#getVPA",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GetVPARequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999",
+        "vpa": "919999999999-alice@setu"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CreateVPAResponse"
+        },
+        "example": {
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "vpa": {
+          "accountName": "Alice Doe",
+          "accountNo": "99887766554433",
+          "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "accountType": "PPIWALLET",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "ifsc": "SETU0000001",
+          "mobile": "919999999999",
+          "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "status": "active",
+          "vpa": "919999999999-alice@setu"
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "missing-parameter",
+            "invalid-vpa",
+            "invalid-handle"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found",
+            "vpa-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/list-vpas": {
+   "post": {
+    "tags": [
+     "VPA management"
+    ],
+    "summary": "List VPAs",
+    "description": "List the user's live VPAs (active and pending-verification), newest-added first, keyset-paginated.",
+    "operationId": "onboarding#listVPAs",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ListVPAsRequestBody"
+       },
+       "example": {
+        "cursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "deviceId": "device-abc-123",
+        "limit": 20,
+        "mobile": "919999999999"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VpaListResponse"
+        },
+        "example": {
+         "nextCursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "vpas": [
+          {
+           "accountName": "Alice Doe",
+           "accountNo": "99887766554433",
+           "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "accountType": "PPIWALLET",
+           "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "ifsc": "SETU0000001",
+           "mobile": "919999999999",
+           "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "status": "active",
+           "vpa": "919999999999-alice@setu"
+          },
+          {
+           "accountName": "Alice Doe",
+           "accountNo": "99887766554433",
+           "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "accountType": "PPIWALLET",
+           "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "ifsc": "SETU0000001",
+           "mobile": "919999999999",
+           "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "status": "active",
+           "vpa": "919999999999-alice@setu"
+          }
+         ]
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/vpa/deregister": {
+   "post": {
+    "tags": [
+     "VPA management"
+    ],
+    "summary": "Deregister a VPA",
+    "description": "Deregister one of the user's VPAs (soft delete; the entry is preserved for audit and re-registration). Idempotent for an already-deregistered VPA.",
+    "operationId": "onboarding#deregisterVPA",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GetVPARequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999",
+        "vpa": "919999999999-alice@setu"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CreateVPAResponse"
+        },
+        "example": {
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "vpa": {
+          "accountName": "Alice Doe",
+          "accountNo": "99887766554433",
+          "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "accountType": "PPIWALLET",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "ifsc": "SETU0000001",
+          "mobile": "919999999999",
+          "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "status": "active",
+          "vpa": "919999999999-alice@setu"
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "missing-parameter",
+            "invalid-vpa",
+            "invalid-handle"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found",
+            "vpa-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/programs": {
+   "post": {
+    "tags": [
+     "Programs"
+    ],
+    "summary": "Create a program",
+    "description": "Create a program — an engagement channel that VPAs are created under — and return its programId.",
+    "operationId": "onboarding#createProgram",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CreateProgramRequestBody"
+       },
+       "example": {
+        "amountLimit": 500000,
+        "code": "ACME",
+        "isCreditAllowed": true,
+        "isDebitAllowed": true,
+        "name": "Acme Wallet"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Created response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ProgramResponse"
+        },
+        "example": {
+         "program": {
+          "amountLimit": 500000,
+          "code": "ACME",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "isCreditAllowed": true,
+          "isDebitAllowed": true,
+          "name": "Acme Wallet",
+          "status": "active"
+         },
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "missing-parameter"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/programs/{programId}": {
+   "patch": {
+    "tags": [
+     "Programs"
+    ],
+    "summary": "Update a program",
+    "description": "Update a program's configuration. Only the fields supplied in the body are changed.",
+    "operationId": "onboarding#updateProgram",
+    "parameters": [
+     {
+      "name": "programId",
+      "in": "path",
+      "description": "The program to update (ULID).",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "description": "The program to update (ULID).",
+       "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+      },
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/UpdateProgramRequestBody"
+       },
+       "example": {
+        "amountLimit": 500000,
+        "code": "ACME",
+        "isCreditAllowed": true,
+        "isDebitAllowed": false,
+        "name": "Acme Wallet",
+        "status": "inactive"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ProgramResponse"
+        },
+        "example": {
+         "program": {
+          "amountLimit": 500000,
+          "code": "ACME",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "isCreditAllowed": true,
+          "isDebitAllowed": true,
+          "name": "Acme Wallet",
+          "status": "active"
+         },
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "missing-parameter"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "program-not-found"
+           ],
+           "example": "program-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "program-not-found",
+         "message": "No program with that id.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/block-vpa": {
+   "post": {
+    "tags": [
+     "Payee blocklist"
+    ],
+    "summary": "Block a payee VPA",
+    "description": "Block an external payee VPA for the user. Idempotent; requires an active user.",
+    "operationId": "onboarding#blockPayeeVPA",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/BlockPayeeVPARequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999",
+        "payeeVpa": "merchant@otherbank"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PayeeBlockResponse"
+        },
+        "example": {
+         "blockedPayee": {
+          "blockedAt": "2026-07-09T12:00:00Z",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "payeeVpa": "merchant@otherbank",
+          "status": "blocked",
+          "unblockedAt": "2026-07-09T12:30:00Z"
+         },
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "missing-parameter",
+            "invalid-vpa"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/unblock-vpa": {
+   "post": {
+    "tags": [
+     "Payee blocklist"
+    ],
+    "summary": "Unblock a payee VPA",
+    "description": "Unblock a previously-blocked payee VPA (soft flip; the entry is preserved). Idempotent for an already-unblocked payee; requires an active user.",
+    "operationId": "onboarding#unblockPayeeVPA",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/BlockPayeeVPARequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "mobile": "919999999999",
+        "payeeVpa": "merchant@otherbank"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PayeeBlockResponse"
+        },
+        "example": {
+         "blockedPayee": {
+          "blockedAt": "2026-07-09T12:00:00Z",
+          "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+          "payeeVpa": "merchant@otherbank",
+          "status": "blocked",
+          "unblockedAt": "2026-07-09T12:30:00Z"
+         },
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "missing-parameter",
+            "invalid-vpa"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found",
+            "payee-not-blocked"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/onboarding/list-blocked-vpas": {
+   "post": {
+    "tags": [
+     "Payee blocklist"
+    ],
+    "summary": "List blocked payee VPAs",
+    "description": "List the user's currently-blocked payee VPAs, newest first, keyset-paginated.",
+    "operationId": "onboarding#listBlockedPayeeVPAs",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ListVPAsRequestBody"
+       },
+       "example": {
+        "cursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "deviceId": "device-abc-123",
+        "limit": 20,
+        "mobile": "919999999999"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BlockedPayeeListResponse"
+        },
+        "example": {
+         "blockedPayees": [
+          {
+           "blockedAt": "2026-07-09T12:00:00Z",
+           "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "payeeVpa": "merchant@otherbank",
+           "status": "blocked",
+           "unblockedAt": "2026-07-09T12:30:00Z"
+          },
+          {
+           "blockedAt": "2026-07-09T12:00:00Z",
+           "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "payeeVpa": "merchant@otherbank",
+           "status": "blocked",
+           "unblockedAt": "2026-07-09T12:30:00Z"
+          },
+          {
+           "blockedAt": "2026-07-09T12:00:00Z",
+           "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+           "payeeVpa": "merchant@otherbank",
+           "status": "blocked",
+           "unblockedAt": "2026-07-09T12:30:00Z"
+          }
+         ],
+         "nextCursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user is not in a valid state for this operation.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "BadRequestError": {
+    "type": "object",
+    "properties": {
+     "code": {
+      "type": "string",
+      "description": "Machine-readable error code from the published dictionary.",
+      "example": "invalid-request",
+      "enum": [
+       "invalid-request",
+       "missing-parameter",
+       "invalid-program",
+       "invalid-vpa",
+       "invalid-handle"
+      ]
+     },
+     "message": {
+      "type": "string",
+      "description": "Human-readable description of the error.",
+      "example": "A required parameter is missing or invalid."
+     },
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     }
+    },
+    "example": {
+     "code": "invalid-request",
+     "message": "A required parameter is missing or invalid.",
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    },
+    "required": [
+     "traceId",
+     "code",
+     "message"
+    ]
+   },
+   "BindingStatusResponse": {
+    "type": "object",
+    "properties": {
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "user": {
+      "$ref": "#/components/schemas/UserView"
+     }
+    },
+    "example": {
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "user": {
+      "deviceId": "device-abc-123",
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "mobile": "919999999999",
+      "status": "active"
+     }
+    },
+    "required": [
+     "traceId",
+     "user"
+    ]
+   },
+   "BindingTokenResponse": {
+    "type": "object",
+    "properties": {
+     "smsBody": {
+      "type": "string",
+      "description": "The ready-to-send silent-SMS body. The app sends this verbatim to the VMN; the token is embedded here and is never returned separately.",
+      "example": "VERIFY SETqxf8aemkxxdrhbifd4n4zldq7guvxb2k"
+     },
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "vmn": {
+      "type": "string",
+      "description": "The Virtual Mobile Number to send the SMS to.",
+      "example": "919900000001"
+     }
+    },
+    "example": {
+     "smsBody": "VERIFY SETqxf8aemkxxdrhbifd4n4zldq7guvxb2k",
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "vmn": "919900000001"
+    },
+    "required": [
+     "traceId",
+     "vmn",
+     "smsBody"
+    ]
+   },
+   "BlockPayeeVPARequestBody": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     },
+     "payeeVpa": {
+      "type": "string",
+      "description": "The external payee VPA to block or unblock (prefix@handle; any handle).",
+      "example": "merchant@otherbank"
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "mobile": "919999999999",
+     "payeeVpa": "merchant@otherbank"
+    },
+    "required": [
+     "deviceId",
+     "mobile",
+     "payeeVpa"
+    ]
+   },
+   "BlockedPayeeListResponse": {
+    "type": "object",
+    "properties": {
+     "blockedPayees": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/BlockedPayeeView"
+      },
+      "description": "This page of the user's currently-blocked payee VPAs (newest-added first); empty when none.",
+      "example": [
+       {
+        "blockedAt": "2026-07-09T12:00:00Z",
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "payeeVpa": "merchant@otherbank",
+        "status": "blocked",
+        "unblockedAt": "2026-07-09T12:30:00Z"
+       },
+       {
+        "blockedAt": "2026-07-09T12:00:00Z",
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "payeeVpa": "merchant@otherbank",
+        "status": "blocked",
+        "unblockedAt": "2026-07-09T12:30:00Z"
+       },
+       {
+        "blockedAt": "2026-07-09T12:00:00Z",
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "payeeVpa": "merchant@otherbank",
+        "status": "blocked",
+        "unblockedAt": "2026-07-09T12:30:00Z"
+       }
+      ]
+     },
+     "nextCursor": {
+      "type": "string",
+      "description": "Cursor for the next page; absent on the last page.",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     }
+    },
+    "example": {
+     "blockedPayees": [
+      {
+       "blockedAt": "2026-07-09T12:00:00Z",
+       "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "payeeVpa": "merchant@otherbank",
+       "status": "blocked",
+       "unblockedAt": "2026-07-09T12:30:00Z"
+      },
+      {
+       "blockedAt": "2026-07-09T12:00:00Z",
+       "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "payeeVpa": "merchant@otherbank",
+       "status": "blocked",
+       "unblockedAt": "2026-07-09T12:30:00Z"
+      },
+      {
+       "blockedAt": "2026-07-09T12:00:00Z",
+       "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "payeeVpa": "merchant@otherbank",
+       "status": "blocked",
+       "unblockedAt": "2026-07-09T12:30:00Z"
+      }
+     ],
+     "nextCursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    },
+    "required": [
+     "traceId",
+     "blockedPayees"
+    ]
+   },
+   "BlockedPayeeView": {
+    "type": "object",
+    "properties": {
+     "blockedAt": {
+      "type": "string",
+      "description": "When the payee was most recently blocked (RFC3339).",
+      "example": "2026-07-09T12:00:00Z"
+     },
+     "id": {
+      "type": "string",
+      "description": "The blocklist entry id (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "payeeVpa": {
+      "type": "string",
+      "description": "The blocked payee VPA (prefix@handle).",
+      "example": "merchant@otherbank"
+     },
+     "status": {
+      "type": "string",
+      "description": "blocked or unblocked.",
+      "example": "blocked"
+     },
+     "unblockedAt": {
+      "type": "string",
+      "description": "When the payee was unblocked (RFC3339); absent while blocked.",
+      "example": "2026-07-09T12:30:00Z"
+     }
+    },
+    "example": {
+     "blockedAt": "2026-07-09T12:00:00Z",
+     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "payeeVpa": "merchant@otherbank",
+     "status": "blocked",
+     "unblockedAt": "2026-07-09T12:30:00Z"
+    },
+    "required": [
+     "id",
+     "payeeVpa",
+     "status"
+    ]
+   },
+   "CheckVPARequestBody": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     },
+     "programId": {
+      "type": "string",
+      "description": "Optional program id (ULID). Validated when supplied.",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "vpa": {
+      "type": "string",
+      "description": "The full VPA to check (prefix@handle, e.g. 919999999999-alice@setu). Its prefix must start with the user's mobile number.",
+      "example": "919999999999-alice@setu"
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "mobile": "919999999999",
+     "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "vpa": "919999999999-alice@setu"
+    },
+    "required": [
+     "deviceId",
+     "mobile",
+     "vpa"
+    ]
+   },
+   "CreateProgramRequestBody": {
+    "type": "object",
+    "properties": {
+     "amountLimit": {
+      "type": "integer",
+      "description": "Per-transaction cap, in paise. Omit for no cap.",
+      "example": 500000,
+      "format": "int64"
+     },
+     "code": {
+      "type": "string",
+      "description": "The program's short code — its channel identifier.",
+      "example": "ACME"
+     },
+     "isCreditAllowed": {
+      "type": "boolean",
+      "description": "May wallets on this program receive incoming UPI? Defaults true.",
+      "example": true
+     },
+     "isDebitAllowed": {
+      "type": "boolean",
+      "description": "May wallets on this program pay outgoing UPI? Defaults true.",
+      "example": true
+     },
+     "name": {
+      "type": "string",
+      "description": "The program's display name.",
+      "example": "Acme Wallet"
+     }
+    },
+    "example": {
+     "amountLimit": 500000,
+     "code": "ACME",
+     "isCreditAllowed": true,
+     "isDebitAllowed": true,
+     "name": "Acme Wallet"
+    },
+    "required": [
+     "name",
+     "code"
+    ]
+   },
+   "CreateVPARequestBody": {
+    "type": "object",
+    "properties": {
+     "accountName": {
+      "type": "string",
+      "description": "The account-holder name.",
+      "example": "Alice Doe"
+     },
+     "accountNo": {
+      "type": "string",
+      "description": "The wallet / pool account number.",
+      "example": "99887766554433"
+     },
+     "accountProviderId": {
+      "type": "string",
+      "description": "The account-provider id. Optional when a TPAP default is configured.",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "defaultCredit": {
+      "type": "boolean",
+      "description": "Make this VPA the user's default credit account.",
+      "example": true
+     },
+     "defaultDebit": {
+      "type": "boolean",
+      "description": "Make this VPA the user's default debit account.",
+      "example": true
+     },
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "ifsc": {
+      "type": "string",
+      "description": "The IFSC of the account. Optional when a TPAP default is configured.",
+      "example": "SETU0000001"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     },
+     "otpRequired": {
+      "type": "boolean",
+      "description": "Whether OTP verification is needed to activate the new VPA — set true for Android, false for iOS. When true, the VPA is created pending-verification until an OTP activates it; false (default) creates it active.",
+      "example": false
+     },
+     "programId": {
+      "type": "string",
+      "description": "Optional program id (ULID) — the program this VPA belongs to. Validated when supplied.",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "vpa": {
+      "type": "string",
+      "description": "The full VPA to create (prefix@handle, e.g. 919999999999-alice@setu). Its prefix must start with the user's mobile number.",
+      "example": "919999999999-alice@setu"
+     }
+    },
+    "example": {
+     "accountName": "Alice Doe",
+     "accountNo": "99887766554433",
+     "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "defaultCredit": true,
+     "defaultDebit": true,
+     "deviceId": "device-abc-123",
+     "ifsc": "SETU0000001",
+     "mobile": "919999999999",
+     "otpRequired": false,
+     "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "vpa": "919999999999-alice@setu"
+    },
+    "required": [
+     "deviceId",
+     "mobile",
+     "accountNo",
+     "vpa",
+     "accountName"
+    ]
+   },
+   "CreateVPAResponse": {
+    "type": "object",
+    "properties": {
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "vpa": {
+      "$ref": "#/components/schemas/VpaView"
+     }
+    },
+    "example": {
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "vpa": {
+      "accountName": "Alice Doe",
+      "accountNo": "99887766554433",
+      "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "accountType": "PPIWALLET",
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "ifsc": "SETU0000001",
+      "mobile": "919999999999",
+      "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "status": "active",
+      "vpa": "919999999999-alice@setu"
+     }
+    },
+    "required": [
+     "traceId",
+     "vpa"
+    ]
+   },
+   "GetVPARequestBody": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     },
+     "vpa": {
+      "type": "string",
+      "description": "The full VPA to fetch (prefix@handle, e.g. 919999999999-alice@setu). Its prefix must start with the user's mobile number.",
+      "example": "919999999999-alice@setu"
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "mobile": "919999999999",
+     "vpa": "919999999999-alice@setu"
+    },
+    "required": [
+     "deviceId",
+     "mobile",
+     "vpa"
+    ]
+   },
+   "ListVPAsRequestBody": {
+    "type": "object",
+    "properties": {
+     "cursor": {
+      "type": "string",
+      "description": "The nextCursor from the previous page. Omit for the first page.",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "limit": {
+      "type": "integer",
+      "description": "Max entries to return this page. Omitted or non-positive defaults to 20; clamped to 100.",
+      "example": 20,
+      "format": "int64"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     }
+    },
+    "example": {
+     "cursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "deviceId": "device-abc-123",
+     "limit": 20,
+     "mobile": "919999999999"
+    },
+    "required": [
+     "deviceId",
+     "mobile"
+    ]
+   },
+   "OTPRequestResponse": {
+    "type": "object",
+    "properties": {
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     }
+    },
+    "example": {
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    },
+    "required": [
+     "traceId"
+    ]
+   },
+   "OTPVerifyResponse": {
+    "type": "object",
+    "properties": {
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "user": {
+      "$ref": "#/components/schemas/UserView"
+     },
+     "vpa": {
+      "$ref": "#/components/schemas/VpaView"
+     }
+    },
+    "example": {
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "user": {
+      "deviceId": "device-abc-123",
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "mobile": "919999999999",
+      "status": "active"
+     },
+     "vpa": {
+      "accountName": "Alice Doe",
+      "accountNo": "99887766554433",
+      "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "accountType": "PPIWALLET",
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "ifsc": "SETU0000001",
+      "mobile": "919999999999",
+      "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "status": "active",
+      "vpa": "919999999999-alice@setu"
+     }
+    },
+    "required": [
+     "traceId"
+    ]
+   },
+   "PayeeBlockResponse": {
+    "type": "object",
+    "properties": {
+     "blockedPayee": {
+      "$ref": "#/components/schemas/BlockedPayeeView"
+     },
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     }
+    },
+    "example": {
+     "blockedPayee": {
+      "blockedAt": "2026-07-09T12:00:00Z",
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "payeeVpa": "merchant@otherbank",
+      "status": "blocked",
+      "unblockedAt": "2026-07-09T12:30:00Z"
+     },
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    },
+    "required": [
+     "traceId",
+     "blockedPayee"
+    ]
+   },
+   "PollBindingStatusRequestBody": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "mobile": "919999999999"
+    },
+    "required": [
+     "deviceId",
+     "mobile"
+    ]
+   },
+   "ProgramResponse": {
+    "type": "object",
+    "properties": {
+     "program": {
+      "$ref": "#/components/schemas/ProgramView"
+     },
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     }
+    },
+    "example": {
+     "program": {
+      "amountLimit": 500000,
+      "code": "ACME",
+      "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "isCreditAllowed": true,
+      "isDebitAllowed": true,
+      "name": "Acme Wallet",
+      "status": "active"
+     },
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+    },
+    "required": [
+     "traceId",
+     "program"
+    ]
+   },
+   "ProgramView": {
+    "type": "object",
+    "properties": {
+     "amountLimit": {
+      "type": "integer",
+      "description": "Per-transaction cap, in paise; absent when there is no cap.",
+      "example": 500000,
+      "format": "int64"
+     },
+     "code": {
+      "type": "string",
+      "description": "The program's short code.",
+      "example": "ACME"
+     },
+     "id": {
+      "type": "string",
+      "description": "The program id (ULID); pass it as programId on onboarding calls.",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "isCreditAllowed": {
+      "type": "boolean",
+      "description": "May wallets on this program receive incoming UPI?",
+      "example": true
+     },
+     "isDebitAllowed": {
+      "type": "boolean",
+      "description": "May wallets on this program pay outgoing UPI?",
+      "example": true
+     },
+     "name": {
+      "type": "string",
+      "description": "The program's display name.",
+      "example": "Acme Wallet"
+     },
+     "status": {
+      "type": "string",
+      "description": "active or inactive.",
+      "example": "active"
+     }
+    },
+    "example": {
+     "amountLimit": 500000,
+     "code": "ACME",
+     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "isCreditAllowed": true,
+     "isDebitAllowed": true,
+     "name": "Acme Wallet",
+     "status": "active"
+    },
+    "required": [
+     "id",
+     "name",
+     "isCreditAllowed",
+     "isDebitAllowed",
+     "status"
+    ]
+   },
+   "RequestBindingTokenRequestBody": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     },
+     "os": {
+      "type": "string",
+      "description": "The device OS: android or ios.",
+      "example": "android"
+     },
+     "otpRequired": {
+      "type": "boolean",
+      "description": "Set true for the device-change case where an OTP is needed after SIM binding (e.g. Android). Set false for iOS, or for the new-onboarding / new-VPA case where the OTP happens after VPA creation (gate it on create-vpa's otpRequired instead).",
+      "example": true
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "mobile": "919999999999",
+     "os": "android",
+     "otpRequired": true
+    },
+    "required": [
+     "deviceId",
+     "mobile",
+     "os",
+     "otpRequired"
+    ]
+   },
+   "RequestOTPRequestBody": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     },
+     "vpa": {
+      "type": "string",
+      "description": "Include the VPA to verify a new VPA (new onboarding / new VPA); omit for a device-change OTP (SIM re-binding).",
+      "example": "919999999999-alice@setu"
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "mobile": "919999999999",
+     "vpa": "919999999999-alice@setu"
+    },
+    "required": [
+     "deviceId",
+     "mobile"
+    ]
+   },
+   "UpdateProgramRequestBody": {
+    "type": "object",
+    "properties": {
+     "amountLimit": {
+      "type": "integer",
+      "description": "Per-transaction cap, in paise. Omit for no cap.",
+      "example": 500000,
+      "format": "int64"
+     },
+     "code": {
+      "type": "string",
+      "description": "The program's short code.",
+      "example": "ACME"
+     },
+     "isCreditAllowed": {
+      "type": "boolean",
+      "description": "May wallets on this program receive incoming UPI?",
+      "example": true
+     },
+     "isDebitAllowed": {
+      "type": "boolean",
+      "description": "May wallets on this program pay outgoing UPI?",
+      "example": false
+     },
+     "name": {
+      "type": "string",
+      "description": "The program's display name.",
+      "example": "Acme Wallet"
+     },
+     "status": {
+      "type": "string",
+      "description": "active or inactive.",
+      "example": "inactive"
+     }
+    },
+    "example": {
+     "amountLimit": 500000,
+     "code": "ACME",
+     "isCreditAllowed": true,
+     "isDebitAllowed": false,
+     "name": "Acme Wallet",
+     "status": "inactive"
+    }
+   },
+   "UserView": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "id": {
+      "type": "string",
+      "description": "The user id (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code.",
+      "example": "919999999999"
+     },
+     "status": {
+      "type": "string",
+      "description": "binding-pending | device-bound | otp-pending | active.",
+      "example": "active"
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "mobile": "919999999999",
+     "status": "active"
+    },
+    "required": [
+     "id",
+     "status"
+    ]
+   },
+   "VerifyOTPRequestBody": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     },
+     "otp": {
+      "type": "string",
+      "description": "The OTP the user entered.",
+      "example": "123456"
+     },
+     "vpa": {
+      "type": "string",
+      "description": "Include the VPA to verify a new VPA (new onboarding / new VPA); omit for a device-change OTP (SIM re-binding).",
+      "example": "919999999999-alice@setu"
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "mobile": "919999999999",
+     "otp": "123456",
+     "vpa": "919999999999-alice@setu"
+    },
+    "required": [
+     "deviceId",
+     "mobile",
+     "otp"
+    ]
+   },
+   "VpaCheckResponse": {
+    "type": "object",
+    "properties": {
+     "available": {
+      "type": "boolean",
+      "description": "false means the VPA is already taken by another user's active VPA. A taken VPA is not an error.",
+      "example": true
+     },
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "vpa": {
+      "type": "string",
+      "description": "The full VPA that was checked (prefix@handle).",
+      "example": "919999999999-alice@setu"
+     }
+    },
+    "example": {
+     "available": true,
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "vpa": "919999999999-alice@setu"
+    },
+    "required": [
+     "traceId",
+     "vpa",
+     "available"
+    ]
+   },
+   "VpaListResponse": {
+    "type": "object",
+    "properties": {
+     "nextCursor": {
+      "type": "string",
+      "description": "Cursor for the next page; absent on the last page.",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "vpas": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/VpaView"
+      },
+      "description": "This page of the user's live VPAs (newest-added first); empty when none.",
+      "example": [
+       {
+        "accountName": "Alice Doe",
+        "accountNo": "99887766554433",
+        "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "accountType": "PPIWALLET",
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "ifsc": "SETU0000001",
+        "mobile": "919999999999",
+        "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "status": "active",
+        "vpa": "919999999999-alice@setu"
+       },
+       {
+        "accountName": "Alice Doe",
+        "accountNo": "99887766554433",
+        "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "accountType": "PPIWALLET",
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "ifsc": "SETU0000001",
+        "mobile": "919999999999",
+        "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "status": "active",
+        "vpa": "919999999999-alice@setu"
+       },
+       {
+        "accountName": "Alice Doe",
+        "accountNo": "99887766554433",
+        "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "accountType": "PPIWALLET",
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "ifsc": "SETU0000001",
+        "mobile": "919999999999",
+        "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "status": "active",
+        "vpa": "919999999999-alice@setu"
+       }
+      ]
+     }
+    },
+    "example": {
+     "nextCursor": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "vpas": [
+      {
+       "accountName": "Alice Doe",
+       "accountNo": "99887766554433",
+       "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "accountType": "PPIWALLET",
+       "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "ifsc": "SETU0000001",
+       "mobile": "919999999999",
+       "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "status": "active",
+       "vpa": "919999999999-alice@setu"
+      },
+      {
+       "accountName": "Alice Doe",
+       "accountNo": "99887766554433",
+       "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "accountType": "PPIWALLET",
+       "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "ifsc": "SETU0000001",
+       "mobile": "919999999999",
+       "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "status": "active",
+       "vpa": "919999999999-alice@setu"
+      },
+      {
+       "accountName": "Alice Doe",
+       "accountNo": "99887766554433",
+       "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "accountType": "PPIWALLET",
+       "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "ifsc": "SETU0000001",
+       "mobile": "919999999999",
+       "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+       "status": "active",
+       "vpa": "919999999999-alice@setu"
+      }
+     ]
+    },
+    "required": [
+     "traceId",
+     "vpas"
+    ]
+   },
+   "VpaView": {
+    "type": "object",
+    "properties": {
+     "accountName": {
+      "type": "string",
+      "description": "The account-holder name.",
+      "example": "Alice Doe"
+     },
+     "accountNo": {
+      "type": "string",
+      "description": "The wallet / pool account number.",
+      "example": "99887766554433"
+     },
+     "accountProviderId": {
+      "type": "string",
+      "description": "The account-provider id.",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "accountType": {
+      "type": "string",
+      "description": "The account type (e.g. PPIWALLET).",
+      "example": "PPIWALLET"
+     },
+     "id": {
+      "type": "string",
+      "description": "The VPA id (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "ifsc": {
+      "type": "string",
+      "description": "The IFSC of the account.",
+      "example": "SETU0000001"
+     },
+     "mobile": {
+      "type": "string",
+      "description": "The owner's mobile number, with country code.",
+      "example": "919999999999"
+     },
+     "programId": {
+      "type": "string",
+      "description": "The program the VPA belongs to (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "status": {
+      "type": "string",
+      "description": "active | pending-verification | deregistered.",
+      "example": "active"
+     },
+     "vpa": {
+      "type": "string",
+      "description": "The full VPA, prefix@handle.",
+      "example": "919999999999-alice@setu"
+     }
+    },
+    "example": {
+     "accountName": "Alice Doe",
+     "accountNo": "99887766554433",
+     "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "accountType": "PPIWALLET",
+     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "ifsc": "SETU0000001",
+     "mobile": "919999999999",
+     "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "status": "active",
+     "vpa": "919999999999-alice@setu"
+    },
+    "required": [
+     "id",
+     "vpa"
+    ]
+   }
+  }
+ },
+ "tags": [
+  {
+   "name": "Device binding"
+  },
+  {
+   "name": "OTP verification"
+  },
+  {
+   "name": "VPA management"
+  },
+  {
+   "name": "Programs"
+  },
+  {
+   "name": "Payee blocklist"
+  }
+ ]
+}

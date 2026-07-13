@@ -1,0 +1,46 @@
+---
+sidebar_title: API integration
+page_title: UPI Issuance API integration
+order: 1
+visible_in_sidebar: true
+---
+
+## API integration
+
+A step-by-step walkthrough of each onboarding operation. All routes are under `/api/v1`, all body-carrying routes use [the envelope](/payments/upi-issuance/api-envelope), and `idempotencyKey` is always a header.
+
+- **[Device binding](/payments/upi-issuance/onboarding/api-integration/device-binding)** — generate binding token, the silent SMS, and the `binding-status` poll.
+- **[OTP verification](/payments/upi-issuance/onboarding/api-integration/user-otp)** — `otp/request` and `otp/verify` to activate a VPA on Android.
+- **[VPA management](/payments/upi-issuance/onboarding/api-integration/vpa-management)** — check, create, fetch, list, and deregister VPAs.
+- **[Programs](/payments/upi-issuance/onboarding/api-integration/programs)** — create and update program configuration.
+
+<hr class="tertiary" />
+
+<Callout type="tip">
+  Testing any of these? Every scenario is reproducible on the QA env — see
+  <a href="/payments/upi-issuance/qa-testing"> Testing on QA env</a>.
+</Callout>
+
+## Error responses
+
+Every error, on every endpoint, returns the **same shape** — encrypted in the envelope like any response:
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01J...",
+  "code": "invalid-user-state",
+  "message": "A human-readable description of what went wrong."
+}`}
+</CodeBlockWithCopy>
+
+- The **HTTP status is authoritative** — branch on it first (`4xx`/`5xx` = error).
+- `code` is a **stable machine string** to switch on; `message` is descriptive and may change.
+- `traceId` is on **every** response, success or error. Log it and quote it to Setu when raising an issue.
+
+A `500` with `code: internal-error` means something failed on Setu's side; retry with the same `idempotencyKey`. Each operation's page lists the specific `4xx` codes it can return.
+
+### Next
+
+- **[Device binding](/payments/upi-issuance/onboarding/api-integration/device-binding)** — generate a binding token and prove the SIM.
+
+<WasPageHelpful />

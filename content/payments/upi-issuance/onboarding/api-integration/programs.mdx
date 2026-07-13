@@ -1,0 +1,144 @@
+---
+sidebar_title: Programs
+page_title: UPI Issuance programs
+order: 3
+visible_in_sidebar: true
+---
+
+## Programs
+
+A program is an **engagement channel** through which users are onboarded onto the TPAP / Issuing App and issued a wallet — for example a distinct branded app or offering built on the stack. Each program carries its own configuration: whether wallets on it may pay and receive, and an optional per-transaction limit. A `programId` is optional on the onboarding calls that accept it. It matters most on `create-vpa`, which ties each VPA to the program it was created under so the program's rules apply to that wallet.
+
+Setu can provision a program, or the TPAP / Issuing App can manage its own through these endpoints. Program routes are enveloped like the rest of the onboarding surface.
+
+### The program object
+
+Both endpoints return the program under `program` in this shape:
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `id` | string | The program id (ULID); pass it as `programId` on onboarding calls. |
+| `name` | string | The program's display name. |
+| `code` | string | The program's short code — its channel identifier. |
+| `isCreditAllowed` | boolean | May wallets on this program receive incoming UPI? |
+| `isDebitAllowed` | boolean | May wallets on this program pay outgoing UPI? |
+| `amountLimit` | integer | Per-transaction cap, in paise; absent when there is no cap. |
+| `status` | string | `active` or `inactive`. |
+
+<hr class="primary" />
+
+### Create a program
+
+`POST /api/v1/programs` (enveloped)
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `name` | string | yes | The program's display name. |
+| `code` | string | yes | The program's short code — its channel identifier. |
+| `isCreditAllowed` | boolean | no | May wallets on this program receive incoming UPI? Defaults `true`. |
+| `isDebitAllowed` | boolean | no | May wallets on this program pay outgoing UPI? Defaults `true`. |
+| `amountLimit` | integer | no | Per-transaction cap, in paise. Omit for no cap. |
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "name": "Acme Wallet",
+  "code": "ACME",
+  "isCreditAllowed": true,
+  "isDebitAllowed": true,
+  "amountLimit": 2000000
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `201`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `program` | object | The created program (see [The program object](#the-program-object)). Use its `id` (passed as `programId`) in onboarding calls. |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "program": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "name": "Acme Wallet",
+    "code": "ACME",
+    "isCreditAllowed": true,
+    "isDebitAllowed": true,
+    "amountLimit": 2000000,
+    "status": "active"
+  }
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | The request body is malformed. |
+| 400 | `missing-parameter` | `name` or `code` is missing. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<hr class="tertiary" />
+
+### Update a program
+
+`PATCH /api/v1/programs/{programId}` (enveloped) — only the fields sent change. `programId` is a path parameter.
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `name` | string | no | The program's display name. |
+| `code` | string | no | The program's short code. |
+| `isCreditAllowed` | boolean | no | May wallets on this program receive incoming UPI? |
+| `isDebitAllowed` | boolean | no | May wallets on this program pay outgoing UPI? |
+| `amountLimit` | integer | no | Per-transaction cap, in paise. |
+| `status` | string | no | `active` or `inactive`. An `inactive` program is rejected at the onboarding gate (`400 invalid-program`). |
+
+##### Sample request
+
+For example, deactivate a program:
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "status": "inactive"
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `program` | object | The updated program (see [The program object](#the-program-object)). |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "program": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "name": "Acme Wallet",
+    "code": "ACME",
+    "isCreditAllowed": true,
+    "isDebitAllowed": true,
+    "amountLimit": 2000000,
+    "status": "inactive"
+  }
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | The request body is malformed. |
+| 400 | `missing-parameter` | `programId` is missing. |
+| 404 | `program-not-found` | No program with that `programId`. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+### Next
+
+- **[Device binding](/payments/upi-issuance/onboarding/api-integration/device-binding)** — generate a binding token and start onboarding a user.
+
+<WasPageHelpful />
