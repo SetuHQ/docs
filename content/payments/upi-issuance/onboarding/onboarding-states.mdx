@@ -1,0 +1,59 @@
+---
+sidebar_title: Onboarding states
+page_title: UPI Issuance onboarding states
+order: 0
+visible_in_sidebar: true
+---
+
+## Onboarding states
+
+Onboarding tracks two things, both driven by the TPAP / Issuing App's API calls:
+
+- the **user** — is the device active / is OTP verification pending / is the user active?
+- the onboarded **VPA** — is it usable?
+
+### User states
+
+| Status | Meaning |
+| :--- | :--- |
+| `binding-pending` | The user exists (created at token generation) but the SIM is not yet proven. |
+| `device-bound` | The SIM binding succeeded, but OTP verification is still owed before the user is active. Only reached when `otpRequired: true` was sent during token generation. |
+| `otp-pending` | The OTP has been sent and is awaiting verification. |
+| `active` | The user is fully onboarded. Required before any VPA can be created or used. |
+
+### VPA states
+
+| Status | Meaning |
+| :--- | :--- |
+| `pending-verification` | The VPA is created but OTP verification is still owed before it can transact. |
+| `active` | The VPA is verified and usable. |
+| `deregistered` | The VPA was removed. Its prefix becomes reusable. |
+
+### When OTP verification happens
+
+OTP verification is **required for Android** and not needed on iOS. **When** it happens is controlled by the TPAP / Issuing App through the `otpRequired` flag, and Setu respects it:
+
+- To verify OTP **after SIM binding and before VPA creation**, set `otpRequired: true` on the [generate binding token](/payments/upi-issuance/onboarding/api-integration/device-binding) call. The user stays at `device-bound` until an OTP is verified. Use case: a **device change** (no new VPA is created).
+- To verify OTP **after VPA creation**, set `otpRequired: true` on [`create-vpa`](/payments/upi-issuance/onboarding/api-integration/vpa-management). The new VPA stays `pending-verification` until an OTP is verified. Use case: a **new onboarding / new VPA**.
+
+<hr class="tertiary" />
+
+### The two scenarios in detail
+
+#### New onboarding
+
+OTP verification is performed after VPA creation and blocks VPA activation, preventing any transactions on the new VPA until OTP verification is done.
+
+<img src="/upi-issuance/vpa-activation.png" alt="New onboarding: on Android create-vpa creates the VPA pending-verification and an OTP promotes it to active, on iOS the VPA is created active directly" />
+
+#### Device change
+
+OTP verification is performed at the user level, right after device binding on the new device. A successful SIM binding leaves the user at `device-bound`, and OTP verification moves the user to `active`. No new VPA is created.
+
+<img src="/upi-issuance/user-activation.png" alt="Device change: on Android binding on the new device leaves the user device-bound and an OTP promotes them to active, on iOS the SIM binding activates the user directly" />
+
+### Next
+
+- **[API integration](/payments/upi-issuance/onboarding/api-integration)** — a step-by-step walkthrough of each operation.
+
+<WasPageHelpful />

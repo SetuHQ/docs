@@ -1,0 +1,184 @@
+---
+sidebar_title: OTP verification
+page_title: UPI Issuance OTP verification
+order: 1
+visible_in_sidebar: true
+---
+
+## OTP verification
+
+Onboarding involves two kinds of OTP. Both use the same `otp/request` + `otp/verify` pair, but they unlock different things and are triggered by different calls:
+
+| Use case | What the OTP unlocks | Triggered by | `vpa` in the request | Verify returns |
+| :--- | :--- | :--- | :--- | :--- |
+| **New onboarding / new VPA** | transacting on the new VPA (`pending-verification → active`) | `otpRequired: true` on `create-vpa` | yes | the now-`active` VPA |
+| **Device change** | transacting from the new device (`device-bound → active`) | `otpRequired: true` on generate binding token | no | the now-`active` user |
+
+<br />
+
+The OTP for a new VPA never changes the user's status. The OTP for a device change never changes a VPA's status. Whether an `otp/request` or `otp/verify` call applies to a VPA or to the user is decided by whether a `vpa` is present in the body.
+
+<hr class="primary" />
+
+## New onboarding / new VPA
+
+A newly created VPA can require an OTP before it can transact. This is **OS-dependent**: on **Android** the OTP is required and the VPA is created `pending-verification`, on **iOS** it is not and the VPA is created `active`. The TPAP / Issuing App signals it by setting `otpRequired` on [`create-vpa`](/payments/upi-issuance/onboarding/api-integration/vpa-management) to match the device OS.
+
+<img src="/upi-issuance/vpa-activation.png" alt="New VPA activation: on Android create-vpa creates the VPA pending-verification and an OTP promotes it to active, on iOS it is created active directly" />
+
+## Device change
+
+When `otpRequired: true` is sent on the [generate binding token](/payments/upi-issuance/onboarding/api-integration/device-binding) call, a successful SIM binding leaves the user at `device-bound` rather than `active`. Requesting the OTP moves the user to `otp-pending`, and a successful verification moves the user to `active`, letting them transact from the new device. This confirms the user is present on the new device.
+
+This is **OS-dependent** — `otpRequired` is `true` on **Android** (the user stops at `device-bound`) and `false` on **iOS** (a successful SIM binding activates the user directly).
+
+<img src="/upi-issuance/user-activation.png" alt="Device change: on Android otpRequired true leaves the user device-bound and an OTP promotes them to active, on iOS the SIM binding activates the user directly" />
+
+<hr class="primary" />
+
+## Request an OTP
+
+`POST /api/v1/onboarding/otp/request` (enveloped) — asynchronous, returns `202`. Setu sends the OTP to the user's mobile by SMS. The OTP is valid for **60 seconds** after it is requested; once it lapses, `otp/verify` returns `410 otp-expired-or-exhausted` and a fresh `otp/request` is needed.
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `vpa` | string | conditional | Include it for the **new onboarding / new VPA** case (the VPA being activated). Omit it for the **device change** case. |
+
+<br />
+
+`idempotencyKey` is an optional request header.
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "vpa": "919999999999-alice@setu"
+}`}
+</CodeBlockWithCopy>
+
+Omit `vpa` for the **device change** case.
+
+##### Success response — `202`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 404 | `vpa-not-found` | A `vpa` was sent but the user does not own a VPA with that string. |
+| 409 | `invalid-user-state` | Not in a state that owes an OTP. The **new onboarding / new VPA** case needs the user `active` and the VPA `pending-verification`. The **device change** case needs the user at `device-bound` or `otp-pending`. |
+| 429 | `otp-cap-exceeded` | Too many OTP requests. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<hr class="primary" />
+
+## Verify an OTP
+
+`POST /api/v1/onboarding/otp/verify` (enveloped)
+
+| Field | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `deviceId` | string | yes | The user's device id. |
+| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `otp` | string | yes | The digits the user entered. |
+| `vpa` | string | conditional | Include it for the **new onboarding / new VPA** case (the VPA being activated). Omit it for the **device change** case. |
+
+<br />
+
+`idempotencyKey` is an optional request header. One attempt per OTP — a wrong guess consumes it, so a retry must `otp/request` again.
+
+##### Sample request
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "deviceId": "device-abc-123",
+  "mobile": "919999999999",
+  "otp": "123456",
+  "vpa": "919999999999-alice@setu"
+}`}
+</CodeBlockWithCopy>
+
+##### Success response — `200`
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `traceId` | string | Trace handle for this call (ULID). |
+| `vpa` | object | Present for the **new onboarding / new VPA** case — the now-`active` VPA (see [The VPA object](/payments/upi-issuance/onboarding/api-integration/vpa-management#the-vpa-object)). |
+| `user` | object | Present for the **device change** case — the now-`active` user (see [The user object](/payments/upi-issuance/onboarding/api-integration/device-binding#the-user-object)). |
+
+Exactly one of `vpa` or `user` is present.
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "vpa": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "vpa": "919999999999-alice@setu",
+    "status": "active",
+    "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "accountNo": "99887766554433",
+    "accountProviderId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "ifsc": "SETU0000001",
+    "accountType": "PPIWALLET",
+    "accountName": "Alice Doe",
+    "mobile": "919999999999"
+  }
+}`}
+</CodeBlockWithCopy>
+
+The **device change** case returns the user instead:
+
+<CodeBlockWithCopy language="json">
+    {`{
+  "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "user": {
+    "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "status": "active",
+    "deviceId": "device-abc-123",
+    "mobile": "919999999999"
+  }
+}`}
+</CodeBlockWithCopy>
+
+##### Errors
+
+| Status | Code | When |
+| :--- | :--- | :--- |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
+| 400 | `missing-parameter` | `otp` is missing. |
+| 401 | `device-not-linked` | This device is not bound for this user. |
+| 401 | `invalid-otp` | The OTP is incorrect. The attempt is consumed. |
+| 404 | `user-not-found` | No user for this mobile. |
+| 409 | `invalid-user-state` | Not in a state that owes an OTP. The **new onboarding / new VPA** case needs the user `active` and the VPA `pending-verification`. The **device change** case needs the user at `device-bound` or `otp-pending`. |
+| 410 | `otp-expired-or-exhausted` | No live OTP to verify — never requested, expired, or already consumed. |
+| 500 | `internal-error` | Something went wrong on Setu's side. |
+
+<br />
+
+<Callout type="tip">
+  On the QA env there is no telecom, so no OTP SMS is sent. Set <code>idempotencyKey: sim.otp-ok</code>
+  on <code>otp/verify</code> to pass with any code — see
+  <a href="/payments/upi-issuance/qa-testing"> Testing on QA env</a>.
+</Callout>
+
+### Next
+
+- **[VPA management](/payments/upi-issuance/onboarding/api-integration/vpa-management)** — create and manage VPAs.
+
+<WasPageHelpful />
