@@ -24,7 +24,7 @@ The OTP for a new VPA never changes the user's status. The OTP for a device chan
 
 A newly created VPA can require an OTP before it can transact. This is **OS-dependent**: on **Android** the OTP is required and the VPA is created `pending-verification`, on **iOS** it is not and the VPA is created `active`. The TPAP / Issuing App signals it by setting `otpRequired` on [`create-vpa`](/payments/upi-issuance/onboarding/api-integration/vpa-management) to match the device OS.
 
-<img src="/upi-issuance/vpa-activation.png" alt="New VPA activation: on Android create-vpa creates the VPA pending-verification and an OTP promotes it to active, on iOS it is created active directly" />
+<img src="https://docs-assets.setu.co/latest/payments/upi-issuance/vpa-activation.png" alt="New VPA activation: on Android create-vpa creates the VPA pending-verification and an OTP promotes it to active, on iOS it is created active directly" />
 
 ## Device change
 
@@ -32,7 +32,7 @@ When `otpRequired: true` is sent on the [generate binding token](/payments/upi-i
 
 This is **OS-dependent** — `otpRequired` is `true` on **Android** (the user stops at `device-bound`) and `false` on **iOS** (a successful SIM binding activates the user directly).
 
-<img src="/upi-issuance/user-activation.png" alt="Device change: on Android otpRequired true leaves the user device-bound and an OTP promotes them to active, on iOS the SIM binding activates the user directly" />
+<img src="https://docs-assets.setu.co/latest/payments/upi-issuance/user-activation.png" alt="Device change: on Android otpRequired true leaves the user device-bound and an OTP promotes them to active, on iOS the SIM binding activates the user directly" />
 
 <hr class="primary" />
 
@@ -42,13 +42,13 @@ This is **OS-dependent** — `otpRequired` is `true` on **Android** (the user st
 
 | Field | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `deviceId` | string | yes | The user's device id. |
-| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
-| `vpa` | string | conditional | Include it for the **new onboarding / new VPA** case (the VPA being activated). Omit it for the **device change** case. |
+| `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
+| `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
+| `vpa` | string | conditional | Include it for the **new onboarding / new VPA** case (the VPA being activated). Omit it for the **device change** case. When present: `prefix@handle`, max 255 characters — `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. |
 
 <br />
 
-`idempotencyKey` is an optional request header.
+`idempotencyKey` is an optional request header (opaque, up to 128 characters).
 
 ##### Sample request
 
@@ -78,7 +78,7 @@ Omit `vpa` for the **device change** case.
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing or fails format validation (e.g. `mobile` not 12 digits, a malformed `vpa`), or the request body is malformed. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 404 | `user-not-found` | No user for this mobile. |
 | 404 | `vpa-not-found` | A `vpa` was sent but the user does not own a VPA with that string. |
@@ -94,10 +94,10 @@ Omit `vpa` for the **device change** case.
 
 | Field | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `deviceId` | string | yes | The user's device id. |
-| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
-| `otp` | string | yes | The digits the user entered. |
-| `vpa` | string | conditional | Include it for the **new onboarding / new VPA** case (the VPA being activated). Omit it for the **device change** case. |
+| `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
+| `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
+| `otp` | string | yes | The 6-digit code the user entered — `^[0-9]{6}$`. |
+| `vpa` | string | conditional | Include it for the **new onboarding / new VPA** case (the VPA being activated). Omit it for the **device change** case. When present: `prefix@handle`, max 255 characters — `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. |
 
 <br />
 
@@ -160,8 +160,7 @@ The **device change** case returns the user instead:
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
-| 400 | `missing-parameter` | `otp` is missing. |
+| 400 | `invalid-request` | `deviceId`, `mobile`, or `otp` is missing or fails format validation (`otp` must be 6 digits, `mobile` 12 digits), or the request body is malformed. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 401 | `invalid-otp` | The OTP is incorrect. The attempt is consumed. |
 | 404 | `user-not-found` | No user for this mobile. |
