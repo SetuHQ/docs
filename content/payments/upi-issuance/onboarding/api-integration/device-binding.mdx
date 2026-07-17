@@ -9,7 +9,7 @@ visible_in_sidebar: true
 
 Device binding proves that the user's SIM, mobile number, and device belong together. It is the entry point on any device — a fresh install, a new phone, or a re-login.
 
-<img src="/upi-issuance/device-binding.png" alt="Device binding sequence: binding token, silent SMS from the SIM to the VMN, and the binding-status poll to active" />
+<img src="https://docs-assets.setu.co/latest/payments/upi-issuance/device-binding.png" alt="Device binding sequence: binding token, silent SMS from the SIM to the VMN, and the binding-status poll to active" />
 
 ### 1. Generate a binding token
 
@@ -17,8 +17,8 @@ Device binding proves that the user's SIM, mobile number, and device belong toge
 
 | Field | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `deviceId` | string | yes | The user's device id. |
-| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
+| `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
 | `os` | string | yes | `android` or `ios`. |
 | `otpRequired` | boolean | yes | Whether a successful SIM binding fully activates the user. `false` — the user goes straight to `active`. `true` — the user stops at `device-bound` until an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) is verified. |
 
@@ -62,7 +62,7 @@ Device binding proves that the user's SIM, mobile number, and device belong toge
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | A required field is missing (`deviceId`, `mobile`, `os`, `otpRequired`) or the request body is malformed. |
+| 400 | `invalid-request` | A required field is missing (`deviceId`, `mobile`, `os`, `otpRequired`), a field fails format validation (e.g. `mobile` is not 12 digits, `os` is not `android`/`ios`), or the request body is malformed. |
 | 429 | `device-binding-cap-exceeded` | Too many binding attempts for this device today. |
 | 429 | `mobile-binding-cap-exceeded` | Too many binding attempts for this mobile today. |
 | 500 | `internal-error` | Something went wrong on Setu's side. Retry with the same `idempotencyKey`. |
@@ -86,12 +86,12 @@ The binding token is short-lived — it expires **45 seconds** after it is gener
 
 | Field | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `deviceId` | string | yes | The user's device id. |
-| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
+| `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
 
 <br />
 
-`idempotencyKey` is an optional request header.
+`idempotencyKey` is an optional request header (opaque, up to 128 characters).
 
 ##### Sample request
 
@@ -127,7 +127,7 @@ Poll until the status settles. With `otpRequired: false` a successful SIM bindin
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | A required field is missing (`deviceId`, `mobile`) or the request body is malformed. |
+| 400 | `invalid-request` | A required field is missing (`deviceId`, `mobile`), a field fails format validation (e.g. `mobile` is not 12 digits), or the request body is malformed. |
 | 404 | `binding-not-found` | No binding for this device — polled before generating a binding token, or from a device that is not the bound one. |
 | 500 | `internal-error` | Something went wrong on Setu's side. |
 
