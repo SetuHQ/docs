@@ -33,11 +33,11 @@ Both endpoints return the program under `program` in this shape:
 
 | Field | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `name` | string | yes | The program's display name. |
-| `code` | string | yes | The program's short code — its channel identifier. |
+| `name` | string | yes | The program's display name. 1–99 characters; letters, digits, spaces and `. ' & -`. |
+| `code` | string | yes | The program's short code — its channel identifier. 1–32 characters; letters, digits, `_` and `-`. |
 | `isCreditAllowed` | boolean | no | May wallets on this program receive incoming UPI? Defaults `true`. |
 | `isDebitAllowed` | boolean | no | May wallets on this program pay outgoing UPI? Defaults `true`. |
-| `amountLimit` | integer | no | Per-transaction cap, in paise. Omit for no cap. |
+| `amountLimit` | integer | no | Per-transaction cap, in paise. Omit for no cap. Integer `≥ 0`. |
 
 ##### Sample request
 
@@ -77,8 +77,7 @@ Both endpoints return the program under `program` in this shape:
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | The request body is malformed. |
-| 400 | `missing-parameter` | `name` or `code` is missing. |
+| 400 | `invalid-request` | `name` or `code` is missing or fails format validation, or the request body is malformed. |
 | 500 | `internal-error` | Something went wrong on Setu's side. |
 
 <hr class="tertiary" />
@@ -89,11 +88,11 @@ Both endpoints return the program under `program` in this shape:
 
 | Field | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `name` | string | no | The program's display name. |
-| `code` | string | no | The program's short code. |
+| `name` | string | no | The program's display name. 1–99 characters; letters, digits, spaces and `. ' & -`. |
+| `code` | string | no | The program's short code. 1–32 characters; letters, digits, `_` and `-`. |
 | `isCreditAllowed` | boolean | no | May wallets on this program receive incoming UPI? |
 | `isDebitAllowed` | boolean | no | May wallets on this program pay outgoing UPI? |
-| `amountLimit` | integer | no | Per-transaction cap, in paise. |
+| `amountLimit` | integer | no | Per-transaction cap, in paise. Integer `≥ 0`. |
 | `status` | string | no | `active` or `inactive`. An `inactive` program is rejected at the onboarding gate (`400 invalid-program`). |
 
 ##### Sample request
@@ -132,9 +131,8 @@ For example, deactivate a program:
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | The request body is malformed. |
-| 400 | `missing-parameter` | `programId` is missing. |
-| 404 | `program-not-found` | No program with that `programId`. |
+| 400 | `invalid-request` | `programId` is not a valid ULID, a body field fails format validation, or the request body is malformed. |
+| 404 | `program-not-found` | No program with that (well-formed) `programId`. |
 | 500 | `internal-error` | Something went wrong on Setu's side. |
 
 ### Next

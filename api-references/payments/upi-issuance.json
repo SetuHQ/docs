@@ -27,6 +27,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -358,6 +359,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -641,6 +643,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -944,6 +947,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -1195,6 +1199,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -1385,7 +1390,8 @@
            "description": "Machine-readable error code.",
            "enum": [
             "invalid-user-state",
-            "vpa-taken"
+            "vpa-taken",
+            "vpa-account-mismatch"
            ],
            "example": "invalid-user-state"
           },
@@ -1464,6 +1470,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -1724,6 +1731,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -1996,6 +2004,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -2384,6 +2393,7 @@
       "required": true,
       "schema": {
        "type": "string",
+       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
        "description": "The program to update (ULID).",
        "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
       },
@@ -2565,6 +2575,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -2818,6 +2829,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -3072,6 +3084,7 @@
       "allowEmptyValue": true,
       "schema": {
        "type": "string",
+       "maxLength": 128,
        "description": "Optional client-generated idempotency key for safe retries.",
        "example": "req-8f3a2b1c"
       },
@@ -3426,16 +3439,22 @@
     "properties": {
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      },
      "payeeVpa": {
       "type": "string",
+      "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
+      "minLength": 1,
+      "maxLength": 255,
       "description": "The external payee VPA to block or unblock (prefix@handle; any handle).",
       "example": "merchant@otherbank"
      }
@@ -3574,21 +3593,28 @@
     "properties": {
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      },
      "programId": {
       "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
       "description": "Optional program id (ULID). Validated when supplied.",
       "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
      },
      "vpa": {
       "type": "string",
+      "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
+      "minLength": 1,
+      "maxLength": 255,
       "description": "The full VPA to check (prefix@handle, e.g. 919999999999-alice@setu). Its prefix must start with the user's mobile number.",
       "example": "919999999999-alice@setu"
      }
@@ -3610,12 +3636,16 @@
     "properties": {
      "amountLimit": {
       "type": "integer",
+      "format": "int64",
+      "minimum": 0,
       "description": "Per-transaction cap, in paise. Omit for no cap.",
-      "example": 500000,
-      "format": "int64"
+      "example": 500000
      },
      "code": {
       "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 32,
       "description": "The program's short code — its channel identifier.",
       "example": "ACME"
      },
@@ -3631,6 +3661,9 @@
      },
      "name": {
       "type": "string",
+      "pattern": "^[A-Za-z0-9 .'&-]+$",
+      "minLength": 1,
+      "maxLength": 99,
       "description": "The program's display name.",
       "example": "Acme Wallet"
      }
@@ -3652,16 +3685,21 @@
     "properties": {
      "accountName": {
       "type": "string",
+      "pattern": "^[A-Za-z0-9 .'&-]+$",
+      "minLength": 1,
+      "maxLength": 99,
       "description": "The account-holder name.",
       "example": "Alice Doe"
      },
      "accountNo": {
       "type": "string",
+      "pattern": "^[A-Z0-9]{6,18}$",
       "description": "The wallet / pool account number.",
       "example": "99887766554433"
      },
      "accountProviderId": {
       "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
       "description": "The account-provider id. Optional when a TPAP default is configured.",
       "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
      },
@@ -3677,16 +3715,20 @@
      },
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
      "ifsc": {
       "type": "string",
+      "pattern": "^[A-Z]{4}0[A-Z0-9]{6}$",
       "description": "The IFSC of the account. Optional when a TPAP default is configured.",
       "example": "SETU0000001"
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      },
@@ -3697,11 +3739,15 @@
      },
      "programId": {
       "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
       "description": "Optional program id (ULID) — the program this VPA belongs to. Validated when supplied.",
       "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
      },
      "vpa": {
       "type": "string",
+      "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
+      "minLength": 1,
+      "maxLength": 255,
       "description": "The full VPA to create (prefix@handle, e.g. 919999999999-alice@setu). Its prefix must start with the user's mobile number.",
       "example": "919999999999-alice@setu"
      }
@@ -3764,16 +3810,22 @@
     "properties": {
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      },
      "vpa": {
       "type": "string",
+      "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
+      "minLength": 1,
+      "maxLength": 255,
       "description": "The full VPA to fetch (prefix@handle, e.g. 919999999999-alice@setu). Its prefix must start with the user's mobile number.",
       "example": "919999999999-alice@setu"
      }
@@ -3799,6 +3851,8 @@
      },
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
@@ -3810,6 +3864,7 @@
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      }
@@ -3913,11 +3968,14 @@
     "properties": {
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      }
@@ -4022,16 +4080,23 @@
     "properties": {
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      },
      "os": {
       "type": "string",
+      "enum": [
+       "android",
+       "ios"
+      ],
       "description": "The device OS: android or ios.",
       "example": "android"
      },
@@ -4059,16 +4124,22 @@
     "properties": {
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      },
      "vpa": {
       "type": "string",
+      "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
+      "minLength": 1,
+      "maxLength": 255,
       "description": "Include the VPA to verify a new VPA (new onboarding / new VPA); omit for a device-change OTP (SIM re-binding).",
       "example": "919999999999-alice@setu"
      }
@@ -4088,12 +4159,16 @@
     "properties": {
      "amountLimit": {
       "type": "integer",
+      "format": "int64",
+      "minimum": 0,
       "description": "Per-transaction cap, in paise. Omit for no cap.",
-      "example": 500000,
-      "format": "int64"
+      "example": 500000
      },
      "code": {
       "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 32,
       "description": "The program's short code.",
       "example": "ACME"
      },
@@ -4109,11 +4184,18 @@
      },
      "name": {
       "type": "string",
+      "pattern": "^[A-Za-z0-9 .'&-]+$",
+      "minLength": 1,
+      "maxLength": 99,
       "description": "The program's display name.",
       "example": "Acme Wallet"
      },
      "status": {
       "type": "string",
+      "enum": [
+       "active",
+       "inactive"
+      ],
       "description": "active or inactive.",
       "example": "inactive"
      }
@@ -4167,21 +4249,28 @@
     "properties": {
      "deviceId": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
       "description": "The user's device id.",
       "example": "device-abc-123"
      },
      "mobile": {
       "type": "string",
+      "pattern": "^[0-9]{12}$",
       "description": "The user's mobile number, with country code (e.g. 919999999999).",
       "example": "919999999999"
      },
      "otp": {
       "type": "string",
+      "pattern": "^[0-9]{6}$",
       "description": "The OTP the user entered.",
       "example": "123456"
      },
      "vpa": {
       "type": "string",
+      "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
+      "minLength": 1,
+      "maxLength": 255,
       "description": "Include the VPA to verify a new VPA (new onboarding / new VPA); omit for a device-change OTP (SIM re-binding).",
       "example": "919999999999-alice@setu"
      }
