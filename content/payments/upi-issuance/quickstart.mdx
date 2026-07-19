@@ -17,15 +17,15 @@ This guide covers the one-time setup the TPAP / Issuing App needs before it can 
 
 <hr class="tertiary" />
 
-### The envelope public key
+### Your keys and credentials
 
-Every request and response body is encrypted with the **API envelope**.
+Every request and response body is encrypted with the **API envelope**, and every request is signed with your client secret.
 
-The TPAP / Issuing App can reach out to Setu to provide the **envelope public key**. With this key, the TPAP / Issuing App is supposed to encrypt each request and decrypt each response.
+The TPAP / Issuing App reaches out to Setu, which provides three things: the **envelope public key** (to encrypt requests and decrypt responses), a **`clientId`**, and a **`clientSecret`** (to sign each request).
 
-The [API envelope](/payments/upi-issuance/api-envelope) page has the full wire format and a copy-paste reference implementation.
+The [API envelope](/payments/upi-issuance/api-envelope) page has the full wire format, the [signing steps](/payments/upi-issuance/api-envelope#signing-the-request), and a copy-paste reference implementation.
 
-For example, a generate binding token request and its response look like this on the wire — the encrypted body (`ct`), the request's one-time key encrypted under Setu's public key (`sk`), and the IV (`iv`):
+For example, a generate binding token request and its response look like this on the wire — the encrypted body (`ct`), the request's one-time key encrypted under Setu's public key (`sk`), the IV (`iv`), your `clientId`, and the request signature (`sig`):
 
 ##### Sample request
 
@@ -33,7 +33,9 @@ For example, a generate binding token request and its response look like this on
     {`{
     "ct": "HBAHaU47cY2pu9+9AkzlAYKr8s4CEDhz…Bn1uIfe9ufHgu1",
     "sk": "hLGbHiL+TbnjYJhCgWtZM8m/yoWb0bHO…DOENEuzVbdFrX4a70A==",
-    "iv": "OTLfPjWZQhMRCIoAsEBAtg=="
+    "iv": "OTLfPjWZQhMRCIoAsEBAtg==",
+    "clientId": "01KTVREBB5BM15AFA8SQBJGRS5",
+    "sig": "k7mS0mHiSx8s0cJ2c3Yb1xkZ0oJc9m8s5eJ8p8b2w4A="
 }`}
 </CodeBlockWithCopy>
 
@@ -52,7 +54,10 @@ The response comes back encrypted under the same key — the encrypted body (`ct
 
 ### Authentication
 
-The TPAP / Issuing App can share its outbound IP address with Setu, and Setu would whitelist that IP. This is how the TPAP / Issuing App is authenticated, so requests must be server-to-server.
+Requests are authenticated two ways, together:
+
+1. **IP whitelisting.** The TPAP / Issuing App shares its outbound IP address with Setu, and Setu whitelists it. Requests must be server-to-server.
+2. **Client-secret signature.** Each request carries your `clientId` and a `sig` — an HMAC of the request payload keyed by your `clientSecret` — so Setu can verify the call is genuinely from you. See [Signing the request](/payments/upi-issuance/api-envelope#signing-the-request). Keep the `clientSecret` on your backend only.
 
 <hr class="primary" />
 
