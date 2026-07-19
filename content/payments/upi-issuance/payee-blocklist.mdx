@@ -29,9 +29,9 @@ Let a user block payee VPAs they never want to transact with. All routes are env
 
 | Field | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `deviceId` | string | yes | The user's device id. |
-| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
-| `payeeVpa` | string | yes | The external payee VPA to block (`prefix@handle`; any handle). |
+| `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
+| `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
+| `payeeVpa` | string | yes | The external payee VPA to block (`prefix@handle`; any handle). Max 255 characters — `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. |
 
 ##### Sample request
 
@@ -66,9 +66,7 @@ Let a user block payee VPAs they never want to transact with. All routes are env
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
-| 400 | `missing-parameter` | `payeeVpa` is missing. |
-| 400 | `invalid-vpa` | `payeeVpa` is not a valid VPA of the form `prefix@handle`. |
+| 400 | `invalid-request` | `deviceId`, `mobile`, or `payeeVpa` is missing or fails format validation (`payeeVpa` must be `prefix@handle`, max 255 characters), or the request body is malformed. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 404 | `user-not-found` | No user for this mobile. |
 | 409 | `invalid-user-state` | The user is not `active`. |
@@ -114,9 +112,7 @@ Let a user block payee VPAs they never want to transact with. All routes are env
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | `deviceId` or `mobile` is missing, or the request body is malformed. |
-| 400 | `missing-parameter` | `payeeVpa` is missing. |
-| 400 | `invalid-vpa` | `payeeVpa` is not a valid VPA of the form `prefix@handle`. |
+| 400 | `invalid-request` | `deviceId`, `mobile`, or `payeeVpa` is missing or fails format validation (`payeeVpa` must be `prefix@handle`, max 255 characters), or the request body is malformed. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 404 | `user-not-found` | No user for this mobile. |
 | 404 | `payee-not-blocked` | That payee VPA is not on the user's blocklist. |
@@ -131,10 +127,10 @@ Let a user block payee VPAs they never want to transact with. All routes are env
 
 | Field | Type | Required | Notes |
 | :--- | :--- | :--- | :--- |
-| `deviceId` | string | yes | The user's device id. |
-| `mobile` | string | yes | The user's mobile number, with country code (e.g. `919999999999`). |
+| `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
+| `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
 | `limit` | integer | no | Max entries this page. Omitted or non-positive defaults to `20`, clamped to `100`. |
-| `cursor` | string | no | The `nextCursor` from the previous page. Omit for the first page. |
+| `cursor` | string | no | The `nextCursor` from the previous page (opaque). Omit for the first page. |
 
 ##### Sample request
 
@@ -173,7 +169,7 @@ Let a user block payee VPAs they never want to transact with. All routes are env
 
 | Status | Code | When |
 | :--- | :--- | :--- |
-| 400 | `invalid-request` | `deviceId` or `mobile` is missing, the request body is malformed, or `cursor` is malformed. |
+| 400 | `invalid-request` | `deviceId` or `mobile` is missing or fails format validation, the request body is malformed, or `cursor` is malformed. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 404 | `user-not-found` | No user for this mobile. |
 | 409 | `invalid-user-state` | The user is not `active`. |

@@ -14,22 +14,40 @@ Every request and response body is encrypted, keeping PII (`deviceId`, `mobile`,
 - **PII in the body.** `deviceId` and `mobile` are in the encrypted body, never in headers or the URL.
 - **`idempotencyKey` in a header.** It stays a plain header, outside the encrypted body.
 - **Reads are POSTs.** Even pure reads (`binding-status`, `list-vpas`) are `POST` so their PII body can be encrypted.
+- **Your credentials sign the request.** Setu issues you a `clientId` and a `clientSecret`. Every request carries your `clientId` and a `sig` (an HMAC of the request payload keyed by your secret) so we can authenticate that the call is really from you — see [Signing the request](#signing-the-request).
 
 <hr class="tertiary" />
 
 ### Request format
 
-The TPAP / Issuing App encrypts the request body into an envelope object with three base64 fields:
+The TPAP / Issuing App encrypts the request body into an envelope object. Alongside the three base64 encryption fields, it carries your `clientId` and the request signature `sig`:
 
 <CodeBlockWithCopy language="json">
     {`{
   "ct": "<base64: AES-256-CBC(PKCS#7) of the JSON body, under a random session key + IV>",
   "sk": "<base64: RSA-OAEP(SHA-1) wrap of the 32-byte session key, under Setu's public key>",
-  "iv": "<base64: the 16-byte AES IV>"
+  "iv": "<base64: the 16-byte AES IV>",
+  "clientId": "<your client id, issued by Setu>",
+  "sig": "<base64: HMAC-SHA256(clientSecret, the plaintext JSON body)>"
 }`}
 </CodeBlockWithCopy>
 
 For each request, the TPAP / Issuing App generates a random **32-byte AES-256 key** and **16-byte IV**, encrypts the JSON body with **AES-256-CBC** and PKCS#7 padding, and wraps the session key with **RSA-OAEP (SHA-1)** under Setu's public key. The TPAP / Issuing App keeps the session key and IV to decrypt the response.
+
+<hr class="tertiary" />
+
+### Signing the request
+
+Setu issues you two credentials: a **`clientId`** and a **`clientSecret`**. On every request you:
+
+1. Set `clientId` to the value Setu gave you.
+2. Compute `sig` = **base64( HMAC-SHA256( clientSecret, plaintext JSON body ) )** — sign the *same* JSON string you encrypt, **before** encryption, using your `clientSecret` as the HMAC key.
+
+Setu verifies the signature after decrypting your request. A missing signature, a signature that does not verify, or a `clientId` that isn't yours is rejected with **`401`** and the error code **`invalid-signature`**.
+
+<Callout type="warning">
+  Keep your `clientSecret` secret: it lives only on your backend, never in a mobile app or browser. Sign on the server, then send the envelope. If you rotate the secret with Setu, the previous secret keeps working through the overlap window so you can cut over without downtime.
+</Callout>
 
 ### Response format
 
@@ -54,22 +72,26 @@ The TPAP / Issuing App decrypts `ct` with the session key and IV, then verifies 
 ### Reference implementation (Python)
 
 <CodeBlockWithCopy language="python">
-    {`import os, json, base64, hashlib
+    {`import os, json, base64, hashlib, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes, serialization
 def _pad(b, k=16): n = k - len(b) % k; return b + bytes([n]) * n
 def _unpad(b): return b[:-b[-1]]
-def encrypt(pub_pem: str, body: dict):
+def encrypt(pub_pem: str, client_id: str, client_secret: str, body: dict):
     pub = serialization.load_pem_public_key(pub_pem.encode())
     key, iv = os.urandom(32), os.urandom(16)
+    plaintext = json.dumps(body).encode()
     sk = pub.encrypt(key, padding.OAEP(mgf=padding.MGF1(hashes.SHA1()),
                                        algorithm=hashes.SHA1(), label=None))
     enc = Cipher(algorithms.AES(key), modes.CBC(iv)).encryptor()
-    ct = enc.update(_pad(json.dumps(body).encode())) + enc.finalize()
+    ct = enc.update(_pad(plaintext)) + enc.finalize()
+    sig = hmac.new(client_secret.encode(), plaintext, hashlib.sha256).digest()
     env = {"ct": base64.b64encode(ct).decode(),
            "sk": base64.b64encode(sk).decode(),
-           "iv": base64.b64encode(iv).decode()}
+           "iv": base64.b64encode(iv).decode(),
+           "clientId": client_id,
+           "sig": base64.b64encode(sig).decode()}
     return env, key, iv
 def decrypt_response(key, iv, enc: dict):
     ct = base64.b64decode(enc["ct"])
@@ -79,7 +101,7 @@ def decrypt_response(key, iv, enc: dict):
     return json.loads(plain)`}
 </CodeBlockWithCopy>
 
-`encrypt()` returns the request envelope `env` — the `{ct, sk, iv}` object — along with the session `key` and `iv`. The TPAP / Issuing App sends `env` as the request body with `Content-Type: application/json`, and passes the same `key` and `iv` to `decrypt_response()` to read the response.
+`encrypt()` signs the plaintext body with your `clientSecret`, then returns the request envelope `env` — the `{ct, sk, iv, clientId, sig}` object — along with the session `key` and `iv`. The TPAP / Issuing App sends `env` as the request body with `Content-Type: application/json`, and passes the same `key` and `iv` to `decrypt_response()` to read the response. The signature is computed over the exact `json.dumps(body)` bytes that are encrypted, so encrypt and sign use the *same* serialization.
 
 ### Next
 
