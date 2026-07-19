@@ -31,7 +31,7 @@ Onboarding tracks two things, both driven by the TPAP / Issuing App's API calls:
 
 ### When OTP verification happens
 
-OTP verification is **required for Android** and not needed on iOS. **When** it happens is controlled by the TPAP / Issuing App through the `otpRequired` flag, and Setu respects it:
+OTP verification is **expected for Android** and not needed on iOS. Both **whether** and **when** it happens are controlled by the TPAP / Issuing App through the `otpRequired` flag, and Setu respects it — the flag is not validated against `os`, so the flow follows whatever the TPAP / Issuing App sends:
 
 - To verify OTP **after SIM binding and before VPA creation**, set `otpRequired: true` on the [generate binding token](/payments/upi-issuance/onboarding/api-integration/device-binding) call. The user stays at `device-bound` until an OTP is verified. Use case: a **device change** (no new VPA is created).
 - To verify OTP **after VPA creation**, set `otpRequired: true` on [`create-vpa`](/payments/upi-issuance/onboarding/api-integration/vpa-management). The new VPA stays `pending-verification` until an OTP is verified. Use case: a **new onboarding / new VPA**.
