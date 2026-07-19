@@ -36,8 +36,8 @@ Once a user is `active`, the TPAP / Issuing App creates and manages their VPAs. 
 | :--- | :--- | :--- | :--- |
 | `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
 | `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
-| `vpa` | string | yes | The VPA to check — the full VPA `prefix@handle` (e.g. `919999999999-alice@setu`), max 255 characters, `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. Its VPA prefix must start with the subscriber's mobile. |
-| `programId` | string | no | A 26-character ULID — `^[0-9A-HJKMNP-TV-Z]{26}$`. Validated for existence when supplied. |
+| `vpa` | string | yes | The VPA to check — the full VPA `prefix@handle` (e.g. `919999999999-acme@setu`), max 255 characters, `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. Its VPA prefix must start with the user's `alias` — by default, the user's mobile number. |
+| `programId` | string | no | A 26-character ULID — `^[0-9A-HJKMNP-TV-Z]{26}$`. Validated for existence when supplied. **Omit** to check without a program. |
 
 ##### Sample request
 
@@ -45,7 +45,7 @@ Once a user is `active`, the TPAP / Issuing App creates and manages their VPAs. 
     {`{
   "deviceId": "device-abc-123",
   "mobile": "919999999999",
-  "vpa": "919999999999-alice@setu"
+  "vpa": "919999999999-acme@setu"
 }`}
 </CodeBlockWithCopy>
 
@@ -60,7 +60,7 @@ Once a user is `active`, the TPAP / Issuing App creates and manages their VPAs. 
 <CodeBlockWithCopy language="json">
     {`{
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  "vpa": "919999999999-alice@setu",
+  "vpa": "919999999999-acme@setu",
   "available": true
 }`}
 </CodeBlockWithCopy>
@@ -71,7 +71,7 @@ Once a user is `active`, the TPAP / Issuing App creates and manages their VPAs. 
 | :--- | :--- | :--- |
 | 400 | `invalid-request` | `deviceId`, `mobile`, or `vpa` is missing or fails format validation, or the request body is malformed. |
 | 400 | `invalid-program` | A well-formed `programId` that is unknown or inactive. |
-| 400 | `invalid-vpa` | The VPA prefix does not start with the subscriber's mobile number. |
+| 400 | `invalid-vpa` | The VPA prefix does not start with the user's alias (by default, their mobile number). |
 | 400 | `invalid-handle` | The VPA carries a handle that is not the one configured for this TPAP. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 404 | `user-not-found` | No user for this mobile. |
@@ -88,19 +88,19 @@ Once a user is `active`, the TPAP / Issuing App creates and manages their VPAs. 
 | :--- | :--- | :--- | :--- |
 | `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
 | `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
-| `vpa` | string | yes | The VPA to create — the full VPA `prefix@handle` (e.g. `919999999999-alice@setu`), max 255 characters, `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. Its VPA prefix must start with the subscriber's mobile. |
+| `vpa` | string | yes | The VPA to create — the full VPA `prefix@handle` (e.g. `919999999999-acme@setu`), max 255 characters, `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. Its VPA prefix must start with the user's `alias` — by default, the user's mobile number. |
 | `accountNo` | string | yes | The wallet / pool account number. 6–18 characters, uppercase letters and digits — `^[A-Z0-9]{6,18}$`. |
 | `accountName` | string | yes | The account-holder name. 1–99 characters; letters, digits, spaces and `. ' & -`. |
-| `otpRequired` | boolean | no | `true` (Android) — the VPA is created `pending-verification` and an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) activates it. `false` (iOS, default) — the VPA is created `active`. |
+| `otpRequired` | boolean | no | `true` (expected for Android) — the VPA is created `pending-verification` and an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) activates it. `false` (expected for iOS) — the VPA is created `active`. Not validated against the device OS. **Defaults to `false`** when omitted. |
 | `ifsc` | string | no | The IFSC of the account — `^[A-Z]{4}0[A-Z0-9]{6}$` (e.g. `SETU0000001`). Optional when a TPAP default is configured. |
 | `accountProviderId` | string | no | The account-provider id — a 26-character ULID (`^[0-9A-HJKMNP-TV-Z]{26}$`). Optional when a TPAP default is configured. |
-| `programId` | string | no | A 26-character ULID — `^[0-9A-HJKMNP-TV-Z]{26}$`. Validated for existence when supplied. |
-| `defaultDebit` | boolean | no | Make this the user's default debit account. |
-| `defaultCredit` | boolean | no | Make this the user's default credit account. |
+| `programId` | string | no | A 26-character ULID — `^[0-9A-HJKMNP-TV-Z]{26}$`. Validated for existence when supplied. **Omit** and the VPA is created without a program. |
+| `defaultDebit` | boolean | no | Make this the user's default debit account. **Defaults to `false`** when omitted. |
+| `defaultCredit` | boolean | no | Make this the user's default credit account. **Defaults to `false`** when omitted. |
 
 The account details are taken from the request. There is no bank round-trip at onboarding.
 
-**Re-linking an existing VPA to a different account.** Re-sending `create-vpa` for a VPA you already hold is idempotent **only when the account details match**. If you re-create an existing active VPA with a **different account**, the call is rejected with `vpa-account-mismatch` (`409`) — deregister the VPA first, then create it against the new account. Setu never silently re-points an active VPA at a different account. This matters when a mobile number is reassigned to a new user: it is the app's / CBS's responsibility to clean up the prior user's VPAs, and this guard ensures an existing VPA cannot be quietly moved to a different account.
+**Re-linking an existing VPA to a different account.** Re-sending `create-vpa` for a VPA the user already holds is idempotent **only when the account details match**. If an existing active VPA is re-created with a **different account**, the call is rejected with `vpa-account-mismatch` (`409`) — deregister the VPA first, then create it against the new account. Setu never silently re-points an active VPA at a different account. This matters when a mobile number is reassigned to a new user: it is the app's / CBS's responsibility to clean up the prior user's VPAs, and this guard ensures an existing VPA cannot be quietly moved to a different account.
 
 ##### Sample request
 
@@ -109,7 +109,7 @@ The account details are taken from the request. There is no bank round-trip at o
   "deviceId": "device-abc-123",
   "mobile": "919999999999",
   "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  "vpa": "919999999999-alice@setu",
+  "vpa": "919999999999-acme@setu",
   "accountNo": "99887766554433",
   "accountName": "Alice Doe",
   "otpRequired": false
@@ -130,7 +130,7 @@ Returns the created VPA; its `status` is `active` or `pending-verification`.
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
   "vpa": {
     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-    "vpa": "919999999999-alice@setu",
+    "vpa": "919999999999-acme@setu",
     "status": "active",
     "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
     "accountNo": "99887766554433",
@@ -150,7 +150,7 @@ Returns the created VPA; its `status` is `active` or `pending-verification`.
 | 400 | `invalid-request` | `deviceId`, `mobile`, `vpa`, `accountNo`, or `accountName` is missing or fails format validation, or the request body is malformed. |
 | 400 | `missing-parameter` | `ifsc` or `accountProviderId` is required (no TPAP default configured) and was not supplied. |
 | 400 | `invalid-program` | Unknown or inactive `programId`. |
-| 400 | `invalid-vpa` | The VPA prefix does not start with the subscriber's mobile number. |
+| 400 | `invalid-vpa` | The VPA prefix does not start with the user's alias (by default, their mobile number). |
 | 400 | `invalid-handle` | The VPA carries a handle that is not the one configured for this TPAP. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 404 | `user-not-found` | No user for this mobile. |
@@ -177,7 +177,7 @@ Returns the created VPA; its `status` is `active` or `pending-verification`.
 | :--- | :--- | :--- | :--- |
 | `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
 | `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
-| `vpa` | string | yes | The VPA to fetch — the full VPA `prefix@handle` (e.g. `919999999999-alice@setu`), max 255 characters, `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. Its VPA prefix must start with the subscriber's mobile. |
+| `vpa` | string | yes | The VPA to fetch — the full VPA `prefix@handle` (e.g. `919999999999-acme@setu`), max 255 characters, `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. Its VPA prefix must start with the user's `alias` — by default, the user's mobile number. |
 
 ##### Sample request
 
@@ -185,7 +185,7 @@ Returns the created VPA; its `status` is `active` or `pending-verification`.
     {`{
   "deviceId": "device-abc-123",
   "mobile": "919999999999",
-  "vpa": "919999999999-alice@setu"
+  "vpa": "919999999999-acme@setu"
 }`}
 </CodeBlockWithCopy>
 
@@ -203,7 +203,7 @@ Returns the VPA under `vpa`.
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
   "vpa": {
     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-    "vpa": "919999999999-alice@setu",
+    "vpa": "919999999999-acme@setu",
     "status": "active",
     "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
     "accountNo": "99887766554433",
@@ -221,7 +221,7 @@ Returns the VPA under `vpa`.
 | Status | Code | When |
 | :--- | :--- | :--- |
 | 400 | `invalid-request` | `deviceId`, `mobile`, or `vpa` is missing or fails format validation, or the request body is malformed. |
-| 400 | `invalid-vpa` | The VPA prefix does not start with the subscriber's mobile number. |
+| 400 | `invalid-vpa` | The VPA prefix does not start with the user's alias (by default, their mobile number). |
 | 400 | `invalid-handle` | The VPA carries a handle that is not the one configured for this TPAP. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 404 | `user-not-found` | No user for this mobile. |
@@ -266,7 +266,7 @@ Returns the VPA under `vpa`.
   "vpas": [
     {
       "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-      "vpa": "919999999999-alice@setu",
+      "vpa": "919999999999-acme@setu",
       "status": "active",
       "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
       "accountNo": "99887766554433",
@@ -301,7 +301,7 @@ Returns the VPA under `vpa`.
 | :--- | :--- | :--- | :--- |
 | `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
 | `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
-| `vpa` | string | yes | The VPA to deregister — the full VPA `prefix@handle` (e.g. `919999999999-alice@setu`), max 255 characters, `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. Its VPA prefix must start with the subscriber's mobile. |
+| `vpa` | string | yes | The VPA to deregister — the full VPA `prefix@handle` (e.g. `919999999999-acme@setu`), max 255 characters, `^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$`. Its VPA prefix must start with the user's `alias` — by default, the user's mobile number. |
 
 ##### Sample request
 
@@ -309,7 +309,7 @@ Returns the VPA under `vpa`.
     {`{
   "deviceId": "device-abc-123",
   "mobile": "919999999999",
-  "vpa": "919999999999-alice@setu"
+  "vpa": "919999999999-acme@setu"
 }`}
 </CodeBlockWithCopy>
 
@@ -327,7 +327,7 @@ Returns the deregistered VPA; its `status` is `deregistered`.
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
   "vpa": {
     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-    "vpa": "919999999999-alice@setu",
+    "vpa": "919999999999-acme@setu",
     "status": "deregistered",
     "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
     "accountNo": "99887766554433",
@@ -345,7 +345,7 @@ Returns the deregistered VPA; its `status` is `deregistered`.
 | Status | Code | When |
 | :--- | :--- | :--- |
 | 400 | `invalid-request` | `deviceId`, `mobile`, or `vpa` is missing or fails format validation, or the request body is malformed. |
-| 400 | `invalid-vpa` | The VPA prefix does not start with the subscriber's mobile number. |
+| 400 | `invalid-vpa` | The VPA prefix does not start with the user's alias (by default, their mobile number). |
 | 400 | `invalid-handle` | The VPA carries a handle that is not the one configured for this TPAP. |
 | 401 | `device-not-linked` | This device is not bound for this user. |
 | 404 | `user-not-found` | No user for this mobile. |

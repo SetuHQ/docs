@@ -14,20 +14,20 @@ Every request and response body is encrypted, keeping PII (`deviceId`, `mobile`,
 - **PII in the body.** `deviceId` and `mobile` are in the encrypted body, never in headers or the URL.
 - **`idempotencyKey` in a header.** It stays a plain header, outside the encrypted body.
 - **Reads are POSTs.** Even pure reads (`binding-status`, `list-vpas`) are `POST` so their PII body can be encrypted.
-- **Your credentials sign the request.** Setu issues you a `clientId` and a `clientSecret`. Every request carries your `clientId` and a `sig` (an HMAC of the request payload keyed by your secret) so we can authenticate that the call is really from you — see [Signing the request](#signing-the-request).
+- **The TPAP / Issuing App's credentials sign the request.** Setu issues the TPAP / Issuing App a `clientId` and a `clientSecret`. Every request carries that `clientId` and a `sig` (an HMAC of the request payload keyed by the client secret) so Setu can authenticate that the call is really from the TPAP / Issuing App — see [Signing the request](#signing-the-request).
 
 <hr class="tertiary" />
 
 ### Request format
 
-The TPAP / Issuing App encrypts the request body into an envelope object. Alongside the three base64 encryption fields, it carries your `clientId` and the request signature `sig`:
+The TPAP / Issuing App encrypts the request body into an envelope object. Alongside the three base64 encryption fields, it carries the TPAP / Issuing App's `clientId` and the request signature `sig`:
 
 <CodeBlockWithCopy language="json">
     {`{
   "ct": "<base64: AES-256-CBC(PKCS#7) of the JSON body, under a random session key + IV>",
   "sk": "<base64: RSA-OAEP(SHA-1) wrap of the 32-byte session key, under Setu's public key>",
   "iv": "<base64: the 16-byte AES IV>",
-  "clientId": "<your client id, issued by Setu>",
+  "clientId": "<client id, issued by Setu>",
   "sig": "<base64: HMAC-SHA256(clientSecret, the plaintext JSON body)>"
 }`}
 </CodeBlockWithCopy>
@@ -38,15 +38,15 @@ For each request, the TPAP / Issuing App generates a random **32-byte AES-256 ke
 
 ### Signing the request
 
-Setu issues you two credentials: a **`clientId`** and a **`clientSecret`**. On every request you:
+Setu issues the TPAP / Issuing App two credentials: a **`clientId`** and a **`clientSecret`**. On every request, the TPAP / Issuing App:
 
-1. Set `clientId` to the value Setu gave you.
-2. Compute `sig` = **base64( HMAC-SHA256( clientSecret, plaintext JSON body ) )** — sign the *same* JSON string you encrypt, **before** encryption, using your `clientSecret` as the HMAC key.
+1. Sets `clientId` to the value Setu issued.
+2. Computes `sig` = **base64( HMAC-SHA256( clientSecret, plaintext JSON body ) )** — signing the *same* JSON string that is encrypted, **before** encryption, using the `clientSecret` as the HMAC key.
 
-Setu verifies the signature after decrypting your request. A missing signature, a signature that does not verify, or a `clientId` that isn't yours is rejected with **`401`** and the error code **`invalid-signature`**.
+Setu verifies the signature after decrypting the request. A missing signature, a signature that does not verify, or a `clientId` that does not belong to the TPAP / Issuing App is rejected with **`401`** and the error code **`invalid-signature`**.
 
 <Callout type="warning">
-  Keep your `clientSecret` secret: it lives only on your backend, never in a mobile app or browser. Sign on the server, then send the envelope. If you rotate the secret with Setu, the previous secret keeps working through the overlap window so you can cut over without downtime.
+  Keep the `clientSecret` secret: it lives only on the TPAP / Issuing App's backend, never in a mobile app or browser. Sign on the server, then send the envelope. If the TPAP / Issuing App rotates the secret with Setu, the previous secret keeps working through the overlap window, so the cut-over happens without downtime.
 </Callout>
 
 ### Response format
@@ -101,7 +101,7 @@ def decrypt_response(key, iv, enc: dict):
     return json.loads(plain)`}
 </CodeBlockWithCopy>
 
-`encrypt()` signs the plaintext body with your `clientSecret`, then returns the request envelope `env` — the `{ct, sk, iv, clientId, sig}` object — along with the session `key` and `iv`. The TPAP / Issuing App sends `env` as the request body with `Content-Type: application/json`, and passes the same `key` and `iv` to `decrypt_response()` to read the response. The signature is computed over the exact `json.dumps(body)` bytes that are encrypted, so encrypt and sign use the *same* serialization.
+`encrypt()` signs the plaintext body with the `clientSecret`, then returns the request envelope `env` — the `{ct, sk, iv, clientId, sig}` object — along with the session `key` and `iv`. The TPAP / Issuing App sends `env` as the request body with `Content-Type: application/json`, and passes the same `key` and `iv` to `decrypt_response()` to read the response. The signature is computed over the exact `json.dumps(body)` bytes that are encrypted, so encrypt and sign use the *same* serialization.
 
 ### Next
 

@@ -17,15 +17,15 @@ This guide covers the one-time setup the TPAP / Issuing App needs before it can 
 
 <hr class="tertiary" />
 
-### Your keys and credentials
+### Keys and credentials
 
-Every request and response body is encrypted with the **API envelope**, and every request is signed with your client secret.
+Every request and response body is encrypted with the **API envelope**, and every request is signed with the TPAP / Issuing App's client secret.
 
 The TPAP / Issuing App reaches out to Setu, which provides three things: the **envelope public key** (to encrypt requests and decrypt responses), a **`clientId`**, and a **`clientSecret`** (to sign each request).
 
 The [API envelope](/payments/upi-issuance/api-envelope) page has the full wire format, the [signing steps](/payments/upi-issuance/api-envelope#signing-the-request), and a copy-paste reference implementation.
 
-For example, a generate binding token request and its response look like this on the wire — the encrypted body (`ct`), the request's one-time key encrypted under Setu's public key (`sk`), the IV (`iv`), your `clientId`, and the request signature (`sig`):
+For example, a generate binding token request and its response look like this on the wire — the encrypted body (`ct`), the request's one-time key encrypted under Setu's public key (`sk`), the IV (`iv`), the `clientId`, and the request signature (`sig`):
 
 ##### Sample request
 
@@ -57,7 +57,7 @@ The response comes back encrypted under the same key — the encrypted body (`ct
 Requests are authenticated two ways, together:
 
 1. **IP whitelisting.** The TPAP / Issuing App shares its outbound IP address with Setu, and Setu whitelists it. Requests must be server-to-server.
-2. **Client-secret signature.** Each request carries your `clientId` and a `sig` — an HMAC of the request payload keyed by your `clientSecret` — so Setu can verify the call is genuinely from you. See [Signing the request](/payments/upi-issuance/api-envelope#signing-the-request). Keep the `clientSecret` on your backend only.
+2. **Client-secret signature.** Each request carries the `clientId` and a `sig` — an HMAC of the request payload keyed by the `clientSecret` — so Setu can verify the call is genuinely from the TPAP / Issuing App. See [Signing the request](/payments/upi-issuance/api-envelope#signing-the-request). Keep the `clientSecret` on the TPAP / Issuing App's backend only.
 
 <hr class="primary" />
 

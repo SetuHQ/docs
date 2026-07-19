@@ -22,7 +22,9 @@ The OTP for a new VPA never changes the user's status. The OTP for a device chan
 
 ## New onboarding / new VPA
 
-A newly created VPA can require an OTP before it can transact. This is **OS-dependent**: on **Android** the OTP is required and the VPA is created `pending-verification`, on **iOS** it is not and the VPA is created `active`. The TPAP / Issuing App signals it by setting `otpRequired` on [`create-vpa`](/payments/upi-issuance/onboarding/api-integration/vpa-management) to match the device OS.
+A newly created VPA can require an OTP before it can transact. The TPAP / Issuing App controls this by setting `otpRequired` on [`create-vpa`](/payments/upi-issuance/onboarding/api-integration/vpa-management): `true` creates the VPA `pending-verification`, `false` creates it `active`.
+
+The expected value is **OS-driven** — `true` on **Android**, `false` on **iOS** — but Setu does not validate `otpRequired` against `os`. The TPAP / Issuing App should send the value that matches the device's OS; the flow follows whatever is sent. See [Choosing the value](/payments/upi-issuance/onboarding/api-integration/device-binding#choosing-the-otprequired-value).
 
 <img src="https://docs-assets.setu.co/latest/payments/upi-issuance/vpa-activation.png" alt="New VPA activation: on Android create-vpa creates the VPA pending-verification and an OTP promotes it to active, on iOS it is created active directly" />
 
@@ -30,7 +32,7 @@ A newly created VPA can require an OTP before it can transact. This is **OS-depe
 
 When `otpRequired: true` is sent on the [generate binding token](/payments/upi-issuance/onboarding/api-integration/device-binding) call, a successful SIM binding leaves the user at `device-bound` rather than `active`. Requesting the OTP moves the user to `otp-pending`, and a successful verification moves the user to `active`, letting them transact from the new device. This confirms the user is present on the new device.
 
-This is **OS-dependent** — `otpRequired` is `true` on **Android** (the user stops at `device-bound`) and `false` on **iOS** (a successful SIM binding activates the user directly).
+The expected value is **OS-driven** — `true` on **Android** (the user stops at `device-bound`) and `false` on **iOS** (a successful SIM binding activates the user directly) — but Setu does not validate `otpRequired` against `os`.
 
 <img src="https://docs-assets.setu.co/latest/payments/upi-issuance/user-activation.png" alt="Device change: on Android otpRequired true leaves the user device-bound and an OTP promotes them to active, on iOS the SIM binding activates the user directly" />
 
@@ -56,7 +58,7 @@ This is **OS-dependent** — `otpRequired` is `true` on **Android** (the user st
     {`{
   "deviceId": "device-abc-123",
   "mobile": "919999999999",
-  "vpa": "919999999999-alice@setu"
+  "vpa": "919999999999-acme@setu"
 }`}
 </CodeBlockWithCopy>
 
@@ -110,7 +112,7 @@ Omit `vpa` for the **device change** case.
   "deviceId": "device-abc-123",
   "mobile": "919999999999",
   "otp": "123456",
-  "vpa": "919999999999-alice@setu"
+  "vpa": "919999999999-acme@setu"
 }`}
 </CodeBlockWithCopy>
 
@@ -129,7 +131,7 @@ Exactly one of `vpa` or `user` is present.
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
   "vpa": {
     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-    "vpa": "919999999999-alice@setu",
+    "vpa": "919999999999-acme@setu",
     "status": "active",
     "programId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
     "accountNo": "99887766554433",
@@ -151,7 +153,8 @@ The **device change** case returns the user instead:
     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
     "status": "active",
     "deviceId": "device-abc-123",
-    "mobile": "919999999999"
+    "mobile": "919999999999",
+    "alias": "919999999999"
   }
 }`}
 </CodeBlockWithCopy>

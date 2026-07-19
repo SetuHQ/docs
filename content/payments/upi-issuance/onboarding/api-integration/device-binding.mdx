@@ -20,7 +20,7 @@ Device binding proves that the user's SIM, mobile number, and device belong toge
 | `deviceId` | string | yes | The user's device id. Non-empty, up to 128 characters. |
 | `mobile` | string | yes | The user's mobile number, with country code — 12 digits, `^[0-9]{12}$` (e.g. `919999999999`). |
 | `os` | string | yes | `android` or `ios`. |
-| `otpRequired` | boolean | yes | Whether a successful SIM binding fully activates the user. `false` — the user goes straight to `active`. `true` — the user stops at `device-bound` until an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) is verified. |
+| `otpRequired` | boolean | yes | Whether a successful SIM binding fully activates the user. `false` — the user goes straight to `active`. `true` — the user stops at `device-bound` until an [OTP](/payments/upi-issuance/onboarding/api-integration/user-otp) is verified. Setu does not validate this against `os` — the flow follows whatever the TPAP / Issuing App sends. See [Choosing the value](#choosing-the-otprequired-value). |
 
 <br />
 
@@ -116,7 +116,8 @@ The binding token is short-lived — it expires **45 seconds** after it is gener
     "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
     "status": "active",
     "deviceId": "device-abc-123",
-    "mobile": "919999999999"
+    "mobile": "919999999999",
+    "alias": "919999999999"
   }
 }`}
 </CodeBlockWithCopy>
@@ -141,6 +142,22 @@ The [binding status](#3-poll-the-binding-status) and a device-change [OTP verifi
 | `status` | string | `binding-pending`, `device-bound`, `otp-pending`, or `active`. |
 | `deviceId` | string | The user's device id. |
 | `mobile` | string | The user's mobile number, with country code (e.g. `919999999999`). |
+| `alias` | string | The prefix of the user's VPAs — they are minted as `<alias>[-suffix]@handle`. Defaults to the user's `mobile`. |
+
+<hr class="primary" />
+
+### Choosing the otpRequired value
+
+`otpRequired` is a flag the TPAP / Issuing App sets, not a property Setu derives. **Setu does not validate it against `os`** — the onboarding flow follows whatever value is sent, for either OS.
+
+These are the values Setu expects the TPAP / Issuing App to send, per current understanding of the OS behaviour:
+
+| `os` | Expected `otpRequired` | Why |
+| :--- | :--- | :--- |
+| `android` | `true` | The OTP is needed to confirm the user is present on the device. |
+| `ios` | `false` | A successful SIM binding is sufficient. |
+
+Sending a value that differs from the table is accepted and changes the flow accordingly — so the TPAP / Issuing App should send the value that matches the device's OS.
 
 <hr class="primary" />
 
