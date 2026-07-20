@@ -18,7 +18,7 @@
     ],
     "summary": "Generate a binding token",
     "description": "Generate a device-binding token: returns the VMN and the ready-to-send silent-SMS body, and starts onboarding for the user's mobile number.",
-    "operationId": "onboarding#requestBindingToken",
+    "operationId": "requestBindingToken",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -191,7 +191,7 @@
     ],
     "summary": "Poll binding status",
     "description": "Poll a user's device-binding status. Returns the user object in its current state.",
-    "operationId": "onboarding#pollBindingStatus",
+    "operationId": "pollBindingStatus",
     "requestBody": {
      "required": true,
      "content": {
@@ -351,7 +351,7 @@
     ],
     "summary": "Request an OTP",
     "description": "Request the user-presence OTP SMS — include the vpa to verify a new VPA (new onboarding / new VPA); omit the vpa for a device change (SIM re-binding). Asynchronous: returns 202; the OTP SMS is sent shortly after.",
-    "operationId": "onboarding#requestOTP",
+    "operationId": "requestOTP",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -635,7 +635,7 @@
     ],
     "summary": "Verify an OTP",
     "description": "Verify the OTP the user entered. Activates what it was requested for — a new VPA (new onboarding / new VPA, vpa in the body) or the user (a device change, no vpa).",
-    "operationId": "onboarding#verifyOTP",
+    "operationId": "verifyOTP",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -940,7 +940,7 @@
     ],
     "summary": "Check VPA availability",
     "description": "Check whether a chosen VPA prefix is available. A taken prefix is not an error.",
-    "operationId": "onboarding#checkVPA",
+    "operationId": "checkVPA",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -1192,7 +1192,7 @@
     ],
     "summary": "Create a VPA",
     "description": "Create a VPA over the user's chosen account. Requires an active user. With otpRequired, the VPA is created pending-verification until an OTP activates it.",
-    "operationId": "onboarding#createVPA",
+    "operationId": "createVPA",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -1463,7 +1463,7 @@
     ],
     "summary": "Get a VPA",
     "description": "Fetch one of the user's VPAs by its VPA string.",
-    "operationId": "onboarding#getVPA",
+    "operationId": "getVPA",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -1724,7 +1724,7 @@
     ],
     "summary": "List VPAs",
     "description": "List the user's live VPAs (active and pending-verification), newest-added first, keyset-paginated.",
-    "operationId": "onboarding#listVPAs",
+    "operationId": "listVPAs",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -1997,7 +1997,7 @@
     ],
     "summary": "Deregister a VPA",
     "description": "Deregister one of the user's VPAs (soft delete; the entry is preserved for audit and re-registration). Idempotent for an already-deregistered VPA.",
-    "operationId": "onboarding#deregisterVPA",
+    "operationId": "deregisterVPA",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -2258,7 +2258,7 @@
     ],
     "summary": "Create a program",
     "description": "Create a program — an engagement channel that VPAs are created under — and return its programId.",
-    "operationId": "onboarding#createProgram",
+    "operationId": "createProgram",
     "requestBody": {
      "required": true,
      "content": {
@@ -2386,7 +2386,7 @@
     ],
     "summary": "Update a program",
     "description": "Update a program's configuration. Only the fields supplied in the body are changed.",
-    "operationId": "onboarding#updateProgram",
+    "operationId": "updateProgram",
     "parameters": [
      {
       "name": "programId",
@@ -2568,7 +2568,7 @@
     ],
     "summary": "Block a payee VPA",
     "description": "Block an external payee VPA for the user. Idempotent; requires an active user.",
-    "operationId": "onboarding#blockPayeeVPA",
+    "operationId": "blockPayeeVPA",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -2822,7 +2822,7 @@
     ],
     "summary": "Unblock a payee VPA",
     "description": "Unblock a previously-blocked payee VPA (soft flip; the entry is preserved). Idempotent for an already-unblocked payee; requires an active user.",
-    "operationId": "onboarding#unblockPayeeVPA",
+    "operationId": "unblockPayeeVPA",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -3077,7 +3077,7 @@
     ],
     "summary": "List blocked payee VPAs",
     "description": "List the user's currently-blocked payee VPAs, newest first, keyset-paginated.",
-    "operationId": "onboarding#listBlockedPayeeVPAs",
+    "operationId": "listBlockedPayeeVPAs",
     "parameters": [
      {
       "name": "idempotencyKey",
@@ -3618,7 +3618,7 @@
       "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
       "minLength": 1,
       "maxLength": 255,
-      "description": "The full VPA to check (prefix@handle, e.g. 919999999999-acme@setu). Its prefix must start with the user's mobile number.",
+      "description": "The full VPA to check (prefix@handle, e.g. 919999999999-acme@setu). Its prefix must start with the user's alias (by default, their mobile number).",
       "example": "919999999999-acme@setu"
      }
     },
@@ -3751,7 +3751,7 @@
       "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
       "minLength": 1,
       "maxLength": 255,
-      "description": "The full VPA to create (prefix@handle, e.g. 919999999999-acme@setu). Its prefix must start with the user's mobile number.",
+      "description": "The full VPA to create (prefix@handle, e.g. 919999999999-acme@setu). Its prefix must start with the user's alias (by default, their mobile number).",
       "example": "919999999999-acme@setu"
      }
     },
@@ -3829,7 +3829,7 @@
       "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
       "minLength": 1,
       "maxLength": 255,
-      "description": "The full VPA to fetch (prefix@handle, e.g. 919999999999-acme@setu). Its prefix must start with the user's mobile number.",
+      "description": "The full VPA to fetch (prefix@handle, e.g. 919999999999-acme@setu). Its prefix must start with the user's alias (by default, their mobile number).",
       "example": "919999999999-acme@setu"
      }
     },
