@@ -25,21 +25,6 @@ The PDF Flow is for clients whose journey starts from a bank-statement PDF. You 
 
 <hr class="primary" />
 
-### Before you start
-
-During onboarding you share the details Signal IQ needs to run the flow for you.
-
-| You provide | Used for |
-|-------------|----------|
-| **Webhook URL** | Where all lifecycle notifications are delivered |
-| **Insights template** | Which insights are generated for you |
-| **Output formats** | Which outputs you receive (JSON, Excel, XML, and so on) |
-| **Parser credentials** | Authenticating your upload requests |
-
-If configuration is missing or incomplete, the upload is rejected and no flow starts.
-
-<hr class="primary" />
-
 ### Upload a bank statement
 
 Upload the PDF via `POST /v1/pdf/:fiu_name/statement`, where `fiu_name` is your client key (for example, `acmebank`). The environment is fixed per deployment.
@@ -77,9 +62,7 @@ On success you receive an HTTP `202` with the upload response.
 
 The `id` field is your `uploadId`. Persist it, as every subsequent webhook for this statement is correlated by it.
 
-<Callout type="note">
-  Uploading the same statement again is safe. Only one flow runs per `uploadId`, a duplicate upload for a flow that is already running is ignored, and only a previously failed run can be restarted.
-</Callout>
+
 
 #### Error cases
 
@@ -329,6 +312,8 @@ Outputs are configured per client. Common formats include Excel (shared as base6
 <Callout type="tip">
   The exact set of outputs (Excel, JSON, XML, and so on) is decided during onboarding. You only receive the outputs you have opted into.
 </Callout>
+
+<br />
 
 If you miss the delivery webhook, the same outputs can be re-fetched later using the polling option, keyed by the `reportId`.
 
