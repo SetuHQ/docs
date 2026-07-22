@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Signal IQ - Setu Insights in JSON",
-    "description": "Fetch the Setu Insights report for a completed Signal IQ run as JSON. The indicators included in this response are configured per client during onboarding.",
+    "title": "Signal IQ API",
+    "description": "Fetch configured Setu Insights outputs after a Signal IQ flow completes successfully. Pass the `reportId` from the terminal success webhook to the endpoint for the format you need.",
     "version": "1.0.0"
   },
   "servers": [
@@ -17,19 +17,191 @@
   ],
   "tags": [
     {
-      "name": "Outputs",
-      "description": "Fetch Signal IQ outputs using reportId"
+      "name": "Setu Insights JSON",
+      "description": "Fetch insights as JSON"
+    },
+    {
+      "name": "Setu Insights Excel",
+      "description": "Fetch insights as Excel"
+    },
+    {
+      "name": "Setu Insights XML",
+      "description": "Fetch insights as XML"
     }
   ],
   "paths": {
     "/v1/insights/{reportId}": {
       "get": {
         "tags": [
-          "Outputs"
+          "Setu Insights JSON"
         ],
         "summary": "Setu Insights in JSON",
         "description": "Fetch the Setu Insights report for a completed Signal IQ run as JSON. The indicators included in this response are configured per client during onboarding.",
         "operationId": "get_signal_iq_insights_json",
+        "parameters": [
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "description": "The reportId from the terminal success webhook",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client identifier",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client secret",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product instance identifier",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "examples": {
+                  "SuccessfulResponse": {
+                    "summary": "SuccessfulResponse",
+                    "value": {}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidReportId"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationError"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReportNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/insights/excel/{reportId}": {
+      "get": {
+        "tags": [
+          "Setu Insights Excel"
+        ],
+        "summary": "Setu Insights in Excel",
+        "description": "Fetch the Setu Insights report for a completed Signal IQ run as Excel. The indicators included in this output are configured per client during onboarding.",
+        "operationId": "get_signal_iq_insights_excel",
+        "parameters": [
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "description": "The reportId from the terminal success webhook",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client identifier",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client secret",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product instance identifier",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "examples": {
+                  "SuccessfulResponse": {
+                    "summary": "SuccessfulResponse",
+                    "value": {}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidReportId"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationError"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReportNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/v1/insights/xml/{reportId}": {
+      "get": {
+        "tags": [
+          "Setu Insights XML"
+        ],
+        "summary": "Setu Insights in XML",
+        "description": "Fetch the Setu Insights report for a completed Signal IQ run as XML. The indicators included in this output are configured per client during onboarding.",
+        "operationId": "get_signal_iq_insights_xml",
         "parameters": [
           {
             "name": "reportId",
