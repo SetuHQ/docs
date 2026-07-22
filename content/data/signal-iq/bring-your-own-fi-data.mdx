@@ -10,7 +10,7 @@ visible_in_sidebar: true
 This flow is for clients who already have financial (FI) data - for example, from their own account aggregator, or from any third-party source - and want to run it through Signal IQ without going through Setu's Account Aggregator or the PDF path.
 
 <Callout type="highlight">
-  You send your FI data to Signal IQ via API. From that point on, Signal IQ owns orchestration, stage notifications, insights generation and output delivery - the same experience as every other flow.
+  You send your FI data to Signal IQ via API. From that point on, Signal IQ owns orchestration, stage notifications, insights generation and output availability via `reportId` - the same experience as every other flow.
 </Callout>
 
 You get the same Signal IQ experience - orchestration, stage notifications, configurable outputs and polling - even when the data does not originate from one of Signal IQ's built-in input channels.
@@ -26,7 +26,7 @@ You get the same Signal IQ experience - orchestration, stage notifications, conf
    - **ingest** it into Setu Insights,
    - **generate insights**,
    - **send stage notifications** to your webhook, and
-   - **deliver your configured outputs**, with polling available for re-fetch.
+   - **hand you a `reportId`** so you can fetch configured outputs via API.
 
 <hr class="primary" />
 
@@ -44,6 +44,8 @@ If your payload is not already in that shape, a client-specific transformation s
 
 ### Notifications and outputs
 
-The lifecycle notifications and output delivery for this flow follow the same model as the other flows - you receive stage updates on your webhook, a `reportId` on success, and your configured outputs (JSON, transformed JSON, XML, Excel, and so on), with polling available to re-fetch. See the <a href="/data/signal-iq/pdf-flow#notifications-you-receive" target="_blank">PDF Flow notifications and outputs</a> for the shared schemas.
+The lifecycle notifications for this flow follow the same model as the other flows - you receive stage updates on your webhook, and a terminal success notification carries the `reportId`.
+
+By default, webhooks deliver status only. Fetch configured outputs (JSON, Excel, XML, and so on) using the Signal IQ APIs. See the <a href="/data/signal-iq/api-reference" target="_blank">API reference</a>. If you want results in the `INSIGHTS_CREATION_SUCCESSFUL` webhook, that can be customised during onboarding - see the <a href="/data/signal-iq/overview#the-experience-is-the-same-across-every-flow" target="_blank">Overview</a>. Notification schemas match the <a href="/data/signal-iq/pdf-flow#notifications-you-receive" target="_blank">PDF Flow notifications</a>.
 
 <WasPageHelpful />

@@ -69,10 +69,10 @@ Under the hood, Signal IQ brings together Setu's <a href="/data/account-aggregat
         Webhooks at every stage.
       </Text>
       <Text weight="400" marginTop="nano" marginBottom="nano">
-        Delivery when outputs are ready.
+        Terminal status with a `reportId`.
       </Text>
       <Text weight="400" marginTop="nano">
-        Polling to re-fetch anytime.
+        Fetch outputs anytime via API.
       </Text>
     </Card>
   </Portion>
@@ -128,23 +128,23 @@ Under the hood, Signal IQ brings together Setu's <a href="/data/account-aggregat
         Get a `reportId` when the flow completes.
       </Text>
       <Text weight="400" marginTop="nano">
-        Receive JSON, Excel, XML, and more.
+        Fetch JSON, Excel, XML via API.
       </Text>
     </Card>
   </Portion>
   <Portion desktopSpan="half" marginBottom="micro">
     <Card padding="small" shape="rounded">
       <Text size="small" weight="600" textColor="slate-60" marginBottom="micro">
-        OUTPUT RECOVERY
+        OUTPUT FETCH
       </Text>
       <Text size="large" weight="600" textColor="blue-90" marginBottom="micro">
-        Outputs recovered
+        Outputs on demand
       </Text>
       <Text weight="400" marginTop="nano" marginBottom="nano">
-        Missed a webhook? Outputs stay available.
+        Use the `reportId` to call the output APIs.
       </Text>
       <Text weight="400" marginTop="nano">
-        Re-fetch anytime with your `reportId`.
+        Re-fetch anytime - no dependency on webhook payloads.
       </Text>
     </Card>
   </Portion>
@@ -205,13 +205,16 @@ Signal IQ supports different entry points depending on where your data comes fro
 No matter which flow you use, the client-facing experience is consistent -
 
 1. **The flow is triggered** - either automatically (AA Flow) or by a single API call from you (PDF Flow, Bring Your Own FI Data).
-2. **Webhook status updates are sent** at each key milestone, so you always know where a request is.
-3. **Final output availability is communicated**, carrying the `reportId` you use to retrieve results.
-4. **Configured outputs are shared** through the delivery mechanism agreed during onboarding.
-5. **A polling option remains available** to re-fetch outputs for reconciliation.
+2. **Webhook status updates are sent** at each key milestone, including `INSIGHTS_CREATION_SUCCESSFUL` with the `reportId` when insights are ready.
+3. **You fetch configured outputs** using the Signal IQ output APIs with that `reportId`.
+4. **You can re-fetch outputs anytime** for reconciliation.
+
+<br />
+
+Webhooks carry status notifications only - the same stage statuses documented in each flow. Use the <a href="/data/signal-iq/api-reference" target="_blank">output APIs</a> to fetch JSON, Excel or XML after you receive `INSIGHTS_CREATION_SUCCESSFUL`.
 
 <Callout type="note">
-  If your server ever misses a webhook delivery, you are never stuck - configured outputs can always be fetched again using the polling option.
+  If you want the report payload included in the last webhook (`INSIGHTS_CREATION_SUCCESSFUL`), this can be customised during onboarding.
 </Callout>
 
 <hr class="primary" />
@@ -225,7 +228,7 @@ Outputs are configured per client during onboarding and can include -
 - XML
 - Excel
 
-Every flow ends by handing you a `reportId`. That id is the single handoff token you use to fetch or receive your configured outputs. The full output schemas are documented within each flow.
+When insights succeed, the webhook carries a `reportId`. Use that id with the <a href="/data/signal-iq/api-reference" target="_blank">API reference</a> endpoints to fetch your configured outputs.
 
 <hr class="primary" />
 
@@ -237,7 +240,7 @@ During onboarding you share the details Signal IQ needs to run the flow for you.
 |-------------|----------|
 | **Webhook URL** | Where all lifecycle notifications are delivered |
 | **Insights template** | Which insights are generated for you |
-| **Output formats** | Which outputs you receive (JSON, Excel, XML, and so on) |
+| **Output formats** | Which outputs you want to fetch (JSON, Excel, XML, and so on) |
 
 <br />
 

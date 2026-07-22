@@ -292,38 +292,18 @@ Step-by-step notifications are configurable per client. They can be switched off
 
 ### Getting your outputs
 
-When you receive `INSIGHTS_CREATION_SUCCESSFUL`, the payload carries a `reportId`. That id is your handoff token - Signal IQ uses it to fetch your configured outputs from Setu Insights and delivers them to you in the shape agreed during onboarding, exactly as in the AA Flow.
+When you receive `INSIGHTS_CREATION_SUCCESSFUL`, the payload carries a `reportId`. That id is your handoff token for fetching configured outputs.
 
-Outputs are configured per client. Common formats include Excel (shared as base64) and JSON. A typical delivery notification looks like this -
+By default, Signal IQ does **not** push the report body in the webhook. Use the Signal IQ output APIs with the `reportId` to fetch JSON, Excel or XML.
 
-<CodeBlockWithCopy language="json">
-{`{
-  "type": "AUTO_DI_DELIVERY",
-  "data": {
-    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
-    "reportId": "7f3e4d5c-1111-2222-3333-444455556666",
-    "status": "INSIGHTS_DELIVERY",
-    "outputs": {
-      "excel": {
-        "available": true,
-        "base64": "<base64 string you can convert to an Excel file>"
-      },
-      "insights": {
-        "available": true,
-        "payload": { "summary": { "income": 145000, "foir": 35.86 } }
-      }
-    }
-  }
-}`}
-</CodeBlockWithCopy>
+See the <a href="/data/signal-iq/api-reference" target="_blank">API reference</a> for the fetch endpoints.
 
 <Callout type="tip">
-  The exact set of outputs (Excel, JSON, XML, and so on) is decided during onboarding. You only receive the outputs you have opted into.
+  If you want the report payload included in the `INSIGHTS_CREATION_SUCCESSFUL` webhook, this can be customised during onboarding. See the <a href="/data/signal-iq/overview#the-experience-is-the-same-across-every-flow" target="_blank">Overview</a>.
 </Callout>
 
 <br />
 
-If you miss the delivery webhook, the same outputs can be re-fetched later using the polling option, keyed by the `reportId`.
 
 <NextPage
   info={{
