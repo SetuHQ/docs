@@ -1,0 +1,290 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Signal IQ - Setu Insights in XML",
+    "description": "Fetch the Setu Insights report for a completed Signal IQ run as XML. The indicators included in this output are configured per client during onboarding.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://autodi-staging.setu.co",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://autodi.setu.co",
+      "description": "Production"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Outputs",
+      "description": "Fetch Signal IQ outputs using reportId"
+    }
+  ],
+  "paths": {
+    "/v1/insights/xml/{reportId}": {
+      "get": {
+        "tags": [
+          "Outputs"
+        ],
+        "summary": "Setu Insights in XML",
+        "description": "Fetch the Setu Insights report for a completed Signal IQ run as XML. The indicators included in this output are configured per client during onboarding.",
+        "operationId": "get_signal_iq_insights_xml",
+        "parameters": [
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "description": "The reportId from the terminal success webhook",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client identifier",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client secret",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product instance identifier",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "examples": {
+                  "SuccessfulResponse": {
+                    "summary": "SuccessfulResponse",
+                    "value": {}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidReportId"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationError"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReportNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "txnid": {
+            "type": "string"
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "InvalidReportId": {
+        "description": "Invalid report id",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "InvalidReportId": {
+                "summary": "InvalidReportId",
+                "value": {
+                  "timestamp": "2025-08-20 11:02:49.657",
+                  "version": "0.78.1",
+                  "txnid": "",
+                  "error": {
+                    "code": "api_invalid_ref_id",
+                    "type": "validation",
+                    "message": "Invalid report id",
+                    "details": {
+                      "param": "reportId",
+                      "http_status": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AuthenticationError": {
+        "description": "Authentication Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "AuthenticationError": {
+                "summary": "AuthenticationError",
+                "value": {
+                  "timestamp": "2025-08-20 11:02:49.657",
+                  "version": "0.78.1",
+                  "txnid": "",
+                  "error": {
+                    "code": "auth_unauthorized",
+                    "type": "auth",
+                    "message": "Unable to fetch FIU config. Please pass `x-client-id`, `x-client-secret`, `x-product-account-id` headers properly.",
+                    "details": {
+                      "http_status": 401
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ReportNotFound": {
+        "description": "Report not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "ReportNotFound": {
+                "summary": "ReportNotFound",
+                "value": {
+                  "timestamp": "2025-08-20 11:02:49.657",
+                  "version": "0.78.1",
+                  "txnid": "",
+                  "error": {
+                    "code": "api_report_not_found",
+                    "type": "validation",
+                    "message": "Unable to find report with id: 293ee9b4-58ad-4e97-9df5-afc65a8b5970",
+                    "details": {
+                      "param": "reportId",
+                      "http_status": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Validation Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "ValidationError": {
+                "summary": "ValidationError",
+                "value": {
+                  "timestamp": "2025-08-20 11:02:49.657",
+                  "version": "0.78.1",
+                  "txnid": "",
+                  "error": {
+                    "code": "api_validation_error",
+                    "type": "validation",
+                    "message": "Request validation failed",
+                    "details": {
+                      "total_errors": 1,
+                      "error_message": [
+                        "field required -> refId"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "InternalServerError": {
+                "summary": "InternalServerError",
+                "value": {
+                  "timestamp": "2025-08-20 11:02:49.657",
+                  "version": "0.78.1",
+                  "txnid": "",
+                  "error": {
+                    "code": "internal_error",
+                    "type": "internal",
+                    "message": "Internal Server Error",
+                    "details": {
+                      "http_status": 500
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

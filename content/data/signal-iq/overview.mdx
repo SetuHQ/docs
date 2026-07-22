@@ -141,10 +141,10 @@ Under the hood, Signal IQ brings together Setu's <a href="/data/account-aggregat
         Outputs on demand
       </Text>
       <Text weight="400" marginTop="nano" marginBottom="nano">
-        Use the `reportId` to call the output APIs.
+        Call the output APIs with `reportId`.
       </Text>
       <Text weight="400" marginTop="nano">
-        Re-fetch anytime - no dependency on webhook payloads.
+        Re-fetch anytime - no webhook dependency.
       </Text>
     </Card>
   </Portion>
@@ -205,30 +205,25 @@ Signal IQ supports different entry points depending on where your data comes fro
 No matter which flow you use, the client-facing experience is consistent -
 
 1. **The flow is triggered** - either automatically (AA Flow) or by a single API call from you (PDF Flow, Bring Your Own FI Data).
-2. **Webhook status updates are sent** at each key milestone, including `INSIGHTS_CREATION_SUCCESSFUL` with the `reportId` when insights are ready.
-3. **You fetch configured outputs** using the Signal IQ output APIs with that `reportId`.
-4. **You can re-fetch outputs anytime** for reconciliation.
-
-<br />
-
-Webhooks carry status notifications only - the same stage statuses documented in each flow. Use the <a href="/data/signal-iq/output-apis" target="_blank">output APIs</a> to fetch JSON, Excel or XML after you receive `INSIGHTS_CREATION_SUCCESSFUL`.
-
-<Callout type="note">
-  If you want the report payload included in the last webhook (`INSIGHTS_CREATION_SUCCESSFUL`), this can be customised during onboarding.
-</Callout>
+2. **Webhook status updates are sent** at each key milestone documented in that flow.
+3. **On success, you receive `INSIGHTS_CREATION_SUCCESSFUL`** with a `reportId`.
+4. **You fetch configured outputs** using that `reportId` - see [Outputs](#outputs) below.
 
 <hr class="primary" />
 
 ### Outputs
 
-Outputs are configured per client during onboarding and can include -
+This is the same across every Signal IQ flow.
 
-- insights JSON
-- custom JSON formats
-- XML
-- Excel
+**Webhooks = status only.** Notifications tell you where the pipeline is. They do not carry the report body by default. When insights succeed, the terminal webhook (`INSIGHTS_CREATION_SUCCESSFUL`) includes a `reportId` - that is your handoff token.
 
-When insights succeed, the webhook carries a `reportId`. Use that id with the <a href="/data/signal-iq/output-apis" target="_blank">API reference</a> endpoints to fetch your configured outputs.
+**Outputs are configured during onboarding.** Depending on your setup, you may fetch insights JSON, custom JSON formats, XML, Excel, and so on.
+
+**Fetch via API.** Pass the `reportId` to the <a href="/data/signal-iq/output-apis" target="_blank">API reference</a> endpoints for the format you need. You can re-fetch anytime for reconciliation.
+
+<Callout type="note">
+  If you want the report payload included in the `INSIGHTS_CREATION_SUCCESSFUL` webhook, that can be customised during onboarding.
+</Callout>
 
 <hr class="primary" />
 
