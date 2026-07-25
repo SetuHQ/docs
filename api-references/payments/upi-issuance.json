@@ -1185,6 +1185,264 @@
     }
    }
   },
+  "/api/v1/onboarding/vpa/resolve": {
+   "post": {
+    "tags": [
+     "VPA management"
+    ],
+    "summary": "Resolve a payee VPA",
+    "description": "Resolve a payee VPA on the payer side. A VPA under our handle is answered immediately from local records; a foreign-handle VPA triggers an async NPCI ReqValAdd and returns PENDING until the result arrives. Poll by repeating this same POST. PENDING is not an error.",
+    "operationId": "resolveVPA",
+    "parameters": [
+     {
+      "name": "idempotencyKey",
+      "in": "header",
+      "description": "Optional client-generated idempotency key for safe retries.",
+      "allowEmptyValue": true,
+      "schema": {
+       "type": "string",
+       "maxLength": 128,
+       "description": "Optional client-generated idempotency key for safe retries.",
+       "example": "req-8f3a2b1c"
+      },
+      "example": "req-8f3a2b1c"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResolveVPARequestBody"
+       },
+       "example": {
+        "deviceId": "device-abc-123",
+        "geocode": "12.9716,77.5946",
+        "mobile": "919999999999",
+        "vpa": "someone@ybl"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VpaResolveResponse"
+        },
+        "example": {
+         "accountType": "SAVINGS",
+         "entityType": "PERSON",
+         "ifsc": "ICIC0000052",
+         "name": "ANI********DEY",
+         "status": "RESOLVED",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+         "verified": true,
+         "verifiedLogo": "https://cdn.example/brandx.png",
+         "verifiedName": "Brand-X",
+         "verifiedUrl": "https://brandx.example",
+         "vpa": "someone@ybl"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Bad request: Bad Request response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-request",
+            "missing-parameter",
+            "invalid-vpa"
+           ],
+           "example": "invalid-request"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-request",
+         "message": "The request could not be parsed.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized: Unauthorized response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "device-not-linked"
+           ],
+           "example": "device-not-linked"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "device-not-linked",
+         "message": "This device is not bound for this user.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found: Not Found response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "user-not-found"
+           ],
+           "example": "user-not-found"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "user-not-found",
+         "message": "No user for this mobile number.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict: Conflict response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "invalid-user-state"
+           ],
+           "example": "invalid-user-state"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "invalid-user-state",
+         "message": "The user has no active VPA to originate a resolution.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Internal server error: Internal Server Error response.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "required": [
+          "traceId",
+          "code",
+          "message"
+         ],
+         "properties": {
+          "code": {
+           "type": "string",
+           "description": "Machine-readable error code.",
+           "enum": [
+            "internal-error"
+           ],
+           "example": "internal-error"
+          },
+          "message": {
+           "type": "string",
+           "description": "Human-readable description of the error."
+          },
+          "traceId": {
+           "type": "string",
+           "description": "Trace handle for this call (ULID)."
+          }
+         }
+        },
+        "example": {
+         "code": "internal-error",
+         "message": "Something went wrong on Setu's side.",
+         "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/onboarding/create-vpa": {
    "post": {
     "tags": [
@@ -3634,6 +3892,50 @@
      "vpa"
     ]
    },
+   "ResolveVPARequestBody": {
+    "type": "object",
+    "properties": {
+     "deviceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The user's device id.",
+      "example": "device-abc-123"
+     },
+     "geocode": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^-?[0-9]{1,3}(\\.[0-9]+)?,-?[0-9]{1,3}(\\.[0-9]+)?$",
+      "description": "Current device geocode as \"lat,long\"; forwarded as the payer device GEOCODE tag.",
+      "example": "12.9716,77.5946"
+     },
+     "mobile": {
+      "type": "string",
+      "pattern": "^[0-9]{12}$",
+      "description": "The user's mobile number, with country code (e.g. 919999999999).",
+      "example": "919999999999"
+     },
+     "vpa": {
+      "type": "string",
+      "pattern": "^([A-Za-z0-9.-]+)@([A-Za-z0-9.-]+)$",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "The payee VPA to resolve (prefix@handle). Resolved locally when the handle is ours, otherwise via an NPCI ReqValAdd.",
+      "example": "someone@ybl"
+     }
+    },
+    "example": {
+     "deviceId": "device-abc-123",
+     "geocode": "12.9716,77.5946",
+     "mobile": "919999999999",
+     "vpa": "someone@ybl"
+    },
+    "required": [
+     "deviceId",
+     "mobile",
+     "vpa"
+    ]
+   },
    "CreateProgramRequestBody": {
     "type": "object",
     "properties": {
@@ -4325,6 +4627,134 @@
      "traceId",
      "vpa",
      "available"
+    ]
+   },
+   "VpaResolveResponse": {
+    "type": "object",
+    "properties": {
+     "accountType": {
+      "type": "string",
+      "description": "The payee's account type. Present on RESOLVED.",
+      "example": "SAVINGS"
+     },
+     "brandName": {
+      "type": "string",
+      "description": "Merchant brand name. Present for a resolved merchant.",
+      "example": "Brand-X"
+     },
+     "entityType": {
+      "type": "string",
+      "description": "The payee entity type: PERSON or ENTITY. Present on RESOLVED.",
+      "example": "PERSON"
+     },
+     "errorCode": {
+      "type": "string",
+      "description": "NPCI error code. Present on FAILED (e.g. ZH for an invalid address).",
+      "example": "ZH"
+     },
+     "errorMessage": {
+      "type": "string",
+      "description": "Human-readable failure reason. Present on FAILED.",
+      "example": "invalid virtual address"
+     },
+     "franchiseName": {
+      "type": "string",
+      "description": "Merchant franchise name. Present for a resolved merchant.",
+      "example": "Brand-X Franchise"
+     },
+     "genre": {
+      "type": "string",
+      "description": "Merchant genre: ONLINE or OFFLINE. Present for a resolved merchant.",
+      "example": "ONLINE"
+     },
+     "ifsc": {
+      "type": "string",
+      "description": "The payee's IFSC. Present on RESOLVED.",
+      "example": "ICIC0000052"
+     },
+     "legalName": {
+      "type": "string",
+      "description": "Merchant legal name. Present for a resolved merchant.",
+      "example": "Acme Pvt Ltd"
+     },
+     "mcc": {
+      "type": "string",
+      "description": "Merchant category code. Present for a resolved merchant.",
+      "example": "5732"
+     },
+     "merchantType": {
+      "type": "string",
+      "description": "Merchant type: SMALL or LARGE. Present for a resolved merchant.",
+      "example": "LARGE"
+     },
+     "name": {
+      "type": "string",
+      "description": "The payee's masked account-holder name. Present on RESOLVED.",
+      "example": "ANI********DEY"
+     },
+     "ownership": {
+      "type": "string",
+      "description": "Merchant ownership type: PROPRIETARY, PARTNERSHIP, PRIVATE, PUBLIC or OTHERS. Present for a resolved merchant.",
+      "example": "PUBLIC"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "RESOLVED",
+       "PENDING",
+       "FAILED"
+      ],
+      "description": "Resolution outcome: RESOLVED (details present), PENDING (poll again), or FAILED (error present).",
+      "example": "RESOLVED"
+     },
+     "traceId": {
+      "type": "string",
+      "description": "Trace handle for this call (ULID).",
+      "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+     },
+     "verified": {
+      "type": "boolean",
+      "description": "Whether the resolved payee VPA is in the verified/whitelisted registry. Present on RESOLVED.",
+      "example": true
+     },
+     "verifiedLogo": {
+      "type": "string",
+      "description": "The registered logo url/ref from the verified registry. Present when verified.",
+      "example": "https://cdn.example/brandx.png"
+     },
+     "verifiedName": {
+      "type": "string",
+      "description": "The registered display name from the verified registry. Present when verified.",
+      "example": "Brand-X"
+     },
+     "verifiedUrl": {
+      "type": "string",
+      "description": "The registered brand/callback url from the verified registry. Present when verified.",
+      "example": "https://brandx.example"
+     },
+     "vpa": {
+      "type": "string",
+      "description": "The payee VPA that was resolved (echo of the request).",
+      "example": "someone@ybl"
+     }
+    },
+    "example": {
+     "accountType": "SAVINGS",
+     "entityType": "PERSON",
+     "ifsc": "ICIC0000052",
+     "name": "ANI********DEY",
+     "status": "RESOLVED",
+     "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+     "verified": true,
+     "verifiedLogo": "https://cdn.example/brandx.png",
+     "verifiedName": "Brand-X",
+     "verifiedUrl": "https://brandx.example",
+     "vpa": "someone@ybl"
+    },
+    "required": [
+     "traceId",
+     "status",
+     "vpa"
     ]
    },
    "VpaListResponse": {
