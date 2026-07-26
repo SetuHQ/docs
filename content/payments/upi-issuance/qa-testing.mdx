@@ -55,32 +55,34 @@ On the QA env there is no telecom, so no OTP SMS is sent. To pass verification, 
 
 On production, resolving a foreign-handle payee returns whatever the payee PSP reports. On the QA env you can pin the resolved values so you can reproduce every shape — a person, a merchant, verified or not, and failures — deterministically. Send an optional `X-Sim-Resolution` header on `POST /vpa/resolve` whose value is a JSON object of the values you expect back. Send it on every poll (it is read on the poll that returns `resolved`).
 
-Every field is optional; anything you leave out falls back to a default, and with no header at all the resolution uses default values. Failures carry no payee detail, so `entityType`, the merchant fields and `verified` apply only to a success.
+Every field is optional; anything you leave out falls back to a default. Failures carry no payee detail, so `entityType`, the merchant fields and `verified` apply only to a success.
 
 | field | meaning | default |
 | :--- | :--- | :--- |
 | `status` | `resolved` or `failed` — the same vocabulary the response carries | `resolved` |
 | `errorCode` | error code returned for a `failed` resolution | `ZH` |
 | `entityType` | `PERSON` or `ENTITY` (a `merchant` block also implies `ENTITY`) | `PERSON` |
-| `name` | account-holder name | a default |
-| `accountType` | e.g. `SAVINGS` / `CURRENT` | a default |
-| `ifsc` | payee IFSC | a default |
-| `merchant.mcc` / `.brandName` / `.legalName` / `.franchiseName` / `.merchantType` / `.genre` / `.ownership` | merchant detail for an `ENTITY` payee | defaults |
+| `name` | account-holder name | `MOCK****PAYEE`, or `BRAND****X` for an `ENTITY` |
+| `accountType` | e.g. `SAVINGS` / `CURRENT` | `SAVINGS`, or `CURRENT` for an `ENTITY` |
+| `ifsc` | payee IFSC | `ICIC0000052` |
+| `merchant.mcc` / `.brandName` / `.legalName` / `.franchiseName` / `.merchantType` / `.genre` / `.ownership` | merchant detail for an `ENTITY` payee | `5732` / `Brand-X` / `Acme Pvt Ltd` / `Brand-X Franchise` / `LARGE` / `ONLINE` / `PUBLIC` |
 | `verified.name` / `.url` / `.logo` | verified/whitelisted enrichment; its presence makes the payee resolve `verified: true` | not verified |
+
+<br />
+
+With **no header at all**, the outcome is driven by the payee VPA itself: an address containing `fail` or `invalid` resolves `failed` with `ZH`, one containing `merchant` or `brand` resolves as an `ENTITY`, and anything else resolves as a `PERSON` — each with the defaults above.
 
 A verified merchant with pinned values:
 
-```bash
-curl https://<qa-host>/api/v1/vpa/resolve \
-  -H 'X-Sim-Resolution: {"entityType":"ENTITY","name":"ACME****PVT","accountType":"CURRENT","ifsc":"HDFC0000123","merchant":{"mcc":"5411","brandName":"MyBrand","legalName":"Acme Pvt Ltd","merchantType":"SMALL"},"verified":{"name":"MyBrand","url":"https://mybrand.example"}}' \
-  -H 'Content-Type: application/json' -d '<enveloped body>'
-```
+<CodeBlockWithCopy language="bash">
+    {`curl https://<qa-host>/api/v1/vpa/resolve -H 'Content-Type: application/json' -H 'X-Sim-Resolution: {"entityType":"ENTITY","name":"ACME****PVT","accountType":"CURRENT","ifsc":"HDFC0000123","merchant":{"mcc":"5411","brandName":"MyBrand","legalName":"Acme Pvt Ltd","merchantType":"SMALL"},"verified":{"name":"MyBrand","url":"https://mybrand.example"}}' -d '<enveloped body>'`}
+</CodeBlockWithCopy>
 
 A forced failure:
 
-```
-X-Sim-Resolution: {"status":"failed","errorCode":"ZH"}
-```
+<CodeBlockWithCopy language="bash">
+    {`X-Sim-Resolution: {"status":"failed","errorCode":"ZH"}`}
+</CodeBlockWithCopy>
 
 <Callout type="note">
   <code>X-Sim-Resolution</code> is honoured only on the QA env. On production the
@@ -119,6 +121,8 @@ Everything else is reproduced with ordinary requests. A sampling:
 | 4 | `create-vpa` | `otpRequired: true` (the Android path) | VPA → `pending-verification` |
 | 5 | `otp/request` | With the VPA | `202` accepted |
 | 6 | `otp/verify` | `idempotencyKey: sim.otp-ok`, with the VPA | VPA → `active` |
+| 7 | `vpa/resolve` | A payee on our handle | `resolved` with the payee details |
+| 8 | `vpa/resolve` | A foreign-handle payee, `X-Sim-Resolution` pinning the values | `pending` on the first call, then `resolved` with the pinned values |
 
 ### Next
 
