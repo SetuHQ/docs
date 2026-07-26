@@ -17,9 +17,9 @@ The `status` field carries the outcome; the HTTP status stays `200` for all thre
 
 | `status` | Meaning |
 | :--- | :--- |
-| `RESOLVED` | The payee is valid; the payee details are included. |
-| `PENDING` | Resolution is in progress — send the same request again to poll. |
-| `FAILED` | The payee VPA could not be resolved; `errorCode` + `errorMessage` explain why. |
+| `RESOLVED` | The payee VPA is valid, and the API response carries the payee VPA details. |
+| `PENDING` | The payee VPA resolution is in progress — send the same request again to poll. |
+| `FAILED` | The payee VPA is invalid, and the API response indicates the failure reason. |
 
 <hr class="primary" />
 
@@ -54,18 +54,18 @@ The `status` field carries the outcome; the HTTP status stays `200` for all thre
 | `traceId` | string | Trace handle for this call (ULID). |
 | `status` | string | `RESOLVED`, `PENDING`, or `FAILED`. |
 | `vpa` | string | The payee VPA that was resolved (echo of the request). |
-| `name` | string | The payee's account-holder name. Present on `RESOLVED`. |
-| `accountType` | string | The payee's account type (e.g. `SAVINGS`). Present on `RESOLVED`. |
-| `ifsc` | string | The payee's IFSC. Present on `RESOLVED`. |
-| `entityType` | string | `PERSON` or `ENTITY` (merchant). Present on `RESOLVED`. |
-| `verified` | boolean | `true` when the payee is a verified / whitelisted address. Present (with the fields below) only when verified. |
-| `verifiedName` | string | The registered display name from the verified registry. |
-| `verifiedLogo` | string | The registered logo url. |
-| `verifiedUrl` | string | The registered brand / callback url. |
+| `name` | string | The payee's account-holder name. Present in the API response in case of successful resolution. |
+| `accountType` | string | The payee's account type (e.g. `SAVINGS`). Present in the API response in case of successful resolution. |
+| `ifsc` | string | The payee's IFSC. Present in the API response in case of successful resolution. |
+| `entityType` | string | `PERSON` for a non-merchant VPA, `ENTITY` for a merchant VPA. Present in the API response in case of successful resolution. |
+| `verified` | boolean | `true` when the payee VPA is a whitelisted / verified VPA. Present in the API response in case of successful resolution. |
+| `verifiedName` | string | The registered display name from the verified registry. Present when the payee VPA is a whitelisted / verified VPA. |
+| `verifiedLogo` | string | The registered logo url. Present when the payee VPA is a whitelisted / verified VPA. |
+| `verifiedUrl` | string | The registered brand url. Present when the payee VPA is a whitelisted / verified VPA. |
 | `errorCode` | string | Network error code (e.g. `ZH`). Present on `FAILED`. |
 | `errorMessage` | string | Human-readable failure reason. Present on `FAILED`. |
 
-A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant block on `RESOLVED`:
+A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant block. These fields are present for a resolved merchant VPA:
 
 | Field | Type | Notes |
 | :--- | :--- | :--- |
