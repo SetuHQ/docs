@@ -175,9 +175,13 @@ The notification is configured **per event**, and the TPAP / Issuing App supplie
 | **Signing key** | A shared secret **chosen by the TPAP / Issuing App**. Setu signs every notification with it, and the same value verifies the signature. Because the TPAP / Issuing App already holds it, no further exchange is needed. Treat it as a credential: min 32 bytes of entropy, and rotate it by sending Setu a new one. |
 | **Client id** | The identifier the TPAP / Issuing App knows Setu by. It is echoed on every notification as `clientId`, so the receiver can select which verification secret to use — useful once it accepts notifications from more than one source. |
 
+<br />
+
 <Callout type="tip">
   This is the <b>mirror image</b> of the inbound direction. For calls <i>to</i> Setu, Setu issues the key material (the envelope public key and the client secret). For Setu's calls <i>to the TPAP / Issuing App</i>, the TPAP / Issuing App issues it. Same crypto, opposite roles — so the receiver runs the code already written for the envelope, with the keys swapped.
 </Callout>
+
+<br />
 
 Send these to the Setu point of contact for each environment. The signing key is stored encrypted and is bound to that environment, so **it cannot be copied between environments**: sandbox and production each need their own.
 
@@ -240,6 +244,8 @@ Validate in this order, and reject as soon as a step fails:
   Verify the signature over the <b>decrypted plaintext</b>, never over the ciphertext, and always <b>after</b> decrypting. This is the same rule Setu applies to inbound requests.
 </Callout>
 
+<br />
+
 **Be idempotent on `(X-Setu-Event, traceId)`.** Delivery is at-least-once: a network failure between Setu sending and recording success causes a retry, so the same notification can arrive more than once. It always carries the same terminal answer, so de-duplicating on that pair is sufficient.
 
 #### How Setu handles the response
@@ -250,6 +256,8 @@ Validate in this order, and reject as soon as a step fails:
 | `5xx`, `408`, `429` | Retries with exponential backoff, up to **3 attempts total** (500 ms, then 1 s). |
 | Any other `4xx` | **Does not retry.** A rejected signature or a malformed payload would be rejected identically on a second attempt, so Setu stops and raises an internal alert. |
 | No response / timeout | Treated as a transient failure and retried, within the same 3-attempt budget. Each attempt has a 5 s timeout. |
+
+<br />
 
 If every attempt fails, Setu raises an operational alert and **the notification is not redelivered later**. This is safe precisely because polling is authoritative: the result is still available from `POST /api/v1/vpa/resolve` at any time. If the receiver has been down, poll for anything missed.
 
