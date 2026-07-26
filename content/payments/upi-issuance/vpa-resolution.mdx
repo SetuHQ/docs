@@ -11,15 +11,15 @@ Before an `active` user pays a payee, the TPAP / Issuing App resolves the payee'
 
 ### How resolution works
 
-Resolution is a **single API, client-polled** call. A payee VPA on Setu's own handle resolves immediately; a **foreign-handle** VPA (any other PSP, e.g. `someone@ybl`) is resolved with the UPI network, which is asynchronous — so the first call returns `PENDING` and the app **polls by sending the same request again** until it settles.
+Resolution is a **single API, client-polled** call. A payee VPA on Setu's own handle resolves immediately; a **foreign-handle** VPA (any other PSP, e.g. `someone@ybl`) is resolved with the UPI network, which is asynchronous — so the first call returns `pending` and the app **polls by sending the same request again** until it settles.
 
 The `status` field carries the outcome; the HTTP status stays `200` for all three:
 
 | `status` | Meaning |
 | :--- | :--- |
-| `RESOLVED` | The payee VPA is valid, and the API response carries the payee VPA details. |
-| `PENDING` | The payee VPA resolution is in progress — send the same request again to poll. |
-| `FAILED` | The payee VPA is invalid, and the API response indicates the failure reason. |
+| `resolved` | The payee VPA is valid, and the API response carries the payee VPA details. |
+| `pending` | The payee VPA resolution is in progress — send the same request again to poll. |
+| `failed` | The payee VPA is invalid, and the API response indicates the failure reason. |
 
 <hr class="primary" />
 
@@ -52,7 +52,7 @@ The `status` field carries the outcome; the HTTP status stays `200` for all thre
 | Field | Type | Notes |
 | :--- | :--- | :--- |
 | `traceId` | string | Trace handle for this call (ULID). |
-| `status` | string | `RESOLVED`, `PENDING`, or `FAILED`. |
+| `status` | string | `resolved`, `pending`, or `failed`. |
 | `vpa` | string | The payee VPA that was resolved (echo of the request). |
 | `name` | string | The payee's account-holder name — the name on record for a VPA on our handle, or the name as reported by the payee PSP for a foreign handle. Present in the API response in case of successful resolution. |
 | `accountType` | string | The payee's account type (e.g. `SAVINGS`). Present in the API response in case of successful resolution. |
@@ -62,8 +62,8 @@ The `status` field carries the outcome; the HTTP status stays `200` for all thre
 | `verifiedName` | string | The registered display name from the verified registry. Present when the payee VPA is a whitelisted / verified VPA. |
 | `verifiedLogo` | string | The registered logo url. Present when the payee VPA is a whitelisted / verified VPA. |
 | `verifiedUrl` | string | The registered brand url. Present when the payee VPA is a whitelisted / verified VPA. |
-| `errorCode` | string | Network error code (e.g. `ZH`). Present on `FAILED`. |
-| `errorMessage` | string | Human-readable failure reason. Present on `FAILED`. |
+| `errorCode` | string | Network error code (e.g. `ZH`). Present on `failed`. |
+| `errorMessage` | string | Human-readable failure reason. Present on `failed`. |
 
 A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant block. These fields are present for a resolved merchant VPA:
 
@@ -82,7 +82,7 @@ A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant bloc
 <CodeBlockWithCopy language="json">
     {`{
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  "status": "RESOLVED",
+  "status": "resolved",
   "vpa": "someone@ybl",
   "name": "ANI********DEY",
   "accountType": "SAVINGS",
@@ -96,7 +96,7 @@ A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant bloc
 <CodeBlockWithCopy language="json">
     {`{
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  "status": "RESOLVED",
+  "status": "resolved",
   "vpa": "brandx@ybl",
   "name": "BRAND****X",
   "accountType": "CURRENT",
@@ -121,7 +121,7 @@ A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant bloc
 <CodeBlockWithCopy language="json">
     {`{
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  "status": "PENDING",
+  "status": "pending",
   "vpa": "someone@ybl"
 }`}
 </CodeBlockWithCopy>
@@ -131,7 +131,7 @@ A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant bloc
 <CodeBlockWithCopy language="json">
     {`{
   "traceId": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  "status": "FAILED",
+  "status": "failed",
   "vpa": "someone@ybl",
   "errorCode": "ZH",
   "errorMessage": "invalid virtual address"
@@ -140,7 +140,7 @@ A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant bloc
 
 ##### Errors
 
-`PENDING` and `FAILED` are **outcomes**, not HTTP errors — they come back as `200`. The HTTP error statuses are:
+`pending` and `failed` are **outcomes**, not HTTP errors — they come back as `200`. The HTTP error statuses are:
 
 | Status | Code | When |
 | :--- | :--- | :--- |
