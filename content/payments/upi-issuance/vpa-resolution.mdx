@@ -160,42 +160,42 @@ A **merchant** payee (`entityType: ENTITY`) additionally carries a merchant bloc
 
 ### Resolution notification (webhook)
 
-Polling works, but it makes the app wait. Setu can also **push** the outcome of a foreign-handle resolution to an endpoint you host, the moment the UPI network answers — so the app can react at once instead of on its next poll.
+Polling works, but it makes the app wait. Setu can also **push** the outcome of a foreign-handle resolution to an endpoint the TPAP / Issuing App hosts, the moment the UPI network answers — so the app can react at once instead of on its next poll.
 
-Polling `POST /api/v1/vpa/resolve` remains the source of truth: if a notification is missed, the next poll still returns the same result. Nothing is lost, so you never have to build a recovery path around a webhook that did not arrive.
+Polling `POST /api/v1/vpa/resolve` remains the source of truth: if a notification is missed, the next poll still returns the same result. Nothing is lost, so there is no need to build a recovery path around a webhook that did not arrive.
 
-#### What you give Setu
+#### What the TPAP / Issuing App supplies
 
-The notification is configured **per event**, and you supply everything about it. Setu does not generate any of it.
+The notification is configured **per event**, and the TPAP / Issuing App supplies everything about it. Setu does not generate any of it.
 
 | What | Notes |
 | :--- | :--- |
-| **Target** | The absolute HTTPS URL Setu POSTs the event to, e.g. `https://your-app.example.com/webhooks/upi/vpa-resolve`. One complete URL, not a base plus a path. |
-| **Public key** | An RSA public key, PEM-encoded (PKIX or PKCS#1), min 2048-bit. **You generate the keypair and keep the private key** — Setu only ever holds the public half and never sees the private one. Setu encrypts every notification to this key. |
-| **Signing key** | A shared secret **you choose**. Setu signs every notification with it and you verify the signature with the same value. Because you already hold it, no further exchange is needed. Treat it as a credential: min 32 bytes of entropy, and rotate it by sending Setu a new one. |
-| **Client id** | The identifier you know Setu by. It is echoed on every notification as `clientId`, so your receiver can select which verification secret to use — useful once you accept notifications from more than one source. |
+| **Target** | The absolute HTTPS URL Setu POSTs the event to, e.g. `https://tpap.example.com/webhooks/upi/vpa-resolve`. One complete URL, not a base plus a path. |
+| **Public key** | An RSA public key, PEM-encoded (PKIX or PKCS#1), min 2048-bit. **The TPAP / Issuing App generates the keypair and keeps the private key** — Setu only ever holds the public half and never sees the private one. Setu encrypts every notification to this key. |
+| **Signing key** | A shared secret **chosen by the TPAP / Issuing App**. Setu signs every notification with it, and the same value verifies the signature. Because the TPAP / Issuing App already holds it, no further exchange is needed. Treat it as a credential: min 32 bytes of entropy, and rotate it by sending Setu a new one. |
+| **Client id** | The identifier the TPAP / Issuing App knows Setu by. It is echoed on every notification as `clientId`, so the receiver can select which verification secret to use — useful once it accepts notifications from more than one source. |
 
 <Callout type="tip">
-  This is the **mirror image** of the inbound direction. For your calls *to* Setu, Setu issues the key material (the envelope public key and your client secret). For Setu's calls *to you*, you issue it. Same crypto, opposite roles — so your receiver runs the code you already wrote, with the keys swapped.
+  This is the <b>mirror image</b> of the inbound direction. For calls <i>to</i> Setu, Setu issues the key material (the envelope public key and the client secret). For Setu's calls <i>to the TPAP / Issuing App</i>, the TPAP / Issuing App issues it. Same crypto, opposite roles — so the receiver runs the code already written for the envelope, with the keys swapped.
 </Callout>
 
-Send these to your Setu point of contact for each environment. The signing key is stored encrypted and is bound to that environment, so **it cannot be copied between environments**: sandbox and production each need their own.
+Send these to the Setu point of contact for each environment. The signing key is stored encrypted and is bound to that environment, so **it cannot be copied between environments**: sandbox and production each need their own.
 
 #### The event
 
-`POST <your target>`
+`POST <the configured target>`
 
 | Header | Value |
 | :--- | :--- |
 | `X-Setu-Event` | `vpa.resolve` |
 | `Content-Type` | `application/json` |
 
-**The body is the `POST /api/v1/vpa/resolve` response body, field for field.** That is deliberate: the notification exists to save you the wait, not to give you a second contract. Deserialise it with the **same type** you already use for the poll response, and the code that renders a resolved payee works unchanged either way.
+**The body is the `POST /api/v1/vpa/resolve` response body, field for field.** That is deliberate: the notification exists to save the wait, not to introduce a second contract. It deserialises with the **same type** as the poll response, so the code that renders a resolved payee works unchanged either way.
 
 Two differences from a poll response, both because a notification is only ever sent once there is something to say:
 
 - `status` is only ever `resolved` or `failed`. **`pending` is never pushed.**
-- It is sent only for a **foreign-handle** payee. A VPA on Setu's own handle resolves synchronously on your original call, so there is nothing to announce.
+- It is sent only for a **foreign-handle** payee. A VPA on Setu's own handle resolves synchronously on the original call, so a notification is not needed.
 
 ##### Sample notification (decrypted payload)
 
@@ -211,50 +211,50 @@ Two differences from a poll response, both because a notification is only ever s
 }`}
 </CodeBlockWithCopy>
 
-#### What your receiver must do
+#### What the receiver must do
 
-The body arrives as the **same crypto envelope** your own requests use, with the key roles reversed: Setu encrypts to your public key and signs with your signing key.
+The body arrives as the **same crypto envelope** as inbound requests, with the key roles reversed: Setu encrypts to the TPAP / Issuing App's public key and signs with its signing key.
 
 <CodeBlockWithCopy language="json">
     {`{
   "ct": "<base64 AES-256-CBC ciphertext of the JSON payload>",
-  "sk": "<base64 RSA-OAEP(SHA-1) wrap of the 32-byte session key, under YOUR public key>",
+  "sk": "<base64 RSA-OAEP(SHA-1) wrap of the 32-byte session key, under the TPAP / Issuing App's public key>",
   "iv": "<base64 of the 16-byte AES IV>",
   "api": "vpa.resolve",
-  "clientId": "<the client id you gave Setu>",
-  "sig": "<base64 HMAC-SHA256 of the PLAINTEXT payload, under your signing key>"
+  "clientId": "<the configured client id>",
+  "sig": "<base64 HMAC-SHA256 of the PLAINTEXT payload, under the signing key>"
 }`}
 </CodeBlockWithCopy>
 
 Validate in this order, and reject as soon as a step fails:
 
-1. **Check the event.** Read `X-Setu-Event`. Ignore an event name you do not handle.
+1. **Check the event.** Read `X-Setu-Event`. Ignore an unhandled event name.
 2. **Select the secret.** Read `clientId` from the envelope and pick the matching verification secret. Reject an unknown `clientId`.
-3. **Recover the session key.** RSA-OAEP-SHA1 decrypt `sk` with your private key. It must yield exactly **32 bytes**.
+3. **Recover the session key.** RSA-OAEP-SHA1 decrypt `sk` with the private key. It must yield exactly **32 bytes**.
 4. **Decrypt.** AES-256-CBC decrypt `ct` with that key and the base64-decoded `iv` (which must be exactly **16 bytes**), then strip PKCS#7 padding.
-5. **Verify the signature.** Compute HMAC-SHA256 of the **decrypted plaintext** under your signing key, base64-encode it, and compare with `sig` in **constant time**. Do not skip this when `sig` is absent — treat a missing signature as a failed verification.
+5. **Verify the signature.** Compute HMAC-SHA256 of the **decrypted plaintext** under the signing key, base64-encode it, and compare with `sig` in **constant time**. Do not skip this when `sig` is absent — treat a missing signature as a failed verification.
 6. **Parse the payload** and act on it.
 7. **Acknowledge.** Respond `2xx` with an empty body. Setu does not read the response body.
 
 <Callout type="warning">
-  Verify the signature over the **decrypted plaintext**, never over the ciphertext, and always **after** decrypting. This is the same rule Setu applies to your inbound requests.
+  Verify the signature over the <b>decrypted plaintext</b>, never over the ciphertext, and always <b>after</b> decrypting. This is the same rule Setu applies to inbound requests.
 </Callout>
 
 **Be idempotent on `(X-Setu-Event, traceId)`.** Delivery is at-least-once: a network failure between Setu sending and recording success causes a retry, so the same notification can arrive more than once. It always carries the same terminal answer, so de-duplicating on that pair is sufficient.
 
-#### How Setu responds to your response
+#### How Setu handles the response
 
-| Your response | What Setu does |
+| Receiver response | What Setu does |
 | :--- | :--- |
 | `2xx` | Delivered. Done. |
 | `5xx`, `408`, `429` | Retries with exponential backoff, up to **3 attempts total** (500 ms, then 1 s). |
 | Any other `4xx` | **Does not retry.** A rejected signature or a malformed payload would be rejected identically on a second attempt, so Setu stops and raises an internal alert. |
 | No response / timeout | Treated as a transient failure and retried, within the same 3-attempt budget. Each attempt has a 5 s timeout. |
 
-If every attempt fails, Setu raises an operational alert and **the notification is not redelivered later**. This is safe precisely because polling is authoritative: the result is still available from `POST /api/v1/vpa/resolve` at any time. If your receiver has been down, poll for anything you may have missed.
+If every attempt fails, Setu raises an operational alert and **the notification is not redelivered later**. This is safe precisely because polling is authoritative: the result is still available from `POST /api/v1/vpa/resolve` at any time. If the receiver has been down, poll for anything missed.
 
 <Callout type="tip">
-  Until you have supplied a target, no notification is sent and nothing changes — polling alone is a complete integration. Add the webhook when you want to remove the wait.
+  Until a target is supplied, no notification is sent and nothing changes — polling alone is a complete integration. Add the webhook to remove the wait.
 </Callout>
 
 ### Next
