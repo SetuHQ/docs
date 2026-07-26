@@ -53,7 +53,7 @@ On the QA env there is no telecom, so no OTP SMS is sent. To pass verification, 
 
 #### VPA resolution
 
-On production, resolving a foreign-handle payee returns whatever the payee PSP reports. On the QA env you can pin the resolved values so you can reproduce every shape — a person, a merchant, verified or not, and failures — deterministically. Send an optional `X-Sim-Resolution` header on `POST /onboarding/vpa/resolve` whose value is a JSON object of the values you expect back. Send it on every poll (it is read on the poll that returns `RESOLVED`).
+On production, resolving a foreign-handle payee returns whatever the payee PSP reports. On the QA env you can pin the resolved values so you can reproduce every shape — a person, a merchant, verified or not, and failures — deterministically. Send an optional `X-Sim-Resolution` header on `POST /vpa/resolve` whose value is a JSON object of the values you expect back. Send it on every poll (it is read on the poll that returns `RESOLVED`).
 
 Every field is optional; anything you leave out falls back to a default, and with no header at all the resolution uses default values. Failures carry no payee detail, so `entityType`, the merchant fields and `verified` apply only to a success.
 
@@ -71,7 +71,7 @@ Every field is optional; anything you leave out falls back to a default, and wit
 A verified merchant with pinned values:
 
 ```bash
-curl https://<qa-host>/api/v1/onboarding/vpa/resolve \
+curl https://<qa-host>/api/v1/vpa/resolve \
   -H 'X-Sim-Resolution: {"entityType":"ENTITY","name":"ACME****PVT","accountType":"CURRENT","ifsc":"HDFC0000123","merchant":{"mcc":"5411","brandName":"MyBrand","legalName":"Acme Pvt Ltd","merchantType":"SMALL"},"verified":{"name":"MyBrand","url":"https://mybrand.example"}}' \
   -H 'Content-Type: application/json' -d '<enveloped body>'
 ```
