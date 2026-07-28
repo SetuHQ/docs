@@ -1,0 +1,350 @@
+---
+sidebar_title: Quickstart
+page_title: mAadhaar verification quickstart
+order: 1
+visible_in_sidebar: true
+---
+
+## mAadhaar verification quickstart
+
+This guide describes how to initiate mAadhaar verification and retrieve the
+details shared by the user.
+
+### Before you begin
+
+Contact Setu to configure the mAadhaar product and receive the following
+credentials:
+
+- `x-client-id`
+- `x-client-secret`
+- `x-product-instance-id`
+
+Use these base URLs:
+
+- Sandbox — `https://dg-sandbox.setu.co`
+- Production — `https://dg.setu.co`
+
+Send the three credentials as headers with every mAadhaar API request.
+
+<Callout type="tip">
+  Generate a new UUID for <code>workflow_id</code> every time you start a
+  verification. Do not reuse a workflow ID.
+</Callout>
+
+<hr className="primary" />
+
+## Choose an integration flow
+
+### QR flow
+
+Use the QR flow when the user views your experience on one device and has the
+mAadhaar app on another device.
+
+1. Generate a UUID for `workflow_id`.
+2. Call the generate QR API with the workflow ID and required Aadhaar fields.
+3. Display the image returned in `qr_url`.
+4. Start polling the workflow status API.
+5. Ask the user to open the mAadhaar app, authenticate, and scan the QR code.
+6. The user selects a profile, reviews the requested fields, approves sharing,
+   and completes biometric authentication.
+7. After the user completes biometric authentication and approves Aadhaar
+   sharing, receive the webhook at your configured endpoint. You can also read
+   the Aadhaar details from the successful workflow status response.
+
+### Intent flow
+
+Use the intent flow when the user starts verification on the same mobile device
+that has the mAadhaar app installed.
+
+1. Generate a UUID for `workflow_id`.
+2. Call the generate intent payload API.
+3. Pass `deeplink_signed_jwt` to the platform-specific mAadhaar intent.
+4. The user reviews the requested fields, approves sharing, and completes
+   biometric authentication in the mAadhaar app.
+5. For an app-to-app flow, receive the SD-JWT returned by the mAadhaar app and
+   send it to the process SD-JWT API.
+6. For a web-to-app flow, wait for the Setu webhook or poll the workflow status
+   API.
+
+<Callout type="warning">
+  On iOS, the mAadhaar app may not automatically return the user to your app.
+  Design your user experience so the user can return manually.
+</Callout>
+
+<hr className="primary" />
+
+## Generate a QR code
+
+Send a `POST` request to `/api/maadhaar/qr/generate`.
+
+<CodeBlockWithCopy language="json">
+  {`POST /api/maadhaar/qr/generate
+  {
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+    "desired_fields": [
+      "residentName",
+      "dob",
+      "gender",
+      "pincode",
+      "address"
+    ]
+  }`}
+</CodeBlockWithCopy>
+
+A successful response contains the URL of the QR image:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "qr_url": "https://example.com/maadhaar/qr_codes/maadhaar_qr_ca44473f-00ad-4744-a430-39b83c01cfb6.png",
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+    "traceId": "1-6a672a69-39f7c6307129996459acb52b"
+  }`}
+</CodeBlockWithCopy>
+
+For an invalid payload, the API returns:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "error": {
+      "code": "invalid_payload",
+      "detail": "List of desired Aadhaar fields",
+      "traceId": "2feb81d0-a84f-4885-9e3e-ba6f2946b288"
+    }
+  }`}
+</CodeBlockWithCopy>
+
+Display this image without altering its contents. Begin polling the status API
+while the QR code is visible.
+
+<hr className="primary" />
+
+## Generate an intent payload
+
+Send a `POST` request to `/api/maadhaar/signed-jwt/generate`.
+
+<CodeBlockWithCopy language="json">
+  {`POST /api/maadhaar/signed-jwt/generate
+  {
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+    "desired_fields": [
+      "residentName",
+      "dob",
+      "gender",
+      "pincode",
+      "address"
+    ]
+  }`}
+</CodeBlockWithCopy>
+
+The response contains a signed request to pass to the mAadhaar app:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "deeplink_signed_jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...",
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+    "traceId": "1-6a672a69-39f7c6307129996459acb52b"
+  }`}
+</CodeBlockWithCopy>
+
+For an invalid payload, the API returns:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "error": {
+      "code": "invalid_payload",
+      "detail": "List of desired Aadhaar fields",
+      "traceId": "614b936c-342a-4d22-9009-7328d8859360"
+    }
+  }`}
+</CodeBlockWithCopy>
+
+### Android app-to-app intent
+
+Use the UIDAI intent action and add the signed JWT as the `request` extra:
+
+<CodeBlockWithCopy>
+  {`val intent = Intent("in.gov.uidai.pehchaan.INTENT_REQUEST").apply {
+      putExtra("request", deeplinkSignedJwt)
+  }
+  startActivityForResult(intent, MAADHAAR_REQUEST_CODE)`}
+</CodeBlockWithCopy>
+
+### iOS app-to-app intent
+
+Pass the signed JWT in the `request` query parameter and include your callback
+scheme:
+
+<CodeBlockWithCopy>
+  {`var components = URLComponents()
+  components.scheme = "pehchaan"
+  components.host = "in.gov.uidai.pehchan"
+  components.queryItems = [
+      URLQueryItem(name: "request", value: deeplinkSignedJwt),
+      URLQueryItem(name: "callback", value: "yourAppCallback")
+  ]
+  if let url = components.url, UIApplication.shared.canOpenURL(url) {
+      UIApplication.shared.open(url)
+  }`}
+</CodeBlockWithCopy>
+
+### Web-to-app intent
+
+For a mobile web flow, use the signed JWT as the `request` value. Detect the
+user's platform before opening the URL:
+
+<CodeBlockWithCopy language="javascript">
+  {`const request = encodeURIComponent(deeplinkSignedJwt);
+  if (isIOS) {
+    window.location.href =
+      "pehchaan://in.gov.uidai.pehchan?request=" + request + "&source=web";
+  } else if (isAndroid) {
+    window.location.href =
+      "intent:#Intent;action=in.gov.uidai.pehchaan.WEB_INTENT_REQUEST;S.request=" +
+      request + ";end";
+  }`}
+</CodeBlockWithCopy>
+
+<hr className="primary" />
+
+## Process an SD-JWT
+
+In the app-to-app intent flow, send the SD-JWT returned by mAadhaar to
+`/api/maadhaar/process-sd-jwt`.
+
+<CodeBlockWithCopy language="json">
+  {`POST /api/maadhaar/process-sd-jwt
+  {
+    "txn_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+    "sd_jwt": "eyJhbGciOiJSUzI1NiJ9..."
+  }`}
+</CodeBlockWithCopy>
+
+Use the original `workflow_id` as `txn_id`. A successful response contains the
+claims shared by the user:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "aadhaar_output": {
+      "address": "JP Nagar, Bengaluru, Karnataka 560078",
+      "dob": "1995-10-18",
+      "gender": "MALE",
+      "pincode": "560078",
+      "residentName": "Sample User"
+    },
+    "error": {
+      "code": "NO_ERROR",
+      "detail": "No error",
+      "traceId": "1-68d122f6-3732177863083023409ea933"
+    },
+    "status": "success",
+    "trace_id": "1-68d122f6-3732177863083023409ea933",
+    "txn": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
+  }`}
+</CodeBlockWithCopy>
+
+For an invalid payload, the API returns:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "error": {
+      "code": "invalid_payload",
+      "detail": "The workflow identifier",
+      "traceId": "c926a621-97a3-4e1b-a438-81bc3b61614d"
+    }
+  }`}
+</CodeBlockWithCopy>
+
+<hr className="primary" />
+
+## Poll workflow status
+
+Send a `GET` request to `/api/maadhaar/workflow/status` with the workflow ID:
+
+<CodeBlockWithCopy language="http">
+  GET /api/maadhaar/workflow/status?workflow_id=ca44473f-00ad-4744-a430-39b83c01cfb6
+</CodeBlockWithCopy>
+
+While the user has not completed authentication, the API returns `pending`:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "aadhaar_output": null,
+    "error": {
+      "code": "NO_ERROR",
+      "detail": "No error",
+      "traceId": "1-68f75962-033693ff7d131e1339f23c90"
+    },
+    "status": "pending",
+    "trace_id": "1-68f75962-033693ff7d131e1339f23c90",
+    "txn": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
+  }`}
+</CodeBlockWithCopy>
+
+Stop polling when `status` becomes `success` or `error`. Use exponential
+backoff rather than sending continuous requests.
+
+### Webhook notification
+
+If a webhook URL is configured for your product instance, Setu sends the same
+status object to that URL after processing the Aadhaar response. Return an HTTP
+`200` or `201` response after accepting the notification.
+
+When the user successfully shares their Aadhaar details, Setu sends:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "success",
+    "workflow_id": "9f2d1b7a-4f5c-4a6d-8d8e-1a2b3c4d5e6f",
+    "txn": "9f2d1b7a-4f5c-4a6d-8d8e-1a2b3c4d5e6f",
+    "trace_id": "7e3a9c2d-8b4f-4d6c-a123-4f56789abcde",
+    "error": {
+      "code": "0",
+      "detail": ""
+    },
+    "aadhaar_output": {
+      "residentName": "John Doe",
+      "dob": "1990-01-01",
+      "gender": "MALE",
+      "pincode": "123456",
+      "address": "123 Main Street, Springfield, Example State 123456"
+    }
+  }`}
+</CodeBlockWithCopy>
+
+The webhook payload contains the same `workflow_id` and `txn` for this flow.
+
+If the user aborts authentication or UIDAI returns an authentication error, the
+webhook is sent with `status: "error"`, the error code and message, and no
+Aadhaar output. For example, UIDAI error code `303` means that the user
+aborted the authentication process:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "error",
+    "workflow_id": "bc2bb5ac-4e26-4b89-9c80-0d7a95c2ee27",
+    "txn": "bc2bb5ac-4e26-4b89-9c80-0d7a95c2ee27",
+    "trace_id": "c926a621-97a3-4e1b-a438-81bc3b61614d",
+    "error": {
+      "code": "303",
+      "detail": "Authentication process aborted by user"
+    },
+    "aadhaar_output": null
+  }`}
+</CodeBlockWithCopy>
+
+Use `workflow_id` or `txn` to correlate the notification with the request, and
+handle both `success` and `error` statuses in your webhook handler.
+
+<br />
+
+<NextPage
+  info={{
+    description: "Review all mAadhaar endpoints and schemas.",
+    slug: "/data/maadhaar/api-reference",
+    title: "API reference",
+  }}
+/>
+
+<WasPageHelpful />
