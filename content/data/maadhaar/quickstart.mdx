@@ -101,15 +101,20 @@ A successful response contains the URL of the QR image:
   }`}
 </CodeBlockWithCopy>
 
-For an invalid payload, the API returns:
+For an invalid payload, the API returns the standard error envelope:
 
 <CodeBlockWithCopy language="json">
   {`{
+    "aadhaar_output": null,
     "error": {
-      "code": "invalid_payload",
+      "code": "INVALID_REQUEST",
       "detail": "List of desired Aadhaar fields",
       "traceId": "2feb81d0-a84f-4885-9e3e-ba6f2946b288"
-    }
+    },
+    "status": null,
+    "traceId": "2feb81d0-a84f-4885-9e3e-ba6f2946b288",
+    "txn": null,
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
   }`}
 </CodeBlockWithCopy>
 
@@ -146,15 +151,20 @@ The response contains a signed request to pass to the mAadhaar app:
   }`}
 </CodeBlockWithCopy>
 
-For an invalid payload, the API returns:
+For an invalid payload, the API returns the standard error envelope:
 
 <CodeBlockWithCopy language="json">
   {`{
+    "aadhaar_output": null,
     "error": {
-      "code": "invalid_payload",
+      "code": "INVALID_REQUEST",
       "detail": "List of desired Aadhaar fields",
       "traceId": "614b936c-342a-4d22-9009-7328d8859360"
-    }
+    },
+    "status": null,
+    "traceId": "614b936c-342a-4d22-9009-7328d8859360",
+    "txn": null,
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
   }`}
 </CodeBlockWithCopy>
 
@@ -243,15 +253,21 @@ claims shared by the user:
   }`}
 </CodeBlockWithCopy>
 
-For an invalid payload, the API returns:
+For an invalid payload or an SD-JWT processing failure, the API returns the
+same error envelope:
 
 <CodeBlockWithCopy language="json">
   {`{
+    "aadhaar_output": null,
     "error": {
-      "code": "invalid_payload",
-      "detail": "The workflow identifier",
+      "code": "INVALID_REQUEST",
+      "detail": "The SD-JWT string to process",
       "traceId": "c926a621-97a3-4e1b-a438-81bc3b61614d"
-    }
+    },
+    "status": null,
+    "traceId": "c926a621-97a3-4e1b-a438-81bc3b61614d",
+    "txn": null,
+    "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
   }`}
 </CodeBlockWithCopy>
 
@@ -284,6 +300,11 @@ While the user has not completed authentication, the API returns `pending`:
 
 Stop polling when `status` becomes `success` or `error`. Use exponential
 backoff rather than sending continuous requests.
+
+If the `workflow_id` is unknown for the product instance, the status endpoint
+returns `404` with `error.code` set to `REQUEST_NOT_FOUND`. All handled `400`,
+`404`, and `500` errors from the mAadhaar APIs use this same envelope; only the
+HTTP status, error code, and error detail change.
 
 ### Webhook notification
 
@@ -329,6 +350,23 @@ aborted the authentication process:
     "error": {
       "code": "303",
       "detail": "Authentication process aborted by user"
+    },
+    "aadhaar_output": null
+  }`}
+</CodeBlockWithCopy>
+
+If authentication cannot be completed because of a network issue or a server error on UIDAI's side,
+the webhook contains UIDAI error code `307`:
+
+<CodeBlockWithCopy language="json">
+  {`{
+    "status": "error",
+    "workflow_id": "08d96879-0626-4960-8378-97fb9042f51a",
+    "txn": "08d96879-0626-4960-8378-97fb9042f51a",
+    "trace_id": "1-6a6882b8-3fc3c3ec7c9eaf1a693a4772",
+    "error": {
+      "code": "307",
+      "detail": "Failed to complete authentication due to network or server error"
     },
     "aadhaar_output": null
   }`}

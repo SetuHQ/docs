@@ -70,7 +70,7 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/InvalidQRPayload"
+            "$ref": "#/components/responses/BadRequest"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -132,7 +132,7 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/InvalidIntentPayload"
+            "$ref": "#/components/responses/BadRequest"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -201,10 +201,10 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/InvalidSDJWTPayload"
+            "$ref": "#/components/responses/BadRequest"
           },
           "500": {
-            "$ref": "#/components/responses/InternalStatusError"
+            "$ref": "#/components/responses/InternalError"
           }
         }
       }
@@ -554,15 +554,6 @@
           }
         }
       },
-      "ValidationErrorResponse": {
-        "type": "object",
-        "required": ["error"],
-        "properties": {
-          "error": {
-            "$ref": "#/components/schemas/ErrorDetail"
-          }
-        }
-      },
       "WebhookResponse": {
         "type": "object",
         "required": [
@@ -636,6 +627,20 @@
               },
               "aadhaar_output": null
             }
+          },
+          "authenticationFailed": {
+            "summary": "Authentication failed due to a network or server error",
+            "value": {
+              "status": "error",
+              "workflow_id": "08d96879-0626-4960-8378-97fb9042f51a",
+              "txn": "08d96879-0626-4960-8378-97fb9042f51a",
+              "trace_id": "1-6a6882b8-3fc3c3ec7c9eaf1a693a4772",
+              "error": {
+                "code": "307",
+                "detail": "Failed to complete authentication due to network or server error"
+              },
+              "aadhaar_output": null
+            }
           }
         }
       },
@@ -671,57 +676,6 @@
               "traceId": "1-68f75962-033693ff7d131e1339f23c90",
               "txn": null,
               "workflow_id": ""
-            }
-          }
-        }
-      },
-      "InvalidSDJWTPayload": {
-        "description": "The Process SD-JWT request payload is invalid",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ValidationErrorResponse"
-            },
-            "example": {
-              "error": {
-                "code": "invalid_payload",
-                "detail": "The workflow identifier",
-                "traceId": "c926a621-97a3-4e1b-a438-81bc3b61614d"
-              }
-            }
-          }
-        }
-      },
-      "InvalidIntentPayload": {
-        "description": "The Generate Intent Payload request is invalid",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ValidationErrorResponse"
-            },
-            "example": {
-              "error": {
-                "code": "invalid_payload",
-                "detail": "List of desired Aadhaar fields",
-                "traceId": "614b936c-342a-4d22-9009-7328d8859360"
-              }
-            }
-          }
-        }
-      },
-      "InvalidQRPayload": {
-        "description": "The Generate QR request is invalid",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ValidationErrorResponse"
-            },
-            "example": {
-              "error": {
-                "code": "invalid_payload",
-                "detail": "List of desired Aadhaar fields",
-                "traceId": "2feb81d0-a84f-4885-9e3e-ba6f2946b288"
-              }
             }
           }
         }
@@ -765,28 +719,6 @@
               "status": null,
               "traceId": "1-68f75962-033693ff7d131e1339f23c90",
               "txn": null,
-              "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
-            }
-          }
-        }
-      },
-      "InternalStatusError": {
-        "description": "SD-JWT processing failed",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/StatusResponse"
-            },
-            "example": {
-              "aadhaar_output": null,
-              "error": {
-                "code": "INTERNAL_ERROR",
-                "detail": "SD-JWT processing failed",
-                "traceId": "1-68f75962-033693ff7d131e1339f23c90"
-              },
-              "status": "error",
-              "trace_id": "1-68f75962-033693ff7d131e1339f23c90",
-              "txn": "ca44473f-00ad-4744-a430-39b83c01cfb6",
               "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
             }
           }
