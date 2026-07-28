@@ -1,3 +1,17 @@
+# ⚠️ This repository is no longer maintained
+
+Setu's developer docs now live in a single repository, **[`brokentusk/facade/docs-showcase`](https://gitlab.com/brokentusk/facade/docs-showcase)** on GitLab, which holds both the content and the site that renders it. Since **28 July 2026**, [docs.setu.co](https://docs.setu.co) is served from there, not from here.
+
+**To change a docs page, open a merge request against `brokentusk/facade/docs-showcase`.** Changes merged into this repository will not appear on docs.setu.co.
+
+If you do not have access to that GitLab repository, read the published docs at [docs.setu.co](https://docs.setu.co) or ask your Setu contact.
+
+One part of this repository is still live: [api-playground.setu.co](https://api-playground.setu.co) reads `api-playground/` and `api-references/` from this repository's `main` branch at runtime. See [`DEPRECATED.md`](./DEPRECATED.md) for the full picture — what moved, what did not, and what to do for each kind of change.
+
+---
+
+> **The rest of this README is kept for historical reference.** It describes how docs content was edited when this repository still fed docs.setu.co. Apart from the API playground section, it no longer describes how to change the live documentation.
+
 # Setu Documentation : Content + API references
 
 Monorepo of content and API reference of [Setu docs](https://docs.setu.co)

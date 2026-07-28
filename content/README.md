@@ -1,3 +1,11 @@
+> **⚠️ Historical — this is not how Setu docs content is written any more.**
+> Setu's developer docs moved to [`brokentusk/facade/docs-showcase`](https://gitlab.com/brokentusk/facade/docs-showcase)
+> on GitLab on 28 July 2026, and docs.setu.co is served from there. Pages in this folder are no
+> longer published, and the frontmatter and component conventions below are the old ones — the
+> replacement repository uses Fumadocs, with different frontmatter fields and different
+> components. Write new content there, following its own guides. See
+> [`DEPRECATED.md`](../DEPRECATED.md) at the repository root.
+
 # Detailed guide on how to write content for Setu docs
 
 ## Sample content
