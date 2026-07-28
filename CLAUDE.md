@@ -1,5 +1,20 @@
 # CLAUDE.md
 
+> **⚠️ This repository is no longer maintained.** Setu's developer docs moved to
+> `brokentusk/facade/docs-showcase` on GitLab (Next.js + Fumadocs, content and rendering in one
+> repository) on 28 July 2026. docs.setu.co is served from there.
+>
+> **Do not make documentation content changes here** — editing `content/` or `api-references/` in
+> this repository has no effect on docs.setu.co. Content changes belong in `docs-showcase`
+> (`content/docs/`), and the ingestion/embeddings pipelines described below now live there as
+> `rag/ingestion/` and `rag/embeddings/`.
+>
+> The one exception is `api-playground/`, which api-playground.setu.co still fetches from this
+> repository's `main` branch at runtime.
+>
+> Read [`DEPRECATED.md`](./DEPRECATED.md) first. Everything below is accurate as a description of
+> this repository's frozen state, but is no longer how Setu's docs are built or changed.
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Repository Overview
