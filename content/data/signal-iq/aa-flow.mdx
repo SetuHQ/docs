@@ -1,0 +1,212 @@
+---
+sidebar_title: AA Flow
+page_title: Signal IQ - AA Flow
+order: 1
+visible_in_sidebar: true
+---
+
+## AA Flow
+
+The AA Flow is for clients who use both Setu's <a href="/data/account-aggregator/overview" target="_blank">Account Aggregator</a> and <a href="/data/insights/overview" target="_blank">Setu Insights</a>. Once a customer's financial (FI) data is ready on the AA side, Signal IQ automatically takes over and drives everything through to insights and outputs.
+
+<Callout type="highlight">
+  You do not call any Signal IQ API to start this flow. The handoff from Account Aggregator to Signal IQ happens automatically. Your integration points are the webhook endpoint where you receive status updates, and the output APIs you call with the `reportId` after success.
+</Callout>
+
+<br />
+
+This page explains what happens inside the flow, the exact notifications you will receive, and the output schemas you integrate against.
+
+<hr class="primary" />
+
+### How the flow starts
+
+1. You create an Account Aggregator consent request and redirect your customer to the consent URL. Your customer reviews and approves the request on the AA screens. See Setu's <a href="/data/account-aggregator/api-integration/consent-flow" target="_blank">Account Aggregator consent flow</a> for how to do this.
+2. Once the AA data session starts, Signal IQ is triggered automatically for that session.
+3. From that handoff point onward, Signal IQ owns the orchestration end to end - processing, progress notifications, insights generation and output coordination.
+
+You do not need to call any Signal IQ API to start this flow. The trigger is handled on the AA flow.
+
+<hr class="primary" />
+
+### What happens inside
+
+Once the flow is triggered, Signal IQ moves through these lifecycle stages. You are kept informed at each important step via webhook (see [Notifications](#notifications-you-receive) below).
+
+1. **Consent lifecycle** - consent status changes are forwarded to you.
+2. **Data fetch** - FI data is retrieved (or its failure is reported).
+3. **Data block creation** - the fetched data is prepared for analysis inside Setu Insights.
+4. **Insights generation started** - the insights job is accepted.
+5. **Insights generation success / failure** - the report is produced, or the failure is reported.
+6. **Report availability** - the `reportId` is handed to you for output retrieval.
+
+<Callout type="note">
+  Reliability is handled for you - transient errors are retried automatically, duplicate AA triggers for the same session are de-duplicated (so data is never processed twice), and internal failures are recovered without data loss. You only ever see the clean, final outcome for each stage.
+</Callout>
+
+<hr class="primary" />
+
+### Notifications you receive
+
+Every notification is delivered as an HTTP `POST` to your configured webhook URL, and is wrapped in the same envelope -
+
+<CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "<STAGE_STATUS>"
+  }
+}`}
+</CodeBlockWithCopy>
+
+The `data.status` field tells you which stage was reached. The correlation field in this flow is `consentId`.
+
+#### Full catalogue
+
+| # | Stage | `data.status` |
+|---|-------|---------------|
+| 1 | Consent lifecycle | `CONSENT_ACTIVE` / `CONSENT_PENDING` / `CONSENT_REJECTED` / `CONSENT_REVOKED` / `CONSENT_PAUSED` / `CONSENT_EXPIRED` |
+| 2 | AA data fetch failed | `FI_DATA_FETCH_FAILED` |
+| 3 | Data block created | `FI_DATA_BLOCK_CREATION_SUCCESS` / `FI_DATA_BLOCK_CREATION_FAILED` |
+| 4 | Insights job started | `INSIGHTS_CREATION_STARTED` |
+| 5 | Insights done | `INSIGHTS_CREATION_SUCCESSFUL` |
+| 6 | Insights failed | `INSIGHTS_CREATION_FAILED` |
+
+<br />
+
+Treat `INSIGHTS_CREATION_SUCCESSFUL` as terminal success, and `FI_DATA_FETCH_FAILED`, `FI_DATA_BLOCK_CREATION_FAILED` and `INSIGHTS_CREATION_FAILED` as terminal failures.
+
+#### Examples of every schema
+
+<Tabs
+  tabs={[
+    {
+      key: "consent",
+      label: "Consent lifecycle",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "CONSENT_ACTIVE",
+    "consentId": "9dee34fe-8449-4f80-914e-b9725f3585cd"
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "fetch-failed",
+      label: "Data fetch failed",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "FI_DATA_FETCH_FAILED",
+    "consentId": "9dee34fe-8449-4f80-914e-b9725f3585cd",
+    "errorCode": "FIP_TIMEOUT",
+    "errorMessage": "Bank did not respond"
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "data-block",
+      label: "Data block created",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "FI_DATA_BLOCK_CREATION_SUCCESS",
+    "consentId": "9dee34fe-8449-4f80-914e-b9725f3585cd",
+    "dataIds": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "insights-started",
+      label: "Insights started",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "INSIGHTS_CREATION_STARTED",
+    "consentId": "9dee34fe-8449-4f80-914e-b9725f3585cd",
+    "reportId": "7f3e4d5c-1111-2222-3333-444455556666",
+    "datablockId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "insights-success",
+      label: "Insights successful",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "INSIGHTS_CREATION_SUCCESSFUL",
+    "consentId": "9dee34fe-8449-4f80-914e-b9725f3585cd",
+    "reportId": "7f3e4d5c-1111-2222-3333-444455556666",
+    "datablockId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "insights-failed",
+      label: "Insights failed",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "INSIGHTS_CREATION_FAILED",
+    "consentId": "9dee34fe-8449-4f80-914e-b9725f3585cd",
+    "reportId": "7f3e4d5c-1111-2222-3333-444455556666",
+    "datablockId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+#### Notifications are configurable
+
+Step-by-step notifications can be tailored to you. A client who does not want intermediate updates can have them switched off entirely - the pipeline runs identically, just silently - or can choose to receive only specific stages. This is set up during onboarding.
+
+#### Webhook delivery
+
+When Signal IQ posts a notification to your webhook -
+
+| Your webhook responds | Behaviour |
+|-----------------------|-----------|
+| `2xx` | Delivered - the flow continues |
+| `4xx` | Treated as a permanent configuration/auth problem - not retried |
+| `5xx` / timeout / network error | Retried up to 3 times with exponential backoff. If those still fail, retried once more at end of day |
+
+<hr class="primary" />
+
+### Getting your outputs
+
+On `INSIGHTS_CREATION_SUCCESSFUL`, use the `reportId` from the webhook to fetch your configured outputs. See the <a href="/data/signal-iq/apis/reports/api-reference" target="_blank">API reference</a> for how to fetch results.
+<NextPage
+  info={{
+    title: "PDF Flow",
+    description: "See how Signal IQ works when your journey starts from a bank-statement PDF.",
+    slug: "/data/signal-iq/pdf-flow",
+  }}
+/>
+
+<WasPageHelpful />
