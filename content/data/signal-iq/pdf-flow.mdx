@@ -1,0 +1,290 @@
+---
+sidebar_title: PDF Flow
+page_title: Signal IQ - PDF Flow
+order: 2
+visible_in_sidebar: true
+---
+
+## PDF Flow
+
+The PDF Flow is for clients whose journey starts from a bank-statement PDF. You upload the statement with a single API call, and Signal IQ takes care of parsing, checks, ingestion, insights generation and output delivery.
+
+<Callout type="highlight">
+  The correlation id for this flow is the uploadId, returned by the upload API. Every webhook you receive for a statement carries the same uploadId, so persist it.
+</Callout>
+
+<hr class="primary" />
+
+### Upload
+
+You upload a bank-statement PDF with a single API call. On success you receive an `uploadId` immediately.
+
+See <a href="/data/signal-iq/apis/upload-statement/api-reference" target="_blank">API Reference - PDF APIs</a> for the full request, response, and error contract.
+
+<hr class="primary" />
+
+### What happens inside
+
+Once the upload is accepted, Signal IQ moves through these stages. You are kept informed at each important step via webhook (see [Notifications](#notifications-you-receive) below).
+
+1. **Parse** - the statement is parsed. If parsing fails, the flow ends and you receive `PDF_PARSE_FAILED`.
+2. **Fraud check** - a separate fraud gate runs. If it blocks, nothing enters Setu Insights and you receive `PDF_FRAUD_DETECTED`.
+3. **Statement validation** - a separate statement-validation gate runs. If it blocks, nothing enters Setu Insights and you receive `STATEMENT_VALIDATION_FAILED`.
+4. **PDF parse success** - if both gates pass, parsing succeeded (`PDF_PARSE_SUCCESS`).
+5. **Data block creation** - the parsed data is prepared for analysis inside Setu Insights (`FI_DATA_BLOCK_CREATION_SUCCESS`).
+6. **Insights generation started** - the insights job is accepted (`INSIGHTS_CREATION_STARTED`). A `reportId` is issued at this stage.
+7. **Insights generation success / failure** - the report is produced (`INSIGHTS_CREATION_SUCCESSFUL`), or the failure is reported (`INSIGHTS_CREATION_FAILED`).
+8. **Report availability** - on success, use the `reportId` from the webhook to fetch your configured outputs.
+
+Fraud and statement validation are two separate gates. Details for each are in [Fraud gate](#fraud-gate) and [Statement-validation gate](#statement-validation-gate) below.
+
+<hr class="primary" />
+
+### Notifications you receive
+
+Every notification is delivered as an HTTP `POST` to your configured webhook URL, and is wrapped in the same envelope. The correlation field in this flow is `uploadId`.
+
+<CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "<STAGE_STATUS>",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af"
+  }
+}`}
+</CodeBlockWithCopy>
+
+#### Full catalogue
+
+| # | Stage | data.status | Terminal |
+|---|-------|-------------|----------|
+| 1 | Parse failed | `PDF_PARSE_FAILED` | Yes |
+| 2 | Fraud blocked | `PDF_FRAUD_DETECTED` | Yes |
+| 3 | Validation blocked | `STATEMENT_VALIDATION_FAILED` | Yes |
+| 4 | PDF parse success | `PDF_PARSE_SUCCESS` | No |
+| 5 | Data block created | `FI_DATA_BLOCK_CREATION_SUCCESS` | No |
+| 6 | Insights started | `INSIGHTS_CREATION_STARTED` | No |
+| 7 | Insights done | `INSIGHTS_CREATION_SUCCESSFUL` | Yes |
+| 8 | Insights failed | `INSIGHTS_CREATION_FAILED` | Yes |
+
+<br />
+
+Treat `INSIGHTS_CREATION_SUCCESSFUL` as terminal success, and statuses 1, 2, 3 and 8 as terminal failures.
+
+#### Notification error codes
+
+Structured `errorCode` / `errorMessage` appear on terminal failure webhooks such as `PDF_PARSE_FAILED`. Fraud and statement-validation blocks do not use BSP codes.
+
+#### On PDF_PARSE_FAILED
+
+| Code | Meaning | Recommended action |
+|------|---------|-------------------|
+| <code style={{whiteSpace: "nowrap"}}>BSP-105</code> | Bank format could not be detected | Verify or omit `bankName`, then resubmit |
+| <code style={{whiteSpace: "nowrap"}}>BSP-201</code> | Scanned PDF - no OCR path available | Retry later or contact support |
+| <code style={{whiteSpace: "nowrap"}}>BSP-202</code> | No transactions found in expected date range | Verify the statement is non-empty / correct period |
+| <code style={{whiteSpace: "nowrap"}}>BSP-203</code> | Insufficient customer data | Use a complete statement with account holder info |
+| <code style={{whiteSpace: "nowrap"}}>BSP-204</code> | Analysis on hold (cannot be retried automatically) | Resubmit. Contact support if it recurs |
+| <code style={{whiteSpace: "nowrap"}}>BSP-205</code> | Processing timed out | Resubmit |
+| <code style={{whiteSpace: "nowrap"}}>BSP-206</code> | All parsing paths unavailable / failed at submit | Retry after a short delay |
+| <code style={{whiteSpace: "nowrap"}}>BSP-501</code> | Internal error during parsing | Contact support with `uploadId` |
+| <code style={{whiteSpace: "nowrap"}}>BSP-502</code> | Parsing path unhealthy or unavailable | Retry after a short delay |
+
+#### Examples of every schema
+
+<Tabs
+  tabs={[
+    {
+      key: "parse-failed",
+      label: "Parse failed",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "PDF_PARSE_FAILED",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+    "errorCode": "BSP-105",
+    "errorMessage": "Unable to detect bank statement format. Please verify the bank name and resubmit."
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "fraud",
+      label: "Fraud detected",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "PDF_FRAUD_DETECTED",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+    "fraudSignals": {
+      "overall": "IRREGULARITY_DETECTED",
+      "checks": [],
+      "vendorScore": null
+    }
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "validation",
+      label: "Validation failed",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "STATEMENT_VALIDATION_FAILED",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+    "statementValidation": {
+      "status": "FAIL",
+      "issues": []
+    }
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "parse-success",
+      label: "Parse success",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "PDF_PARSE_SUCCESS",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af"
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "data-block",
+      label: "Data block created",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "FI_DATA_BLOCK_CREATION_SUCCESS",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+    "dataIds": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "insights-started",
+      label: "Insights started",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "INSIGHTS_CREATION_STARTED",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+    "reportId": "7f3e4d5c-1111-2222-3333-444455556666"
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "insights-success",
+      label: "Insights successful",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "INSIGHTS_CREATION_SUCCESSFUL",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+    "reportId": "7f3e4d5c-1111-2222-3333-444455556666"
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+    {
+      key: "insights-failed",
+      label: "Insights failed",
+      content: (
+        <CodeBlockWithCopy language="json">
+{`{
+  "type": "AUTO_DI_STATUS",
+  "data": {
+    "status": "INSIGHTS_CREATION_FAILED",
+    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+    "errorCode": "BSP-501",
+    "errorMessage": "Insights computation failed. Please contact support with the uploadId."
+  }
+}`}
+        </CodeBlockWithCopy>
+      ),
+    },
+  ]}
+/>
+
+Step-by-step notifications are configurable per client. They can be switched off entirely, or limited to specific stages. This is set up during onboarding.
+
+#### Webhook delivery
+
+When Signal IQ posts a notification to your webhook, handlers must be idempotent and key off `uploadId`.
+
+| Your webhook responds | Behaviour |
+|-----------------------|-----------|
+| `2xx` | Delivered - the flow continues |
+| `4xx` | Treated as a config or auth problem - not retried |
+| `5xx` / timeout / network error | Retried up to 3 times with exponential backoff. If those still fail, retried once more at end of day |
+
+<hr class="primary" />
+
+### Fraud gate
+
+Blocks when `fraudSignals.overall` is `FRAUD` or `IRREGULARITY_DETECTED`. Notification: `PDF_FRAUD_DETECTED`. Nothing is ingested into Setu Insights.
+
+The raw `fraudSignals` object is forwarded so you can apply your own risk policy.
+
+| overall value | Meaning | Does Signal IQ block? |
+|---------------|---------|------------------------|
+| `FRAUD` | Fraud checks concluded the statement shows fraud indicators | Yes - terminal `PDF_FRAUD_DETECTED` |
+| `IRREGULARITY_DETECTED` | Fraud checks found irregularities or anomalies that are not a clean pass. Treat this as a risk signal, not necessarily conclusive fraud | Yes - terminal `PDF_FRAUD_DETECTED` |
+
+<br />
+
+- Signal IQ treats `FRAUD` and `IRREGULARITY_DETECTED` the same for this flow: both stop processing before insights.
+- The webhook still includes the full `fraudSignals` object (`overall`, `checks`, `vendorScore`) so you can handle the two values differently in your own systems if needed.
+- If `overall` is neither value above, the fraud gate does not block.
+- `checks` is an array of individual check results when present. `vendorScore` may be a number or `null` - use it only as supporting context.
+
+<hr class="primary" />
+
+### Statement-validation gate
+
+Blocks when `statementValidation` is present and `statementValidation.status` is not `PASS`. Notification: `STATEMENT_VALIDATION_FAILED`. Nothing is ingested into Setu Insights.
+
+The raw `statementValidation` object is forwarded so you can apply your own risk policy.
+
+A missing `statementValidation` field is not treated as a failure. The statement-validation gate only blocks when the object is present and its status is not `PASS`.
+
+<hr class="primary" />
+
+### Getting your outputs
+
+On `INSIGHTS_CREATION_SUCCESSFUL`, use the `reportId` from the webhook to fetch your configured outputs. See the <a href="/data/signal-iq/apis/reports/api-reference" target="_blank">API reference</a> for how to fetch results.
+<NextPage
+  info={{
+    title: "Bring Your Own FI Data",
+    description: "See how Signal IQ works when you already have your own financial data.",
+    slug: "/data/signal-iq/bring-your-own-fi-data",
+  }}
+/>
+
+<WasPageHelpful />

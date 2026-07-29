@@ -1,0 +1,791 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Signal IQ PDF APIs",
+    "version": "1.0.0",
+    "description": "# PDF APIs\n\nAPIs for the Signal IQ PDF Flow - upload a bank-statement PDF, list supported banks, and check upload status.\n\nOn a successful upload you receive an `uploadId` immediately. Persist it - every later webhook for that statement carries the same `uploadId`. Each successful upload creates a **new** `uploadId` and starts a **new** processing job.\n\n## Authentication\n\nPass these headers on every call. Credentials are issued during onboarding.\n\n- `x-client-id`\n- `x-client-secret`\n- `x-product-instance-id`\n\nMissing or invalid credentials return `401` with `auth_unauthorized`.\n\n## Available APIs\n\n- **Upload Statement** - `POST /v1/pdf`\n- **List supported banks** - `GET /v1/pdf/supported-banks`\n- **Get upload status** - `GET /v1/pdf/{uploadId}`\n\n## After a successful upload\n\nThe upload call only accepts the file and returns `uploadId`. Processing continues asynchronously.\n\n- Do not poll this API for parse completion.\n- Wait for lifecycle webhooks on your onboarded webhook URL.\n- See the [PDF Flow](/data/signal-iq/pdf-flow) page for stages, notification schemas, fraud and statement-validation gates, and BSP codes on webhooks.\n- After `INSIGHTS_CREATION_SUCCESSFUL`, use `reportId` with the [report APIs](/data/signal-iq/apis/reports/api-reference) to fetch outputs.\n"
+  },
+  "tags": [
+    {
+      "name": "Upload Statement",
+      "description": "Upload a bank-statement PDF and receive an uploadId"
+    },
+    {
+      "name": "Supported banks",
+      "description": "List supported bank names for the optional bankName field"
+    },
+    {
+      "name": "Upload status",
+      "description": "Fetch status for a previously accepted uploadId"
+    }
+  ],
+  "paths": {
+    "/v1/pdf": {
+      "post": {
+        "tags": [
+          "Upload Statement"
+        ],
+        "summary": "Upload Statement",
+        "description": "Upload a bank-statement PDF as `multipart/form-data`. On success you receive HTTP 202 with `id` (= `uploadId`). Persist it and wait for webhooks. Do not poll for parse completion. Each successful upload creates a new `uploadId` and starts a new processing job.",
+        "operationId": "upload_signal_iq_pdf_statement",
+        "parameters": [
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client identifier issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client secret issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product instance identifier issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Bank statement PDF"
+                  },
+                  "bankName": {
+                    "type": "string",
+                    "description": "Optional bank name hint (for example, HDFC Bank). Improves detection when provided.",
+                    "example": "HDFC Bank"
+                  },
+                  "startMonth": {
+                    "type": "string",
+                    "description": "Optional statement range hint"
+                  },
+                  "endMonth": {
+                    "type": "string",
+                    "description": "Optional statement range hint"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Required only if the PDF is password-protected"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Upload accepted. Processing has started. Persist `id` as uploadId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "uploadId - correlate all later webhooks"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "PROCESSING"
+                        },
+                        "uploadId": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    },
+                    "traceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Support / tracing id when present"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "id": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+                  "message": "PDF Parser request is being processed",
+                  "data": {
+                    "status": "PROCESSING",
+                    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af"
+                  },
+                  "traceId": "da8163fe-eeb5-4a2b-857e-a67fdaaecd93"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Upload rejected or client not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "examples": {
+                  "pdf_upload_rejected_bsp_103": {
+                    "summary": "pdf_upload_rejected - BSP-103 file too large",
+                    "value": {
+                      "error": {
+                        "code": "pdf_upload_rejected",
+                        "type": "validation",
+                        "message": "upload failed 400: ... BSP-103 ..."
+                      }
+                    }
+                  },
+                  "pdf_upload_rejected_bsp_104": {
+                    "summary": "pdf_upload_rejected - BSP-104 unsupported format",
+                    "value": {
+                      "error": {
+                        "code": "pdf_upload_rejected",
+                        "type": "validation",
+                        "message": "upload failed 400: ... BSP-104 ..."
+                      }
+                    }
+                  },
+                  "pdf_upload_rejected_bsp_106": {
+                    "summary": "pdf_upload_rejected - BSP-106 password required",
+                    "value": {
+                      "error": {
+                        "code": "pdf_upload_rejected",
+                        "type": "validation",
+                        "message": "upload failed 400: ... BSP-106 ..."
+                      }
+                    }
+                  },
+                  "pdf_upload_rejected_bsp_107": {
+                    "summary": "pdf_upload_rejected - BSP-107 wrong password",
+                    "value": {
+                      "error": {
+                        "code": "pdf_upload_rejected",
+                        "type": "validation",
+                        "message": "upload failed 400: ... BSP-107 ..."
+                      }
+                    }
+                  },
+                  "fiu_not_configured": {
+                    "summary": "fiu_not_configured",
+                    "value": {
+                      "error": {
+                        "code": "fiu_not_configured",
+                        "type": "validation",
+                        "message": "Client is not onboarded for PDF upload routing"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "example": {
+                  "error": {
+                    "code": "auth_unauthorized",
+                    "type": "auth",
+                    "message": "Unable to authenticate request. Pass x-client-id, x-client-secret, and x-product-instance-id headers correctly."
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Empty or missing file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "example": {
+                  "error": {
+                    "code": "api_validation_error",
+                    "type": "validation",
+                    "message": "file is required and must be a non-empty PDF"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service misconfiguration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "example": {
+                  "error": {
+                    "code": "config_invalid",
+                    "type": "internal",
+                    "message": "Service configuration is invalid. Contact Setu support."
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream or config temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "examples": {
+                  "pdf_upload_failed": {
+                    "summary": "pdf_upload_failed",
+                    "value": {
+                      "error": {
+                        "code": "pdf_upload_failed",
+                        "type": "internal",
+                        "message": "Upload failed. Retry the request."
+                      }
+                    }
+                  },
+                  "config_unavailable": {
+                    "summary": "config_unavailable",
+                    "value": {
+                      "error": {
+                        "code": "config_unavailable",
+                        "type": "internal",
+                        "message": "Configuration temporarily unavailable. Retry the request."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Orchestration temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "example": {
+                  "error": {
+                    "code": "temporal_unavailable",
+                    "type": "internal",
+                    "message": "Orchestration temporarily unavailable. Retry the request."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pdf/supported-banks": {
+      "get": {
+        "tags": [
+          "Supported banks"
+        ],
+        "summary": "List supported banks",
+        "description": "List supported bank names you can pass as the optional `bankName` field on upload.",
+        "operationId": "list_signal_iq_pdf_supported_banks",
+        "parameters": [
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client identifier issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client secret issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product instance identifier issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supported bank names",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    "HDFC Bank",
+                    "ICICI Bank",
+                    "State Bank of India"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "example": {
+                  "error": {
+                    "code": "auth_unauthorized",
+                    "type": "auth",
+                    "message": "Unable to authenticate request. Pass x-client-id, x-client-secret, and x-product-instance-id headers correctly."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pdf/{uploadId}": {
+      "get": {
+        "tags": [
+          "Upload status"
+        ],
+        "summary": "Get upload status",
+        "description": "Fetch status for a previously accepted `uploadId`.",
+        "operationId": "get_signal_iq_pdf_upload_status",
+        "parameters": [
+          {
+            "name": "uploadId",
+            "in": "path",
+            "required": true,
+            "description": "The uploadId returned by POST /v1/pdf",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "x-client-id",
+            "in": "header",
+            "required": true,
+            "description": "Client identifier issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-client-secret",
+            "in": "header",
+            "required": true,
+            "description": "Client secret issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-product-instance-id",
+            "in": "header",
+            "required": true,
+            "description": "Product instance identifier issued during onboarding",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload status / parse report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "id": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af",
+                  "data": {
+                    "status": "PROCESSING",
+                    "uploadId": "fb12d1a2-1e5c-4c63-aa54-d5f1d2ec19af"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "example": {
+                  "error": {
+                    "code": "auth_unauthorized",
+                    "type": "auth",
+                    "message": "Unable to authenticate request. Pass x-client-id, x-client-secret, and x-product-instance-id headers correctly."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Upload not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "auth",
+                            "validation",
+                            "internal"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "type",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                "example": {
+                  "error": {
+                    "code": "api_validation_error",
+                    "type": "validation",
+                    "message": "uploadId not found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "auth",
+                  "validation",
+                  "internal"
+                ]
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "type",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    }
+  }
+}

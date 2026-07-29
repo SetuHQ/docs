@@ -1,0 +1,55 @@
+---
+sidebar_title: Bring Your Own FI Data
+page_title: Signal IQ - Bring Your Own FI Data
+order: 4
+visible_in_sidebar: true
+---
+
+## Bring Your Own FI Data
+
+This flow is for clients who already have financial (FI) data - for example, from their own account aggregator, or from any third-party source - and want to run it through Signal IQ without going through Setu's Account Aggregator or the PDF path.
+
+<Callout type="highlight">
+  You send your FI data to Signal IQ via API. From that point on, Signal IQ owns orchestration, stage notifications, insights generation and output availability via `reportId` - the same experience as every other flow.
+</Callout>
+
+You get the same Signal IQ experience - orchestration, stage notifications, configurable outputs and polling - even when the data does not originate from one of Signal IQ's built-in input channels.
+
+<hr class="primary" />
+
+### How it works
+
+1. **You send your FI data** directly to Signal IQ via API.
+2. Signal IQ runs the same orchestration model as every other flow -
+   - **validate** the incoming data,
+   - **transform** it to the standard format if required (see the note below),
+   - **ingest** it into Setu Insights,
+   - **generate insights**,
+   - **send stage notifications** to your webhook, and
+   - **hand you a `reportId`** so you can fetch configured outputs via API.
+
+<hr class="primary" />
+
+### A note on data format
+
+Setu Insights expects FI data in the standard <a href="https://api.rebit.org.in/" target="_blank">ReBIT</a>-aligned shape (the same schema used across the Account Aggregator ecosystem).
+
+If your payload is not already in that shape, a client-specific transformation step can be added to map your schema into the structure Setu Insights accepts - so you are never blocked from using Signal IQ with your existing data sources.
+
+<Callout type="note">
+  ReBIT (Reserve Bank Information Technology) publishes the technical standards for the Account Aggregator framework, including the schema in which financial data is represented.
+</Callout>
+
+<hr class="primary" />
+
+### Notifications
+
+The lifecycle notifications for this flow follow the same model as the other flows - you receive stage updates on your webhook, and a terminal success notification carries the `reportId`. Notification schemas match the <a href="/data/signal-iq/pdf-flow#notifications-you-receive" target="_blank">PDF Flow notifications</a>.
+
+<hr class="primary" />
+
+### Getting your outputs
+
+On `INSIGHTS_CREATION_SUCCESSFUL`, use the `reportId` from the webhook to fetch your configured outputs. See the <a href="/data/signal-iq/apis/reports/api-reference" target="_blank">API reference</a> for how to fetch results.
+
+<WasPageHelpful />
