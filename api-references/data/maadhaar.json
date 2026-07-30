@@ -1,0 +1,736 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Data Gateway - mAadhaar verification",
+    "description": "Initiate an mAadhaar QR or intent flow and retrieve the Aadhaar details shared by the user.\n\n[Read the integration guide](https://docs.setu.co/data/maadhaar/quickstart)",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://dg-sandbox.setu.co",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://dg.setu.co",
+      "description": "Production"
+    }
+  ],
+  "paths": {
+    "/api/maadhaar/qr/generate": {
+      "post": {
+        "tags": ["mAadhaar verification"],
+        "summary": "Generate QR",
+        "description": "Generates a QR image that the user can scan with the mAadhaar app.",
+        "operationId": "GenerateMaadhaarQR",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClientId"
+          },
+          {
+            "$ref": "#/components/parameters/ClientSecret"
+          },
+          {
+            "$ref": "#/components/parameters/ProductInstanceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRequest"
+              },
+              "example": {
+                "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+                "desired_fields": [
+                  "residentName",
+                  "dob",
+                  "gender",
+                  "pincode",
+                  "address"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "QR generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QRGenerateResponse"
+                },
+                "example": {
+                  "qr_url": "https://example.com/maadhaar/qr_codes/maadhaar_qr_ca44473f-00ad-4744-a430-39b83c01cfb6.png",
+                  "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+                  "traceId": "1-6a672a69-39f7c6307129996459acb52b"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/maadhaar/signed-jwt/generate": {
+      "post": {
+        "tags": ["mAadhaar verification"],
+        "summary": "Generate intent payload",
+        "description": "Generates a signed JWT to pass to a platform-specific mAadhaar intent.",
+        "operationId": "GenerateMaadhaarIntentPayload",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClientId"
+          },
+          {
+            "$ref": "#/components/parameters/ClientSecret"
+          },
+          {
+            "$ref": "#/components/parameters/ProductInstanceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRequest"
+              },
+              "example": {
+                "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+                "desired_fields": [
+                  "residentName",
+                  "dob",
+                  "gender",
+                  "pincode",
+                  "address"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Intent payload generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntentPayloadResponse"
+                },
+                "example": {
+                  "deeplink_signed_jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...",
+                  "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+                  "traceId": "1-6a672a69-39f7c6307129996459acb52b"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/maadhaar/process-sd-jwt": {
+      "post": {
+        "tags": ["mAadhaar verification"],
+        "summary": "Process SD-JWT",
+        "description": "Processes the SD-JWT returned by the mAadhaar app in an app-to-app intent flow.",
+        "operationId": "ProcessMaadhaarSDJWT",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClientId"
+          },
+          {
+            "$ref": "#/components/parameters/ClientSecret"
+          },
+          {
+            "$ref": "#/components/parameters/ProductInstanceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessSDJWTRequest"
+              },
+              "example": {
+                "txn_id": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+                "sd_jwt": "eyJhbGciOiJSUzI1NiJ9..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SD-JWT processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                },
+                "example": {
+                  "aadhaar_output": {
+                    "address": "JP Nagar, Bengaluru, Karnataka 560078",
+                    "dob": "1995-10-18",
+                    "gender": "MALE",
+                    "pincode": "560078",
+                    "residentName": "Sample User"
+                  },
+                  "error": {
+                    "code": "NO_ERROR",
+                    "detail": "No error",
+                    "traceId": "1-68d122f6-3732177863083023409ea933"
+                  },
+                  "status": "success",
+                  "traceId": "1-68d122f6-3732177863083023409ea933",
+                  "txn": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+                  "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/maadhaar/workflow/status": {
+      "get": {
+        "tags": ["mAadhaar verification"],
+        "summary": "Get workflow status",
+        "description": "Returns the current status and Aadhaar details, when available, for an mAadhaar workflow.",
+        "operationId": "GetMaadhaarWorkflowStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClientId"
+          },
+          {
+            "$ref": "#/components/parameters/ClientSecret"
+          },
+          {
+            "$ref": "#/components/parameters/ProductInstanceId"
+          },
+          {
+            "name": "workflow_id",
+            "in": "query",
+            "description": "The workflow UUID supplied when verification was initiated.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "ca44473f-00ad-4744-a430-39b83c01cfb6"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workflow status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                },
+                "examples": {
+                  "pending": {
+                    "summary": "Authentication pending",
+                    "value": {
+                      "aadhaar_output": null,
+                      "error": {
+                        "code": "NO_ERROR",
+                        "detail": "No error",
+                        "traceId": "1-68f75962-033693ff7d131e1339f23c90"
+                      },
+                      "status": "pending",
+                      "traceId": "1-68f75962-033693ff7d131e1339f23c90",
+                      "txn": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+                      "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
+                    }
+                  },
+                  "success": {
+                    "summary": "Authentication complete",
+                    "value": {
+                      "aadhaar_output": {
+                        "address": "JP Nagar, Bengaluru, Karnataka 560078",
+                        "dob": "1995-10-18",
+                        "gender": "MALE",
+                        "pincode": "560078",
+                        "residentName": "Sample User"
+                      },
+                      "error": {
+                        "code": "NO_ERROR",
+                        "detail": "No error",
+                        "traceId": "1-68d122f6-3732177863083023409ea933"
+                      },
+                      "status": "success",
+                      "traceId": "1-68d122f6-3732177863083023409ea933",
+                      "txn": "ca44473f-00ad-4744-a430-39b83c01cfb6",
+                      "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/RequestNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "ClientId": {
+        "name": "x-client-id",
+        "in": "header",
+        "description": "Client ID provided by Setu.",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "{{client_id}}"
+        }
+      },
+      "ClientSecret": {
+        "name": "x-client-secret",
+        "in": "header",
+        "description": "Client secret provided by Setu.",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "{{client_secret}}"
+        }
+      },
+      "ProductInstanceId": {
+        "name": "x-product-instance-id",
+        "in": "header",
+        "description": "mAadhaar product instance ID provided by Setu.",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "{{product_instance_id}}"
+        }
+      }
+    },
+    "schemas": {
+      "GenerateRequest": {
+        "type": "object",
+        "required": ["workflow_id", "desired_fields"],
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A new UUID generated by you for this verification."
+          },
+          "desired_fields": {
+            "type": "array",
+            "description": "Aadhaar claims that the user is asked to share.",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "residentName",
+                "dob",
+                "gender",
+                "address",
+                "pincode",
+                "residentImage",
+                "maskedMobile",
+                "maskedEmail",
+                "ageAbove18",
+                "ageAbove50",
+                "ageAbove60",
+                "ageAbove75"
+              ]
+            }
+          }
+        }
+      },
+      "QRGenerateResponse": {
+        "type": "object",
+        "required": ["workflow_id", "qr_url", "traceId"],
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "qr_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the generated QR image."
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Root-level trace ID for the QR generation response. This response uses the camelCase field name traceId."
+          }
+        }
+      },
+      "IntentPayloadResponse": {
+        "type": "object",
+        "required": ["workflow_id", "deeplink_signed_jwt", "traceId"],
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deeplink_signed_jwt": {
+            "type": "string",
+            "description": "Signed request to pass to the mAadhaar intent."
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Root-level trace ID for the intent payload response. This response uses the camelCase field name traceId."
+          }
+        }
+      },
+      "ProcessSDJWTRequest": {
+        "type": "object",
+        "required": ["txn_id", "sd_jwt"],
+        "properties": {
+          "txn_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The workflow ID used to generate the intent payload."
+          },
+          "sd_jwt": {
+            "type": "string",
+            "description": "The SD-JWT returned by the mAadhaar app."
+          }
+        }
+      },
+      "StatusResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "workflow_id",
+          "txn",
+          "traceId",
+          "error"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "success", "error"]
+          },
+          "workflow_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "txn": {
+            "type": "string",
+            "description": "UIDAI transaction identifier."
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Root-level trace ID for workflow status responses. Both the root response and nested error object use the camelCase field name traceId."
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          },
+          "aadhaar_output": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AadhaarOutput"
+              }
+            ],
+            "description": "Claims shared by the user. This is null while authentication is pending."
+          }
+        }
+      },
+      "AadhaarOutput": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "The Aadhaar claims selected in desired_fields and shared by the user.",
+        "properties": {
+          "residentName": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "pincode": {
+            "type": "string"
+          },
+          "residentImage": {
+            "type": "string",
+            "description": "Encoded resident image returned by UIDAI."
+          },
+          "maskedMobile": {
+            "type": "string",
+            "description": "Masked mobile number returned by UIDAI."
+          },
+          "maskedEmail": {
+            "type": "string",
+            "description": "Masked email address returned by UIDAI."
+          },
+          "ageAbove18": {
+            "type": "boolean"
+          },
+          "ageAbove50": {
+            "type": "boolean"
+          },
+          "ageAbove60": {
+            "type": "boolean"
+          },
+          "ageAbove75": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "required": ["code", "detail", "traceId"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Setu API error code, such as invalid_payload or NO_ERROR."
+          },
+          "detail": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Nested error trace ID. Error objects use the camelCase field name traceId across all mAadhaar responses."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["workflow_id", "traceId", "error"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "txn": {
+            "type": "string",
+            "nullable": true
+          },
+          "workflow_id": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Root-level trace ID for API error responses. These responses use the camelCase field name traceId."
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          },
+          "aadhaar_output": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AadhaarOutput"
+              }
+            ]
+          }
+        }
+      },
+      "WebhookResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "workflow_id",
+          "txn",
+          "traceId",
+          "error",
+          "aadhaar_output"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["success", "pending", "error"]
+          },
+          "workflow_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "txn": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Root-level trace ID for webhook responses. Both the root response and nested error object use the camelCase field name traceId."
+          },
+          "error": {
+            "$ref": "#/components/schemas/WebhookErrorDetail"
+          },
+          "aadhaar_output": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AadhaarOutput"
+              }
+            ]
+          }
+        },
+        "example": {
+          "status": "success",
+          "workflow_id": "9f2d1b7a-4f5c-4a6d-8d8e-1a2b3c4d5e6f",
+          "txn": "9f2d1b7a-4f5c-4a6d-8d8e-1a2b3c4d5e6f",
+          "traceId": "7e3a9c2d-8b4f-4d6c-a123-4f56789abcde",
+          "error": {
+            "code": "0",
+            "detail": ""
+          },
+          "aadhaar_output": {
+            "residentName": "John Doe",
+            "dob": "1990-01-01",
+            "gender": "MALE",
+            "pincode": "123456",
+            "address": "123 Main Street, Springfield, Example State 123456"
+          }
+        },
+        "examples": {
+          "success": {
+            "$ref": "#/components/schemas/WebhookResponse/example"
+          },
+          "userAborted": {
+            "summary": "User aborted authentication",
+            "value": {
+              "status": "error",
+              "workflow_id": "bc2bb5ac-4e26-4b89-9c80-0d7a95c2ee27",
+              "txn": "bc2bb5ac-4e26-4b89-9c80-0d7a95c2ee27",
+              "traceId": "c926a621-97a3-4e1b-a438-81bc3b61614d",
+              "error": {
+                "code": "303",
+                "detail": "Authentication process aborted by user"
+              },
+              "aadhaar_output": null
+            }
+          },
+          "authenticationFailed": {
+            "summary": "Authentication failed due to a network or server error",
+            "value": {
+              "status": "error",
+              "workflow_id": "08d96879-0626-4960-8378-97fb9042f51a",
+              "txn": "08d96879-0626-4960-8378-97fb9042f51a",
+              "traceId": "1-6a6882b8-3fc3c3ec7c9eaf1a693a4772",
+              "error": {
+                "code": "307",
+                "detail": "Failed to complete authentication due to network or server error"
+              },
+              "aadhaar_output": null
+            }
+          }
+        }
+      },
+      "WebhookErrorDetail": {
+        "type": "object",
+        "required": ["code", "detail"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "UIDAI result code represented as a string, such as 0 for success or 303 and 307 for authentication failures."
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "aadhaar_output": null,
+              "error": {
+                "code": "INVALID_REQUEST",
+                "detail": "Unique workflow identifier is required",
+                "traceId": "1-68f75962-033693ff7d131e1339f23c90"
+              },
+              "status": null,
+              "traceId": "1-68f75962-033693ff7d131e1339f23c90",
+              "txn": null,
+              "workflow_id": ""
+            }
+          }
+        }
+      },
+      "RequestNotFound": {
+        "description": "Workflow not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "aadhaar_output": null,
+              "error": {
+                "code": "REQUEST_NOT_FOUND",
+                "detail": "The requested workflow_id was not found.",
+                "traceId": "1-68f75962-033693ff7d131e1339f23c90"
+              },
+              "status": null,
+              "traceId": "1-68f75962-033693ff7d131e1339f23c90",
+              "txn": null,
+              "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "aadhaar_output": null,
+              "error": {
+                "code": "INTERNAL_ERROR",
+                "detail": "Request processing failed",
+                "traceId": "1-68f75962-033693ff7d131e1339f23c90"
+              },
+              "status": null,
+              "traceId": "1-68f75962-033693ff7d131e1339f23c90",
+              "txn": null,
+              "workflow_id": "ca44473f-00ad-4744-a430-39b83c01cfb6"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "mAadhaar verification"
+    }
+  ]
+}

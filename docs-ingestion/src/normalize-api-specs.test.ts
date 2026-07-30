@@ -593,9 +593,9 @@ describe('buildOutputFiles', () => {
 // ============================================================================
 
 describe('Integration: discoverSpecFiles', () => {
-  test('should discover all 25 spec files', async () => {
+  test('should discover all 27 spec files', async () => {
     const files = await discoverSpecFiles(API_REFERENCES_DIR);
-    expect(files.length).toBe(26);
+    expect(files.length).toBe(27);
   });
 
   test('should have correct categories', async () => {
