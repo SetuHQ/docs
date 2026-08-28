@@ -19,7 +19,9 @@
 	"paths": {
 		"/api/bundled-bav": {
 			"post": {
-				"tags": ["Bundled BAV"],
+				"tags": [
+					"Bundled BAV"
+				],
 				"summary": "Create Bundled BAV request",
 				"operationId": "CreateBundledBAV",
 				"parameters": [
@@ -58,14 +60,15 @@
 					}
 				],
 				"requestBody": {
-					"description": "Mobile number to verify",
+					"description": "Mobile number to verify and customer consent",
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/BundledBAVCreateRequestBody"
 							},
 							"example": {
-								"mobileNumber": "9876543210"
+								"mobileNumber": "9876543210",
+								"consent": "Y"
 							}
 						}
 					},
@@ -129,7 +132,9 @@
 		},
 		"/api/bundled-bav/{requestId}": {
 			"get": {
-				"tags": ["Bundled BAV"],
+				"tags": [
+					"Bundled BAV"
+				],
 				"summary": "Get Bundled BAV request status",
 				"operationId": "GetBundledBAVDetails",
 				"parameters": [
@@ -246,12 +251,24 @@
 			"BundledBAVCreateRequestBody": {
 				"title": "BundledBAVCreateRequestBody",
 				"type": "object",
-				"required": ["mobileNumber"],
+				"required": [
+					"mobileNumber",
+					"consent"
+				],
 				"properties": {
 					"mobileNumber": {
 						"type": "string",
 						"description": "Mobile number to verify (10 digits)",
 						"example": "9876543210"
+					},
+					"consent": {
+						"type": "string",
+						"description": "Must be \"Y\" to enable the Mobile to Bank flow. Other BAV methods do not need explicit consent here since they take user input directly.",
+						"enum": [
+							"Y",
+							"N"
+						],
+						"example": "Y"
 					}
 				}
 			},
@@ -333,7 +350,11 @@
 					},
 					"status": {
 						"type": "string",
-						"enum": ["BAV_SUCCESSFUL", "BAV_FAILED", "BAV_PENDING"]
+						"enum": [
+							"BAV_SUCCESSFUL",
+							"BAV_FAILED",
+							"BAV_PENDING"
+						]
 					},
 					"traceId": {
 						"type": "string",
@@ -422,7 +443,11 @@
 			"BundledBAVErrorResponse": {
 				"title": "BundledBAVErrorResponse",
 				"type": "object",
-				"required": ["success", "message", "traceId"],
+				"required": [
+					"success",
+					"message",
+					"traceId"
+				],
 				"properties": {
 					"success": {
 						"type": "boolean",

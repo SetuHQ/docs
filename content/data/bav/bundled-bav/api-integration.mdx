@@ -15,6 +15,13 @@ Integrating Bundled BAV into your application involves creating a verification r
 
 Call the API to generate a verification URL for your customer.
 
+**Request body**
+
+| Field          | Type   | Required | Description                                                                                  |
+| -------------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
+| `mobileNumber` | string | Yes      | Customer's 10-digit mobile number                                                            |
+| `consent`      | string | Yes      | Must be `"Y"` to enable the Mobile to Bank flow. Other BAV methods do not need explicit consent here since they take user input directly. |
+
 <Row>
 	<Portion desktopSpan="whole">
 		<Tabs
@@ -33,7 +40,8 @@ Call the API to generate a verification URL for your customer.
 							<CodeBlockWithCopy language="json">
 								{`POST /api/bundled-bav
 {
-  "mobileNumber": "9876543210"
+  "mobileNumber": "9876543210",
+  "consent": "Y"
 }`}
 							</CodeBlockWithCopy>
 							<hr className="tertiary" />
@@ -65,15 +73,50 @@ Call the API to generate a verification URL for your customer.
 						<>
 							<p>
 								<Badge type="failure">BAD REQUEST</Badge>{" "}
-								Invalid product configuration or missing
-								required parameters.
+								Missing required fields or invalid product
+								configuration.
 							</p>
 							<hr className="tertiary" />
-							<h5>Request</h5>
+							<h5>Request — missing <code>consent</code></h5>
 							<CodeBlockWithCopy language="json">
 								{`POST /api/bundled-bav
 {
   "mobileNumber": "9876543210"
+}`}
+							</CodeBlockWithCopy>
+							<hr className="tertiary" />
+							<h5>Response</h5>
+							<CodeBlockWithCopy language="json">
+								{`{
+  "success": false,
+  "message": "Bad request - consent is required",
+  "traceId": "1-1234567890"
+}`}
+							</CodeBlockWithCopy>
+							<hr className="tertiary" />
+							<h5>Request — missing <code>mobileNumber</code></h5>
+							<CodeBlockWithCopy language="json">
+								{`POST /api/bundled-bav
+{
+  "consent": "Y"
+}`}
+							</CodeBlockWithCopy>
+							<hr className="tertiary" />
+							<h5>Response</h5>
+							<CodeBlockWithCopy language="json">
+								{`{
+  "success": false,
+  "message": "Bad request - mobileNumber is required",
+  "traceId": "1-1234567890"
+}`}
+							</CodeBlockWithCopy>
+							<hr className="tertiary" />
+							<h5>Request — invalid product configuration</h5>
+							<CodeBlockWithCopy language="json">
+								{`POST /api/bundled-bav
+{
+  "mobileNumber": "9876543210",
+  "consent": "Y"
 }`}
 							</CodeBlockWithCopy>
 							<hr className="tertiary" />
@@ -104,7 +147,8 @@ Call the API to generate a verification URL for your customer.
 							<CodeBlockWithCopy language="json">
 								{`POST /api/bundled-bav
 {
-  "mobileNumber": "9876543210"
+  "mobileNumber": "9876543210",
+  "consent": "Y"
 }`}
 							</CodeBlockWithCopy>
 							<hr className="tertiary" />
